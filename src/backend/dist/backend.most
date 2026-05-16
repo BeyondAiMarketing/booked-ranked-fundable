@@ -1,0 +1,2945 @@
+// Version: 1.0.0
+type AdapterType__304206517 =
+  {
+    #abacus_adapter;
+    #anthropic_claude;
+    #deerflow_bridge;
+    #native_;
+    #ollama_local;
+    #openai_compatible
+  };
+type AgencySettings__425490167 =
+  {
+    googleApiKey : Text;
+    openaiKey : Text;
+    sendgridKey : Text;
+    serpApiKey : Text;
+    stripeKey : Text;
+    twilioAuth : Text;
+    twilioNumber : Text;
+    twilioSid : Text;
+    vapiKey : Text
+  };
+type AgentArtifactRecord__179140771 =
+  {
+    agentId : Text;
+    artifactType : Text;
+    clientVisible : Bool;
+    content : Text;
+    createdAt : Int;
+    id : Text;
+    runId : Text;
+    status : Text;
+    tags : [Text];
+    tenantId : Text;
+    threadId : Text;
+    title : Text
+  };
+type AgentArtifact__721267696 =
+  {
+    artifactType : ArtifactType__212481308;
+    content : Text;
+    createdAt : Int;
+    id : Text;
+    runId : Text;
+    status : ArtifactStatus__185027299;
+    tags : [Text];
+    tenantId : Text;
+    threadId : Text;
+    title : Text;
+    updatedAt : Int
+  };
+type AgentDeliverable__377119030 =
+  {
+    attachments : [Text];
+    deliverableType : Text;
+    deliveredAt : Time__900049286;
+    id : Text;
+    month : Text;
+    notes : Text;
+    scoreImpact : ?Nat;
+    status : Text;
+    subscriptionId : Text;
+    summary : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type AgentMemoryRecord__668918232 =
+  {
+    agentId : Text;
+    content : Text;
+    createdAt : Int;
+    expiresAt : ?Int;
+    id : Text;
+    importance : Nat;
+    memoryType : Text;
+    tenantId : Text;
+    threadId : Text
+  };
+type AgentMemory__76703557 =
+  {
+    agentNotes : ?Text;
+    conversationHistory : [ConversationEntry__1041729693];
+    lastUpdated : Int;
+    summary : ?Text;
+    tenantId : Text;
+    threadId : Text
+  };
+type AgentNote__977543878 =
+  {
+    author : Text;
+    content : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    subscriptionId : Text;
+    tenantId : TenantId__142640312
+  };
+type AgentPerformanceSnapshot__976164614 =
+  {
+    createdAt : Time__900049286;
+    id : Text;
+    metrics : [(Text, Int)];
+    month : Text;
+    nextActions : [Text];
+    subscriptionId : Text;
+    summary : Text;
+    tenantId : TenantId__142640312;
+    topWins : [Text]
+  };
+type AgentProduct__140296322 =
+  {
+    allowHumanOversight : Bool;
+    billingCycle : Text;
+    bundleIds : [Text];
+    category : Text;
+    description : Text;
+    enabledNiches : [Text];
+    features : [Text];
+    id : Text;
+    name : Text;
+    price : Nat;
+    status : Text;
+    updatedAt : Time__900049286;
+    upsellPriority : Nat;
+    visible : Bool
+  };
+type AgentRunRecord__291927663 =
+  {
+    agentId : Text;
+    approvalRequired : Bool;
+    approvalStatus : Text;
+    artifactIds : [Text];
+    completedAt : ?Int;
+    durationMs : ?Nat;
+    errorMessage : ?Text;
+    id : Text;
+    input : Text;
+    metadata : Text;
+    modelUsed : Text;
+    output : Text;
+    startedAt : Int;
+    status : Text;
+    stepIndex : Nat;
+    tenantId : Text;
+    threadId : Text;
+    tokenCount : ?Nat;
+    totalSteps : Nat
+  };
+type AgentRun__1036843936 =
+  {
+    agentType : Text;
+    approvalRequired : Bool;
+    approvalStatus : ?{#approved; #pending; #rejected};
+    artifactIds : [Text];
+    endedAt : ?Int;
+    errorMessage : ?Text;
+    id : Text;
+    inputPrompt : Text;
+    metadata : [(Text, Text)];
+    outputText : ?Text;
+    startedAt : Int;
+    status : RunStatus__271948425;
+    tenantId : Text;
+    threadId : Text;
+    workflowStepIndex : Nat
+  };
+type AgentServiceRequest__39195827 =
+  {
+    attachments : [Text];
+    createdAt : Time__900049286;
+    description : Text;
+    id : Text;
+    pageUrl : Text;
+    preferredDeadline : ?Time__900049286;
+    priority : Text;
+    status : Text;
+    subscriptionId : Text;
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type AgentSubscription__871077325 =
+  {
+    assignedStrategist : Text;
+    humanOversightEnabled : Bool;
+    id : Text;
+    notes : Text;
+    price : Nat;
+    productId : Text;
+    startDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type AgentTask__21970061 =
+  {
+    assignee : Text;
+    attachments : [Text];
+    createdAt : Time__900049286;
+    description : Text;
+    dueDate : ?Time__900049286;
+    id : Text;
+    notes : Text;
+    priority : Text;
+    status : Text;
+    subscriptionId : Text;
+    taskType : Text;
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type AgentTemplateRecord__1039068374 =
+  {
+    allowedTools : [Text];
+    approvalRequired : Bool;
+    createdAt : Int;
+    defaultWorkflowSteps : [Text];
+    id : Text;
+    isDefault : Bool;
+    memoryMode : MemoryMode__131051241;
+    name : Text;
+    role : Text;
+    systemPrompt : Text;
+    tenantId : Text
+  };
+type AgentTemplateStorageRecord__632596834 =
+  {
+    allowedTools : [Text];
+    createdAt : Int;
+    defaultWorkflowSteps : [Text];
+    id : Text;
+    isActive : Bool;
+    memoryMode : Text;
+    name : Text;
+    providerPreference : Text;
+    requireApproval : Bool;
+    role : Text;
+    systemPrompt : Text;
+    tenantId : Text;
+    updatedAt : Int
+  };
+type AgentThreadRecord__842195416 =
+  {
+    agentId : Text;
+    agentName : Text;
+    agentRole : Text;
+    createdAt : Int;
+    id : Text;
+    lastMessage : Text;
+    messageCount : Nat;
+    status : Text;
+    tags : [Text];
+    tenantId : Text;
+    title : Text;
+    updatedAt : Int
+  };
+type AgentThread__238664703 =
+  {
+    agentNotes : ?Text;
+    agentType : Text;
+    createdAt : Int;
+    id : Text;
+    messageCount : Nat;
+    status : {#active; #archived; #paused};
+    summary : ?Text;
+    tenantId : Text;
+    title : Text;
+    updatedAt : Int
+  };
+type AlertType__1005581619 =
+  {#buying_signal; #competitor_move; #local_trend; #negative_mention};
+type ApeQueueItem__512136229 =
+  {
+    attempts : Nat;
+    errorMsg : ?Text;
+    fromDomain : Text;
+    htmlBody : Text;
+    id : Text;
+    leadId : Text;
+    scheduledAt : Int;
+    sentAt : ?Int;
+    status : {#failed; #pending; #sent; #skipped};
+    subject : Text;
+    toEmail : Text;
+    toName : Text
+  };
+type ApprovalItemRecord__227879935 =
+  {
+    actionType : Text;
+    agentId : Text;
+    description : Text;
+    id : Text;
+    priority : Text;
+    requestedAt : Int;
+    resolutionNote : ?Text;
+    resolvedAt : ?Int;
+    resolvedBy : ?Text;
+    runId : Text;
+    status : Text;
+    tenantId : Text;
+    threadId : Text;
+    title : Text
+  };
+type ApprovalItem__1055619120 =
+  {
+    action : Text;
+    approverNotes : ?Text;
+    id : Text;
+    reason : Text;
+    requestedAt : Int;
+    resolvedAt : ?Int;
+    runId : Text;
+    status : ApprovalStatus__1072888826;
+    tenantId : Text;
+    threadId : Text
+  };
+type ApprovalStatus__1072888826 = {#approved; #expired; #pending; #rejected};
+type ArtifactStatus__185027299 = {#archived; #draft; #final};
+type ArtifactType__212481308 =
+  {
+    #content_package;
+    #estimate;
+    #follow_up_sequence;
+    #lead_summary;
+    #proposal;
+    #recommendation_set;
+    #seo_action_plan;
+    #support_resolution
+  };
+type AttributionTouch__1006492320 =
+  {
+    campaignId : Text;
+    channel : Text;
+    source : Text;
+    timestamp : Int;
+    utmParams : Text
+  };
+type AuditLogEntry__941448024 =
+  {
+    id : Text;
+    leadId : Text;
+    messageType : {#email; #sms};
+    optOutLinkPresent : Bool;
+    senderSubdomain : Text;
+    subjectOrSnippet : Text;
+    timestamp : Int
+  };
+type AuditReport__382379080 =
+  {
+    businessName : Text;
+    email : Text;
+    generatedAt : Int;
+    narrative : ?Text;
+    niche : Text;
+    overallScore : Nat;
+    sessionId : Text;
+    topGaps : [Text]
+  };
+type AuditScore__332483755 =
+  {
+    contentScore : Nat;
+    conversionScore : Nat;
+    lastUpdated : Time__900049286;
+    score : Nat;
+    seoScore : Nat;
+    subfactors : [(Text, Nat)];
+    technicalScore : Nat;
+    tenantId : TenantId__142640312
+  };
+type AuditSnapshot__427012058 =
+  {
+    overallScore : Nat;
+    reputationScore : Nat;
+    seoScore : Nat;
+    websiteScore : Nat
+  };
+type AuditTrailEntry__1047345959 =
+  {action : Text; actorId : Text; notes : Text; timestamp : Int};
+type AutopilotConfig__525069354 =
+  {
+    complianceMode : {#both; #canSpam; #gdpr};
+    currentWarmupDay : Nat;
+    dailyEmailCap : Nat;
+    dailySmsCap : Nat;
+    discoveryEnabled : Bool;
+    enrichmentEnabled : Bool;
+    isEnabled : Bool;
+    targetDailyVolume : Nat;
+    warmupPhase : Bool
+  };
+type BatchAuditJob__711276014 =
+  {
+    completedAt : ?Int;
+    completedLeads : Nat;
+    createdAt : Int;
+    failedLeads : Nat;
+    id : Text;
+    processedLeads : Nat;
+    status : Text;
+    tenantId : Text;
+    totalLeads : Nat
+  };
+type BillingRecord__495027963 =
+  {
+    amount : Nat;
+    createdAt : Time__900049286;
+    currency : Text;
+    id : Text;
+    periodEnd : Time__900049286;
+    periodStart : Time__900049286;
+    planName : Text;
+    status : Text;
+    tenantId : TenantId__142640312
+  };
+type BookingStatus__163633778 =
+  {#cancelled; #completed; #confirmed; #no_show};
+type Booking__519012722 =
+  {
+    createdAt : Int;
+    customerEmail : Text;
+    customerName : Text;
+    customerPhone : Text;
+    durationMinutes : Nat;
+    googleCalendarEventId : ?Text;
+    id : Text;
+    noShowFollowUpSent : Bool;
+    notes : Text;
+    outlookEventId : ?Text;
+    reminderSent1h : Bool;
+    reminderSent24h : Bool;
+    scheduledAt : Int;
+    serviceType : Text;
+    status : BookingStatus__163633778;
+    tenantId : Text
+  };
+type BrandKitOutreachJob__1071254097 =
+  {
+    clickedAt : ?Int;
+    id : Text;
+    kitSlug : Text;
+    niche : Text;
+    openedAt : ?Int;
+    sentAt : ?Int;
+    status : Text;
+    targetBusinessName : Text;
+    targetCity : Text;
+    targetEmail : Text;
+    utmParams : Text
+  };
+type BrandKitProspect__1031347011 =
+  {
+    activationAction : ?Text;
+    auditScore : ?Nat;
+    businessName : Text;
+    city : Text;
+    convertedAt : ?Int;
+    createdAt : Int;
+    featuresUsed : [Text];
+    firstName : Text;
+    id : Text;
+    kitPageSlug : Text;
+    lastActivityAt : ?Int;
+    niche : Text;
+    outreachKitOpenedAt : ?Int;
+    outreachKitSentAt : ?Int;
+    phone : Text;
+    trialDay : Nat;
+    trialExpiresAt : ?Int;
+    trialStartedAt : ?Int;
+    trialStatus : TrialStatus__767770597;
+    utmCampaign : ?Text;
+    utmSource : ?Text;
+    vapiAssistantId : ?Text;
+    website : ?Text
+  };
+type BrandVoiceProfile__308253030 =
+  {
+    calibrationPosts : [Text];
+    emojiUsage : EmojiUsage__948900851;
+    formality : Text;
+    lastCalibrated : Int;
+    nicheTerminology : [Text];
+    sentenceStyle : Text;
+    tenantId : Text;
+    tone : BrandVoiceTone__469926426;
+    vocabulary : [Text]
+  };
+type BrandVoiceTone__469926426 =
+  {#authoritative; #casual; #friendly; #professional};
+type BrfCallStatus__1046376135 =
+  {#Calling; #Connected; #Failed; #NoAnswer; #Pending; #SmsFallbackSent};
+type BrfOutboundCallAttempt__534813665 =
+  {
+    attemptNumber : Nat;
+    callStatus : BrfCallStatus__1046376135;
+    convertedToTrial : Bool;
+    id : Text;
+    prospectSlug : Text;
+    smsFallbackSentAt : ?Int;
+    triggeredAt : Int;
+    vapiCallId : ?Text
+  };
+type BrfVoiceAgentConfig__153697682 =
+  {
+    brfBrandName : Text;
+    inboundEnabled : Bool;
+    inboundPhoneNumber : Text;
+    inboundVapiAssistantId : Text;
+    maxOutboundAttempts : Nat;
+    objectionHandlingEnabled : Bool;
+    outboundEnabled : Bool;
+    outboundVapiAssistantId : Text;
+    retryDelayMinutes : Nat
+  };
+type BrowserAuditResult__1070202021 =
+  {
+    adminApproved : Bool;
+    approvedAt : ?Int;
+    approvedBy : ?Text;
+    auditTrail : [AuditTrailEntry__1047345959];
+    auditedAt : Int;
+    businessName : Text;
+    gaps : [GapItem__378545664];
+    gbpGaps : [Text];
+    gbpScore : Nat;
+    gbpScreenshotUrl : Text;
+    gbpStatus : Text;
+    jobId : Text;
+    socialGaps : [Text];
+    socialScore : Nat;
+    socialScreenshotUrl : Text;
+    socialStatus : Text;
+    tenantId : Text;
+    totalBrowserScore : Nat;
+    websiteGaps : [Text];
+    websiteScore : Nat;
+    websiteScreenshotUrl : Text;
+    websiteStatus : Text
+  };
+type BulkSendJob__920782188 =
+  {
+    bounceCount : Nat;
+    clickCount : Nat;
+    dailyCap : Nat;
+    deliveredCount : Nat;
+    id : Text;
+    openCount : Nat;
+    scheduledAt : Int;
+    senderSubdomain : Text;
+    sentCount : Nat;
+    status : {#completed; #failed; #paused; #queued; #running};
+    totalEmails : Nat
+  };
+type CampaignInstance__8040640 =
+  {
+    id : Text;
+    metrics : CampaignMetrics__984020500;
+    startedAt : Time__900049286;
+    status : Text;
+    templateId : Text;
+    tenantId : TenantId__142640312
+  };
+type CampaignMetrics__984020500 =
+  {
+    clicked : Nat;
+    converted : Nat;
+    opened : Nat;
+    sent : Nat;
+    unsubscribed : Nat
+  };
+type CampaignStatus__284380891 =
+  {#draft; #paused; #scheduled; #sending; #sent};
+type CampaignTemplate__815178611 =
+  {
+    active : Bool;
+    campaignType : Text;
+    channels : [Text];
+    createdAt : Time__900049286;
+    goals : [Text];
+    id : Text;
+    name : Text;
+    niche : Text;
+    segments : [Text];
+    steps : [Text];
+    tags : [Text];
+    triggers : [Text]
+  };
+type ChatWidgetConfig__91418543 =
+  {
+    active : Bool;
+    bookingEnabled : Bool;
+    embedToken : Text;
+    faqItems : [Text];
+    greeting : Text;
+    leadCaptureEnabled : Bool;
+    niche : Text;
+    tenantId : TenantId__142640312
+  };
+type ClientHealthScore__902655530 =
+  {
+    agentScore : Nat;
+    components : [HealthScoreComponent__552488935];
+    lastUpdated : Int;
+    leadsScore : Nat;
+    overallScore : Nat;
+    recommendations : [Text];
+    reputationScore : Nat;
+    tenantId : Text;
+    trend : Text;
+    websiteScore : Nat
+  };
+type ClientReport__471148751 =
+  {
+    aiNarrative : Text;
+    deliveredAt : ?Int;
+    generatedAt : Int;
+    id : Text;
+    nextSteps : [Text];
+    overallScore : Nat;
+    periodLabel : Text;
+    reportType : Text;
+    sections : [ReportSection__646171458];
+    tenantId : Text;
+    topWins : [Text]
+  };
+type CommentIntent__500045328 =
+  {
+    #community_love;
+    #competitor_mention;
+    #complaint;
+    #purchase_intent;
+    #question;
+    #spam
+  };
+type CompetitorAlert__60098617 =
+  {
+    alertType : Text;
+    competitorId : Text;
+    dismissed : Bool;
+    id : Text;
+    severity : Text;
+    tenantId : Text;
+    triggeredAt : Int
+  };
+type CompetitorEntry__645787352 =
+  {
+    avgEngagement : ?Nat;
+    followersEst : ?Nat;
+    name : Text;
+    platform : SocialPlatform__717448715;
+    profileUrl : Text
+  };
+type CompetitorIntelReport__184623403 =
+  {
+    competitors : [CompetitorEntry__645787352];
+    generatedAt : Int;
+    id : Text;
+    niche : Text;
+    opportunities : [Text];
+    tenantId : Text;
+    weeklyDigest : Text
+  };
+type CompetitorProfile__364269906 =
+  {
+    adPresenceDetected : Bool;
+    alertThreshold : Float;
+    competitorName : Text;
+    gbpLastUpdated : Text;
+    googleRating : Float;
+    id : Text;
+    lastAuditedAt : Int;
+    ratingChangePrevious : Float;
+    reviewCount : Nat;
+    reviewVelocityTrend : Text;
+    tenantId : Text;
+    website : Text
+  };
+type ComplianceConfig__704189378 =
+  {
+    adminEmail : Text;
+    businessName : Text;
+    maxBounceRate : Float;
+    maxComplaintRate : Float;
+    physicalAddress : Text;
+    softBounceRetries : Nat;
+    unsubscribeBase : Text
+  };
+type ConversationEntry__1041729693 =
+  {content : Text; role : Text; timestamp : Int};
+type CsvImportBatch__515821595 =
+  {
+    createdAt : Int;
+    fileName : Text;
+    flaggedNoEmail : Nat;
+    id : Text;
+    imported : Nat;
+    nicheBreakdown : [(Text, Nat)];
+    skipped : Nat;
+    status : Text;
+    tenantId : Text;
+    totalLeads : Nat
+  };
+type Data__159895909<T> = {var count : Nat__490723111; elements : [var ?T]};
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DeliverabilityEvent__753469675 =
+  {
+    email : Text;
+    eventType : {#bounce; #click; #complaint; #open; #unsubscribe};
+    id : Text;
+    leadId : Text;
+    occurredAt : Int;
+    senderSubdomain : Text
+  };
+type DemoAuditReport__449169018 =
+  {
+    businessName : Text;
+    createdAt : Int;
+    gaps : [Text];
+    niche : Text;
+    prospectEmail : Text;
+    recommendations : [Text];
+    score : Nat
+  };
+type DemoFunnelEntry__755436335 =
+  {
+    createdAt : Int;
+    emailSequenceStatus : EmailSequenceStatus__481358779;
+    engagementCount : Nat;
+    id : Text;
+    lastEngagedAt : Int;
+    prospectId : Text;
+    tenantId : Text;
+    trialActivated : Bool;
+    trialActivatedAt : ?Int
+  };
+type DemoSession__30861223 =
+  {
+    auditScore : Nat;
+    businessName : Text;
+    createdAt : Int;
+    niche : Text;
+    sessionId : Text;
+    socialContentLockedAt : ?Int;
+    step : Nat;
+    trialActivatedAt : ?Int
+  };
+type DiscoveryConfig__423290621 =
+  {
+    cities : [Text];
+    dailyCap : Nat;
+    enabled : Bool;
+    intervalSecs : Nat;
+    leadsPerCity : Nat;
+    niche : Text
+  };
+type DomainSetupState__650563955 =
+  {
+    aRecord : Text;
+    clientId : Text;
+    cname : Text;
+    createdAt : Int;
+    currentStep : Nat;
+    domain : Text;
+    importedPageCount : Nat;
+    propagationStatus : PropagationStatus__52140906;
+    registrar : ?Text;
+    siteImportStatus : Text;
+    updatedAt : Int
+  };
+type DripLeadBounceRecord__956311172 =
+  {
+    bounceType : {#hard; #soft};
+    bouncedAt : Int;
+    leadId : Text;
+    queueId : Text;
+    reason : ?Text;
+    requeued : Bool
+  };
+type DripQueueEmailLog__1039155861 =
+  {
+    errorMessage : ?Text;
+    id : Text;
+    queueId : Text;
+    recipientEmail : Text;
+    recipientName : Text;
+    retryCount : Nat;
+    sentAt : ?Int;
+    status : Text;
+    tenantId : Text
+  };
+type DripQueueThrottleConfig__413595709 =
+  {
+    backoffMultiplier : Float;
+    dailyCap : Nat;
+    intervalSeconds : Nat;
+    staggerEnabled : Bool
+  };
+type DripQueue__7260875 =
+  {
+    campaignTemplateId : Text;
+    campaignTemplateName : Text;
+    cancelledAt : ?Int;
+    completedAt : ?Int;
+    contactEmails : [Text];
+    contactNames : [Text];
+    createdAt : Int;
+    currentIndex : Nat;
+    dailyResetAt : Int;
+    dailySendCap : Nat;
+    dailySentCount : Nat;
+    failedCount : Nat;
+    id : Text;
+    name : Text;
+    niche : Text;
+    pausedAt : ?Int;
+    sendIntervalSeconds : Nat;
+    sentCount : Nat;
+    status : Text;
+    tenantId : Text;
+    updatedAt : Int
+  };
+type DualModelSearchJob__691109652 =
+  {
+    cityA : Text;
+    cityB : Text;
+    claudeLeadsFound : Nat;
+    completedAt : ?Int;
+    createdAt : Int;
+    duplicatesRemoved : Nat;
+    errorMessage : ?Text;
+    id : Text;
+    niche : Text;
+    openaiLeadsFound : Nat;
+    status : {#completed; #failed; #pending; #running};
+    tenantId : Text;
+    totalLeadsStaged : Nat
+  };
+type EmailLogRecord__180507166 =
+  {
+    emailType : Text;
+    errorMsg : Text;
+    id : Text;
+    recipient : Text;
+    sentAt : Int;
+    status : Text;
+    subject : Text;
+    tenantId : Text
+  };
+type EmailReplyRecord__630864157 =
+  {
+    classification :
+      {#interested; #notInterested; #referral; #unclassified; #wrongPerson};
+    draftFollowUp : ?Text;
+    id : Text;
+    leadId : Text;
+    receivedAt : Int;
+    replyBody : Text;
+    reviewStatus : {#approved; #pending; #rejected; #sent};
+    reviewedAt : ?Int
+  };
+type EmailSequenceStatus__481358779 =
+  {#active; #completed; #not_started; #paused};
+type EmojiUsage__948900851 = {#high; #low; #moderate; #none_};
+type EngagementApprovalStatus__887837491 = {#approved; #pending; #rejected};
+type EngagementApproval__523825574 =
+  {
+    approvalStatus : EngagementApprovalStatus__887837491;
+    commentId : Text;
+    createdAt : Int;
+    draftResponse : Text;
+    flagReason : ?Text;
+    flagged : Bool;
+    id : Text;
+    resolvedAt : ?Int;
+    tenantId : Text
+  };
+type EstimateLineItem__228575551 =
+  {
+    description : Text;
+    id : Text;
+    quantity : Float;
+    taxRate : Float;
+    unitPrice : Float
+  };
+type EstimateStatus__770442894 =
+  {#accepted; #draft; #expired; #rejected; #sent};
+type Estimate__179700821 =
+  {
+    acceptedAt : ?Int;
+    approvalNotes : Text;
+    createdAt : Int;
+    customerEmail : Text;
+    customerId : Text;
+    customerName : Text;
+    id : Text;
+    lineItems : [EstimateLineItem__228575551];
+    notes : Text;
+    rejectedAt : ?Int;
+    status : EstimateStatus__770442894;
+    subtotal : Float;
+    taxTotal : Float;
+    tenantId : Text;
+    total : Float;
+    updatedAt : Int
+  };
+type ExtendedLead__649301033 =
+  {
+    address : ?Text;
+    agentSubscriptions : [Text];
+    aiSuggestedServices : ?Text;
+    claimStatus : ?Text;
+    createdAt : Int;
+    email : Text;
+    emailVerified : Bool;
+    gbpLink : ?Text;
+    googleRanking : ?Text;
+    id : Text;
+    importBatchId : ?Text;
+    localAds : ?Text;
+    name : Text;
+    niche : Text;
+    notes : Text;
+    optimizationScore : ?Text;
+    paidAds : ?Text;
+    phone : Text;
+    rating : ?Text;
+    source : Text;
+    status : Text;
+    tenantId : Text;
+    threePackRanking : ?Text;
+    totalReviews : ?Text;
+    website : ?Text
+  };
+type FreeAuditLead__487303693 =
+  {
+    businessName : Text;
+    contactEmail : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    location : Text;
+    overallScore : Nat;
+    phone : Text;
+    websiteUrl : Text
+  };
+type FundabilityScore__896782777 =
+  {
+    creditworthinessPhase : Nat;
+    eligibilityPhase : Nat;
+    lastUpdated : Time__900049286;
+    score : Nat;
+    tenantId : TenantId__142640312;
+    timelinePhase : Nat
+  };
+type FunnelStage__1000870737 = {#bofu; #mofu; #tofu};
+type GapItem__378545664 = {area : Text; description : Text; severity : Text};
+type HealthScoreComponent__552488935 =
+  {
+    displayLabel : Text;
+    factor : Text;
+    rawScore : Nat;
+    status : Text;
+    weight : Nat;
+    weightedScore : Nat
+  };
+type HumanOversightAssignment__644640494 =
+  {
+    createdAt : Time__900049286;
+    id : Text;
+    notes : Text;
+    priority : Text;
+    status : Text;
+    strategist : Text;
+    subscriptionId : Text;
+    tenantId : TenantId__142640312
+  };
+type Int__270357528 = Int__616954475;
+type Int__616954475 = Int;
+type IntegrationCredentials__341198485 =
+  {
+    autoBrowserUrl : Text;
+    claudeKey : Text;
+    elevenLabsKey : Text;
+    elevenLabsVoiceId : Text;
+    emailSmtpHost : Text;
+    emailSmtpPass : Text;
+    emailSmtpPort : Text;
+    emailSmtpUser : Text;
+    facebookAppId : Text;
+    facebookAppSecret : Text;
+    googleClientId : Text;
+    googleClientSecret : Text;
+    hunterApiKey : Text;
+    listmonkPass : Text;
+    listmonkUrl : Text;
+    listmonkUser : Text;
+    litellmKey : Text;
+    litellmUrl : Text;
+    neverBounceKey : Text;
+    ollamaUrl : Text;
+    openaiKey : Text;
+    perplexityApiKey : Text;
+    searxngUrl : Text;
+    sendgridKey : Text;
+    serpApiKey : Text;
+    stripeKey : Text;
+    stripeWebhookSecret : Text;
+    twilioAuth : Text;
+    twilioNumber : Text;
+    twilioSid : Text;
+    vapiKey : Text;
+    yelpApiKey : Text
+  };
+type Internal__667636161<T> =
+  {children : [var ?Node__92254746<T>]; data : Data__159895909<T>};
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Invoice__772203955 =
+  {
+    amount : Nat;
+    currency : Text;
+    description : Text;
+    dueDate : Time__900049286;
+    id : Text;
+    invoiceDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312
+  };
+type LeadAttributionRecord__101882686 =
+  {
+    attributionModel : Text;
+    bookingId : Text;
+    channels : [AttributionTouch__1006492320];
+    closedDealValue : Float;
+    createdAt : Int;
+    finalConversionChannel : Text;
+    id : Text;
+    leadId : Text;
+    tenantId : Text
+  };
+type LeadAuditJob__977164591 =
+  {
+    businessName : Text;
+    city : ?Text;
+    completedAt : ?Int;
+    createdAt : Int;
+    email : ?Text;
+    errorMessage : ?Text;
+    id : Text;
+    niche : Text;
+    phone : ?Text;
+    stageProgress : Text;
+    status : Text;
+    tenantId : Text;
+    websiteUrl : Text
+  };
+type LeadAuditResult__606992864 =
+  {
+    aiInsights : Text;
+    assignedCampaignId : ?Text;
+    businessName : Text;
+    category : Text;
+    companySnapshot : Text;
+    engagementScore : Nat;
+    firstTouchEmailBody : Text;
+    firstTouchEmailSubject : Text;
+    foundingYear : ?Text;
+    growthScore : Nat;
+    interactionType : ?Text;
+    jobId : Text;
+    kitPageSlug : ?Text;
+    niche : Text;
+    pushedAt : ?Int;
+    pushedToCrm : Bool;
+    seoMetrics : Text;
+    seoScore : Nat;
+    socialFacebook : ?Text;
+    socialInstagram : ?Text;
+    socialLinkedin : ?Text;
+    socialMetrics : Text;
+    socialScore : Nat;
+    tenantId : Text;
+    totalScore : Nat;
+    trialActivatedAt : ?Int;
+    websiteScore : Nat;
+    websiteUrl : Text
+  };
+type LeadEnrichment__162435126 =
+  {
+    canReceiveOutreach : Bool;
+    emailVerificationStatus : VerificationStatus__128550283;
+    emailVerifiedAt : ?Int;
+    leadId : Text;
+    phoneVerificationStatus : VerificationStatus__128550283;
+    phoneVerifiedAt : ?Int
+  };
+type LeadEnrichment__482070273 = LeadEnrichment__162435126;
+type Lead__21276013 =
+  {
+    agentSubscriptions : [Text];
+    createdAt : Time__900049286;
+    email : Text;
+    id : Text;
+    name : Text;
+    niche : Text;
+    notes : Text;
+    phone : Text;
+    source : Text;
+    status : Text;
+    tenantId : TenantId__142640312
+  };
+type Leaf__520550824<T> = {data : Data__159895909<T>};
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type List__415060402<T> = List__790383201<T>;
+type List__790383201<T> =
+  {
+    var blockIndex : Nat__490723111;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__490723111
+  };
+type LocationProfile__245168920 =
+  {
+    address : Text;
+    city : Text;
+    createdAt : Int;
+    id : Text;
+    locationName : Text;
+    phoneNumber : Text;
+    state : Text;
+    status : Text;
+    tenantId : Text;
+    timezone : Text
+  };
+type Map__158565046<K, V> = Map__297112838<K, V>;
+type Map__297112838<K, V> =
+  {var root : Node__46230540<K, V>; var size : Nat__490723111};
+type Map__605269027<K, V> = Map__158565046<K, V>;
+type MarketingFramework__512634654 =
+  {
+    #bly;
+    #caples;
+    #carlton;
+    #cialdini;
+    #halbert;
+    #hormozi;
+    #kennedy;
+    #ogilvy;
+    #schwartz;
+    #sugarman
+  };
+type MemoryMode__131051241 =
+  {#conversation_only; #none_; #with_notes; #with_summary};
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type NewsletterCampaignStats__310494505 =
+  {
+    bounceCount : Nat;
+    clickCount : Nat;
+    complaintCount : Nat;
+    openCount : Nat;
+    sentCount : Nat;
+    unsubscribeCount : Nat
+  };
+type NewsletterCampaign__753784675 =
+  {
+    fromEmail : ?Text;
+    fromName : ?Text;
+    htmlBody : Text;
+    id : Text;
+    name : Text;
+    plainTextBody : ?Text;
+    scheduledAt : ?Int;
+    sentAt : ?Int;
+    stats : NewsletterCampaignStats__310494505;
+    status : CampaignStatus__284380891;
+    subject : Text;
+    tags : [Text];
+    tenantId : Text
+  };
+type NewsletterSendLog__1061051021 =
+  {
+    campaignId : Text;
+    email : Text;
+    errorMessage : ?Text;
+    id : Text;
+    openedAt : ?Int;
+    sentAt : ?Int;
+    status : SendLogStatus__21611322;
+    subscriberId : Text
+  };
+type NewsletterSubscriber__586845274 =
+  {
+    businessName : ?Text;
+    customFields : [(Text, Text)];
+    email : Text;
+    id : Text;
+    phone : ?Text;
+    status : SubscriberStatus__190523849;
+    subscribedAt : Int;
+    tags : [Text];
+    tenantId : Text;
+    unsubscribedAt : ?Int
+  };
+type NicheVoiceAssignment__828281982 =
+  {assignedAt : Int; nicheId : Text; voiceId : Text; voiceName : Text};
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type Node__585180226<T> =
+  {
+    var next : ?Node__585180226<T>;
+    var previous : ?Node__585180226<T>;
+    value : T
+  };
+type Node__92254746<T> =
+  {#internal : Internal__667636161<T>; #leaf : Leaf__520550824<T>};
+type NotificationRecord__941149763 =
+  {
+    body : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    notificationType : Text;
+    read : Bool;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type OutputFormat__1046278636 = {#both; #html; #text_};
+type OutreachEvent__750281588 =
+  {
+    eventType : Text;
+    id : Text;
+    leadId : Text;
+    metadata : [(Text, Text)];
+    niche : Text;
+    sequenceId : Text;
+    timestamp : Int;
+    touchNumber : Nat;
+    utmCampaign : Text;
+    utmMedium : Text;
+    utmSource : Text
+  };
+type OutreachEvent__845747933 = OutreachEvent__750281588;
+type PaidAdsAdCopy__654409192 =
+  {
+    body : Text;
+    campaignId : Text;
+    clicks : Nat;
+    conversions : Nat;
+    createdAt : Time__900049286;
+    cta : Text;
+    headline : Text;
+    id : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    testResult : Text;
+    variant : Text
+  };
+type PaidAdsAlert__1021949876 =
+  {
+    alertType : Text;
+    createdAt : Time__900049286;
+    description : Text;
+    id : Text;
+    owner : Text;
+    severity : Text;
+    status : Text;
+    suggestedFix : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type PaidAdsAudience__182229581 =
+  {
+    cpa : Text;
+    id : Text;
+    name : Text;
+    performanceRating : Text;
+    roas : Text;
+    segmentType : Text;
+    size : Nat;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type PaidAdsCampaign__116081654 =
+  {
+    budget : Nat;
+    clicks : Nat;
+    conversions : Nat;
+    ctr : Text;
+    id : Text;
+    impressions : Nat;
+    name : Text;
+    roas : Text;
+    spent : Nat;
+    startDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type PaidAdsDeliverable__1033216916 =
+  {
+    deliverableType : Text;
+    deliveredAt : Time__900049286;
+    id : Text;
+    month : Text;
+    status : Text;
+    summary : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type PaidAdsScore__354176139 =
+  {
+    accountHealth : Nat;
+    audienceQuality : Nat;
+    budgetUtilization : Nat;
+    id : Text;
+    recordedAt : Time__900049286;
+    roasEfficiency : Nat;
+    tenantId : TenantId__142640312
+  };
+type PaidAdsSubscription__488005936 =
+  {
+    assignedStrategist : Text;
+    humanOversightEnabled : Bool;
+    id : Text;
+    price : Nat;
+    startDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type PaymentMethod__68978920 =
+  {
+    cardBrand : Text;
+    cardLast4 : Text;
+    expMonth : Nat;
+    expYear : Nat;
+    isDefault : Bool;
+    tenantId : TenantId__142640312
+  };
+type PlatformFormatting__494813575 =
+  {
+    altText : ?Text;
+    firstComment : ?Text;
+    hashtags : [Text];
+    mediaUrl : ?Text
+  };
+type PostEngagementMetrics__604052321 =
+  {clicks : Nat; comments : Nat; likes : Nat; reach : Nat; shares : Nat};
+type PostStatus__184828843 = {#draft; #failed; #published; #scheduled};
+type PropagationStatus__52140906 =
+  {checkedAt : Int; isLive : Bool; percentage : Nat};
+type ProspectData__228938062 =
+  {
+    capturedAt : Int;
+    city : ?Text;
+    email : Text;
+    firstName : ?Text;
+    niche : ?Text;
+    phone : ?Text;
+    sessionId : Text
+  };
+type ProviderAdapterConfig__575526954 =
+  {
+    adapterType : AdapterType__304206517;
+    apiKey : ?Text;
+    baseUrl : ?Text;
+    createdAt : Int;
+    id : Text;
+    isEnabled : Bool;
+    modelId : ?Text;
+    priority : Nat;
+    tenantId : Text
+  };
+type ReplyInboxItem__486178754 =
+  {
+    classification : Text;
+    draftResponse : Text;
+    id : Text;
+    leadId : Text;
+    leadName : Text;
+    leadNiche : Text;
+    receivedAt : Int;
+    replyBody : Text;
+    status : Text
+  };
+type ReportSchedule__1016441905 =
+  {
+    deliveryDayOfWeek : Nat;
+    deliveryHour : Nat;
+    lastGeneratedAt : ?Int;
+    monthlyEnabled : Bool;
+    tenantId : Text;
+    weeklyEnabled : Bool
+  };
+type ReportSection__646171458 =
+  {
+    description : Text;
+    metric : Text;
+    recommendation : Text;
+    title : Text;
+    trend : Text;
+    trendValue : Text;
+    value : Text
+  };
+type ReviewPlatform__109892178 = {#facebook; #google; #yelp};
+type ReviewRequestStatus__680476497 =
+  {#awaiting; #happy; #maxAttempts; #reviewed; #sent; #unhappy};
+type ReviewRequestTriggerStatus__109598179 =
+  {#completed; #pending; #sent; #suppressed};
+type ReviewRequestTriggerType__782396451 = {#job_completion; #manual};
+type ReviewRequestTrigger__240921971 =
+  {
+    bookingId : ?Text;
+    createdAt : Int;
+    customerEmail : Text;
+    customerName : Text;
+    customerPhone : Text;
+    estimateId : ?Text;
+    id : Text;
+    platform : Text;
+    sentAt : ?Int;
+    status : ReviewRequestTriggerStatus__109598179;
+    tenantId : Text;
+    triggerType : ReviewRequestTriggerType__782396451
+  };
+type ReviewRequest__606989310 =
+  {
+    attemptCount : Nat;
+    customerFeedback : Text;
+    customerName : Text;
+    email : Text;
+    id : Text;
+    lastFollowUp : Time__900049286;
+    phone : Text;
+    platform : Text;
+    sentTimestamp : Time__900049286;
+    serviceCompleted : Text;
+    status : ReviewRequestStatus__680476497;
+    tenantId : TenantId__142640312
+  };
+type ReviewSentiment__615729705 = {#negative; #neutral; #positive};
+type ReviewSyncRecord__865851012 =
+  {
+    comment : Text;
+    createdAt : Int;
+    id : Text;
+    lastSyncAt : Int;
+    platform : ReviewPlatform__109892178;
+    platformResponse : ?Text;
+    platformReviewId : Text;
+    rating : Nat;
+    respondedAt : ?Int;
+    reviewerName : Text;
+    sentiment : ReviewSentiment__615729705;
+    sentimentScore : Float;
+    tenantId : Text
+  };
+type Review__422344017 =
+  {
+    aiDraftedResponse : Text;
+    comment : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    platform : Text;
+    rating : Nat;
+    respondedAt : ?Time__900049286;
+    sentiment : Text;
+    tenantId : TenantId__142640312
+  };
+type RunStatus__271948425 =
+  {#cancelled; #completed; #failed; #paused_for_approval; #queued; #running};
+type SMSMessage__773743365 =
+  {
+    direction : Text;
+    id : Text;
+    readAt : ?Int;
+    sender : Text;
+    sentAt : Int;
+    status : Text;
+    tenantId : Text;
+    text : Text;
+    threadId : Text
+  };
+type SMSThread__963831716 =
+  {
+    archived : Bool;
+    createdAt : Int;
+    id : Text;
+    lastMessageAt : Int;
+    linkedLeadId : ?Text;
+    prospectName : Text;
+    prospectPhone : Text;
+    tenantId : Text;
+    unreadCount : Nat
+  };
+type ScanModel__577367895 =
+  {
+    crmLinked : Bool;
+    description : Text;
+    id : Text;
+    modelUrl : Text;
+    niche : Text;
+    photoCount : Nat;
+    status : Text;
+    tenantId : Text;
+    thumbnailUrl : Text;
+    title : Text;
+    uploadedAt : Int;
+    viewCount : Nat
+  };
+type ScanPhoto__866190539 =
+  {
+    id : Text;
+    modelId : Text;
+    storageUrl : Text;
+    tenantId : Text;
+    uploadedAt : Int
+  };
+type ScheduledDiscoveryJob__562624831 =
+  {
+    claudeLeads : Nat;
+    completedAt : ?Int;
+    config : DiscoveryConfig__423290621;
+    duplicatesRemoved : Nat;
+    enrichPending : Nat;
+    enrichedCount : Nat;
+    errorMessage : ?Text;
+    id : Text;
+    openaiLeads : Nat;
+    startedAt : Int;
+    status : Text;
+    totalBeforeDedup : Nat;
+    totalCreated : Nat
+  };
+type ScheduledPostStatus__720533706 =
+  {#cancelled; #failed; #pending; #published};
+type ScheduledPost__699729313 =
+  {
+    content : Text;
+    createdAt : Int;
+    id : Text;
+    platform : SocialPlatform__717448715;
+    platformFormatting : PlatformFormatting__494813575;
+    scheduledAt : Int;
+    status : ScheduledPostStatus__720533706;
+    tenantId : Text;
+    updatedAt : Int
+  };
+type ScrapeError__936605672 =
+  {
+    #dynamicContent;
+    #invalidSelector;
+    #invalidUrl;
+    #networkError;
+    #robotsBlocked;
+    #timeout;
+    #tooManyRequests
+  };
+type ScrapeItem__1063868702 =
+  {
+    attributes : [(Text, Text)];
+    href : ?Text;
+    html : ?Text;
+    src : ?Text;
+    text : ?Text
+  };
+type ScrapeRecord__726337950 =
+  {
+    createdAt : Time__900049286;
+    id : Nat;
+    request : ScrapeRequest__948201167;
+    result : ScrapeResult__833082760;
+    robotsAllowed : Bool;
+    robotsChecked : Bool;
+    tenantId : Text
+  };
+type ScrapeRequest__948201167 =
+  {
+    limit : Nat;
+    outputFormat : OutputFormat__1046278636;
+    selector : Text;
+    selectorType : SelectorType__975110663;
+    url : Text;
+    waitSelectorMs : Nat
+  };
+type ScrapeResult__833082760 =
+  {
+    durationMs : Nat;
+    error : ?ScrapeError__936605672;
+    errorMessage : ?Text;
+    finalUrl : Text;
+    httpStatus : ?Nat;
+    isDynamic : Bool;
+    items : [ScrapeItem__1063868702];
+    leads : [ScrapedLead__550997834];
+    ok : Bool;
+    requestUrl : Text;
+    scrapedAt : Time__900049286
+  };
+type ScrapedLead__550997834 =
+  {
+    businessName : ?Text;
+    email : ?Text;
+    extractedAt : Time__900049286;
+    phone : ?Text;
+    sourceUrl : Text
+  };
+type SelectorType__975110663 = {#css; #xpath};
+type SendLogStatus__21611322 =
+  {
+    #bounced;
+    #clicked;
+    #delivered;
+    #failed;
+    #opened;
+    #queued;
+    #sent;
+    #unsubscribed
+  };
+type SenderSubdomainRecord__713020370 =
+  {
+    bounceRate : Float;
+    complaintRate : Float;
+    maxDailyVolume : Nat;
+    sentToday : Nat;
+    status : {#active; #flagged; #paused; #warming};
+    subdomain : Text;
+    warmupDay : Nat
+  };
+type SeoGeoContentItem__75154888 =
+  {
+    approvalStatus : Text;
+    content : Text;
+    contentType : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    targetKeywords : [Text];
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type SeoGeoDeliverable__57988774 =
+  {
+    attachments : [Text];
+    deliverableType : Text;
+    deliveredAt : Time__900049286;
+    id : Text;
+    month : Text;
+    notes : Text;
+    status : Text;
+    summary : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type SeoGeoGbpTask__426976568 =
+  {
+    createdAt : Time__900049286;
+    description : Text;
+    dueDate : ?Time__900049286;
+    id : Text;
+    priority : Text;
+    status : Text;
+    taskType : Text;
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type SeoGeoIssue__837760624 =
+  {
+    affectedArea : Text;
+    createdAt : Time__900049286;
+    description : Text;
+    dueDate : ?Time__900049286;
+    id : Text;
+    issueType : Text;
+    owner : Text;
+    severity : Text;
+    status : Text;
+    suggestedFix : Text;
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type SeoGeoNote__372140709 =
+  {
+    author : Text;
+    content : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    tenantId : TenantId__142640312
+  };
+type SeoGeoOpportunity__486422108 =
+  {
+    createdAt : Time__900049286;
+    effortLevel : Text;
+    id : Text;
+    likelyImpact : Text;
+    nextStep : Text;
+    opportunityType : Text;
+    reason : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type SeoGeoReport__734673501 =
+  {
+    createdAt : Time__900049286;
+    highlights : [Text];
+    id : Text;
+    issues : [Text];
+    month : Text;
+    nextSteps : [Text];
+    summary : Text;
+    tenantId : TenantId__142640312
+  };
+type SeoGeoRequest__846877544 =
+  {
+    attachments : [Text];
+    createdAt : Time__900049286;
+    description : Text;
+    id : Text;
+    pageUrl : Text;
+    preferredDeadline : ?Time__900049286;
+    priority : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    title : Text;
+    updatedAt : Time__900049286
+  };
+type SeoGeoScoreFactor__980872306 =
+  {
+    factorName : Text;
+    id : Text;
+    scoreType : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286;
+    value : Nat;
+    weight : Nat
+  };
+type SeoGeoScore__48169873 =
+  {
+    aiVisibilityHealth : Nat;
+    contentHealth : Nat;
+    conversionReadinessScore : Nat;
+    gbpHealth : Nat;
+    geoScore : Nat;
+    id : Text;
+    localVisibilityScore : Nat;
+    recordedAt : Time__900049286;
+    seoScore : Nat;
+    technicalHealth : Nat;
+    tenantId : TenantId__142640312
+  };
+type SeoGeoSubscription__544658037 =
+  {
+    assignedStrategist : Text;
+    humanOversightEnabled : Bool;
+    id : Text;
+    price : Nat;
+    startDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type SeoGeoTaskAssignment__579326931 =
+  {
+    assignedAt : Time__900049286;
+    assignee : Text;
+    id : Text;
+    notes : Text;
+    taskId : Text;
+    tenantId : TenantId__142640312
+  };
+type SeoGeoVisibilitySnapshot__192109743 =
+  {
+    aiVisibilityScore : Nat;
+    answerReadiness : Nat;
+    brandConsistency : Nat;
+    citationScore : Nat;
+    entityClarity : Nat;
+    id : Text;
+    recordedAt : Time__900049286;
+    tenantId : TenantId__142640312
+  };
+type SmsAutopilotJob__522732100 =
+  {
+    id : Text;
+    leadId : Text;
+    messageText : Text;
+    ruleId : Text;
+    scheduledAt : Int;
+    status : {#cancelled; #failed; #queued; #sent};
+    twilioMessageSid : ?Text
+  };
+type SmsAutopilotRule__932974502 =
+  {
+    delayMinutes : Nat;
+    id : Text;
+    isActive : Bool;
+    messageTemplate : Text;
+    sentCount : Nat;
+    triggerType : {#manualTrigger; #noOpenFortyEightHours; #twoOpens}
+  };
+type SocialComment__56875551 =
+  {
+    aiDraftResponse : Text;
+    authorId : Text;
+    authorName : Text;
+    commentText : Text;
+    createdAt : Int;
+    id : Text;
+    intent : CommentIntent__500045328;
+    leadCreated : Bool;
+    platform : SocialPlatform__717448715;
+    postId : Text;
+    responded : Bool;
+    respondedAt : ?Int;
+    tenantId : Text
+  };
+type SocialEngagementType__212666567 =
+  {#comment; #dm; #form_fill; #mention; #reaction};
+type SocialLead__744221917 =
+  {
+    contactInfo : Text;
+    createdAt : Int;
+    crmLeadId : ?Text;
+    engagementType : SocialEngagementType__212666567;
+    id : Text;
+    platform : SocialPlatform__717448715;
+    sourcePostId : Text;
+    tenantId : Text
+  };
+type SocialListeningAlert__632843298 =
+  {
+    alertType : AlertType__1005581619;
+    createdAt : Int;
+    dismissed : Bool;
+    id : Text;
+    keyword : Text;
+    mentionText : Text;
+    platform : SocialPlatform__717448715;
+    source : Text;
+    suggestedAction : Text;
+    tenantId : Text
+  };
+type SocialPlatform__717448715 =
+  {#facebook; #google_business; #instagram; #linkedin; #tiktok};
+type SocialPost__697355122 =
+  {
+    beforeAfterPhoto : ?Text;
+    content : Text;
+    createdAt : Int;
+    ctaType : Text;
+    ctaUrl : Text;
+    engagementMetrics : PostEngagementMetrics__604052321;
+    funnelStage : FunnelStage__1000870737;
+    id : Text;
+    marketingFramework : MarketingFramework__512634654;
+    niche : Text;
+    platforms : [SocialPlatform__717448715];
+    publishedAt : ?Int;
+    scheduledAt : ?Int;
+    status : PostStatus__184828843;
+    tags : [Text];
+    tenantId : Text
+  };
+type SocialROIMetrics__107934932 =
+  {
+    aiNarrative : Text;
+    bookingsFromSocial : Nat;
+    commentsMissed : Nat;
+    commentsResponded : Nat;
+    estimatedRevenue : Nat;
+    generatedAt : Int;
+    leadsFromSocial : Nat;
+    period : Text;
+    postsPublished : Nat;
+    tenantId : Text;
+    topPerformingPost : Text;
+    totalEngagement : Nat
+  };
+type SubscriberStatus__190523849 =
+  {#active; #bounced; #complained; #unsubscribed};
+type TenantId__142640312 = Text;
+type Time__796480547 = Int__270357528;
+type Time__900049286 = Time__796480547;
+type ToolDefinition__108716300 =
+  {
+    category : Text;
+    description : Text;
+    id : Text;
+    isEnabled : Bool;
+    name : Text;
+    permissions : [Text];
+    requiresApproval : Bool;
+    schema : Text;
+    tenantScoped : Bool
+  };
+type TrialStatus__767770597 = {#Active; #Converted; #Expired; #NotStarted};
+type UserProfile__491224006 =
+  {name : Text; role : Text; tenantId : TenantId__142640312};
+type UserRole__1054455867 = {#admin; #guest; #user};
+type VapiCallLog__412897467 =
+  {
+    callId : Text;
+    callerPhone : Text;
+    direction : Text;
+    duration : Nat;
+    endedAt : ?Int;
+    id : Text;
+    recordedAt : Int;
+    status : Text;
+    tenantId : Text;
+    transcript : Text
+  };
+type VapiProvisioningStatus__148283768 =
+  {
+    assistantId : ?Text;
+    errorMessage : ?Text;
+    lastSynced : ?Int;
+    status : {#active; #error; #notConfigured; #provisioning}
+  };
+type VerificationStatus__128550283 =
+  {#Invalid; #Pending; #Unverified; #Verified};
+type VoiceAgentConfig__22300794 =
+  {
+    businessHoursText : Text;
+    callRouting : {#ai; #forward : Text; #voicemail : Text};
+    configured : Bool;
+    greetingScript : Text;
+    services : [Text];
+    tenantId : TenantId__142640312;
+    twilioNumber : Text;
+    vapiAgentId : Text
+  };
+type WarmLeadHandoff__367263013 = WarmLeadHandoff__487471099;
+type WarmLeadHandoff__487471099 =
+  {
+    auditScores : ?AuditSnapshot__427012058;
+    coldSequenceId : Text;
+    demoVisited : Bool;
+    handoffTimestamp : Int;
+    handoffTrigger : Text;
+    leadId : Text;
+    niche : Text;
+    warmSequenceId : Text
+  };
+type WarmSequenceEmailEvent__78904865 =
+  {
+    enrollmentId : Text;
+    eventType : Text;
+    id : Text;
+    occurredAt : Int;
+    touchIndex : Nat
+  };
+type WarmSequenceEmailSchedule__621450793 =
+  {
+    body : Text;
+    delayHours : Nat;
+    enrollmentId : Text;
+    id : Text;
+    recipient : Text;
+    scheduledAt : Int;
+    sendAfter : Int;
+    status : Text;
+    subject : Text;
+    touchIndex : Nat
+  };
+type WarmSequence__158952720 =
+  {
+    id : Text;
+    name : Text;
+    niche : Text;
+    touches : [WarmTouch__61441140];
+    triggerEvents : [Text]
+  };
+type WarmTouch__61441140 =
+  {
+    bodyTemplate : Text;
+    bookingLinkIncluded : Bool;
+    ctaType : Text;
+    delayHours : Nat;
+    subject : Text;
+    touchNumber : Nat
+  };
+type WebsiteAgentScore__333540424 =
+  {
+    contentQuality : Nat;
+    conversionReadiness : Nat;
+    ctaStrength : Nat;
+    id : Text;
+    recordedAt : Time__900049286;
+    technicalHealth : Nat;
+    tenantId : TenantId__142640312;
+    trustAuthority : Nat;
+    trustSignals : Nat
+  };
+type WebsiteAgentSubscription__495965148 =
+  {
+    assignedStrategist : Text;
+    humanOversightEnabled : Bool;
+    id : Text;
+    price : Nat;
+    startDate : Time__900049286;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type WebsiteContentBrief__444940263 =
+  {
+    approvalStatus : Text;
+    assignee : Text;
+    createdAt : Time__900049286;
+    id : Text;
+    outlinePoints : [Text];
+    pageTitle : Text;
+    targetKeywords : [Text];
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+type WebsiteCroOpportunity__286761539 =
+  {
+    category : Text;
+    createdAt : Time__900049286;
+    description : Text;
+    effortLevel : Text;
+    estimatedLift : Text;
+    id : Text;
+    priority : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type WebsiteDeliverable__93714092 =
+  {
+    deliverableType : Text;
+    deliveredAt : Time__900049286;
+    id : Text;
+    month : Text;
+    status : Text;
+    summary : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type WebsiteIssue__385081822 =
+  {
+    createdAt : Time__900049286;
+    description : Text;
+    id : Text;
+    issueType : Text;
+    pageUrl : Text;
+    severity : Text;
+    status : Text;
+    suggestedFix : Text;
+    tenantId : TenantId__142640312;
+    title : Text
+  };
+type WebsitePageQueueItem__861291379 =
+  {
+    assignee : Text;
+    createdAt : Time__900049286;
+    description : Text;
+    dueDate : ?Time__900049286;
+    id : Text;
+    pageTitle : Text;
+    pageUrl : Text;
+    priority : Text;
+    status : Text;
+    tenantId : TenantId__142640312;
+    updateType : Text;
+    updatedAt : Time__900049286;
+    waitingOnClient : Bool
+  };
+type WhiteLabelConfig__480446571 =
+  {
+    active : Bool;
+    agencyName : Text;
+    clientBrandingOverrides : [(Text, Text)];
+    domain : Text;
+    emailSenderAddress : Text;
+    emailSenderName : Text;
+    heroHeadline : Text;
+    logo : Text;
+    onboardingLink : Text;
+    primaryColor : Text;
+    secondaryColor : Text;
+    subdomain : Text;
+    tagline : Text;
+    tenantId : TenantId__142640312;
+    updatedAt : Time__900049286
+  };
+actor {
+  stable ACTIVE_HOURS : Nat;
+  stable AC_PLATFORM_TENANT : Text;
+  stable APD_PLATFORM_TENANT : Text;
+  stable APE_PLATFORM_TENANT : Text;
+  stable B64_CHARS : Text;
+  stable CLASSIFY_PROMPT : Text;
+  stable DEFAULT_DAILY_CAP : Nat;
+  stable DEFAULT_RULES : [SmsAutopilotRule__932974502];
+  stable LLM_TENANT : Text;
+  stable NS_PER_DAY : Int;
+  stable RI_PLATFORM_TENANT : Text;
+  stable SENDGRID_URL : Text;
+  stable SMS_CLASSIFY_PROMPT : Text;
+  stable SMS_PLATFORM_TENANT : Text;
+  stable SUBDOMAIN_1 : Text;
+  stable SUBDOMAIN_2 : Text;
+  stable SUBDOMAIN_3 : Text;
+  stable SYSTEM_PROMPT : Text;
+  stable WS_MAX_BATCH : Nat;
+  stable WS_MAX_HISTORY : Nat;
+  stable WS_MAX_LIMIT : Nat;
+  stable _agentNotes :
+    {
+      var root : Node__46230540<Text, AgentNote__977543878>;
+      var size : Nat__490723111
+    };
+  stable _bookings :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Booking__519012722]];
+      var elementIndex : Nat__490723111
+    };
+  stable _clientHealthScores :
+    {
+      var root : Node__46230540<Text, ClientHealthScore__902655530>;
+      var size : Nat__490723111
+    };
+  stable _clientReports :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ClientReport__471148751]];
+      var elementIndex : Nat__490723111
+    };
+  stable _estimates :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?Estimate__179700821]];
+      var elementIndex : Nat__490723111
+    };
+  stable _reportSchedules :
+    {
+      var root : Node__46230540<Text, ReportSchedule__1016441905>;
+      var size : Nat__490723111
+    };
+  stable _reviewRequestTriggers :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ReviewRequestTrigger__240921971]];
+      var elementIndex : Nat__490723111
+    };
+  stable _reviewSyncRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ReviewSyncRecord__865851012]];
+      var elementIndex : Nat__490723111
+    };
+  stable _seoGeoNotes :
+    {
+      var root : Node__46230540<Text, SeoGeoNote__372140709>;
+      var size : Nat__490723111
+    };
+  stable _seoGeoScoreFactors :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, SeoGeoScoreFactor__980872306>>;
+      var size : Nat__490723111
+    };
+  stable _seoGeoTaskAssignments :
+    {
+      var root : Node__46230540<Text, SeoGeoTaskAssignment__579326931>;
+      var size : Nat__490723111
+    };
+  stable _smsMessages :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?SMSMessage__773743365]];
+      var elementIndex : Nat__490723111
+    };
+  stable _smsThreads :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?SMSThread__963831716]];
+      var elementIndex : Nat__490723111
+    };
+  stable accessControlState :
+    {
+      var adminAssigned : Bool;
+      userRoles : Map__605269027<Principal, UserRole__1054455867>
+    };
+  stable var agencySettings : ?AgencySettings__425490167;
+  stable agentArtifactRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AgentArtifactRecord__179140771]];
+      var elementIndex : Nat__490723111
+    };
+  stable agentArtifacts :
+    {
+      var root : Node__46230540<Text, AgentArtifact__721267696>;
+      var size : Nat__490723111
+    };
+  stable agentDeliverables :
+    {
+      var root : Node__46230540<Text, AgentDeliverable__377119030>;
+      var size : Nat__490723111
+    };
+  stable agentMemories :
+    {
+      var root : Node__46230540<Text, AgentMemory__76703557>;
+      var size : Nat__490723111
+    };
+  stable agentMemoryRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AgentMemoryRecord__668918232]];
+      var elementIndex : Nat__490723111
+    };
+  stable agentPerformanceSnapshots :
+    {
+      var root : Node__46230540<Text, AgentPerformanceSnapshot__976164614>;
+      var size : Nat__490723111
+    };
+  stable agentProducts :
+    {
+      var root : Node__46230540<Text, AgentProduct__140296322>;
+      var size : Nat__490723111
+    };
+  stable agentRunRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AgentRunRecord__291927663]];
+      var elementIndex : Nat__490723111
+    };
+  stable agentRuns :
+    {
+      var root : Node__46230540<Text, AgentRun__1036843936>;
+      var size : Nat__490723111
+    };
+  stable agentServiceRequests :
+    {
+      var root : Node__46230540<Text, AgentServiceRequest__39195827>;
+      var size : Nat__490723111
+    };
+  stable agentSubscriptions :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, AgentSubscription__871077325>>;
+      var size : Nat__490723111
+    };
+  stable agentTasks :
+    {
+      var root : Node__46230540<Text, AgentTask__21970061>;
+      var size : Nat__490723111
+    };
+  stable agentTemplateStorageRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AgentTemplateStorageRecord__632596834]];
+      var elementIndex : Nat__490723111
+    };
+  stable agentTemplates :
+    {
+      var root : Node__46230540<Text, AgentTemplateRecord__1039068374>;
+      var size : Nat__490723111
+    };
+  stable agentThreadRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AgentThreadRecord__842195416]];
+      var elementIndex : Nat__490723111
+    };
+  stable agentThreads :
+    {
+      var root : Node__46230540<Text, AgentThread__238664703>;
+      var size : Nat__490723111
+    };
+  stable apd_timerId : {var v : ?Nat};
+  stable apeEmailQueue :
+    {
+      var back : ?Node__585180226<ApeQueueItem__512136229>;
+      var front : ?Node__585180226<ApeQueueItem__512136229>;
+      var size : Nat__490723111
+    };
+  stable apeOpenCounts :
+    {var root : Node__46230540<Text, Nat>; var size : Nat__490723111};
+  stable apeSmsJobQueue :
+    {
+      var back : ?Node__585180226<SmsAutopilotJob__522732100>;
+      var front : ?Node__585180226<SmsAutopilotJob__522732100>;
+      var size : Nat__490723111
+    };
+  stable apeWarmSeqLib :
+    {
+      var root : Node__46230540<Text, WarmSequence__158952720>;
+      var size : Nat__490723111
+    };
+  stable ape_timerId : {var v : ?Nat};
+  stable approvalItemRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ApprovalItemRecord__227879935]];
+      var elementIndex : Nat__490723111
+    };
+  stable approvalItems :
+    {
+      var root : Node__46230540<Text, ApprovalItem__1055619120>;
+      var size : Nat__490723111
+    };
+  stable auditReportStore :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?DemoAuditReport__449169018]];
+      var elementIndex : Nat__490723111
+    };
+  stable auditReports :
+    {
+      var root : Node__46230540<Text, AuditReport__382379080>;
+      var size : Nat__490723111
+    };
+  stable auditScores :
+    {
+      var root : Node__46230540<TenantId__142640312, AuditScore__332483755>;
+      var size : Nat__490723111
+    };
+  stable autopilotDiscoveryConfig : {var v : DiscoveryConfig__423290621};
+  stable autopilotDiscoveryJobs :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ScheduledDiscoveryJob__562624831]];
+      var elementIndex : Nat__490723111
+    };
+  stable autopilotEmailConfig : {var v : AutopilotConfig__525069354};
+  stable batchAuditJobs :
+    {
+      var root : Node__46230540<Text, BatchAuditJob__711276014>;
+      var size : Nat__490723111
+    };
+  stable billingRecords :
+    {
+      var root : Node__46230540<Text, BillingRecord__495027963>;
+      var size : Nat__490723111
+    };
+  stable brandKitOutreachJobs :
+    {
+      var root : Node__46230540<Text, BrandKitOutreachJob__1071254097>;
+      var size : Nat__490723111
+    };
+  stable brandKitProspects :
+    {
+      var root : Node__46230540<Text, BrandKitProspect__1031347011>;
+      var size : Nat__490723111
+    };
+  stable brandVoiceProfiles :
+    {
+      var root : Node__46230540<Text, BrandVoiceProfile__308253030>;
+      var size : Nat__490723111
+    };
+  stable brfCallIdCounter : {var n : Nat};
+  stable brfOutboundCallAttempts :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?BrfOutboundCallAttempt__534813665]];
+      var elementIndex : Nat__490723111
+    };
+  stable brfVoiceAgentConfigHolder :
+    {var v : ?BrfVoiceAgentConfig__153697682};
+  stable browserAuditCache :
+    {
+      var root : Node__46230540<Text, BrowserAuditResult__1070202021>;
+      var size : Nat__490723111
+    };
+  stable bulkSendJobs :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?BulkSendJob__920782188]];
+      var elementIndex : Nat__490723111
+    };
+  stable caffEmailEndpoint : Text;
+  stable campaignInstances :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, CampaignInstance__8040640>>;
+      var size : Nat__490723111
+    };
+  stable campaignTemplates :
+    {
+      var root : Node__46230540<Text, CampaignTemplate__815178611>;
+      var size : Nat__490723111
+    };
+  stable chatWidgetConfigs :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, ChatWidgetConfig__91418543>;
+      var size : Nat__490723111
+    };
+  stable competitorAlerts :
+    {
+      var root : Node__46230540<Text, CompetitorAlert__60098617>;
+      var size : Nat__490723111
+    };
+  stable competitorProfiles :
+    {
+      var root : Node__46230540<Text, CompetitorProfile__364269906>;
+      var size : Nat__490723111
+    };
+  stable competitorReports :
+    {
+      var root : Node__46230540<Text, CompetitorIntelReport__184623403>;
+      var size : Nat__490723111
+    };
+  stable complianceAuditLog :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?AuditLogEntry__941448024]];
+      var elementIndex : Nat__490723111
+    };
+  stable complianceConfigHolder : {var v : ComplianceConfig__704189378};
+  stable complianceSoftBounces :
+    {var root : Node__46230540<Text, Nat>; var size : Nat__490723111};
+  stable complianceSubdomains :
+    {
+      var root : Node__46230540<Text, SenderSubdomainRecord__713020370>;
+      var size : Nat__490723111
+    };
+  stable credSalt : Blob;
+  stable csvImportBatches :
+    {
+      var root : Node__46230540<Text, CsvImportBatch__515821595>;
+      var size : Nat__490723111
+    };
+  stable deliverabilityEvents :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?DeliverabilityEvent__753469675]];
+      var elementIndex : Nat__490723111
+    };
+  stable demoEmailEndpoint : Text;
+  stable demoFunnelEntries :
+    {
+      var root : Node__46230540<Text, DemoFunnelEntry__755436335>;
+      var size : Nat__490723111
+    };
+  stable demoSessions :
+    {
+      var root : Node__46230540<Text, DemoSession__30861223>;
+      var size : Nat__490723111
+    };
+  stable domainSetupStore :
+    {
+      var root : Node__46230540<Text, DomainSetupState__650563955>;
+      var size : Nat__490723111
+    };
+  stable dripBounceRecords :
+    {
+      var root : Node__46230540<Text, DripLeadBounceRecord__956311172>;
+      var size : Nat__490723111
+    };
+  stable dripCaffEmailEndpoint : Text;
+  stable dripEmailLogs :
+    {
+      var root :
+        Node__46230540<Text, List__415060402<DripQueueEmailLog__1039155861>>;
+      var size : Nat__490723111
+    };
+  stable dripQueues :
+    {
+      var root : Node__46230540<Text, DripQueue__7260875>;
+      var size : Nat__490723111
+    };
+  stable dripThrottleConfigs :
+    {
+      var root : Node__46230540<Text, DripQueueThrottleConfig__413595709>;
+      var size : Nat__490723111
+    };
+  stable dualModelSearchJobs :
+    {
+      var root : Node__46230540<Text, DualModelSearchJob__691109652>;
+      var size : Nat__490723111
+    };
+  stable elevenLabsAudioCache :
+    {var root : Node__46230540<Text, Text>; var size : Nat__490723111};
+  stable emailIdCounter : {var n : Nat};
+  stable emailLogs :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?EmailLogRecord__180507166]];
+      var elementIndex : Nat__490723111
+    };
+  stable emailReplyRecords :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?EmailReplyRecord__630864157]];
+      var elementIndex : Nat__490723111
+    };
+  stable emptyMasked :
+    {
+      autoBrowserUrl : Text;
+      claudeKey : Text;
+      elevenLabsKey : Text;
+      elevenLabsVoiceId : Text;
+      emailSmtpHost : Text;
+      emailSmtpPass : Text;
+      emailSmtpPort : Text;
+      emailSmtpUser : Text;
+      facebookAppId : Text;
+      facebookAppSecret : Text;
+      googleClientId : Text;
+      googleClientSecret : Text;
+      hunterApiKey : Text;
+      listmonkPass : Text;
+      listmonkUrl : Text;
+      listmonkUser : Text;
+      litellmKey : Text;
+      litellmUrl : Text;
+      neverBounceKey : Text;
+      ollamaUrl : Text;
+      openaiKey : Text;
+      perplexityApiKey : Text;
+      searxngUrl : Text;
+      sendgridKey : Text;
+      serpApiKey : Text;
+      stripeKey : Text;
+      stripeWebhookSecret : Text;
+      twilioAuth : Text;
+      twilioNumber : Text;
+      twilioSid : Text;
+      vapiKey : Text;
+      yelpApiKey : Text
+    };
+  stable engagementApprovals :
+    {
+      var root : Node__46230540<Text, EngagementApproval__523825574>;
+      var size : Nat__490723111
+    };
+  stable extendedLeads :
+    {
+      var root :
+        Node__46230540<Text, Map__605269027<Text, ExtendedLead__649301033>>;
+      var size : Nat__490723111
+    };
+  stable freeAuditLeads :
+    {
+      var root : Node__46230540<Text, FreeAuditLead__487303693>;
+      var size : Nat__490723111
+    };
+  stable fundabilityScores :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, FundabilityScore__896782777>;
+      var size : Nat__490723111
+    };
+  stable humanOversightAssignments :
+    {
+      var root : Node__46230540<Text, HumanOversightAssignment__644640494>;
+      var size : Nat__490723111
+    };
+  stable integrationCreds :
+    {
+      var root : Node__46230540<Text, IntegrationCredentials__341198485>;
+      var size : Nat__490723111
+    };
+  stable invoices :
+    {
+      var root : Node__46230540<Text, Invoice__772203955>;
+      var size : Nat__490723111
+    };
+  stable lastDomainRequest :
+    {var root : Node__46230540<Text, Int>; var size : Nat__490723111};
+  stable leadAttributionRecords :
+    {
+      var root : Node__46230540<Text, LeadAttributionRecord__101882686>;
+      var size : Nat__490723111
+    };
+  stable leadAuditJobs :
+    {
+      var root : Node__46230540<Text, LeadAuditJob__977164591>;
+      var size : Nat__490723111
+    };
+  stable leadAuditResults :
+    {
+      var root : Node__46230540<Text, LeadAuditResult__606992864>;
+      var size : Nat__490723111
+    };
+  stable leadEnrichments :
+    {
+      var root : Node__46230540<Text, LeadEnrichment__482070273>;
+      var size : Nat__490723111
+    };
+  stable leads :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, Lead__21276013>>;
+      var size : Nat__490723111
+    };
+  stable locationProfiles :
+    {
+      var root : Node__46230540<Text, LocationProfile__245168920>;
+      var size : Nat__490723111
+    };
+  stable nicheScriptOverrides :
+    {var root : Node__46230540<Text, [Text]>; var size : Nat__490723111};
+  stable nicheVoiceAssignments :
+    {
+      var root : Node__46230540<Text, NicheVoiceAssignment__828281982>;
+      var size : Nat__490723111
+    };
+  stable nicheVoiceMap :
+    {var root : Node__46230540<Text, Text>; var size : Nat__490723111};
+  stable nlCampaigns :
+    {
+      var root :
+        Node__46230540<Text,
+                        Map__605269027<Text, NewsletterCampaign__753784675>>;
+      var size : Nat__490723111
+    };
+  stable nlIdCounter : {var n : Nat};
+  stable nlSendLogs :
+    {
+      var root :
+        Node__46230540<Text, List__415060402<NewsletterSendLog__1061051021>>;
+      var size : Nat__490723111
+    };
+  stable nlSubscribers :
+    {
+      var root :
+        Node__46230540<Text,
+                        Map__605269027<Text, NewsletterSubscriber__586845274>>;
+      var size : Nat__490723111
+    };
+  stable notifications :
+    {
+      var root : Node__46230540<Text, NotificationRecord__941149763>;
+      var size : Nat__490723111
+    };
+  stable optedOutEmails :
+    {var root : Node__92254746<Text>; var size : Nat__490723111};
+  stable optedOutPhones :
+    {var root : Node__92254746<Text>; var size : Nat__490723111};
+  stable outreachEvents :
+    {
+      var root : Node__46230540<Text, OutreachEvent__845747933>;
+      var size : Nat__490723111
+    };
+  stable paidAdsAdCopies :
+    {
+      var root : Node__46230540<Text, PaidAdsAdCopy__654409192>;
+      var size : Nat__490723111
+    };
+  stable paidAdsAlerts :
+    {
+      var root : Node__46230540<Text, PaidAdsAlert__1021949876>;
+      var size : Nat__490723111
+    };
+  stable paidAdsAudiences :
+    {
+      var root : Node__46230540<Text, PaidAdsAudience__182229581>;
+      var size : Nat__490723111
+    };
+  stable paidAdsCampaigns :
+    {
+      var root : Node__46230540<Text, PaidAdsCampaign__116081654>;
+      var size : Nat__490723111
+    };
+  stable paidAdsDeliverables :
+    {
+      var root : Node__46230540<Text, PaidAdsDeliverable__1033216916>;
+      var size : Nat__490723111
+    };
+  stable paidAdsScores :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        List__415060402<PaidAdsScore__354176139>>;
+      var size : Nat__490723111
+    };
+  stable paidAdsSubscriptions :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, PaidAdsSubscription__488005936>;
+      var size : Nat__490723111
+    };
+  stable paymentMethods :
+    {
+      var root : Node__46230540<TenantId__142640312, PaymentMethod__68978920>;
+      var size : Nat__490723111
+    };
+  stable prospectDataStore :
+    {
+      var root : Node__46230540<Text, ProspectData__228938062>;
+      var size : Nat__490723111
+    };
+  stable providerAdapterConfigs :
+    {
+      var root : Node__46230540<Text, ProviderAdapterConfig__575526954>;
+      var size : Nat__490723111
+    };
+  stable replyInboxItems :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ReplyInboxItem__486178754]];
+      var elementIndex : Nat__490723111
+    };
+  stable reviewRequests :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, ReviewRequest__606989310>>;
+      var size : Nat__490723111
+    };
+  stable reviews :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        Map__605269027<Text, Review__422344017>>;
+      var size : Nat__490723111
+    };
+  stable scanModels :
+    {
+      var root : Node__46230540<Text, ScanModel__577367895>;
+      var size : Nat__490723111
+    };
+  stable scanPhotos :
+    {
+      var root : Node__46230540<Text, ScanPhoto__866190539>;
+      var size : Nat__490723111
+    };
+  stable scanner3dEnabled :
+    {var root : Node__46230540<Text, Bool>; var size : Nat__490723111};
+  stable var scanner3dIdCounter : Nat;
+  stable scanner3dToggleLog :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?(Text, Text, Bool, Int)]];
+      var elementIndex : Nat__490723111
+    };
+  stable scheduledPosts :
+    {
+      var root : Node__46230540<Text, ScheduledPost__699729313>;
+      var size : Nat__490723111
+    };
+  stable scrapeHistory :
+    {
+      var root : Node__46230540<Nat, ScrapeRecord__726337950>;
+      var size : Nat__490723111
+    };
+  stable scrapeIdCounter : {var n : Nat};
+  stable senderSubdomainsState :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?SenderSubdomainRecord__713020370]];
+      var elementIndex : Nat__490723111
+    };
+  stable seoGeoContentItems :
+    {
+      var root : Node__46230540<Text, SeoGeoContentItem__75154888>;
+      var size : Nat__490723111
+    };
+  stable seoGeoDeliverables :
+    {
+      var root : Node__46230540<Text, SeoGeoDeliverable__57988774>;
+      var size : Nat__490723111
+    };
+  stable seoGeoGbpTasks :
+    {
+      var root : Node__46230540<Text, SeoGeoGbpTask__426976568>;
+      var size : Nat__490723111
+    };
+  stable seoGeoIssues :
+    {
+      var root : Node__46230540<Text, SeoGeoIssue__837760624>;
+      var size : Nat__490723111
+    };
+  stable seoGeoOpportunities :
+    {
+      var root : Node__46230540<Text, SeoGeoOpportunity__486422108>;
+      var size : Nat__490723111
+    };
+  stable seoGeoReports :
+    {
+      var root : Node__46230540<Text, SeoGeoReport__734673501>;
+      var size : Nat__490723111
+    };
+  stable seoGeoRequests :
+    {
+      var root : Node__46230540<Text, SeoGeoRequest__846877544>;
+      var size : Nat__490723111
+    };
+  stable seoGeoScores :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        List__415060402<SeoGeoScore__48169873>>;
+      var size : Nat__490723111
+    };
+  stable seoGeoSubscriptions :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, SeoGeoSubscription__544658037>;
+      var size : Nat__490723111
+    };
+  stable seoGeoVisibilitySnapshots :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        List__415060402<SeoGeoVisibilitySnapshot__192109743>>;
+      var size : Nat__490723111
+    };
+  stable sevenDaysNs : Int;
+  stable smsAutopilotJobs :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?SmsAutopilotJob__522732100]];
+      var elementIndex : Nat__490723111
+    };
+  stable smsAutopilotRules : {var v : [SmsAutopilotRule__932974502]};
+  stable smsLastReset : {var t : Int};
+  stable smsSentToday : {var n : Nat};
+  stable sms_timerId : {var v : ?Nat};
+  stable socialAlerts :
+    {
+      var root : Node__46230540<Text, SocialListeningAlert__632843298>;
+      var size : Nat__490723111
+    };
+  stable socialComments :
+    {
+      var root : Node__46230540<Text, SocialComment__56875551>;
+      var size : Nat__490723111
+    };
+  stable socialLeadsStore :
+    {
+      var root : Node__46230540<Text, SocialLead__744221917>;
+      var size : Nat__490723111
+    };
+  stable socialPosts :
+    {
+      var root : Node__46230540<Text, SocialPost__697355122>;
+      var size : Nat__490723111
+    };
+  stable socialROIMetrics :
+    {
+      var root : Node__46230540<Text, SocialROIMetrics__107934932>;
+      var size : Nat__490723111
+    };
+  stable tenants :
+    {
+      var root : Node__46230540<TenantId__142640312, Text>;
+      var size : Nat__490723111
+    };
+  stable toolDefinitions :
+    {
+      var root : Node__46230540<Text, ToolDefinition__108716300>;
+      var size : Nat__490723111
+    };
+  stable var toolsSeeded : Bool;
+  stable userProfiles :
+    {
+      var root : Node__46230540<Principal, UserProfile__491224006>;
+      var size : Nat__490723111
+    };
+  stable vapiCallLogs :
+    {
+      var root : Node__46230540<Text, List__415060402<VapiCallLog__412897467>>;
+      var size : Nat__490723111
+    };
+  stable vapiProvisioningStatuses :
+    {
+      var root : Node__46230540<Text, VapiProvisioningStatus__148283768>;
+      var size : Nat__490723111
+    };
+  stable voiceAgentConfigs :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, VoiceAgentConfig__22300794>;
+      var size : Nat__490723111
+    };
+  stable warmEmailEvents :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?WarmSequenceEmailEvent__78904865]];
+      var elementIndex : Nat__490723111
+    };
+  stable warmEmailSchedules :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?WarmSequenceEmailSchedule__621450793]];
+      var elementIndex : Nat__490723111
+    };
+  stable warmLeadHandoffs :
+    {
+      var root : Node__46230540<Text, WarmLeadHandoff__367263013>;
+      var size : Nat__490723111
+    };
+  stable websiteAgentScores :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        List__415060402<WebsiteAgentScore__333540424>>;
+      var size : Nat__490723111
+    };
+  stable websiteAgentSubscriptions :
+    {
+      var root :
+        Node__46230540<TenantId__142640312,
+                        WebsiteAgentSubscription__495965148>;
+      var size : Nat__490723111
+    };
+  stable websiteContentBriefs :
+    {
+      var root : Node__46230540<Text, WebsiteContentBrief__444940263>;
+      var size : Nat__490723111
+    };
+  stable websiteCroOpportunities :
+    {
+      var root : Node__46230540<Text, WebsiteCroOpportunity__286761539>;
+      var size : Nat__490723111
+    };
+  stable websiteDeliverables :
+    {
+      var root : Node__46230540<Text, WebsiteDeliverable__93714092>;
+      var size : Nat__490723111
+    };
+  stable websiteIssues :
+    {
+      var root : Node__46230540<Text, WebsiteIssue__385081822>;
+      var size : Nat__490723111
+    };
+  stable websitePageQueue :
+    {
+      var root : Node__46230540<Text, WebsitePageQueueItem__861291379>;
+      var size : Nat__490723111
+    };
+  stable whiteLabelConfigs :
+    {
+      var root :
+        Node__46230540<TenantId__142640312, WhiteLabelConfig__480446571>;
+      var size : Nat__490723111
+    };
+  stable var workflowIdCounter : Nat
+};

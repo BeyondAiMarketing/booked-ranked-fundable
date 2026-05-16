@@ -1,0 +1,3497 @@
+type http_request_result = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type http_header = 
+ record {
+   name: text;
+   value: text;
+ };
+type WhiteLabelConfig = 
+ record {
+   active: bool;
+   agencyName: text;
+   clientBrandingOverrides: vec record {
+                                  text;
+                                  text;
+                                };
+   domain: text;
+   emailSenderAddress: text;
+   emailSenderName: text;
+   heroHeadline: text;
+   logo: text;
+   onboardingLink: text;
+   primaryColor: text;
+   secondaryColor: text;
+   subdomain: text;
+   tagline: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type WebsitePageQueueItem = 
+ record {
+   assignee: text;
+   createdAt: Time;
+   description: text;
+   dueDate: opt Time;
+   id: text;
+   pageTitle: text;
+   pageUrl: text;
+   priority: text;
+   status: text;
+   tenantId: TenantId;
+   updateType: text;
+   updatedAt: Time;
+   waitingOnClient: bool;
+ };
+type WebsiteIssue = 
+ record {
+   createdAt: Time;
+   description: text;
+   id: text;
+   issueType: text;
+   pageUrl: text;
+   severity: text;
+   status: text;
+   suggestedFix: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type WebsiteDeliverable = 
+ record {
+   deliverableType: text;
+   deliveredAt: Time;
+   id: text;
+   month: text;
+   status: text;
+   summary: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type WebsiteCroOpportunity = 
+ record {
+   category: text;
+   createdAt: Time;
+   description: text;
+   effortLevel: text;
+   estimatedLift: text;
+   id: text;
+   priority: text;
+   status: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type WebsiteContentBrief = 
+ record {
+   approvalStatus: text;
+   assignee: text;
+   createdAt: Time;
+   id: text;
+   outlinePoints: vec text;
+   pageTitle: text;
+   targetKeywords: vec text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type WebsiteAgentSubscription = 
+ record {
+   assignedStrategist: text;
+   humanOversightEnabled: bool;
+   id: text;
+   price: nat;
+   startDate: Time;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type WebsiteAgentScore = 
+ record {
+   contentQuality: nat;
+   conversionReadiness: nat;
+   ctaStrength: nat;
+   id: text;
+   recordedAt: Time;
+   technicalHealth: nat;
+   tenantId: TenantId;
+   trustAuthority: nat;
+   trustSignals: nat;
+ };
+type WarmSequenceEmailSchedule = 
+ record {
+   body: text;
+   delayHours: nat;
+   enrollmentId: text;
+   id: text;
+   recipient: text;
+   scheduledAt: int;
+   sendAfter: int;
+   status: text;
+   subject: text;
+   touchIndex: nat;
+ };
+type WarmSequenceEmailEvent = 
+ record {
+   enrollmentId: text;
+   eventType: text;
+   id: text;
+   occurredAt: int;
+   touchIndex: nat;
+ };
+type WarmLeadHandoff = 
+ record {
+   auditScores: opt AuditSnapshot;
+   coldSequenceId: text;
+   demoVisited: bool;
+   handoffTimestamp: int;
+   handoffTrigger: text;
+   leadId: text;
+   niche: text;
+   warmSequenceId: text;
+ };
+type VoiceAgentConfig = 
+ record {
+   businessHoursText: text;
+   callRouting: variant {
+                  ai;
+                  forward: text;
+                  voicemail: text;
+                };
+   configured: bool;
+   greetingScript: text;
+   services: vec text;
+   tenantId: TenantId;
+   twilioNumber: text;
+   vapiAgentId: text;
+ };
+type VerificationStatus = 
+ variant {
+   Invalid;
+   Pending;
+   Unverified;
+   Verified;
+ };
+type VapiProvisioningStatus = 
+ record {
+   assistantId: opt text;
+   errorMessage: opt text;
+   lastSynced: opt int;
+   status: variant {
+             active;
+             error;
+             notConfigured;
+             provisioning;
+           };
+ };
+type VapiCallLog = 
+ record {
+   callId: text;
+   callerPhone: text;
+   direction: text;
+   duration: nat;
+   endedAt: opt int;
+   id: text;
+   recordedAt: int;
+   status: text;
+   tenantId: text;
+   transcript: text;
+ };
+type VapiAssistantUpdate = 
+ record {
+   businessName: opt text;
+   greetingScript: opt text;
+   niche: opt text;
+   phone: opt text;
+   qualifyingQuestions: opt vec text;
+ };
+type UserRole = 
+ variant {
+   admin;
+   guest;
+   user;
+ };
+type UserProfile = 
+ record {
+   name: text;
+   role: text;
+   tenantId: TenantId;
+ };
+type TrialStatus = 
+ variant {
+   Active;
+   Converted;
+   Expired;
+   NotStarted;
+ };
+type TransformationOutput = 
+ record {
+   body: blob;
+   headers: vec http_header;
+   status: nat;
+ };
+type TransformationInput = 
+ record {
+   context: blob;
+   response: http_request_result;
+ };
+type ToolDefinition = 
+ record {
+   category: text;
+   description: text;
+   id: text;
+   isEnabled: bool;
+   name: text;
+   permissions: vec text;
+   requiresApproval: bool;
+   schema: text;
+   tenantScoped: bool;
+ };
+type Time = int;
+type TenantId = text;
+type SubscriberStatus = 
+ variant {
+   active;
+   bounced;
+   complained;
+   unsubscribed;
+ };
+type SubscriberImportResult = 
+ record {
+   errors: vec text;
+   imported: nat;
+   skipped: nat;
+ };
+type SocialROIMetrics = 
+ record {
+   aiNarrative: text;
+   bookingsFromSocial: nat;
+   commentsMissed: nat;
+   commentsResponded: nat;
+   estimatedRevenue: nat;
+   generatedAt: int;
+   leadsFromSocial: nat;
+   period: text;
+   postsPublished: nat;
+   tenantId: text;
+   topPerformingPost: text;
+   totalEngagement: nat;
+ };
+type SocialPresence = 
+ record {
+   facebook: bool;
+   facebookUrl: text;
+   gmbUrl: text;
+   googleMaps: bool;
+   instagram: bool;
+   linkedin: bool;
+   napConsistent: bool;
+   yelpUrl: text;
+ };
+type SocialPost = 
+ record {
+   beforeAfterPhoto: opt text;
+   content: text;
+   createdAt: int;
+   ctaType: text;
+   ctaUrl: text;
+   engagementMetrics: PostEngagementMetrics;
+   funnelStage: FunnelStage;
+   id: text;
+   marketingFramework: MarketingFramework;
+   niche: text;
+   platforms: vec SocialPlatform;
+   publishedAt: opt int;
+   scheduledAt: opt int;
+   status: PostStatus;
+   tags: vec text;
+   tenantId: text;
+ };
+type SocialPlatform = 
+ variant {
+   facebook;
+   google_business;
+   instagram;
+   linkedin;
+   tiktok;
+ };
+type SocialListeningAlert = 
+ record {
+   alertType: AlertType;
+   createdAt: int;
+   dismissed: bool;
+   id: text;
+   keyword: text;
+   mentionText: text;
+   platform: SocialPlatform;
+   source: text;
+   suggestedAction: text;
+   tenantId: text;
+ };
+type SocialLead = 
+ record {
+   contactInfo: text;
+   createdAt: int;
+   crmLeadId: opt text;
+   engagementType: SocialEngagementType;
+   id: text;
+   platform: SocialPlatform;
+   sourcePostId: text;
+   tenantId: text;
+ };
+type SocialEngagementType = 
+ variant {
+   comment;
+   dm;
+   form_fill;
+   mention;
+   reaction;
+ };
+type SocialComment = 
+ record {
+   aiDraftResponse: text;
+   authorId: text;
+   authorName: text;
+   commentText: text;
+   createdAt: int;
+   id: text;
+   intent: CommentIntent;
+   leadCreated: bool;
+   platform: SocialPlatform;
+   postId: text;
+   responded: bool;
+   respondedAt: opt int;
+   tenantId: text;
+ };
+type SmsAutopilotRule = 
+ record {
+   delayMinutes: nat;
+   id: text;
+   isActive: bool;
+   messageTemplate: text;
+   sentCount: nat;
+   triggerType: variant {
+                  manualTrigger;
+                  noOpenFortyEightHours;
+                  twoOpens;
+                };
+ };
+type SmsAutopilotJob = 
+ record {
+   id: text;
+   leadId: text;
+   messageText: text;
+   ruleId: text;
+   scheduledAt: int;
+   status: variant {
+             cancelled;
+             failed;
+             queued;
+             sent;
+           };
+   twilioMessageSid: opt text;
+ };
+type SeoGeoVisibilitySnapshot = 
+ record {
+   aiVisibilityScore: nat;
+   answerReadiness: nat;
+   brandConsistency: nat;
+   citationScore: nat;
+   entityClarity: nat;
+   id: text;
+   recordedAt: Time;
+   tenantId: TenantId;
+ };
+type SeoGeoSubscription = 
+ record {
+   assignedStrategist: text;
+   humanOversightEnabled: bool;
+   id: text;
+   price: nat;
+   startDate: Time;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type SeoGeoScore = 
+ record {
+   aiVisibilityHealth: nat;
+   contentHealth: nat;
+   conversionReadinessScore: nat;
+   gbpHealth: nat;
+   geoScore: nat;
+   id: text;
+   localVisibilityScore: nat;
+   recordedAt: Time;
+   seoScore: nat;
+   technicalHealth: nat;
+   tenantId: TenantId;
+ };
+type SeoGeoRequest = 
+ record {
+   attachments: vec text;
+   createdAt: Time;
+   description: text;
+   id: text;
+   pageUrl: text;
+   preferredDeadline: opt Time;
+   priority: text;
+   status: text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type SeoGeoReport = 
+ record {
+   createdAt: Time;
+   highlights: vec text;
+   id: text;
+   issues: vec text;
+   month: text;
+   nextSteps: vec text;
+   summary: text;
+   tenantId: TenantId;
+ };
+type SeoGeoOpportunity = 
+ record {
+   createdAt: Time;
+   effortLevel: text;
+   id: text;
+   likelyImpact: text;
+   nextStep: text;
+   opportunityType: text;
+   reason: text;
+   status: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type SeoGeoIssue = 
+ record {
+   affectedArea: text;
+   createdAt: Time;
+   description: text;
+   dueDate: opt Time;
+   id: text;
+   issueType: text;
+   owner: text;
+   severity: text;
+   status: text;
+   suggestedFix: text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type SeoGeoGbpTask = 
+ record {
+   createdAt: Time;
+   description: text;
+   dueDate: opt Time;
+   id: text;
+   priority: text;
+   status: text;
+   taskType: text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type SeoGeoDeliverable = 
+ record {
+   attachments: vec text;
+   deliverableType: text;
+   deliveredAt: Time;
+   id: text;
+   month: text;
+   notes: text;
+   status: text;
+   summary: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type SeoGeoContentItem = 
+ record {
+   approvalStatus: text;
+   content: text;
+   contentType: text;
+   createdAt: Time;
+   id: text;
+   targetKeywords: vec text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type SenderSubdomainRecord = 
+ record {
+   bounceRate: float64;
+   complaintRate: float64;
+   maxDailyVolume: nat;
+   sentToday: nat;
+   status: variant {
+             active;
+             flagged;
+             paused;
+             warming;
+           };
+   subdomain: text;
+   warmupDay: nat;
+ };
+type SendLogStatus = 
+ variant {
+   bounced;
+   clicked;
+   delivered;
+   failed;
+   opened;
+   queued;
+   sent;
+   unsubscribed;
+ };
+type SelectorType = 
+ variant {
+   css;
+   xpath;
+ };
+type ScriptLine = 
+ record {
+   pauseAfterMs: nat;
+   speaker: text;
+   "text": text;
+ };
+type ScrapedLead = 
+ record {
+   businessName: opt text;
+   email: opt text;
+   extractedAt: Time;
+   phone: opt text;
+   sourceUrl: text;
+ };
+type ScrapeResult = 
+ record {
+   durationMs: nat;
+   error: opt ScrapeError;
+   errorMessage: opt text;
+   finalUrl: text;
+   httpStatus: opt nat;
+   isDynamic: bool;
+   items: vec ScrapeItem;
+   leads: vec ScrapedLead;
+   ok: bool;
+   requestUrl: text;
+   scrapedAt: Time;
+ };
+type ScrapeRequest = 
+ record {
+   limit: nat;
+   outputFormat: OutputFormat;
+   selector: text;
+   selectorType: SelectorType;
+   url: text;
+   waitSelectorMs: nat;
+ };
+type ScrapeRecord = 
+ record {
+   createdAt: Time;
+   id: nat;
+   request: ScrapeRequest;
+   result: ScrapeResult;
+   robotsAllowed: bool;
+   robotsChecked: bool;
+   tenantId: text;
+ };
+type ScrapeItem = 
+ record {
+   attributes: vec record {
+                     text;
+                     text;
+                   };
+   href: opt text;
+   html: opt text;
+   src: opt text;
+   "text": opt text;
+ };
+type ScrapeError = 
+ variant {
+   dynamicContent;
+   invalidSelector;
+   invalidUrl;
+   networkError;
+   robotsBlocked;
+   timeout;
+   tooManyRequests;
+ };
+type ScheduledPostStatus = 
+ variant {
+   cancelled;
+   failed;
+   pending;
+   published;
+ };
+type ScheduledPost = 
+ record {
+   content: text;
+   createdAt: int;
+   id: text;
+   platform: SocialPlatform;
+   platformFormatting: PlatformFormatting;
+   scheduledAt: int;
+   status: ScheduledPostStatus;
+   tenantId: text;
+   updatedAt: int;
+ };
+type ScheduledDiscoveryJob = 
+ record {
+   claudeLeads: nat;
+   completedAt: opt int;
+   config: DiscoveryConfig;
+   duplicatesRemoved: nat;
+   enrichPending: nat;
+   enrichedCount: nat;
+   errorMessage: opt text;
+   id: text;
+   openaiLeads: nat;
+   startedAt: int;
+   status: text;
+   totalBeforeDedup: nat;
+   totalCreated: nat;
+ };
+type ScanModel = 
+ record {
+   crmLinked: bool;
+   description: text;
+   id: text;
+   modelUrl: text;
+   niche: text;
+   photoCount: nat;
+   status: text;
+   tenantId: text;
+   thumbnailUrl: text;
+   title: text;
+   uploadedAt: int;
+   viewCount: nat;
+ };
+type SMSThread = 
+ record {
+   archived: bool;
+   createdAt: int;
+   id: text;
+   lastMessageAt: int;
+   linkedLeadId: opt text;
+   prospectName: text;
+   prospectPhone: text;
+   tenantId: text;
+   unreadCount: nat;
+ };
+type SMSMessage = 
+ record {
+   direction: text;
+   id: text;
+   readAt: opt int;
+   sender: text;
+   sentAt: int;
+   status: text;
+   tenantId: text;
+   "text": text;
+   threadId: text;
+ };
+type RunStatus = 
+ variant {
+   cancelled;
+   completed;
+   failed;
+   paused_for_approval;
+   queued;
+   running;
+ };
+type RobotsCheckResult = 
+ record {
+   allowed: bool;
+   reason: text;
+   url: text;
+ };
+type ReviewSyncRecord = 
+ record {
+   comment: text;
+   createdAt: int;
+   id: text;
+   lastSyncAt: int;
+   platform: ReviewPlatform;
+   platformResponse: opt text;
+   platformReviewId: text;
+   rating: nat;
+   respondedAt: opt int;
+   reviewerName: text;
+   sentiment: ReviewSentiment;
+   sentimentScore: float64;
+   tenantId: text;
+ };
+type ReviewSentiment = 
+ variant {
+   negative;
+   neutral;
+   positive;
+ };
+type ReviewRequestTriggerType = 
+ variant {
+   job_completion;
+   manual;
+ };
+type ReviewRequestTriggerStatus = 
+ variant {
+   completed;
+   pending;
+   sent;
+   suppressed;
+ };
+type ReviewRequestTrigger = 
+ record {
+   bookingId: opt text;
+   createdAt: int;
+   customerEmail: text;
+   customerName: text;
+   customerPhone: text;
+   estimateId: opt text;
+   id: text;
+   platform: text;
+   sentAt: opt int;
+   status: ReviewRequestTriggerStatus;
+   tenantId: text;
+   triggerType: ReviewRequestTriggerType;
+ };
+type ReviewRequestStatus = 
+ variant {
+   awaiting;
+   happy;
+   maxAttempts;
+   reviewed;
+   sent;
+   unhappy;
+ };
+type ReviewRequest = 
+ record {
+   attemptCount: nat;
+   customerFeedback: text;
+   customerName: text;
+   email: text;
+   id: text;
+   lastFollowUp: Time;
+   phone: text;
+   platform: text;
+   sentTimestamp: Time;
+   serviceCompleted: text;
+   status: ReviewRequestStatus;
+   tenantId: TenantId;
+ };
+type ReviewPlatform = 
+ variant {
+   facebook;
+   google;
+   yelp;
+ };
+type Review = 
+ record {
+   aiDraftedResponse: text;
+   comment: text;
+   createdAt: Time;
+   id: text;
+   platform: text;
+   rating: nat;
+   respondedAt: opt Time;
+   sentiment: text;
+   tenantId: TenantId;
+ };
+type ReportSection = 
+ record {
+   description: text;
+   metric: text;
+   recommendation: text;
+   title: text;
+   trend: text;
+   trendValue: text;
+   value: text;
+ };
+type ReportSchedule = 
+ record {
+   deliveryDayOfWeek: nat;
+   deliveryHour: nat;
+   lastGeneratedAt: opt int;
+   monthlyEnabled: bool;
+   tenantId: text;
+   weeklyEnabled: bool;
+ };
+type ReplyInboxItem = 
+ record {
+   classification: text;
+   draftResponse: text;
+   id: text;
+   leadId: text;
+   leadName: text;
+   leadNiche: text;
+   receivedAt: int;
+   replyBody: text;
+   status: text;
+ };
+type ReadinessScore = 
+ record {
+   autoBrowserConfigured: bool;
+   breakdown: vec ReadinessBreakdownItem;
+   score: nat;
+ };
+type ReadinessBreakdownItem = 
+ record {
+   "service": text;
+   status: bool;
+   weight: nat;
+ };
+type ProviderAdapterConfig = 
+ record {
+   adapterType: AdapterType;
+   apiKey: opt text;
+   baseUrl: opt text;
+   createdAt: int;
+   id: text;
+   isEnabled: bool;
+   modelId: opt text;
+   priority: nat;
+   tenantId: text;
+ };
+type PropagationStatus = 
+ record {
+   checkedAt: int;
+   isLive: bool;
+   percentage: nat;
+ };
+type PostStatus = 
+ variant {
+   draft;
+   failed;
+   published;
+   scheduled;
+ };
+type PostEngagementMetrics = 
+ record {
+   clicks: nat;
+   comments: nat;
+   likes: nat;
+   reach: nat;
+   shares: nat;
+ };
+type PlatformFormatting = 
+ record {
+   altText: opt text;
+   firstComment: opt text;
+   hashtags: vec text;
+   mediaUrl: opt text;
+ };
+type PipelineFunnelStats = 
+ record {
+   auditCompleted: nat;
+   auditStarted: nat;
+   callBooked: nat;
+   contacted: nat;
+   demoVisited: nat;
+   leadsSourced: nat;
+   niche: text;
+   warmSequenceActive: nat;
+ };
+type PaymentMethod = 
+ record {
+   cardBrand: text;
+   cardLast4: text;
+   expMonth: nat;
+   expYear: nat;
+   isDefault: bool;
+   tenantId: TenantId;
+ };
+type PaidAdsSubscription = 
+ record {
+   assignedStrategist: text;
+   humanOversightEnabled: bool;
+   id: text;
+   price: nat;
+   startDate: Time;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type PaidAdsScore = 
+ record {
+   accountHealth: nat;
+   audienceQuality: nat;
+   budgetUtilization: nat;
+   id: text;
+   recordedAt: Time;
+   roasEfficiency: nat;
+   tenantId: TenantId;
+ };
+type PaidAdsDeliverable = 
+ record {
+   deliverableType: text;
+   deliveredAt: Time;
+   id: text;
+   month: text;
+   status: text;
+   summary: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type PaidAdsCampaign = 
+ record {
+   budget: nat;
+   clicks: nat;
+   conversions: nat;
+   ctr: text;
+   id: text;
+   impressions: nat;
+   name: text;
+   roas: text;
+   spent: nat;
+   startDate: Time;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type PaidAdsAudience = 
+ record {
+   cpa: text;
+   id: text;
+   name: text;
+   performanceRating: text;
+   roas: text;
+   segmentType: text;
+   size: nat;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type PaidAdsAlert = 
+ record {
+   alertType: text;
+   createdAt: Time;
+   description: text;
+   id: text;
+   owner: text;
+   severity: text;
+   status: text;
+   suggestedFix: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type PaidAdsAdCopy = 
+ record {
+   body: text;
+   campaignId: text;
+   clicks: nat;
+   conversions: nat;
+   createdAt: Time;
+   cta: text;
+   headline: text;
+   id: text;
+   status: text;
+   tenantId: TenantId;
+   testResult: text;
+   "variant": text;
+ };
+type OutreachEvent = 
+ record {
+   eventType: text;
+   id: text;
+   leadId: text;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   niche: text;
+   sequenceId: text;
+   timestamp: int;
+   touchNumber: nat;
+   utmCampaign: text;
+   utmMedium: text;
+   utmSource: text;
+ };
+type OutputFormat = 
+ variant {
+   both;
+   html;
+   "text";
+ };
+type NotificationRecord = 
+ record {
+   body: text;
+   createdAt: Time;
+   id: text;
+   notificationType: text;
+   read: bool;
+   tenantId: TenantId;
+   title: text;
+ };
+type NicheVoiceAssignment = 
+ record {
+   assignedAt: int;
+   nicheId: text;
+   voiceId: text;
+   voiceName: text;
+ };
+type NicheScript = 
+ record {
+   elevenLabsVoiceId: text;
+   lines: vec ScriptLine;
+   nicheId: text;
+   voiceName: text;
+ };
+type NewsletterSubscriber = 
+ record {
+   businessName: opt text;
+   customFields: vec record {
+                       text;
+                       text;
+                     };
+   email: text;
+   id: text;
+   phone: opt text;
+   status: SubscriberStatus;
+   subscribedAt: int;
+   tags: vec text;
+   tenantId: text;
+   unsubscribedAt: opt int;
+ };
+type NewsletterSendLog = 
+ record {
+   campaignId: text;
+   email: text;
+   errorMessage: opt text;
+   id: text;
+   openedAt: opt int;
+   sentAt: opt int;
+   status: SendLogStatus;
+   subscriberId: text;
+ };
+type NewsletterCampaignStats = 
+ record {
+   bounceCount: nat;
+   clickCount: nat;
+   complaintCount: nat;
+   openCount: nat;
+   sentCount: nat;
+   unsubscribeCount: nat;
+ };
+type NewsletterCampaign = 
+ record {
+   fromEmail: opt text;
+   fromName: opt text;
+   htmlBody: text;
+   id: text;
+   name: text;
+   plainTextBody: opt text;
+   scheduledAt: opt int;
+   sentAt: opt int;
+   stats: NewsletterCampaignStats;
+   status: CampaignStatus;
+   subject: text;
+   tags: vec text;
+   tenantId: text;
+ };
+type MemoryMode = 
+ variant {
+   conversation_only;
+   none;
+   with_notes;
+   with_summary;
+ };
+type MaskedCredentials = 
+ record {
+   autoBrowserUrl: text;
+   claudeKey: text;
+   elevenLabsKey: text;
+   elevenLabsVoiceId: text;
+   emailSmtpHost: text;
+   emailSmtpPass: text;
+   emailSmtpPort: text;
+   emailSmtpUser: text;
+   facebookAppId: text;
+   facebookAppSecret: text;
+   googleClientId: text;
+   googleClientSecret: text;
+   hunterApiKey: text;
+   listmonkPass: text;
+   listmonkUrl: text;
+   listmonkUser: text;
+   litellmKey: text;
+   litellmUrl: text;
+   neverBounceKey: text;
+   ollamaUrl: text;
+   openaiKey: text;
+   perplexityApiKey: text;
+   searxngUrl: text;
+   sendgridKey: text;
+   serpApiKey: text;
+   stripeKey: text;
+   stripeWebhookSecret: text;
+   twilioAuth: text;
+   twilioNumber: text;
+   twilioSid: text;
+   vapiKey: text;
+   yelpApiKey: text;
+ };
+type MarketingFramework = 
+ variant {
+   bly;
+   caples;
+   carlton;
+   cialdini;
+   halbert;
+   hormozi;
+   kennedy;
+   ogilvy;
+   schwartz;
+   sugarman;
+ };
+type LocationProfile = 
+ record {
+   address: text;
+   city: text;
+   createdAt: int;
+   id: text;
+   locationName: text;
+   phoneNumber: text;
+   state: text;
+   status: text;
+   tenantId: text;
+   timezone: text;
+ };
+type LeadExtractionResult = 
+ record {
+   count: nat;
+   leads: vec ScrapedLead;
+   sourceUrl: text;
+ };
+type LeadEnrichment = 
+ record {
+   canReceiveOutreach: bool;
+   emailVerificationStatus: VerificationStatus;
+   emailVerifiedAt: opt int;
+   leadId: text;
+   phoneVerificationStatus: VerificationStatus;
+   phoneVerifiedAt: opt int;
+ };
+type LeadAuditResult = 
+ record {
+   aiInsights: text;
+   assignedCampaignId: opt text;
+   businessName: text;
+   category: text;
+   companySnapshot: text;
+   engagementScore: nat;
+   firstTouchEmailBody: text;
+   firstTouchEmailSubject: text;
+   foundingYear: opt text;
+   growthScore: nat;
+   interactionType: opt text;
+   jobId: text;
+   kitPageSlug: opt text;
+   niche: text;
+   pushedAt: opt int;
+   pushedToCrm: bool;
+   seoMetrics: text;
+   seoScore: nat;
+   socialFacebook: opt text;
+   socialInstagram: opt text;
+   socialLinkedin: opt text;
+   socialMetrics: text;
+   socialScore: nat;
+   tenantId: text;
+   totalScore: nat;
+   trialActivatedAt: opt int;
+   websiteScore: nat;
+   websiteUrl: text;
+ };
+type LeadAuditJob = 
+ record {
+   businessName: text;
+   city: opt text;
+   completedAt: opt int;
+   createdAt: int;
+   email: opt text;
+   errorMessage: opt text;
+   id: text;
+   niche: text;
+   phone: opt text;
+   stageProgress: text;
+   status: text;
+   tenantId: text;
+   websiteUrl: text;
+ };
+type LeadAttributionRecord = 
+ record {
+   attributionModel: text;
+   bookingId: text;
+   channels: vec AttributionTouch;
+   closedDealValue: float64;
+   createdAt: int;
+   finalConversionChannel: text;
+   id: text;
+   leadId: text;
+   tenantId: text;
+ };
+type Lead = 
+ record {
+   agentSubscriptions: vec text;
+   createdAt: Time;
+   email: text;
+   id: text;
+   name: text;
+   niche: text;
+   notes: text;
+   phone: text;
+   source: text;
+   status: text;
+   tenantId: TenantId;
+ };
+type LLMLeadSearchResult = 
+ record {
+   claudeCount: nat;
+   enrichedCount: nat;
+   errors: vec text;
+   leads: vec GeneratedLead;
+   openAICount: nat;
+   searchedAt: int;
+   serpApiUsed: bool;
+ };
+type Invoice = 
+ record {
+   amount: nat;
+   currency: text;
+   description: text;
+   dueDate: Time;
+   id: text;
+   invoiceDate: Time;
+   status: text;
+   tenantId: TenantId;
+ };
+type IntegrationCredentials = 
+ record {
+   autoBrowserUrl: text;
+   claudeKey: text;
+   elevenLabsKey: text;
+   elevenLabsVoiceId: text;
+   emailSmtpHost: text;
+   emailSmtpPass: text;
+   emailSmtpPort: text;
+   emailSmtpUser: text;
+   facebookAppId: text;
+   facebookAppSecret: text;
+   googleClientId: text;
+   googleClientSecret: text;
+   hunterApiKey: text;
+   listmonkPass: text;
+   listmonkUrl: text;
+   listmonkUser: text;
+   litellmKey: text;
+   litellmUrl: text;
+   neverBounceKey: text;
+   ollamaUrl: text;
+   openaiKey: text;
+   perplexityApiKey: text;
+   searxngUrl: text;
+   sendgridKey: text;
+   serpApiKey: text;
+   stripeKey: text;
+   stripeWebhookSecret: text;
+   twilioAuth: text;
+   twilioNumber: text;
+   twilioSid: text;
+   vapiKey: text;
+   yelpApiKey: text;
+ };
+type HumanOversightAssignment = 
+ record {
+   createdAt: Time;
+   id: text;
+   notes: text;
+   priority: text;
+   status: text;
+   strategist: text;
+   subscriptionId: text;
+   tenantId: TenantId;
+ };
+type HealthScoreComponent = 
+ record {
+   displayLabel: text;
+   factor: text;
+   rawScore: nat;
+   status: text;
+   weight: nat;
+   weightedScore: nat;
+ };
+type GeneratedLead = 
+ record {
+   address: text;
+   city: text;
+   description: text;
+   enriched: bool;
+   name: text;
+   niche: text;
+   ownerFirstName: text;
+   phone: text;
+   score: nat;
+   source: text;
+   temperature: text;
+   website: text;
+ };
+type GapItem = 
+ record {
+   area: text;
+   description: text;
+   severity: text;
+ };
+type FunnelStage = 
+ variant {
+   bofu;
+   mofu;
+   tofu;
+ };
+type FundabilityScore = 
+ record {
+   creditworthinessPhase: nat;
+   eligibilityPhase: nat;
+   lastUpdated: Time;
+   score: nat;
+   tenantId: TenantId;
+   timelinePhase: nat;
+ };
+type FreeAuditLead = 
+ record {
+   businessName: text;
+   contactEmail: text;
+   createdAt: Time;
+   id: text;
+   location: text;
+   overallScore: nat;
+   phone: text;
+   websiteUrl: text;
+ };
+type ExtendedLeadInput = 
+ record {
+   address: opt text;
+   aiSuggestedServices: opt text;
+   businessName: text;
+   claimStatus: opt text;
+   email: opt text;
+   gbpLink: opt text;
+   googleRanking: opt text;
+   localAds: opt text;
+   niche: opt text;
+   optimizationScore: opt text;
+   paidAds: opt text;
+   phone: opt text;
+   rating: opt text;
+   threePackRanking: opt text;
+   totalReviews: opt text;
+   website: opt text;
+ };
+type ExtendedLead = 
+ record {
+   address: opt text;
+   agentSubscriptions: vec text;
+   aiSuggestedServices: opt text;
+   claimStatus: opt text;
+   createdAt: int;
+   email: text;
+   emailVerified: bool;
+   gbpLink: opt text;
+   googleRanking: opt text;
+   id: text;
+   importBatchId: opt text;
+   localAds: opt text;
+   name: text;
+   niche: text;
+   notes: text;
+   optimizationScore: opt text;
+   paidAds: opt text;
+   phone: text;
+   rating: opt text;
+   source: text;
+   status: text;
+   tenantId: text;
+   threePackRanking: opt text;
+   totalReviews: opt text;
+   website: opt text;
+ };
+type EstimateStatus = 
+ variant {
+   accepted;
+   draft;
+   expired;
+   rejected;
+   sent;
+ };
+type EstimateLineItem = 
+ record {
+   description: text;
+   id: text;
+   quantity: float64;
+   taxRate: float64;
+   unitPrice: float64;
+ };
+type Estimate = 
+ record {
+   acceptedAt: opt int;
+   approvalNotes: text;
+   createdAt: int;
+   customerEmail: text;
+   customerId: text;
+   customerName: text;
+   id: text;
+   lineItems: vec EstimateLineItem;
+   notes: text;
+   rejectedAt: opt int;
+   status: EstimateStatus;
+   subtotal: float64;
+   taxTotal: float64;
+   tenantId: text;
+   total: float64;
+   updatedAt: int;
+ };
+type EngagementApprovalStatus = 
+ variant {
+   approved;
+   pending;
+   rejected;
+ };
+type EngagementApproval = 
+ record {
+   approvalStatus: EngagementApprovalStatus;
+   commentId: text;
+   createdAt: int;
+   draftResponse: text;
+   flagReason: opt text;
+   flagged: bool;
+   id: text;
+   resolvedAt: opt int;
+   tenantId: text;
+ };
+type EmojiUsage = 
+ variant {
+   high;
+   low;
+   moderate;
+   none;
+ };
+type EmailSequenceStatus = 
+ variant {
+   active;
+   completed;
+   not_started;
+   paused;
+ };
+type EmailSendResult = 
+ variant {
+   err: text;
+   ok: text;
+ };
+type EmailReplyRecord = 
+ record {
+   classification:
+    variant {
+      interested;
+      notInterested;
+      referral;
+      unclassified;
+      wrongPerson;
+    };
+   draftFollowUp: opt text;
+   id: text;
+   leadId: text;
+   receivedAt: int;
+   replyBody: text;
+   reviewStatus: variant {
+                   approved;
+                   pending;
+                   rejected;
+                   sent;
+                 };
+   reviewedAt: opt int;
+ };
+type EmailLogRecord = 
+ record {
+   emailType: text;
+   errorMsg: text;
+   id: text;
+   recipient: text;
+   sentAt: int;
+   status: text;
+   subject: text;
+   tenantId: text;
+ };
+type DualModelSearchJobUpdate = 
+ record {
+   claudeLeadsFound: opt nat;
+   completedAt: opt int;
+   duplicatesRemoved: opt nat;
+   errorMessage: opt text;
+   openaiLeadsFound: opt nat;
+   status: opt variant {
+                 completed;
+                 failed;
+                 pending;
+                 running;
+               };
+   totalLeadsStaged: opt nat;
+ };
+type DualModelSearchJob = 
+ record {
+   cityA: text;
+   cityB: text;
+   claudeLeadsFound: nat;
+   completedAt: opt int;
+   createdAt: int;
+   duplicatesRemoved: nat;
+   errorMessage: opt text;
+   id: text;
+   niche: text;
+   openaiLeadsFound: nat;
+   status: variant {
+             completed;
+             failed;
+             pending;
+             running;
+           };
+   tenantId: text;
+   totalLeadsStaged: nat;
+ };
+type DripQueueThrottleConfig = 
+ record {
+   backoffMultiplier: float64;
+   dailyCap: nat;
+   intervalSeconds: nat;
+   staggerEnabled: bool;
+ };
+type DripQueueEmailLog = 
+ record {
+   errorMessage: opt text;
+   id: text;
+   queueId: text;
+   recipientEmail: text;
+   recipientName: text;
+   retryCount: nat;
+   sentAt: opt int;
+   status: text;
+   tenantId: text;
+ };
+type DripQueue = 
+ record {
+   campaignTemplateId: text;
+   campaignTemplateName: text;
+   cancelledAt: opt int;
+   completedAt: opt int;
+   contactEmails: vec text;
+   contactNames: vec text;
+   createdAt: int;
+   currentIndex: nat;
+   dailyResetAt: int;
+   dailySendCap: nat;
+   dailySentCount: nat;
+   failedCount: nat;
+   id: text;
+   name: text;
+   niche: text;
+   pausedAt: opt int;
+   sendIntervalSeconds: nat;
+   sentCount: nat;
+   status: text;
+   tenantId: text;
+   updatedAt: int;
+ };
+type DripLeadBounceRecord = 
+ record {
+   bounceType: variant {
+                 hard;
+                 soft;
+               };
+   bouncedAt: int;
+   leadId: text;
+   queueId: text;
+   reason: opt text;
+   requeued: bool;
+ };
+type DomainSetupState = 
+ record {
+   aRecord: text;
+   clientId: text;
+   cname: text;
+   createdAt: int;
+   currentStep: nat;
+   domain: text;
+   importedPageCount: nat;
+   propagationStatus: PropagationStatus;
+   registrar: opt text;
+   siteImportStatus: text;
+   updatedAt: int;
+ };
+type DnsCheckResult = 
+ record {
+   checkedAt: int;
+   dkimPresent: bool;
+   dmarcPresent: bool;
+   domain: text;
+   rawRecords: vec text;
+   spfPresent: bool;
+ };
+type DiscoveryConfig = 
+ record {
+   cities: vec text;
+   dailyCap: nat;
+   enabled: bool;
+   intervalSecs: nat;
+   leadsPerCity: nat;
+   niche: text;
+ };
+type DemoSession = 
+ record {
+   auditScore: nat;
+   businessName: text;
+   createdAt: int;
+   niche: text;
+   sessionId: text;
+   socialContentLockedAt: opt int;
+   step: nat;
+   trialActivatedAt: opt int;
+ };
+type DemoFunnelEntry = 
+ record {
+   createdAt: int;
+   emailSequenceStatus: EmailSequenceStatus;
+   engagementCount: nat;
+   id: text;
+   lastEngagedAt: int;
+   prospectId: text;
+   tenantId: text;
+   trialActivated: bool;
+   trialActivatedAt: opt int;
+ };
+type DemoAuditReport = 
+ record {
+   businessName: text;
+   createdAt: int;
+   gaps: vec text;
+   niche: text;
+   prospectEmail: text;
+   recommendations: vec text;
+   score: nat;
+ };
+type DeliverabilityEvent = 
+ record {
+   email: text;
+   eventType: variant {
+                bounce;
+                click;
+                complaint;
+                open;
+                unsubscribe;
+              };
+   id: text;
+   leadId: text;
+   occurredAt: int;
+   senderSubdomain: text;
+ };
+type CsvImportBatch = 
+ record {
+   createdAt: int;
+   fileName: text;
+   flaggedNoEmail: nat;
+   id: text;
+   imported: nat;
+   nicheBreakdown: vec record {
+                         text;
+                         nat;
+                       };
+   skipped: nat;
+   status: text;
+   tenantId: text;
+   totalLeads: nat;
+ };
+type ConversationEntry = 
+ record {
+   content: text;
+   role: text;
+   timestamp: int;
+ };
+type ConnectionTestResult = 
+ record {
+   connected: bool;
+   message: text;
+   quotaInfo: opt text;
+   statusCode: nat;
+ };
+type ComplianceConfig = 
+ record {
+   adminEmail: text;
+   businessName: text;
+   maxBounceRate: float64;
+   maxComplaintRate: float64;
+   physicalAddress: text;
+   softBounceRetries: nat;
+   unsubscribeBase: text;
+ };
+type CompetitorProfile = 
+ record {
+   adPresenceDetected: bool;
+   alertThreshold: float64;
+   competitorName: text;
+   gbpLastUpdated: text;
+   googleRating: float64;
+   id: text;
+   lastAuditedAt: int;
+   ratingChangePrevious: float64;
+   reviewCount: nat;
+   reviewVelocityTrend: text;
+   tenantId: text;
+   website: text;
+ };
+type CompetitorIntelReport = 
+ record {
+   competitors: vec CompetitorEntry;
+   generatedAt: int;
+   id: text;
+   niche: text;
+   opportunities: vec text;
+   tenantId: text;
+   weeklyDigest: text;
+ };
+type CompetitorEntry = 
+ record {
+   avgEngagement: opt nat;
+   followersEst: opt nat;
+   name: text;
+   platform: SocialPlatform;
+   profileUrl: text;
+ };
+type CompetitorAlert = 
+ record {
+   alertType: text;
+   competitorId: text;
+   dismissed: bool;
+   id: text;
+   severity: text;
+   tenantId: text;
+   triggeredAt: int;
+ };
+type CommentIntent = 
+ variant {
+   community_love;
+   competitor_mention;
+   complaint;
+   purchase_intent;
+   question;
+   spam;
+ };
+type ClientReport = 
+ record {
+   aiNarrative: text;
+   deliveredAt: opt int;
+   generatedAt: int;
+   id: text;
+   nextSteps: vec text;
+   overallScore: nat;
+   periodLabel: text;
+   reportType: text;
+   sections: vec ReportSection;
+   tenantId: text;
+   topWins: vec text;
+ };
+type ClientHealthScore = 
+ record {
+   agentScore: nat;
+   components: vec HealthScoreComponent;
+   lastUpdated: int;
+   leadsScore: nat;
+   overallScore: nat;
+   recommendations: vec text;
+   reputationScore: nat;
+   tenantId: text;
+   trend: text;
+   websiteScore: nat;
+ };
+type ChatWidgetConfig = 
+ record {
+   active: bool;
+   bookingEnabled: bool;
+   embedToken: text;
+   faqItems: vec text;
+   greeting: text;
+   leadCaptureEnabled: bool;
+   niche: text;
+   tenantId: TenantId;
+ };
+type CampaignTemplate = 
+ record {
+   active: bool;
+   campaignType: text;
+   channels: vec text;
+   createdAt: Time;
+   goals: vec text;
+   id: text;
+   name: text;
+   niche: text;
+   segments: vec text;
+   steps: vec text;
+   tags: vec text;
+   triggers: vec text;
+ };
+type CampaignStatus = 
+ variant {
+   draft;
+   paused;
+   scheduled;
+   sending;
+   sent;
+ };
+type CampaignMetrics = 
+ record {
+   clicked: nat;
+   converted: nat;
+   opened: nat;
+   sent: nat;
+   unsubscribed: nat;
+ };
+type CampaignInstance = 
+ record {
+   id: text;
+   metrics: CampaignMetrics;
+   startedAt: Time;
+   status: text;
+   templateId: text;
+   tenantId: TenantId;
+ };
+type BulkSendJob = 
+ record {
+   bounceCount: nat;
+   clickCount: nat;
+   dailyCap: nat;
+   deliveredCount: nat;
+   id: text;
+   openCount: nat;
+   scheduledAt: int;
+   senderSubdomain: text;
+   sentCount: nat;
+   status: variant {
+             completed;
+             failed;
+             paused;
+             queued;
+             running;
+           };
+   totalEmails: nat;
+ };
+type BulkLeadInput = 
+ record {
+   avgRating: opt float64;
+   businessName: text;
+   city: text;
+   email: opt text;
+   niche: text;
+   phone: opt text;
+   researchSource: text;
+   reviewCount: opt nat;
+   state: opt text;
+   websiteUrl: opt text;
+ };
+type BulkImportResult = 
+ record {
+   batchId: text;
+   flagged: nat;
+   imported: nat;
+   skipped: nat;
+ };
+type BrowserAuditResult = 
+ record {
+   adminApproved: bool;
+   approvedAt: opt int;
+   approvedBy: opt text;
+   auditTrail: vec AuditTrailEntry;
+   auditedAt: int;
+   businessName: text;
+   gaps: vec GapItem;
+   gbpGaps: vec text;
+   gbpScore: nat;
+   gbpScreenshotUrl: text;
+   gbpStatus: text;
+   jobId: text;
+   socialGaps: vec text;
+   socialScore: nat;
+   socialScreenshotUrl: text;
+   socialStatus: text;
+   tenantId: text;
+   totalBrowserScore: nat;
+   websiteGaps: vec text;
+   websiteScore: nat;
+   websiteScreenshotUrl: text;
+   websiteStatus: text;
+ };
+type BrfVoiceAgentConfig = 
+ record {
+   brfBrandName: text;
+   inboundEnabled: bool;
+   inboundPhoneNumber: text;
+   inboundVapiAssistantId: text;
+   maxOutboundAttempts: nat;
+   objectionHandlingEnabled: bool;
+   outboundEnabled: bool;
+   outboundVapiAssistantId: text;
+   retryDelayMinutes: nat;
+ };
+type BrfOutboundCallAttempt = 
+ record {
+   attemptNumber: nat;
+   callStatus: BrfCallStatus;
+   convertedToTrial: bool;
+   id: text;
+   prospectSlug: text;
+   smsFallbackSentAt: opt int;
+   triggeredAt: int;
+   vapiCallId: opt text;
+ };
+type BrfCallStatus = 
+ variant {
+   Calling;
+   Connected;
+   Failed;
+   NoAnswer;
+   Pending;
+   SmsFallbackSent;
+ };
+type BrfCallConversionStats = 
+ record {
+   conversionRate: float64;
+   smsFallbackCount: nat;
+   totalAttempts: nat;
+   totalConnected: nat;
+   totalConverted: nat;
+ };
+type BrandVoiceTone = 
+ variant {
+   authoritative;
+   casual;
+   friendly;
+   professional;
+ };
+type BrandVoiceProfile = 
+ record {
+   calibrationPosts: vec text;
+   emojiUsage: EmojiUsage;
+   formality: text;
+   lastCalibrated: int;
+   nicheTerminology: vec text;
+   sentenceStyle: text;
+   tenantId: text;
+   tone: BrandVoiceTone;
+   vocabulary: vec text;
+ };
+type BrandKitProspect = 
+ record {
+   activationAction: opt text;
+   auditScore: opt nat;
+   businessName: text;
+   city: text;
+   convertedAt: opt int;
+   createdAt: int;
+   featuresUsed: vec text;
+   firstName: text;
+   id: text;
+   kitPageSlug: text;
+   lastActivityAt: opt int;
+   niche: text;
+   outreachKitOpenedAt: opt int;
+   outreachKitSentAt: opt int;
+   phone: text;
+   trialDay: nat;
+   trialExpiresAt: opt int;
+   trialStartedAt: opt int;
+   trialStatus: TrialStatus;
+   utmCampaign: opt text;
+   utmSource: opt text;
+   vapiAssistantId: opt text;
+   website: opt text;
+ };
+type BrandKitOutreachJob = 
+ record {
+   clickedAt: opt int;
+   id: text;
+   kitSlug: text;
+   niche: text;
+   openedAt: opt int;
+   sentAt: opt int;
+   status: text;
+   targetBusinessName: text;
+   targetCity: text;
+   targetEmail: text;
+   utmParams: text;
+ };
+type BounceType = 
+ variant {
+   complaint;
+   hard;
+   soft;
+ };
+type BookingStatus = 
+ variant {
+   cancelled;
+   completed;
+   confirmed;
+   no_show;
+ };
+type Booking = 
+ record {
+   createdAt: int;
+   customerEmail: text;
+   customerName: text;
+   customerPhone: text;
+   durationMinutes: nat;
+   googleCalendarEventId: opt text;
+   id: text;
+   noShowFollowUpSent: bool;
+   notes: text;
+   outlookEventId: opt text;
+   reminderSent1h: bool;
+   reminderSent24h: bool;
+   scheduledAt: int;
+   serviceType: text;
+   status: BookingStatus;
+   tenantId: text;
+ };
+type BillingRecord = 
+ record {
+   amount: nat;
+   createdAt: Time;
+   currency: text;
+   id: text;
+   periodEnd: Time;
+   periodStart: Time;
+   planName: text;
+   status: text;
+   tenantId: TenantId;
+ };
+type BatchScrapeUrlResult = 
+ record {
+   result: ScrapeResult;
+   url: text;
+ };
+type BatchScrapeResult = 
+ record {
+   count: nat;
+   ok: bool;
+   results: vec BatchScrapeUrlResult;
+ };
+type BatchScrapeRequest = 
+ record {
+   limitPerUrl: nat;
+   outputFormat: OutputFormat;
+   selector: text;
+   selectorType: SelectorType;
+   urls: vec text;
+ };
+type BatchAuditJob = 
+ record {
+   completedAt: opt int;
+   completedLeads: nat;
+   createdAt: int;
+   failedLeads: nat;
+   id: text;
+   processedLeads: nat;
+   status: text;
+   tenantId: text;
+   totalLeads: nat;
+ };
+type AutopilotConfig = 
+ record {
+   complianceMode: variant {
+                     both;
+                     canSpam;
+                     gdpr;
+                   };
+   currentWarmupDay: nat;
+   dailyEmailCap: nat;
+   dailySmsCap: nat;
+   discoveryEnabled: bool;
+   enrichmentEnabled: bool;
+   isEnabled: bool;
+   targetDailyVolume: nat;
+   warmupPhase: bool;
+ };
+type AuditTrailEntry = 
+ record {
+   action: text;
+   actorId: text;
+   notes: text;
+   timestamp: int;
+ };
+type AuditSnapshot = 
+ record {
+   overallScore: nat;
+   reputationScore: nat;
+   seoScore: nat;
+   websiteScore: nat;
+ };
+type AuditScore = 
+ record {
+   contentScore: nat;
+   conversionScore: nat;
+   lastUpdated: Time;
+   score: nat;
+   seoScore: nat;
+   subfactors: vec record {
+                     text;
+                     nat;
+                   };
+   technicalScore: nat;
+   tenantId: TenantId;
+ };
+type AuditReport = 
+ record {
+   businessName: text;
+   email: text;
+   generatedAt: int;
+   narrative: opt text;
+   niche: text;
+   overallScore: nat;
+   sessionId: text;
+   topGaps: vec text;
+ };
+type AuditLogEntry = 
+ record {
+   id: text;
+   leadId: text;
+   messageType: variant {
+                  email;
+                  sms;
+                };
+   optOutLinkPresent: bool;
+   senderSubdomain: text;
+   subjectOrSnippet: text;
+   timestamp: int;
+ };
+type AudioCacheStats = 
+ record {
+   entryCount: nat;
+   estimatedSizeKB: nat;
+ };
+type AttributionTouch = 
+ record {
+   campaignId: text;
+   channel: text;
+   source: text;
+   timestamp: int;
+   utmParams: text;
+ };
+type ArtifactType = 
+ variant {
+   content_package;
+   estimate;
+   follow_up_sequence;
+   lead_summary;
+   proposal;
+   recommendation_set;
+   seo_action_plan;
+   support_resolution;
+ };
+type ArtifactStatus = 
+ variant {
+   archived;
+   draft;
+   final;
+ };
+type ApprovalStatus = 
+ variant {
+   approved;
+   expired;
+   pending;
+   rejected;
+ };
+type ApprovalItemRecord = 
+ record {
+   actionType: text;
+   agentId: text;
+   description: text;
+   id: text;
+   priority: text;
+   requestedAt: int;
+   resolutionNote: opt text;
+   resolvedAt: opt int;
+   resolvedBy: opt text;
+   runId: text;
+   status: text;
+   tenantId: text;
+   threadId: text;
+   title: text;
+ };
+type ApprovalItem = 
+ record {
+   action: text;
+   approverNotes: opt text;
+   id: text;
+   reason: text;
+   requestedAt: int;
+   resolvedAt: opt int;
+   runId: text;
+   status: ApprovalStatus;
+   tenantId: text;
+   threadId: text;
+ };
+type AlertType = 
+ variant {
+   buying_signal;
+   competitor_move;
+   local_trend;
+   negative_mention;
+ };
+type AgentThreadRecord = 
+ record {
+   agentId: text;
+   agentName: text;
+   agentRole: text;
+   createdAt: int;
+   id: text;
+   lastMessage: text;
+   messageCount: nat;
+   status: text;
+   tags: vec text;
+   tenantId: text;
+   title: text;
+   updatedAt: int;
+ };
+type AgentThread = 
+ record {
+   agentNotes: opt text;
+   agentType: text;
+   createdAt: int;
+   id: text;
+   messageCount: nat;
+   status: variant {
+             active;
+             archived;
+             paused;
+           };
+   summary: opt text;
+   tenantId: text;
+   title: text;
+   updatedAt: int;
+ };
+type AgentTemplateStorageRecord = 
+ record {
+   allowedTools: vec text;
+   createdAt: int;
+   defaultWorkflowSteps: vec text;
+   id: text;
+   isActive: bool;
+   memoryMode: text;
+   name: text;
+   providerPreference: text;
+   requireApproval: bool;
+   role: text;
+   systemPrompt: text;
+   tenantId: text;
+   updatedAt: int;
+ };
+type AgentTemplateRecord = 
+ record {
+   allowedTools: vec text;
+   approvalRequired: bool;
+   createdAt: int;
+   defaultWorkflowSteps: vec text;
+   id: text;
+   isDefault: bool;
+   memoryMode: MemoryMode;
+   name: text;
+   role: text;
+   systemPrompt: text;
+   tenantId: text;
+ };
+type AgentTask = 
+ record {
+   assignee: text;
+   attachments: vec text;
+   createdAt: Time;
+   description: text;
+   dueDate: opt Time;
+   id: text;
+   notes: text;
+   priority: text;
+   status: text;
+   subscriptionId: text;
+   taskType: text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type AgentSubscription = 
+ record {
+   assignedStrategist: text;
+   humanOversightEnabled: bool;
+   id: text;
+   notes: text;
+   price: nat;
+   productId: text;
+   startDate: Time;
+   status: text;
+   tenantId: TenantId;
+   updatedAt: Time;
+ };
+type AgentServiceRequest = 
+ record {
+   attachments: vec text;
+   createdAt: Time;
+   description: text;
+   id: text;
+   pageUrl: text;
+   preferredDeadline: opt Time;
+   priority: text;
+   status: text;
+   subscriptionId: text;
+   tenantId: TenantId;
+   title: text;
+   updatedAt: Time;
+ };
+type AgentRunRecord = 
+ record {
+   agentId: text;
+   approvalRequired: bool;
+   approvalStatus: text;
+   artifactIds: vec text;
+   completedAt: opt int;
+   durationMs: opt nat;
+   errorMessage: opt text;
+   id: text;
+   input: text;
+   metadata: text;
+   modelUsed: text;
+   output: text;
+   startedAt: int;
+   status: text;
+   stepIndex: nat;
+   tenantId: text;
+   threadId: text;
+   tokenCount: opt nat;
+   totalSteps: nat;
+ };
+type AgentRun = 
+ record {
+   agentType: text;
+   approvalRequired: bool;
+   approvalStatus: opt variant {
+                         approved;
+                         pending;
+                         rejected;
+                       };
+   artifactIds: vec text;
+   endedAt: opt int;
+   errorMessage: opt text;
+   id: text;
+   inputPrompt: text;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   outputText: opt text;
+   startedAt: int;
+   status: RunStatus;
+   tenantId: text;
+   threadId: text;
+   workflowStepIndex: nat;
+ };
+type AgentProduct = 
+ record {
+   allowHumanOversight: bool;
+   billingCycle: text;
+   bundleIds: vec text;
+   category: text;
+   description: text;
+   enabledNiches: vec text;
+   features: vec text;
+   id: text;
+   name: text;
+   price: nat;
+   status: text;
+   updatedAt: Time;
+   upsellPriority: nat;
+   visible: bool;
+ };
+type AgentPerformanceSnapshot = 
+ record {
+   createdAt: Time;
+   id: text;
+   metrics: vec record {
+                  text;
+                  int;
+                };
+   month: text;
+   nextActions: vec text;
+   subscriptionId: text;
+   summary: text;
+   tenantId: TenantId;
+   topWins: vec text;
+ };
+type AgentMemoryRecord = 
+ record {
+   agentId: text;
+   content: text;
+   createdAt: int;
+   expiresAt: opt int;
+   id: text;
+   importance: nat;
+   memoryType: text;
+   tenantId: text;
+   threadId: text;
+ };
+type AgentMemory = 
+ record {
+   agentNotes: opt text;
+   conversationHistory: vec ConversationEntry;
+   lastUpdated: int;
+   summary: opt text;
+   tenantId: text;
+   threadId: text;
+ };
+type AgentDeliverable = 
+ record {
+   attachments: vec text;
+   deliverableType: text;
+   deliveredAt: Time;
+   id: text;
+   month: text;
+   notes: text;
+   scoreImpact: opt nat;
+   status: text;
+   subscriptionId: text;
+   summary: text;
+   tenantId: TenantId;
+   title: text;
+ };
+type AgentArtifactRecord = 
+ record {
+   agentId: text;
+   artifactType: text;
+   clientVisible: bool;
+   content: text;
+   createdAt: int;
+   id: text;
+   runId: text;
+   status: text;
+   tags: vec text;
+   tenantId: text;
+   threadId: text;
+   title: text;
+ };
+type AgentArtifact = 
+ record {
+   artifactType: ArtifactType;
+   content: text;
+   createdAt: int;
+   id: text;
+   runId: text;
+   status: ArtifactStatus;
+   tags: vec text;
+   tenantId: text;
+   threadId: text;
+   title: text;
+   updatedAt: int;
+ };
+type AgencySettings = 
+ record {
+   googleApiKey: text;
+   openaiKey: text;
+   sendgridKey: text;
+   serpApiKey: text;
+   stripeKey: text;
+   twilioAuth: text;
+   twilioNumber: text;
+   twilioSid: text;
+   vapiKey: text;
+ };
+type AdapterType = 
+ variant {
+   abacus_adapter;
+   anthropic_claude;
+   deerflow_bridge;
+   native;
+   ollama_local;
+   openai_compatible;
+ };
+service : {
+  _initializeAccessControl: () -> ();
+  activateBrandKitTrial: (slug: text, actionType: text) ->
+   (variant {
+      err: text;
+      ok: BrandKitProspect;
+    });
+  activateTrial: (sessionId: text, email: text, firstName: opt text, city:
+   opt text, niche: opt text, phone: opt text) ->
+   (variant {
+      err: text;
+      ok: DemoSession;
+    });
+  activateTrialForDemo: (sessionId: text, email: text) ->
+   (variant {
+      err: text;
+      ok: record {trialEndsAt: int;};
+    });
+  addAttributionTouch: (id: text, touch: AttributionTouch) -> (bool);
+  addDemoFunnelEntry: (entry: DemoFunnelEntry) -> ();
+  addLeadFromSocialComment: (tenantId: text, commentId: text, _leadData:
+   text) -> ();
+  addPaidAdsScore: (score: PaidAdsScore) -> ();
+  addScanPhoto: (modelId: text, tenantId: text, storageUrl: text) -> (text);
+  addSeoGeoScore: (score: SeoGeoScore) -> ();
+  addSeoGeoVisibilitySnapshot: (snapshot: SeoGeoVisibilitySnapshot) -> ();
+  addSmsMessage: (threadId: text, tenantId: text, direction: text, sender:
+   text, "text": text) -> (variant {
+                             err: text;
+                             ok: SMSMessage;
+                           });
+  addWebsiteAgentScore: (score: WebsiteAgentScore) -> ();
+  advanceWarmupDay: () -> ();
+  appendAuditLog: (entry: AuditLogEntry) -> ();
+  approveAndPushToCrm: (jobId: text, tenantId: text) -> (bool);
+  approveBrowserAudit: (jobId: text, tenantId: text, actorName: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  approveEngagement: (tenantId: text, approvalId: text) -> ();
+  approveReplyDraft: (inboxItemId: text) -> (bool);
+  archiveSmsThread: (threadId: text) -> (variant {
+                                           err: text;
+                                           ok: bool;
+                                         });
+  archiveThread: (id: text) -> (bool);
+  assignCallerUserRole: (user: principal, role: UserRole) -> ();
+  assignSegmentToQueue: (queueId: text, leadEmails: vec text) -> (bool);
+  batchScrape: (req: BatchScrapeRequest, tenantId: text) ->
+   (BatchScrapeResult);
+  buildComplianceFooter: (leadId: text) -> (text) query;
+  bulkImportLeads: (tenantId: text, leads: vec ExtendedLeadInput) ->
+   (BulkImportResult);
+  checkDnsRecords: (domain: text) -> (DnsCheckResult);
+  checkRobotsTxt: (url: text) -> (RobotsCheckResult);
+  checkSocialPresence: (businessName: text) -> (SocialPresence);
+  checkSocialPresencePublic: (businessName: text) -> (SocialPresence);
+  clearMemory: (threadId: text) -> (bool);
+  clearNicheAudioCache: (nicheId: text) -> ();
+  clearScrapeHistory: (tenantId: text) -> ();
+  completeDemo: (sessionId: text, prospectEmail: text) ->
+   (variant {
+      err: text;
+      ok: AuditReport;
+    });
+  completeRun: (runId: text, outputText: text, artifactIds: vec text) ->
+   (bool);
+  createAgentArtifact: (artifact: AgentArtifactRecord) -> (bool);
+  createAgentRun: (run: AgentRunRecord) -> (bool);
+  createAgentThread: (thread: AgentThreadRecord) -> (bool);
+  createApprovalItem: (runId: text, threadId: text, tenantId: text, action:
+   text, reason: text) -> (text);
+  createApprovalRecord: (item: ApprovalItemRecord) -> (bool);
+  createArtifact: (runId: text, threadId: text, tenantId: text, artifactType:
+   ArtifactType, title: text, content: text, tags: vec text) -> (text);
+  createBatchAuditJob: (job: BatchAuditJob) -> (text);
+  createBooking: (tenantId: text, customerName: text, customerPhone: 
+   text, customerEmail: text, serviceType: text, scheduledAt: int,
+   durationMinutes: nat, notes: text) -> (variant {
+                                            err: text;
+                                            ok: Booking;
+                                          });
+  createBrandKitOutreachJob: (niche: text, targetBusinessName: text,
+   targetEmail: text, targetCity: text) -> (BrandKitOutreachJob);
+  createBrandKitProspect: (firstName: text, businessName: text, niche: 
+   text, city: text, phone: text, website: opt text) ->
+   (variant {
+      err: text;
+      ok: BrandKitProspect;
+    });
+  createClientReport: (tenantId: text, reportType: text, periodLabel: 
+   text, sections: vec ReportSection, aiNarrative: text, topWins: vec text,
+   nextSteps: vec text, overallScore: nat) ->
+   (variant {
+      err: text;
+      ok: ClientReport;
+    });
+  createDemoSession: (businessName: text, niche: text) -> (text);
+  createDemoSessionWithCity: (businessName: text, niche: text, _city:
+   opt text) -> (text);
+  createDripQueue: (queue: DripQueue) -> (text);
+  createDualModelSearchJob: (tenantId: text, niche: text, cityA: text, cityB:
+   text) -> (text);
+  createEstimate: (tenantId: text, customerId: text, customerName: text,
+   customerEmail: text, lineItems: vec EstimateLineItem, subtotal: float64,
+   taxTotal: float64, total: float64, notes: text, approvalNotes: text) ->
+   (variant {
+      err: text;
+      ok: Estimate;
+    });
+  /// Alias for saveFreeAuditLead — preferred name for the frontend contract.
+  createFreeAuditLead: (businessName: text, websiteUrl: text, location: 
+   text, contactEmail: text, phone: text, overallScore: nat) -> ();
+  createLead: (lead: Lead) -> ();
+  createLeadAuditJob: (job: LeadAuditJob) -> (text);
+  createNewsletterCampaign: (tenantId: text, name: text, subject: text,
+   htmlBody: text, plainTextBody: opt text, fromName: opt text, fromEmail:
+   opt text, tags: vec text) -> (text);
+  createNotification: (notification: NotificationRecord) -> ();
+  createReview: (review: Review) -> ();
+  createReviewRequest: (request: ReviewRequest) -> ();
+  createReviewRequestTrigger: (tenantId: text, triggerType:
+   ReviewRequestTriggerType, bookingId: opt text, estimateId: opt text,
+   customerName: text, customerPhone: text, customerEmail: text, platform:
+   text) -> (variant {
+               err: text;
+               ok: ReviewRequestTrigger;
+             });
+  createReviewSyncRecord: (tenantId: text, platform: ReviewPlatform,
+   platformReviewId: text, rating: nat, reviewerName: text, comment: 
+   text, sentiment: ReviewSentiment, sentimentScore: float64, lastSyncAt:
+   int) -> (variant {
+              err: text;
+              ok: ReviewSyncRecord;
+            });
+  createRun: (threadId: text, tenantId: text, agentType: text, inputPrompt:
+   text, approvalRequired: bool) -> (text);
+  createScanModel: (tenantId: text, title: text, niche: text) -> (text);
+  createScheduledPost: (post: ScheduledPost) -> ();
+  createSmsThread: (tenantId: text, prospectPhone: text, prospectName: 
+   text, linkedLeadId: opt text) -> (variant {
+                                       err: text;
+                                       ok: SMSThread;
+                                     });
+  createSocialLead: (lead: SocialLead) -> ();
+  createSocialPost: (post: SocialPost) -> ();
+  createTemplate: (tenantId: text, name: text, role: text, systemPrompt:
+   text, allowedTools: vec text, memoryMode: MemoryMode, approvalRequired:
+   bool) -> (text);
+  createTenant: (tenantId: TenantId, name: text) -> ();
+  createThread: (tenantId: text, agentType: text, title: text) -> (text);
+  credentialsHealthCheck: () -> (bool) query;
+  deleteAgentProduct: (productId: text) -> ();
+  deleteAgentTask: (taskId: text) -> ();
+  deleteCampaignTemplate: (templateId: text) -> ();
+  deleteChatWidgetConfig: (tenantId: TenantId) -> ();
+  deleteCompetitorAlert: (id: text) -> ();
+  deleteCompetitorProfile: (id: text) -> ();
+  deleteLead: (tenantId: TenantId, leadId: text) -> ();
+  deleteLeadAttribution: (id: text) -> ();
+  deleteLocationProfile: (id: text) -> ();
+  deleteNewsletterCampaign: (tenantId: text, campaignId: text) -> (bool);
+  deleteNewsletterSubscriber: (tenantId: text, email: text) -> (bool);
+  deleteReview: (tenantId: TenantId, reviewId: text) -> ();
+  deleteReviewRequest: (tenantId: TenantId, requestId: text) -> ();
+  deleteScanModel: (modelId: text, tenantId: text) -> ();
+  deleteSocialPost: (tenantId: text, postId: text) -> ();
+  deleteTemplate: (id: text) -> (bool);
+  deleteVoiceAgentConfig: (tenantId: TenantId) -> ();
+  dismissCompetitorAlert: (id: text) -> (bool);
+  dismissSocialListeningAlert: (tenantId: text, alertId: text) -> ();
+  enqueueLeadSequence: (leadId: text, email: text, name: text, niche: 
+   text, tier: text) -> (nat);
+  enqueueNewsletterSends: (tenantId: text, campaignId: text, emails:
+   vec text) -> (nat);
+  extractLeads: (html: text, sourceUrl: text) -> (LeadExtractionResult);
+  failRun: (runId: text, errorMessage: text) -> (bool);
+  flagEngagement: (tenantId: text, approvalId: text, reason: text) -> ();
+  flushSmsQueue: () -> (nat);
+  generateUnsubscribeToken: (leadId: text) -> (text) query;
+  getActiveAdapter: (tenantId: text) -> (opt ProviderAdapterConfig) query;
+  getActiveChatWidgetConfigs: () -> (vec ChatWidgetConfig) query;
+  getActiveNewsletterSubscribers: (tenantId: text) ->
+   (vec NewsletterSubscriber) query;
+  getAgencySettings: () -> (opt AgencySettings) query;
+  getAgentDeliverablesByTenant: (tenantId: TenantId) ->
+   (vec AgentDeliverable) query;
+  getAgentMemoryByThread: (threadId: text) -> (vec AgentMemoryRecord) query;
+  getAgentPerformanceSnapshotsByTenant: (tenantId: TenantId) ->
+   (vec AgentPerformanceSnapshot) query;
+  getAgentProducts: () -> (vec AgentProduct) query;
+  getAgentRunsByTenant: (tenantId: text) -> (vec AgentRunRecord) query;
+  getAgentRunsByThread: (threadId: text) -> (vec AgentRunRecord) query;
+  getAgentServiceRequestsByTenant: (tenantId: TenantId) ->
+   (vec AgentServiceRequest) query;
+  getAgentSubscriptionsByTenant: (tenantId: TenantId) ->
+   (vec AgentSubscription) query;
+  getAgentTasksByTenant: (tenantId: TenantId) -> (vec AgentTask) query;
+  getAgentTemplateRecords: (tenantId: text) ->
+   (vec AgentTemplateStorageRecord) query;
+  getAgentThread: (id: text) -> (opt AgentThreadRecord) query;
+  getAgentThreadsByTenant: (tenantId: text) -> (vec AgentThreadRecord) query;
+  getAllAgentServiceRequests: () -> (vec AgentServiceRequest) query;
+  getAllAgentSubscriptions: () -> (vec AgentSubscription) query;
+  getAllAgentTasks: () -> (vec AgentTask) query;
+  getAllBrandKitProspects: () -> (vec BrandKitProspect) query;
+  getAllClientHealthScores: () -> (vec ClientHealthScore) query;
+  getAllNewsletterSubscribers: (tenantId: text) ->
+   (vec NewsletterSubscriber) query;
+  getAllNicheScripts: () -> (vec NicheScript) query;
+  getAllPaidAdsSubscriptions: () -> (vec PaidAdsSubscription) query;
+  getAllScanModels: () -> (vec ScanModel) query;
+  getAllSeoGeoRequests: () -> (vec SeoGeoRequest) query;
+  getAllSeoGeoSubscriptions: () -> (vec SeoGeoSubscription) query;
+  getAllTenants: () -> (vec text) query;
+  getAllWebsiteAgentSubscriptions: () -> (vec WebsiteAgentSubscription) query;
+  getAllWhiteLabelConfigs: () -> (vec WhiteLabelConfig) query;
+  getApprovalRecordsByTenant: (tenantId: text) ->
+   (vec ApprovalItemRecord) query;
+  getApprovalsByRun: (runId: text) -> (vec ApprovalItem) query;
+  getArtifact: (id: text) -> (opt AgentArtifact) query;
+  getArtifactRecordsByTenant: (tenantId: text) ->
+   (vec AgentArtifactRecord) query;
+  getArtifactRecordsByThread: (threadId: text) ->
+   (vec AgentArtifactRecord) query;
+  getArtifactsByTenant: (tenantId: text) -> (vec AgentArtifact) query;
+  getArtifactsByThread: (threadId: text) -> (vec AgentArtifact) query;
+  getAudioCacheKeys: () -> (vec text) query;
+  getAuditLog: () -> (vec AuditLogEntry) query;
+  getAuditScore: (tenantId: TenantId) -> (opt AuditScore) query;
+  getAutopilotEmailConfig: () -> (AutopilotConfig) query;
+  getBatchAuditJobs: (tenantId: text) -> (vec BatchAuditJob) query;
+  getBillingRecordsByTenant: (tenantId: TenantId) ->
+   (vec BillingRecord) query;
+  getBookingsByTenant: (tenantId: text) -> (vec Booking) query;
+  getBouncesByQueue: (queueId: text) -> (vec DripLeadBounceRecord) query;
+  getBrandKitFunnelStats: () ->
+   (record {
+      activated: nat;
+      byNiche: vec record {
+                     text;
+                     nat;
+                   };
+      converted: nat;
+      expired: nat;
+      totalProspects: nat;
+    }) query;
+  getBrandKitOutreachJobs: () -> (vec BrandKitOutreachJob) query;
+  getBrandKitOutreachStats: () ->
+   (record {
+      byNiche: vec record {
+                     text;
+                     nat;
+                   };
+      totalClicked: nat;
+      totalConverted: nat;
+      totalOpened: nat;
+      totalSent: nat;
+    }) query;
+  getBrandKitProspect: (slug: text) -> (opt BrandKitProspect) query;
+  getBrandVoiceProfile: (tenantId: text) -> (opt BrandVoiceProfile) query;
+  getBrfCallAttemptsByProspect: (prospectSlug: text) ->
+   (vec BrfOutboundCallAttempt) query;
+  getBrfCallConversionStats: () -> (BrfCallConversionStats) query;
+  getBrfOutboundCallAttempts: (limit: nat) ->
+   (vec BrfOutboundCallAttempt) query;
+  getBrfVoiceAgentConfig: () -> (opt BrfVoiceAgentConfig) query;
+  getBrowserAuditResult: (jobId: text) -> (opt BrowserAuditResult) query;
+  getBrowserAuditResultsByTenant: (tenantId: text) ->
+   (vec BrowserAuditResult) query;
+  getBrowserAuditStatus: (remoteJobId: text, tenantId: text) ->
+   (variant {
+      err: text;
+      ok: BrowserAuditResult;
+    });
+  getBulkSendJobs: () -> (vec BulkSendJob) query;
+  getCacheStats: () -> (AudioCacheStats) query;
+  getCachedAudio: (key: text) -> (opt text) query;
+  getCallerUserProfile: () -> (opt UserProfile) query;
+  getCallerUserRole: () -> (UserRole) query;
+  getCampaignInstancesByTenant: (tenantId: TenantId) ->
+   (vec CampaignInstance) query;
+  getCampaignTemplates: () -> (vec CampaignTemplate) query;
+  getChatWidgetConfig: (tenantId: TenantId) -> (opt ChatWidgetConfig) query;
+  getClientHealthScore: (tenantId: text) -> (opt ClientHealthScore) query;
+  getClientReportById: (reportId: text) -> (opt ClientReport) query;
+  getClientReports: (tenantId: text) -> (vec ClientReport) query;
+  getCompetitorAlertsByTenant: (tenantId: text) ->
+   (vec CompetitorAlert) query;
+  getCompetitorIntelReport: (tenantId: text) ->
+   (opt CompetitorIntelReport) query;
+  getCompetitorProfile: (id: text) -> (opt CompetitorProfile) query;
+  getCompetitorProfilesByTenant: (tenantId: text) ->
+   (vec CompetitorProfile) query;
+  getComplianceConfig: () -> (ComplianceConfig) query;
+  getConfiguredVoiceAgents: () -> (vec VoiceAgentConfig) query;
+  getCsvImportBatches: (tenantId: text) -> (vec CsvImportBatch) query;
+  getDecryptedCredential: (tenantId: text, field: text) -> (opt text) query;
+  getDeliverabilityEvents: () -> (vec DeliverabilityEvent) query;
+  getDemoAudio: (key: text) -> (opt text) query;
+  getDemoAuditReport: (sessionId: text) ->
+   (variant {
+      err: text;
+      ok: AuditReport;
+    }) query;
+  getDemoAuditReports: () ->
+   (variant {
+      err: text;
+      ok: vec DemoAuditReport;
+    }) query;
+  /// Returns a TTS-optimised demo call script for a given niche and business name.
+  /// No special characters — clean text safe for ElevenLabs synthesis.
+  getDemoCallScript: (niche: text, businessName: text) -> (text) query;
+  getDemoFunnelEntries: (tenantId: text) -> (vec DemoFunnelEntry) query;
+  getDemoSession: (sessionId: text) -> (opt DemoSession) query;
+  getDiscoveryConfig: () -> (DiscoveryConfig) query;
+  getDomainSetupState: (clientId: text) ->
+   (variant {
+      err: text;
+      ok: opt DomainSetupState;
+    }) query;
+  getDripQueue: (queueId: text) -> (opt DripQueue) query;
+  getDripQueueLogs: (queueId: text) -> (vec DripQueueEmailLog) query;
+  getDripQueues: (tenantId: text) -> (vec DripQueue) query;
+  getDualModelSearchJob: (jobId: text) -> (opt DualModelSearchJob) query;
+  getDualModelSearchJobs: (tenantId: text) -> (vec DualModelSearchJob) query;
+  /// Returns the masked ElevenLabs API key for display in the Go Live dashboard.
+  /// Reads from integrationCreds["platform"].elevenLabsKey — the single source of truth.
+  /// Returns null when no key has been saved.
+  getElevenLabsApiKey: () -> (opt text) query;
+  getEmailLogsByTenant: (tenantId: text) -> (vec EmailLogRecord) query;
+  getEmailQueueStatus: () ->
+   (record {
+      config: AutopilotConfig;
+      subdomains: vec SenderSubdomainRecord;
+      total: nat;
+    }) query;
+  getEmailReplyRecords: () -> (vec EmailReplyRecord) query;
+  getEngagementApprovals: (tenantId: text) -> (vec EngagementApproval) query;
+  getEstimatesByTenant: (tenantId: text) -> (vec Estimate) query;
+  getExtendedLeadsByTenant: (tenantId: text) -> (vec ExtendedLead) query;
+  getFreeAuditLeads: () -> (vec FreeAuditLead) query;
+  getFundabilityScore: (tenantId: TenantId) -> (opt FundabilityScore) query;
+  getHumanOversightAssignmentsByTenant: (tenantId: TenantId) ->
+   (vec HumanOversightAssignment) query;
+  getIntegrationCredentials: (tenantId: text) -> (MaskedCredentials) query;
+  getInvoicesByTenant: (tenantId: TenantId) -> (vec Invoice) query;
+  getLastDiscoveryJob: () -> (opt ScheduledDiscoveryJob) query;
+  getLeadAttribution: (id: text) -> (opt LeadAttributionRecord) query;
+  getLeadAttributionsByLead: (tenantId: text, leadId: text) ->
+   (vec LeadAttributionRecord) query;
+  getLeadAttributionsByTenant: (tenantId: text) ->
+   (vec LeadAttributionRecord) query;
+  getLeadAuditJob: (jobId: text) -> (opt LeadAuditJob) query;
+  getLeadAuditJobs: (tenantId: text) -> (vec LeadAuditJob) query;
+  getLeadAuditResult: (jobId: text) -> (opt LeadAuditResult) query;
+  getLeadAuditResults: (tenantId: text) -> (vec LeadAuditResult) query;
+  getLeadById: (tenantId: TenantId, leadId: text) -> (opt Lead) query;
+  getLeadEnrichment: (leadId: text) -> (opt LeadEnrichment) query;
+  getLeadsByBatch: (batchId: text) -> (vec ExtendedLead) query;
+  getLeadsBySegment: (tenantId: text, niche: opt text, tags: vec text,
+   customFieldFilters: vec record {
+                             text;
+                             text;
+                           }) -> (vec ExtendedLead) query;
+  getLeadsByTenantId: (tenantId: TenantId) -> (vec Lead) query;
+  getLocationProfile: (id: text) -> (opt LocationProfile) query;
+  getLocationProfilesByTenant: (tenantId: text) ->
+   (vec LocationProfile) query;
+  getMemory: (threadId: text) -> (opt AgentMemory) query;
+  getNewsletterAnalytics: (tenantId: text) -> (NewsletterCampaignStats) query;
+  getNewsletterCampaignById: (tenantId: text, campaignId: text) ->
+   (opt NewsletterCampaign) query;
+  getNewsletterCampaignStats: (tenantId: text, campaignId: text) ->
+   (opt NewsletterCampaignStats) query;
+  getNewsletterCampaigns: (tenantId: text) -> (vec NewsletterCampaign) query;
+  getNewsletterSendLogs: (tenantId: text, campaignId: text) ->
+   (vec NewsletterSendLog) query;
+  getNewsletterSubscriber: (tenantId: text, email: text) ->
+   (opt NewsletterSubscriber) query;
+  getNicheScript: (niche: text) -> (opt NicheScript) query;
+  getNicheScriptForSession: (sessionId: text) -> (opt NicheScript) query;
+  getNicheScriptLines: (nicheId: text) -> (opt vec text) query;
+  getNicheVoiceAssignments: () -> (vec NicheVoiceAssignment) query;
+  /// Public query: returns the ElevenLabs voice ID for the given niche.
+  getNicheVoiceId: (niche: text) -> (text) query;
+  getNotificationsByTenant: (tenantId: TenantId) ->
+   (vec NotificationRecord) query;
+  getOptedOutEmails: () -> (vec text) query;
+  getOptedOutPhones: () -> (vec text) query;
+  getOutreachEvents: (leadId: text) -> (vec OutreachEvent) query;
+  getOutreachOverview: (tenantId: text) ->
+   (record {
+      activeQueues: nat;
+      avgResponseRate: float64;
+      pendingBounces: nat;
+      totalLeads: nat;
+      totalSentThisMonth: nat;
+    }) query;
+  getPaidAdsAdCopiesByTenant: (tenantId: TenantId) ->
+   (vec PaidAdsAdCopy) query;
+  getPaidAdsAlertsByTenant: (tenantId: TenantId) -> (vec PaidAdsAlert) query;
+  getPaidAdsAudiencesByTenant: (tenantId: TenantId) ->
+   (vec PaidAdsAudience) query;
+  getPaidAdsCampaignsByTenant: (tenantId: TenantId) ->
+   (vec PaidAdsCampaign) query;
+  getPaidAdsDeliverablesByTenant: (tenantId: TenantId) ->
+   (vec PaidAdsDeliverable) query;
+  getPaidAdsScores: (tenantId: TenantId) -> (vec PaidAdsScore) query;
+  getPaidAdsSubscription: (tenantId: TenantId) ->
+   (opt PaidAdsSubscription) query;
+  getPaymentMethod: (tenantId: TenantId) -> (opt PaymentMethod) query;
+  getPendingApprovalRecords: (tenantId: text) ->
+   (vec ApprovalItemRecord) query;
+  getPendingApprovals: (tenantId: text) -> (vec ApprovalItem) query;
+  getPipelineFunnelStats: (niche: text) -> (PipelineFunnelStats) query;
+  getProviderAdapters: (tenantId: text) -> (vec ProviderAdapterConfig) query;
+  getQueuePerformanceStats: (tenantId: text) ->
+   (vec
+     record {
+       bounced: nat;
+       engagementPct: float64;
+       name: text;
+       niche: text;
+       queueId: text;
+       responded: nat;
+       sent: nat;
+       totalLeads: nat;
+     }) query;
+  getQueueThrottleConfig: (queueId: text) ->
+   (opt DripQueueThrottleConfig) query;
+  getReadinessScore: (tenantId: text) -> (ReadinessScore) query;
+  getReplyInboxItems: () -> (vec ReplyInboxItem) query;
+  getReportSchedule: (tenantId: text) -> (opt ReportSchedule) query;
+  getReviewById: (tenantId: TenantId, reviewId: text) -> (opt Review) query;
+  getReviewRequest: (tenantId: TenantId, requestId: text) ->
+   (opt ReviewRequest) query;
+  getReviewRequestTriggersByTenant: (tenantId: text) ->
+   (vec ReviewRequestTrigger) query;
+  getReviewRequests: (tenantId: TenantId) -> (vec ReviewRequest) query;
+  getReviewSyncRecordsByTenant: (tenantId: text) ->
+   (vec ReviewSyncRecord) query;
+  getReviewsByTenantId: (tenantId: TenantId) -> (vec Review) query;
+  getRunsByTenant: (tenantId: text) -> (vec AgentRun) query;
+  getRunsByThread: (threadId: text) -> (vec AgentRun) query;
+  getScanModel: (modelId: text) -> (opt ScanModel) query;
+  getScanModels: (tenantId: text) -> (vec ScanModel) query;
+  getScanner3dEnabled: (tenantId: text) -> (bool) query;
+  getScanner3dToggleLog: () -> (vec record {
+                                      text;
+                                      text;
+                                      bool;
+                                      int;
+                                    }) query;
+  getScheduledDiscoveryJobs: () -> (vec ScheduledDiscoveryJob) query;
+  getScheduledPosts: (tenantId: text) -> (vec ScheduledPost) query;
+  getScrapeHistory: (tenantId: text, limit: nat) -> (vec ScrapeRecord) query;
+  getScrapeHistoryCount: (tenantId: text) -> (nat) query;
+  getSenderSubdomainStats: () -> (vec SenderSubdomainRecord) query;
+  getSeoGeoContentItemsByTenant: (tenantId: TenantId) ->
+   (vec SeoGeoContentItem) query;
+  getSeoGeoDeliverablesByTenant: (tenantId: TenantId) ->
+   (vec SeoGeoDeliverable) query;
+  getSeoGeoGbpTasksByTenant: (tenantId: TenantId) ->
+   (vec SeoGeoGbpTask) query;
+  getSeoGeoIssuesByTenant: (tenantId: TenantId) -> (vec SeoGeoIssue) query;
+  getSeoGeoOpportunitiesByTenant: (tenantId: TenantId) ->
+   (vec SeoGeoOpportunity) query;
+  getSeoGeoReportsByTenant: (tenantId: TenantId) -> (vec SeoGeoReport) query;
+  getSeoGeoRequestsByTenant: (tenantId: TenantId) ->
+   (vec SeoGeoRequest) query;
+  getSeoGeoScores: (tenantId: TenantId) -> (vec SeoGeoScore) query;
+  getSeoGeoSubscription: (tenantId: TenantId) ->
+   (opt SeoGeoSubscription) query;
+  getSeoGeoVisibilitySnapshots: (tenantId: TenantId) ->
+   (vec SeoGeoVisibilitySnapshot) query;
+  getSmsAutopilotJobs: () -> (vec SmsAutopilotJob) query;
+  getSmsAutopilotRules: () -> (vec SmsAutopilotRule) query;
+  getSmsMessagesByThread: (threadId: text) -> (vec SMSMessage) query;
+  getSmsThreadsByTenant: (tenantId: text) -> (vec SMSThread) query;
+  getSocialCommentsByTenant: (tenantId: text, postId: opt text) ->
+   (vec SocialComment) query;
+  getSocialLeads: (tenantId: text) -> (vec SocialLead) query;
+  getSocialListeningAlerts: (tenantId: text) ->
+   (vec SocialListeningAlert) query;
+  getSocialPostsByTenant: (tenantId: text, startDate: opt int, endDate:
+   opt int) -> (vec SocialPost) query;
+  getSocialROIMetrics: (tenantId: text, period: text) ->
+   (opt SocialROIMetrics) query;
+  getSubdomainRecords: () -> (vec SenderSubdomainRecord) query;
+  getTemplate: (id: text) -> (opt AgentTemplateRecord) query;
+  getTemplates: (tenantId: text) -> (vec AgentTemplateRecord) query;
+  getTenantName: (tenantId: TenantId) -> (text) query;
+  getThread: (id: text) -> (opt AgentThread) query;
+  getThreadByAgentAndTenant: (agentType: text, tenantId: text) ->
+   (opt AgentThread) query;
+  getThreadsByTenant: (tenantId: text) -> (vec AgentThread) query;
+  getTools: () -> (vec ToolDefinition) query;
+  getToolsByCategory: (category: text) -> (vec ToolDefinition) query;
+  getTrialNudgeSchedule: (slug: text) ->
+   (vec WarmSequenceEmailSchedule) query;
+  getUserProfile: (user: principal) -> (opt UserProfile) query;
+  /// Returns stored Vapi call logs for a tenant.
+  getVapiCallLogs: (tenantId: text) -> (vec VapiCallLog) query;
+  getVapiNicheVoiceId: (nicheId: text) -> (opt text) query;
+  /// Returns the current Vapi provisioning status for a tenant.
+  getVapiProvisioningStatus: (tenantId: text) ->
+   (VapiProvisioningStatus) query;
+  /// Returns whether Vapi is configured, current provisioning status, and the
+  /// map of niche→assistantId pairs for a tenant.
+  getVapiStatus: (tenantId: text) ->
+   (record {
+      assistantIds: vec record {
+                          text;
+                          text;
+                        };
+      configured: bool;
+      provisioningStatus: text;
+    }) query;
+  getVoiceAgentConfig: (tenantId: TenantId) -> (opt VoiceAgentConfig) query;
+  getWarmLeadHandoffs: () -> (vec WarmLeadHandoff) query;
+  getWarmSequenceEvents: (enrollmentId: text) ->
+   (vec WarmSequenceEmailEvent) query;
+  getWarmSequenceSchedules: (enrollmentId: text) ->
+   (vec WarmSequenceEmailSchedule) query;
+  getWebsiteAgentScores: (tenantId: TenantId) ->
+   (vec WebsiteAgentScore) query;
+  getWebsiteAgentSubscription: (tenantId: TenantId) ->
+   (opt WebsiteAgentSubscription) query;
+  getWebsiteContentBriefsByTenant: (tenantId: TenantId) ->
+   (vec WebsiteContentBrief) query;
+  getWebsiteCroOpportunitiesByTenant: (tenantId: TenantId) ->
+   (vec WebsiteCroOpportunity) query;
+  getWebsiteDeliverablesByTenant: (tenantId: TenantId) ->
+   (vec WebsiteDeliverable) query;
+  getWebsiteIssuesByTenant: (tenantId: TenantId) -> (vec WebsiteIssue) query;
+  getWebsitePageQueueByTenant: (tenantId: TenantId) ->
+   (vec WebsitePageQueueItem) query;
+  getWhiteLabelConfig: (tenantId: TenantId) -> (opt WhiteLabelConfig) query;
+  handleNewsletterBounce: (tenantId: text, email: text, bounceType:
+   BounceType, reason: text) -> (bool);
+  handleNewsletterUnsubscribe: (tenantId: text, email: text, campaignId:
+   text) -> (bool);
+  http_request: (req:
+   record {
+     body: blob;
+     headers: vec record {
+                    text;
+                    text;
+                  };
+     method: text;
+     url: text;
+   }) ->
+   (record {
+      body: blob;
+      headers: vec record {
+                     text;
+                     text;
+                   };
+      status_code: nat16;
+      upgrade: opt bool;
+    }) query;
+  /// ICP http_request_update — handles POST /api/book-appointment from Vapi.
+  /// Parses the Vapi tool-call body, creates a booking, and fires a Twilio SMS.
+  http_request_update: (req:
+   record {
+     body: blob;
+     headers: vec record {
+                    text;
+                    text;
+                  };
+     method: text;
+     url: text;
+   }) ->
+   (record {
+      body: blob;
+      headers: vec record {
+                     text;
+                     text;
+                   };
+      status_code: nat16;
+    });
+  importNewsletterSubscribers: (tenantId: text, emails: vec text) ->
+   (SubscriberImportResult);
+  incrementScanModelViews: (modelId: text) -> ();
+  initDefaultTools: () -> ();
+  isCallerAdmin: () -> (bool) query;
+  isDemoSessionExpired: (sessionId: text) -> (bool) query;
+  linkSocialLeadToCRM: (tenantId: text, socialLeadId: text, crmLeadId:
+   text) -> ();
+  lockSocialContent: (sessionId: text) -> (bool);
+  logDripEmailSent: (log: DripQueueEmailLog) -> ();
+  logTrialInteraction: (kitPageSlug: text, interactionType: text) -> ();
+  markBrandKitConverted: (slug: text) ->
+   (variant {
+      err: text;
+      ok: BrandKitProspect;
+    });
+  markBrfCallConverted: (id: text) -> (variant {
+                                         err: text;
+                                         ok;
+                                       });
+  markNotificationRead: (notificationId: text) -> ();
+  markSmsMessagesRead: (threadId: text) -> (variant {
+                                              err: text;
+                                              ok: bool;
+                                            });
+  markSocialCommentResponded: (tenantId: text, commentId: text) -> ();
+  mergeBrowserScoresIntoAuditResult: (jobId: text, tenantId: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  pauseAutopilotEmail: () -> ();
+  pauseNewsletterCampaign: (tenantId: text, campaignId: text) -> (bool);
+  pauseRunForApproval: (runId: text, reason: text) -> (text);
+  pauseSubdomain: (subdomain: text) -> ();
+  processBounceEvent: (email: text, bounceType: variant {
+                                                  hard;
+                                                  soft;
+                                                }, leadId: text, subdomain:
+   text) -> ();
+  processComplaintEvent: (email: text, subdomain: text, leadId: text) -> ();
+  processDeliverabilityWebhook: (eventsJson: text) -> (nat);
+  processDripQueueStep: (queueId: text) -> (bool);
+  processEmailReply: (leadId: text, replyBody: text) -> (text);
+  processNewsletterMergeTags: (tenantId: text, email: text, htmlBody:
+   text) -> (text) query;
+  processSmsReply: (leadId: text, leadName: text, leadNiche: text,
+   messageBody: text) -> (text);
+  processSmsStop: (phoneNumber: text) -> ();
+  processUnsubscribeRequest: (leadId: text, token: text, email: text) ->
+   (bool);
+  /// Registers an ElevenLabs fallback record for a tenant.
+  /// Called by the frontend when Vapi provisioning fails, so the system knows
+  /// to use ElevenLabs TTS for the next outbound demo/real call attempt.
+  provisionElevenLabsFallback: (businessName: text, niche: text, phoneNumber:
+   text) -> (variant {
+               err: text;
+               ok: text;
+             });
+  /// Create a new Vapi assistant for a tenant and store the returned assistantId.
+  /// Reads vapiKey from encrypted integration credentials.
+  /// Super Admin can provision for any tenant; Agency Admin / Business Owner only their own.
+  provisionVapiAssistant: (tenantId: text, businessName: text, phone: 
+   text, niche: text, greetingScript: text, qualifyingQuestions: vec text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  queueSmsForRule: (leadId: text, ruleId: text, ownerName: text, niche: 
+   text, phone: text, demoLink: text) -> (text);
+  recordBrandKitActivity: (slug: text, featureUsed: text) -> ();
+  recordBrfCallAttemptResult: (id: text, status:
+   variant {
+     Connected;
+     Failed;
+     NoAnswer;
+   }, vapiCallId: opt text) -> (variant {
+                                  err: text;
+                                  ok;
+                                });
+  recordLeadBounce: (leadId: text, queueId: text, bounceType:
+   variant {
+     hard;
+     soft;
+   }, reason: opt text) -> ();
+  recordNewsletterBounce: (tenantId: text, email: text, bounceType:
+   BounceType) -> (bool);
+  recordOutreachEvent: (event: OutreachEvent) -> ();
+  recordWarmLeadHandoff: (handoff: WarmLeadHandoff) -> ();
+  refreshCompetitorIntel: (report: CompetitorIntelReport) -> ();
+  registerSubdomain: (subdomain: text) -> ();
+  rejectBrowserAudit: (jobId: text, tenantId: text, actorName: text, reason:
+   text) -> (variant {
+               err: text;
+               ok;
+             });
+  rejectEngagement: (tenantId: text, approvalId: text) -> ();
+  rejectReplyDraft: (inboxItemId: text) -> ();
+  requestReBrowserAudit: (jobId: text, tenantId: text, actorName: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  requeueBouncedLead: (leadId: text, queueId: text) -> (bool);
+  resetDailySubdomainCounters: () -> ();
+  resetDiscoveryTimer: () -> ();
+  resetDripDailyCap: (queueId: text) -> ();
+  resetEmailSchedulerTimer: () -> ();
+  resetNicheScript: (nicheId: text) -> ();
+  resetSmsSchedulerTimer: () -> ();
+  resolveApproval: (id: text, status: variant {
+                                        approved;
+                                        rejected;
+                                      }, notes: opt text) -> (bool);
+  resolveApprovalRecord: (id: text, status: text, resolvedBy: text, note:
+   text) -> (bool);
+  /// Respond to a review — sets the AI-drafted response and marks it responded.
+  respondToReview: (tenantId: TenantId, reviewId: text, response: text) -> ();
+  resumeAutopilotEmail: () -> ();
+  runPageSpeedAudit: (url: text) -> (text);
+  runPageSpeedAuditPublic: (url: text) -> (text);
+  saveAgentMemory: (memory: AgentMemoryRecord) -> (bool);
+  saveAgentTemplate: (tmpl: AgentTemplateStorageRecord) -> (bool);
+  saveBrowserAuditResult: (result: BrowserAuditResult) -> ();
+  saveCallerUserProfile: (profile: UserProfile) -> ();
+  saveDemoAudio: (key: text, base64Audio: text) -> ();
+  saveDemoAuditReport: (report: DemoAuditReport) -> (variant {
+                                                       err: text;
+                                                       ok;
+                                                     });
+  saveDemoAuditScore: (sessionId: text, score: nat) -> (bool);
+  saveDomainSetupState: (clientId: text, state: DomainSetupState) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  /// Save the platform ElevenLabs API key (any authenticated caller). Stored XOR-obfuscated.
+  /// Writes into integrationCreds["platform"].elevenLabsKey — the single source of truth.
+  saveElevenLabsApiKey: (apiKey: text) -> (variant {
+                                             err: text;
+                                             ok;
+                                           });
+  saveFreeAuditLead: (businessName: text, websiteUrl: text, location: 
+   text, contactEmail: text, phone: text, overallScore: nat) -> ();
+  saveIntegrationCredentials: (tenantId: text, creds:
+   IntegrationCredentials) -> (variant {
+                                 err: text;
+                                 ok;
+                               });
+  saveLeadAuditResult: (result: LeadAuditResult) -> ();
+  /// Save Vapi API key and assistant ID for a tenant, then auto-provision any
+  /// niches that are not yet configured if vapiKey is non-empty.
+  saveVapiCredentials: (tenantId: text, vapiKey: text, vapiAssistantId:
+   text) -> (record {
+               error: opt text;
+               ok: bool;
+             });
+  scheduleBrfOutboundCall: (prospectSlug: text) ->
+   (variant {
+      err: text;
+      ok: BrfOutboundCallAttempt;
+    });
+  scheduleCampaign: (tenantId: text, campaignId: text, sendAt: opt int) ->
+   (bool);
+  scheduleTrialNudgeEmails: (slug: text) -> ();
+  scheduleWarmSequenceEmail: (enrollmentId: text, touchIndex: nat,
+   delayHours: nat, recipient: text, subject: text, body: text) -> (text);
+  scrapeUrl: (req: ScrapeRequest, tenantId: text) -> (ScrapeResult);
+  searchLeadsWithLLM: (niche: text, city: text, limit: nat,
+   includeEnrichment: bool) -> (variant {
+                                  err: text;
+                                  ok: LLMLeadSearchResult;
+                                });
+  searchNewsletterSubscribers: (tenantId: text, searchQuery: text,
+   statusFilter: opt SubscriberStatus, tagFilter: opt text) ->
+   (vec NewsletterSubscriber) query;
+  seedDemoData: () -> ();
+  sendBookingConfirmationEmail: (appointmentId: text, customerEmail: 
+   text, customerName: text, businessName: text, appointmentDateTime: 
+   text, address: text, tenantId: text) -> (EmailSendResult);
+  sendClientReportEmail: (clientId: text, clientEmail: text, clientName:
+   text, reportPeriod: text, reportSummaryHtml: text, tenantId: text) ->
+   (EmailSendResult);
+  sendHealthScoreAlertEmail: (clientId: text, adminEmail: text, clientName:
+   text, healthScore: nat, previousScore: nat, topIssue: text, tenantId:
+   text) -> (EmailSendResult);
+  sendNewsletterCampaign: (tenantId: text, campaignId: text) -> (nat);
+  sendOnboardingEmail: (userId: text, userEmail: text, userName: text,
+   userRole: text, onboardingStep: text, tenantId: text) -> (EmailSendResult);
+  sendReviewRequestEmail: (leadId: text, clientName: text, businessName:
+   text, reviewPlatformUrl: text, recipient: text, tenantId: text) ->
+   (EmailSendResult);
+  sendWarmSequenceEmail: (enrollmentId: text, touchIndex: nat, delayHours:
+   nat, recipient: text, subject: text, body: text) -> (EmailSendResult);
+  setBrandVoiceProfile: (tenantId: text, profile: BrandVoiceProfile) -> ();
+  setCachedAudio: (key: text, base64Audio: text) -> ();
+  setNewsletterCampaignStatus: (tenantId: text, campaignId: text, status:
+   CampaignStatus) -> (bool);
+  setNicheScriptLines: (nicheId: text, lines: vec text) -> ();
+  setNicheVoiceAssignment: (nicheId: text, voiceId: text, voiceName: 
+   text) -> ();
+  setProviderAdapter: (tenantId: text, adapterType: AdapterType, isEnabled:
+   bool, apiKey: opt text, baseUrl: opt text, modelId: opt text) -> (
+   text);
+  setQueueThrottleConfig: (queueId: text, config: DripQueueThrottleConfig) ->
+   ();
+  setScanner3dEnabled: (tenantId: text, enabled: bool) -> ();
+  setScanner3dEnabledBatch: (updates: vec record {
+                                            text;
+                                            bool;
+                                          }) -> ();
+  setSocialCommentResponse: (tenantId: text, commentId: text, response:
+   text) -> ();
+  shouldLockSocialContent: (sessionId: text) -> (bool) query;
+  stageBulkLeadsFromSearch: (tenantId: text, jobId: text, leads_in:
+   vec BulkLeadInput) -> (nat);
+  stageScrapeLeads: (tenantId: text, scrapeId: nat) -> (nat);
+  storeDeliverabilityEvent: (evt: DeliverabilityEvent) -> ();
+  /// Fetch call logs from Vapi and store new entries in canister state.
+  /// Returns the count of newly stored logs.
+  syncVapiCallLogs: (tenantId: text) -> (variant {
+                                           err: text;
+                                           ok: nat;
+                                         });
+  /// Tests connectivity to the ElevenLabs API using the stored platform key.
+  /// Makes an HTTP outcall to GET /v1/voices and returns the voice count on success.
+  testElevenLabsConnection: () ->
+   (record {
+      message: text;
+      success: bool;
+      voiceCount: nat;
+    });
+  testIntegration: (tenantId: text, "service": text) ->
+   (ConnectionTestResult);
+  testServiceConnection: (tenantId: text, "service": text) ->
+   (ConnectionTestResult) query;
+  trackComplaintRate: () -> (vec record {
+                                   text;
+                                   float64;
+                                 }) query;
+  trackWarmSequenceEvent: (enrollmentId: text, touchIndex: nat, eventType:
+   text) -> ();
+  transform: (input: TransformationInput) -> (TransformationOutput) query;
+  triggerBrowserAudit: (jobId: text, tenantId: text, businessName: text,
+   websiteUrl: text, niche: text, city: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  triggerManualDiscovery: () -> (text);
+  triggerOutreachEmailSequence: (slug: text) -> ();
+  unsubscribeNewsletterEmail: (tenantId: text, email: text) -> (bool);
+  updateAgencySettings: (settings: AgencySettings) -> ();
+  updateAgentRun: (id: text, status: text, output: text, completedAt:
+   opt int, artifactIds: vec text, approvalStatus: text, errorMessage:
+   opt text) -> (bool);
+  updateAgentThread: (id: text, status: text, messageCount: nat, lastMessage:
+   text) -> (bool);
+  updateArtifactRecordStatus: (id: text, status: text) -> (bool);
+  updateArtifactStatus: (id: text, status: ArtifactStatus) -> (bool);
+  updateAuditScore: (tenantId: TenantId, score: nat) -> ();
+  updateAutopilotEmailConfig: (config: AutopilotConfig) -> ();
+  updateBatchAuditProgress: (batchId: text, processed: nat, completed: 
+   nat, failed: nat) -> ();
+  updateBookingStatus: (bookingId: text, status: BookingStatus,
+   googleCalendarEventId: opt text, outlookEventId: opt text) ->
+   (variant {
+      err: text;
+      ok: Booking;
+    });
+  updateComplianceConfig: (config: ComplianceConfig) -> ();
+  updateDemoFunnelEntry: (tenantId: text, entryId: text, entry:
+   DemoFunnelEntry) -> ();
+  updateDemoStep: (sessionId: text, step: nat) ->
+   (variant {
+      err: text;
+      ok: DemoSession;
+    });
+  updateDiscoveryConfig: (config: DiscoveryConfig) -> ();
+  updateDripQueueStatus: (queueId: text, status: text) -> (bool);
+  updateDualModelSearchJob: (jobId: text, update:
+   DualModelSearchJobUpdate) -> (bool);
+  updateEstimateStatus: (estimateId: text, status: EstimateStatus,
+   approvalNotes: text) -> (variant {
+                              err: text;
+                              ok: Estimate;
+                            });
+  updateFundabilityScore: (tenantId: TenantId, score: nat) -> ();
+  updateLead: (tenantId: TenantId, leadId: text, lead: Lead) -> ();
+  updateLeadAuditJobStatus: (jobId: text, status: text, stage: text) ->
+   (bool);
+  updateLeadEnrichment: (enrichment: LeadEnrichment) -> ();
+  updateMemory: (threadId: text, tenantId: text, conversationEntry:
+   ConversationEntry, newSummary: opt text, agentNotes: opt text) -> (
+   bool);
+  updateNewsletterCampaign: (tenantId: text, campaign: NewsletterCampaign) ->
+   (bool);
+  updateNewsletterSendStatus: (campaignId: text, sendLogId: text, status:
+   SendLogStatus, errorMessage: opt text) -> (bool);
+  updateOutreachJobStatus: (id: text, status: text) -> ();
+  updateReportSchedule: (tenantId: text, weeklyEnabled: bool, monthlyEnabled:
+   bool, deliveryDayOfWeek: nat, deliveryHour: nat) ->
+   (variant {
+      err: text;
+      ok: ReportSchedule;
+    });
+  updateReview: (tenantId: TenantId, reviewId: text, review: Review) -> ();
+  updateReviewRequestStatus: (tenantId: TenantId, requestId: text, status:
+   ReviewRequestStatus) -> ();
+  updateReviewResponse: (recordId: text, platformResponse: text, respondedAt:
+   int) -> (variant {
+              err: text;
+              ok: ReviewSyncRecord;
+            });
+  updateRunStatus: (runId: text, status: RunStatus, outputText: opt text,
+   errorMessage: opt text) -> (bool);
+  updateScanModel: (modelId: text, title: text, description: text) -> ();
+  updateScanModelStatus: (modelId: text, status: text, modelUrl: text,
+   thumbnailUrl: text) -> ();
+  updateScheduledPost: (tenantId: text, postId: text, post: ScheduledPost) ->
+   ();
+  updateSmsAutopilotRules: (rules: vec SmsAutopilotRule) -> ();
+  updateSocialPost: (tenantId: text, postId: text, post: SocialPost) -> ();
+  updateTemplate: (id: text, name: text, systemPrompt: text, allowedTools:
+   vec text, memoryMode: MemoryMode, approvalRequired: bool) -> (bool);
+  updateThreadSummary: (id: text, summary: text, agentNotes: opt text) ->
+   (bool);
+  /// Update an existing Vapi assistant when client info changes.
+  updateVapiAssistant: (tenantId: text, assistantId: text, updates:
+   VapiAssistantUpdate) -> (variant {
+                              err: text;
+                              ok;
+                            });
+  upsertAgentDeliverable: (deliverable: AgentDeliverable) -> ();
+  upsertAgentPerformanceSnapshot: (snapshot: AgentPerformanceSnapshot) -> ();
+  upsertAgentProduct: (product: AgentProduct) -> ();
+  upsertAgentServiceRequest: (request: AgentServiceRequest) -> ();
+  upsertAgentSubscription: (tenantId: TenantId, subscription:
+   AgentSubscription) -> ();
+  upsertAgentTask: (task: AgentTask) -> ();
+  upsertAuditScore: (score: AuditScore) -> ();
+  upsertBillingRecord: ("record": BillingRecord) -> ();
+  upsertBrfVoiceAgentConfig: (config: BrfVoiceAgentConfig) ->
+   (variant {
+      err: text;
+      ok: BrfVoiceAgentConfig;
+    });
+  upsertCampaignInstance: (tenantId: TenantId, instance: CampaignInstance) ->
+   ();
+  upsertCampaignTemplate: (template: CampaignTemplate) -> ();
+  upsertChatWidgetConfig: (config: ChatWidgetConfig) -> ();
+  upsertClientHealthScore: (tenantId: text, overallScore: nat, leadsScore:
+   nat, reputationScore: nat, agentScore: nat, websiteScore: nat, components:
+   vec HealthScoreComponent, trend: text, recommendations: vec text) ->
+   (variant {
+      err: text;
+      ok: ClientHealthScore;
+    });
+  upsertCompetitorAlert: (alert: CompetitorAlert) -> ();
+  upsertCompetitorProfile: (profile: CompetitorProfile) -> ();
+  upsertCsvImportBatch: (batch: CsvImportBatch) -> ();
+  upsertFundabilityScore: (score: FundabilityScore) -> ();
+  upsertHumanOversightAssignment: (assignment: HumanOversightAssignment) ->
+   ();
+  upsertInvoice: (invoice: Invoice) -> ();
+  upsertLeadAttribution: ("record": LeadAttributionRecord) -> ();
+  upsertLocationProfile: (profile: LocationProfile) -> ();
+  upsertNewsletterSubscriber: (tenantId: text, email: text, phone: opt text,
+   businessName: opt text, tags: vec text, customFields:
+   vec record {
+         text;
+         text;
+       }) -> (text);
+  upsertPaidAdsAdCopy: (adCopy: PaidAdsAdCopy) -> ();
+  upsertPaidAdsAlert: (alert: PaidAdsAlert) -> ();
+  upsertPaidAdsAudience: (audience: PaidAdsAudience) -> ();
+  upsertPaidAdsCampaign: (campaign: PaidAdsCampaign) -> ();
+  upsertPaidAdsDeliverable: (deliverable: PaidAdsDeliverable) -> ();
+  upsertPaidAdsSubscription: (sub: PaidAdsSubscription) -> ();
+  upsertPaymentMethod: (method: PaymentMethod) -> ();
+  upsertSeoGeoContentItem: (item: SeoGeoContentItem) -> ();
+  upsertSeoGeoDeliverable: (deliverable: SeoGeoDeliverable) -> ();
+  upsertSeoGeoGbpTask: (task: SeoGeoGbpTask) -> ();
+  upsertSeoGeoIssue: (issue: SeoGeoIssue) -> ();
+  upsertSeoGeoOpportunity: (opp: SeoGeoOpportunity) -> ();
+  upsertSeoGeoReport: (report: SeoGeoReport) -> ();
+  upsertSeoGeoRequest: (request: SeoGeoRequest) -> ();
+  upsertSeoGeoSubscription: (sub: SeoGeoSubscription) -> ();
+  upsertSocialROIMetrics: (metrics: SocialROIMetrics) -> ();
+  upsertVoiceAgentConfig: (config: VoiceAgentConfig) -> ();
+  upsertWebsiteAgentSubscription: (sub: WebsiteAgentSubscription) -> ();
+  upsertWebsiteContentBrief: (brief: WebsiteContentBrief) -> ();
+  upsertWebsiteCroOpportunity: (opp: WebsiteCroOpportunity) -> ();
+  upsertWebsiteDeliverable: (deliverable: WebsiteDeliverable) -> ();
+  upsertWebsiteIssue: (issue: WebsiteIssue) -> ();
+  upsertWebsitePageQueueItem: (item: WebsitePageQueueItem) -> ();
+  upsertWhiteLabelConfig: (config: WhiteLabelConfig) -> ();
+}
