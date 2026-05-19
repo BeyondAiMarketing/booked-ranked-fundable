@@ -4,5 +4,18 @@ build:
   steps:
     - type: script
       commands:
+        - |
+          if [ -z "${MOC_PATH:-}" ] || [ ! -x "${MOC_PATH:-}" ]; then
+            echo "ERROR: MOC_PATH is not set to an executable Motoko compiler path." >&2
+            exit 127
+          fi
+          if [ -z "${MOTOKO_CORE:-}" ] || [ ! -d "${MOTOKO_CORE:-}" ]; then
+            echo "ERROR: MOTOKO_CORE is not set to an existing directory." >&2
+            exit 127
+          fi
+          if [ -z "${MOTOKO_BASE:-}" ] || [ ! -d "${MOTOKO_BASE:-}" ]; then
+            echo "ERROR: MOTOKO_BASE is not set to an existing directory." >&2
+            exit 127
+          fi
         - $MOC_PATH --implicit-package core --default-persistent-actors -no-check-ir -E M0236 -E M0235 -E M0223 -E M0237 --actor-idl system-idl --package base $MOTOKO_BASE --package core $MOTOKO_CORE main.mo -o backend.wasm
         - mv backend.wasm "$ICP_WASM_OUTPUT_PATH"

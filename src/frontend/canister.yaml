@@ -5,8 +5,14 @@ build:
   steps:
     - type: script
       commands:
+        - bash ../../scripts/ensure-pnpm.sh
         - pnpm install --frozen-lockfile --prefer-offline --child-concurrency 2 --network-concurrency 6
-        - node ../../scripts/resize-images.js
+        - |
+          if [ -f ../../scripts/resize-images.js ]; then
+            node ../../scripts/resize-images.js
+          else
+            echo "INFO: ../../scripts/resize-images.js not found; skipping image resize step."
+          fi
         - |
           cat > env.json <<EOF
           {

@@ -5,11 +5,11 @@ name = "frontend"
 type = "assets"
 
 [build]
-commands = ["pnpm build"]
+commands = ["bash ../../scripts/ensure-pnpm.sh", "pnpm build"]
 out = "dist"
 
 [check]
-commands = ["pnpm typecheck", "pnpm check"]
+commands = ["bash ../../scripts/ensure-pnpm.sh", "pnpm typecheck", "pnpm check"]
 
 [check.fix]
-commands = ["pnpm typecheck", "pnpm fix"]
+commands = ["bash ../../scripts/ensure-pnpm.sh", "pnpm typecheck", "pnpm fix"]

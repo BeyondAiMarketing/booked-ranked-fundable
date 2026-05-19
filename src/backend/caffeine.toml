@@ -6,11 +6,11 @@ type = "motoko"
 main = "main.mo"
 
 [build]
-commands = ["mops build", "pnpm bindgen"]
+commands = ["bash ../../scripts/mopsw.sh install-with-retry", "bash ../../scripts/mopsw.sh build", "bash ../../scripts/run-bindgen.sh"]
 out = "dist"
 
 [check]
-commands = ["mops check"]
+commands = ["bash ../../scripts/mopsw.sh check"]
 
 [check.fix]
-commands = ["mops check --fix"]
+commands = ["bash ../../scripts/mopsw.sh check --fix"]
