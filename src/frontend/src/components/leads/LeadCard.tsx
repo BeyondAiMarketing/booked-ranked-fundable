@@ -20,9 +20,12 @@ export interface GeneratedLeadUI {
   city: string;
   source: string;
   enriched: boolean;
+  /** serpApiVerified=true → real-time verified lead */
+  serpApiVerified?: boolean;
   temperature: string;
   score: number;
   isNewBusiness?: boolean;
+  isNewFiling?: boolean;
 }
 
 interface LeadCardProps {
@@ -124,14 +127,19 @@ export default function LeadCard({
             {lead.niche}
           </Badge>
         )}
-        {lead.enriched && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border badge-emerald">
-            <CheckCircle2 size={8} /> Enriched
+        {/* Verified vs AI Generated badge */}
+        {lead.serpApiVerified || lead.enriched ? (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
+            <CheckCircle2 size={8} /> Verified
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-500/20 text-amber-300 border-amber-500/30">
+            AI Generated
           </span>
         )}
-        {lead.isNewBusiness && (
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-500/20 text-emerald-300 border-emerald-500/30">
-            New Business
+        {(lead.isNewBusiness || lead.isNewFiling) && (
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-blue-600/20 text-blue-300 border-blue-500/30">
+            New Filing
           </span>
         )}
       </div>

@@ -88,7 +88,10 @@ function exportToCSV(leads: GeneratedLeadUI[]) {
   URL.revokeObjectURL(url);
 }
 
-function normalizeLeads(raw: Record<string, unknown>[]): GeneratedLeadUI[] {
+function normalizeLeads(
+  raw: Record<string, unknown>[],
+  isFilings = false,
+): GeneratedLeadUI[] {
   return raw.map((l, i) => ({
     id: `ai-lead-${Date.now()}-${i}`,
     name: String(l.name ?? ""),
@@ -103,6 +106,11 @@ function normalizeLeads(raw: Record<string, unknown>[]): GeneratedLeadUI[] {
     enriched: Boolean(l.enriched),
     temperature: String(l.temperature ?? "cold"),
     score: typeof l.score === "bigint" ? Number(l.score) : Number(l.score ?? 0),
+    serpApiVerified:
+      l.source?.toString().toLowerCase().includes("serpapi") ||
+      l.source?.toString().toLowerCase().includes("searxng") ||
+      false,
+    isNewFiling: isFilings,
   }));
 }
 
@@ -151,7 +159,7 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
   // ── Search handler ─────────────────────────────────────────────────────────
 
   const runSearch = useCallback(
-    async (searchNiche: string, searchCity: string, _isFilings = false) => {
+    async (searchNiche: string, searchCity: string, isFilings = false) => {
       if (isLoading) return;
 
       setIsLoading(true);
@@ -208,7 +216,7 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
             searchedAt: bigint;
           };
           setResult({
-            leads: normalizeLeads(data.leads ?? []),
+            leads: normalizeLeads(data.leads ?? [], isFilings),
             claudeCount: Number(data.claudeCount ?? 0),
             openAICount: Number(data.openAICount ?? 0),
             enrichedCount: Number(data.enrichedCount ?? 0),

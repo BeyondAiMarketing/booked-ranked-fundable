@@ -32,20 +32,6 @@ function useCountdown() {
   };
 }
 
-// ─── Validation ────────────────────────────────────────────────────────────────────────────
-
-function isValidEmail(v: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-}
-
-// Phone formatter: formats as ###-###-####
-function formatPhone(raw: string): string {
-  const digits = raw.replace(/\D/g, "").slice(0, 10);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-}
-
 // ─── Benefit bullets ────────────────────────────────────────────────────────────────────
 
 const BENEFITS = [
@@ -85,28 +71,6 @@ function nicheLabel(n: string): string {
   return NICHE_DISPLAY[n] ?? n.charAt(0).toUpperCase() + n.slice(1);
 }
 
-// ─── Shared input style helpers ─────────────────────────────────────────────────────────
-
-const inputBase: React.CSSProperties = {
-  background: "oklch(0.14 0.018 285)",
-  border: "1px solid oklch(1 0 0 / 10%)",
-  borderRadius: "0.75rem",
-  padding: "14px 16px",
-  color: "white",
-  fontSize: "1rem",
-  width: "100%",
-  outline: "none",
-  transition: "border-color 0.15s",
-};
-
-const inputFocus: React.CSSProperties = {
-  border: "1px solid oklch(0.58 0.22 290 / 60%)",
-};
-
-const inputError: React.CSSProperties = {
-  border: "1px solid oklch(0.65 0.22 25 / 70%)",
-};
-
 // ─── Component ───────────────────────────────────────────────────────────────────────────────
 
 export default function DemoStep9CTA() {
@@ -121,12 +85,9 @@ export default function DemoStep9CTA() {
   } = useDemoFlow();
 
   const firstName = demoProspect?.firstName ?? "";
+  const capturedPhone = demoProspect?.phone ?? "";
+  const capturedEmail = demoProspect?.email ?? "";
 
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [phoneFocused, setPhoneFocused] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [status, setStatus] = useState<"idle" | "loading" | "success">("idle");
   const hasCalledComplete = useRef(false);
@@ -150,41 +111,37 @@ export default function DemoStep9CTA() {
     }
   }, [status]);
 
-  const emailInvalid = emailTouched && !isValidEmail(email);
-
   const handleActivate = async () => {
-    setEmailTouched(true);
     setErrorMsg("");
 
-    if (!isValidEmail(email)) {
-      setErrorMsg("Please enter a valid email address.");
+    // Step 9 never collects email — if missing, prompt user to go back
+    if (!capturedEmail) {
+      setErrorMsg(
+        "We couldn\u2019t find your email from the demo intake. Please tap \u201cNot you? Start over\u201d above to go back and fill in your details.",
+      );
       return;
     }
     if (status === "loading") return;
 
     setStatus("loading");
     try {
-      const ok = await activateTrial(email, phone || undefined);
+      const ok = await activateTrial(capturedEmail, capturedPhone || undefined);
       if (ok) {
         setStatus("success");
       } else {
-        // activateTrial returns false for backend errors AND for missing actor/sessionId
         setStatus("idle");
         setErrorMsg(
-          "We couldn\u2019t activate your trial right now \u2014 please try again in a moment.",
+          "We couldn\u2019t activate your trial right now. Please check your connection and try again.",
         );
       }
     } catch (err) {
       console.error("[DemoStep9CTA] activateTrial threw:", err);
       setStatus("idle");
+      const detail = err instanceof Error ? err.message : "Unknown error";
       setErrorMsg(
-        "Something went wrong \u2014 please check your connection and try again.",
+        `Activation failed (${detail}). Please try again or contact support.`,
       );
     }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") void handleActivate();
   };
 
   // ──── Success screen ─────────────────────────────────────────────────────────
@@ -242,7 +199,7 @@ export default function DemoStep9CTA() {
             style={{ color: "oklch(0.55 0.02 280)" }}
           >
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            Taking you to your dashboard…
+            Taking you to your dashboard\u2026
           </div>
 
           <a
@@ -256,7 +213,7 @@ export default function DemoStep9CTA() {
               textDecoration: "none",
             }}
           >
-            Open Your Dashboard →
+            Open Your Dashboard \u2192
           </a>
         </motion.div>
       </div>
@@ -289,7 +246,7 @@ export default function DemoStep9CTA() {
           style={{ color: "oklch(0.62 0.18 290)" }}
           data-ocid="demo.step9.act_label"
         >
-          Act 3 — Your Trial
+          Act 3 \u2014 Your Trial
         </motion.p>
 
         {/* Personalized headline */}
@@ -322,7 +279,7 @@ export default function DemoStep9CTA() {
           No credit card.&nbsp; No contracts.&nbsp; Cancel anytime.
         </motion.p>
 
-        {/* "Your Info on File" summary card */}
+        {/* Personalized summary — all pre-filled from demo intake */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -347,6 +304,8 @@ export default function DemoStep9CTA() {
                 { label: "Owner", value: firstName },
                 { label: "Location", value: city },
                 { label: "Niche", value: niche ? nicheLabel(niche) : "" },
+                { label: "Phone", value: capturedPhone },
+                { label: "Email", value: capturedEmail },
               ] as { label: string; value: string }[]
             ).map(({ label, value }) =>
               value ? (
@@ -374,98 +333,6 @@ export default function DemoStep9CTA() {
             <Pencil size={10} />
             Not you? Start over
           </button>
-        </motion.div>
-
-        {/* Email + Phone fields */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45, delay: 0.2 }}
-          className="w-full flex flex-col gap-3 text-left"
-        >
-          {/* Email */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="trial-email"
-              className="block text-xs font-semibold"
-              style={{ color: "oklch(0.6 0.02 280)" }}
-            >
-              Best email to send your login link:
-              <span className="ml-1" style={{ color: "oklch(0.65 0.22 25)" }}>
-                *
-              </span>
-            </label>
-            <input
-              id="trial-email"
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => {
-                setEmail(e.target.value);
-                if (errorMsg) setErrorMsg("");
-              }}
-              onFocus={() => setEmailFocused(true)}
-              onBlur={() => {
-                setEmailFocused(false);
-                setEmailTouched(true);
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="you@yourbusiness.com"
-              aria-label="Business email address"
-              aria-invalid={emailInvalid}
-              data-ocid="demo.step9.email.input"
-              disabled={status === "loading"}
-              style={{
-                ...inputBase,
-                ...(emailFocused ? inputFocus : {}),
-                ...(emailInvalid ? inputError : {}),
-              }}
-            />
-            {emailInvalid && (
-              <p
-                className="text-xs"
-                style={{ color: "oklch(0.65 0.22 25)" }}
-                data-ocid="demo.step9.email.field_error"
-              >
-                Please enter a valid email address.
-              </p>
-            )}
-          </div>
-
-          {/* Phone */}
-          <div className="space-y-1.5">
-            <label
-              htmlFor="trial-phone"
-              className="block text-xs font-semibold"
-              style={{ color: "oklch(0.6 0.02 280)" }}
-            >
-              Your mobile number
-              <span
-                className="ml-1 font-normal"
-                style={{ color: "oklch(0.45 0.02 280)" }}
-              >
-                (we\u2019ll send a welcome text)
-              </span>
-            </label>
-            <input
-              id="trial-phone"
-              type="tel"
-              autoComplete="tel"
-              value={phone}
-              onChange={(e) => setPhone(formatPhone(e.target.value))}
-              onFocus={() => setPhoneFocused(true)}
-              onBlur={() => setPhoneFocused(false)}
-              onKeyDown={handleKeyDown}
-              placeholder="555-867-5309"
-              aria-label="Mobile phone number"
-              data-ocid="demo.step9.phone.input"
-              disabled={status === "loading"}
-              style={{
-                ...inputBase,
-                ...(phoneFocused ? inputFocus : {}),
-              }}
-            />
-          </div>
         </motion.div>
 
         {/* Benefit bullets */}
@@ -517,7 +384,7 @@ export default function DemoStep9CTA() {
             {status === "loading" ? (
               <>
                 <Loader2 className="w-5 h-5 animate-spin" />
-                Activating your trial…
+                Activating your trial\u2026
               </>
             ) : (
               "Activate My Free Trial \u2014 No Credit Card Required"

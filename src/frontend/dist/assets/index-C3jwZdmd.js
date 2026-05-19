@@ -1,4 +1,4 @@
-const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/SocialContentGeneratorPage-B_TXo-1z.js","assets/useSocialMedia-YqFsAq39.js","assets/socialContentService-DxBFOoj9.js","assets/SocialSchedulerPage-CuC-v4jY.js","assets/SocialEngagementAgentPage-CJsJn030.js","assets/separator-DX_6Rlgi.js","assets/SocialProofPipelinePage-BBal7HL5.js","assets/CompetitorIntelligencePage-CCf32R7q.js","assets/SocialLeadCapturePage-DNKR_hi0.js","assets/SocialDemoFunnelPage-Cl5g-GFh.js"])))=>i.map(i=>d[i]);
+const __vite__mapDeps=(i,m=__vite__mapDeps,d=(m.f||(m.f=["assets/SocialContentGeneratorPage-dcpXxCVJ.js","assets/useSocialMedia-oUHPIEsa.js","assets/socialContentService-DnbeW_r-.js","assets/SocialSchedulerPage-Pey1DvH7.js","assets/SocialEngagementAgentPage-DMyYqU95.js","assets/separator-DANejDoa.js","assets/SocialProofPipelinePage-ATDJOR32.js","assets/CompetitorIntelligencePage-B5aCml5s.js","assets/SocialLeadCapturePage-B8RZO8vn.js","assets/SocialDemoFunnelPage-CUX0P_bV.js"])))=>i.map(i=>d[i]);
 var __defProp = Object.defineProperty;
 var __typeError = (msg) => {
   throw TypeError(msg);
@@ -136936,7 +136936,7 @@ function validateField(name, value) {
       return "";
   }
 }
-function formatPhone$1(raw) {
+function formatPhone(raw) {
   const digits = raw.replace(/\D/g, "").slice(0, 10);
   if (digits.length < 4) return digits;
   if (digits.length < 7) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
@@ -137204,7 +137204,7 @@ function BrandKitIntakePage() {
   const headingNiche = selectedNicheLabel || "Business";
   function handleChange(e3) {
     const { name, value } = e3.target;
-    const processed = name === "phone" ? formatPhone$1(value) : value;
+    const processed = name === "phone" ? formatPhone(value) : value;
     setForm((prev) => ({ ...prev, [name]: processed }));
     if (touched[name]) {
       setErrors((prev) => ({
@@ -179898,7 +179898,11 @@ async function loadCachedNicheAudio(nicheId) {
           bytes.buffer.slice(0)
         );
         buffers[i] = audioBuf;
-      } catch {
+      } catch (decodeErr) {
+        console.error(
+          `[audioService] decodeAudioData failed for cache key ${getCacheKey(nicheId, i)}:`,
+          decodeErr
+        );
         allLoaded = false;
       }
     })
@@ -179948,7 +179952,15 @@ async function _fetchElevenLabsBuffer(text, voiceId, key) {
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
-    return await _audioCtx.decodeAudioData(arrayBuf);
+    try {
+      return await _audioCtx.decodeAudioData(arrayBuf);
+    } catch (decodeErr) {
+      console.error(
+        "[audioService] ElevenLabs decodeAudioData failed:",
+        decodeErr
+      );
+      return null;
+    }
   } catch (err) {
     console.warn("[audioService] ElevenLabs fetch failed:", err);
     return null;
@@ -179973,7 +179985,15 @@ async function _fetchOpenAIBuffer(text, key) {
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
-    return await _audioCtx.decodeAudioData(arrayBuf);
+    try {
+      return await _audioCtx.decodeAudioData(arrayBuf);
+    } catch (decodeErr) {
+      console.error(
+        "[audioService] OpenAI TTS decodeAudioData failed:",
+        decodeErr
+      );
+      return null;
+    }
   } catch (err) {
     console.warn("[audioService] OpenAI TTS fetch failed:", err);
     return null;
@@ -182934,6 +182954,9 @@ function DemoStep2Voice() {
   const abortRef = reactExports.useRef(false);
   const audioFailureCountRef = reactExports.useRef(0);
   const transcriptEndRef = reactExports.useRef(null);
+  const playedLinesRef = reactExports.useRef(/* @__PURE__ */ new Set());
+  const retryCountRef = reactExports.useRef(/* @__PURE__ */ new Map());
+  const hasCompletedRef = reactExports.useRef(false);
   const painStat = NICHE_PAIN_POINT_STATS[nicheKey] ?? NICHE_PAIN_POINT_STATS.plumber;
   reactExports.useEffect(() => {
     resetAudioFallbackMode();
@@ -183028,14 +183051,18 @@ function DemoStep2Voice() {
           nicheKey,
           lines,
           1,
-          () => {
+          (lineIdx) => {
+            if (playedLinesRef.current.has(lineIdx)) return;
+            playedLinesRef.current.add(lineIdx);
+            const retries = retryCountRef.current.get(lineIdx) ?? 0;
+            if (retries >= 3) return;
           },
           () => {
-            if (!abortRef.current) {
-              setWaveActive(false);
-              setPhase("done");
-              setShowOverlay(true);
-            }
+            if (hasCompletedRef.current || abortRef.current) return;
+            hasCompletedRef.current = true;
+            setWaveActive(false);
+            setPhase("done");
+            setShowOverlay(true);
           },
           abortRef
         );
@@ -183044,11 +183071,18 @@ function DemoStep2Voice() {
     );
     if (firstResult === null) {
       audioFailureCountRef.current++;
+      const retries = retryCountRef.current.get(0) ?? 0;
+      retryCountRef.current.set(0, retries + 1);
       if (audioFailureCountRef.current >= 3 || isAudioFallbackMode()) {
-        setPhase("done");
-        setShowOverlay(true);
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          setPhase("done");
+          setShowOverlay(true);
+        }
         return;
       }
+    } else {
+      playedLinesRef.current.add(0);
     }
     setPhase("call");
     setTimeout(() => {
@@ -183069,7 +183103,11 @@ function DemoStep2Voice() {
     setShowBookingBubble(true);
     setBubbleShown(true);
     setTimeout(() => {
-      if (!abortRef.current) completeStep();
+      if (!abortRef.current) {
+        playedLinesRef.current.clear();
+        retryCountRef.current.clear();
+        completeStep();
+      }
     }, 2e3);
   }, [completeStep]);
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
@@ -186440,15 +186478,6 @@ function useCountdown() {
     expired: seconds === 0
   };
 }
-function isValidEmail(v2) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v2.trim());
-}
-function formatPhone(raw) {
-  const digits = raw.replace(/\D/g, "").slice(0, 10);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-  return `${digits.slice(0, 3)}-${digits.slice(3, 6)}-${digits.slice(6)}`;
-}
 const BENEFITS = [
   {
     Icon: Zap,
@@ -186481,23 +186510,6 @@ const NICHE_DISPLAY = {
 function nicheLabel(n2) {
   return NICHE_DISPLAY[n2] ?? n2.charAt(0).toUpperCase() + n2.slice(1);
 }
-const inputBase = {
-  background: "oklch(0.14 0.018 285)",
-  border: "1px solid oklch(1 0 0 / 10%)",
-  borderRadius: "0.75rem",
-  padding: "14px 16px",
-  color: "white",
-  fontSize: "1rem",
-  width: "100%",
-  outline: "none",
-  transition: "border-color 0.15s"
-};
-const inputFocus = {
-  border: "1px solid oklch(0.58 0.22 290 / 60%)"
-};
-const inputError = {
-  border: "1px solid oklch(0.65 0.22 25 / 70%)"
-};
 function DemoStep9CTA() {
   const {
     activateTrial,
@@ -186509,11 +186521,8 @@ function DemoStep9CTA() {
     goBack
   } = useDemoFlow();
   const firstName = (demoProspect == null ? void 0 : demoProspect.firstName) ?? "";
-  const [email, setEmail] = reactExports.useState("");
-  const [phone, setPhone] = reactExports.useState("");
-  const [emailFocused, setEmailFocused] = reactExports.useState(false);
-  const [phoneFocused, setPhoneFocused] = reactExports.useState(false);
-  const [emailTouched, setEmailTouched] = reactExports.useState(false);
+  const capturedPhone = (demoProspect == null ? void 0 : demoProspect.phone) ?? "";
+  const capturedEmail = (demoProspect == null ? void 0 : demoProspect.email) ?? "";
   const [errorMsg, setErrorMsg] = reactExports.useState("");
   const [status, setStatus] = reactExports.useState("idle");
   const hasCalledComplete = reactExports.useRef(false);
@@ -186532,36 +186541,34 @@ function DemoStep9CTA() {
       return () => clearTimeout(t2);
     }
   }, [status]);
-  const emailInvalid = emailTouched && !isValidEmail(email);
   const handleActivate = async () => {
-    setEmailTouched(true);
     setErrorMsg("");
-    if (!isValidEmail(email)) {
-      setErrorMsg("Please enter a valid email address.");
+    if (!capturedEmail) {
+      setErrorMsg(
+        "We couldn’t find your email from the demo intake. Please tap “Not you? Start over” above to go back and fill in your details."
+      );
       return;
     }
     if (status === "loading") return;
     setStatus("loading");
     try {
-      const ok = await activateTrial(email, phone || void 0);
+      const ok = await activateTrial(capturedEmail, capturedPhone || void 0);
       if (ok) {
         setStatus("success");
       } else {
         setStatus("idle");
         setErrorMsg(
-          "We couldn’t activate your trial right now — please try again in a moment."
+          "We couldn’t activate your trial right now. Please check your connection and try again."
         );
       }
     } catch (err) {
       console.error("[DemoStep9CTA] activateTrial threw:", err);
       setStatus("idle");
+      const detail = err instanceof Error ? err.message : "Unknown error";
       setErrorMsg(
-        "Something went wrong — please check your connection and try again."
+        `Activation failed (${detail}). Please try again or contact support.`
       );
     }
-  };
-  const handleKeyDown = (e3) => {
-    if (e3.key === "Enter") void handleActivate();
   };
   if (status === "success") {
     return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -186634,7 +186641,7 @@ function DemoStep9CTA() {
                     style: { color: "oklch(0.55 0.02 280)" },
                     children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-3.5 h-3.5 animate-spin" }),
-                      "Taking you to your dashboard…"
+                      "Taking you to your dashboard\\u2026"
                     ]
                   }
                 ),
@@ -186650,7 +186657,7 @@ function DemoStep9CTA() {
                       color: "oklch(0.78 0.16 155)",
                       textDecoration: "none"
                     },
-                    children: "Open Your Dashboard →"
+                    children: "Open Your Dashboard \\u2192"
                   }
                 )
               ]
@@ -186686,7 +186693,7 @@ function DemoStep9CTA() {
               className: "text-xs font-bold uppercase tracking-[0.18em]",
               style: { color: "oklch(0.62 0.18 290)" },
               "data-ocid": "demo.step9.act_label",
-              children: "Act 3 — Your Trial"
+              children: "Act 3 \\u2014 Your Trial"
             }
           ),
           /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -186742,7 +186749,9 @@ function DemoStep9CTA() {
                   { label: "Business", value: businessName },
                   { label: "Owner", value: firstName },
                   { label: "Location", value: city },
-                  { label: "Niche", value: niche ? nicheLabel(niche) : "" }
+                  { label: "Niche", value: niche ? nicheLabel(niche) : "" },
+                  { label: "Phone", value: capturedPhone },
+                  { label: "Email", value: capturedEmail }
                 ].map(
                   ({ label, value }) => value ? /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "flex items-baseline gap-2", children: [
                     /* @__PURE__ */ jsxRuntimeExports.jsx(
@@ -186770,111 +186779,6 @@ function DemoStep9CTA() {
                     ]
                   }
                 )
-              ]
-            }
-          ),
-          /* @__PURE__ */ jsxRuntimeExports.jsxs(
-            motion.div,
-            {
-              initial: { opacity: 0, y: 10 },
-              animate: { opacity: 1, y: 0 },
-              transition: { duration: 0.45, delay: 0.2 },
-              className: "w-full flex flex-col gap-3 text-left",
-              children: [
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1.5", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    "label",
-                    {
-                      htmlFor: "trial-email",
-                      className: "block text-xs font-semibold",
-                      style: { color: "oklch(0.6 0.02 280)" },
-                      children: [
-                        "Best email to send your login link:",
-                        /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "ml-1", style: { color: "oklch(0.65 0.22 25)" }, children: "*" })
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "input",
-                    {
-                      id: "trial-email",
-                      type: "email",
-                      autoComplete: "email",
-                      value: email,
-                      onChange: (e3) => {
-                        setEmail(e3.target.value);
-                        if (errorMsg) setErrorMsg("");
-                      },
-                      onFocus: () => setEmailFocused(true),
-                      onBlur: () => {
-                        setEmailFocused(false);
-                        setEmailTouched(true);
-                      },
-                      onKeyDown: handleKeyDown,
-                      placeholder: "you@yourbusiness.com",
-                      "aria-label": "Business email address",
-                      "aria-invalid": emailInvalid,
-                      "data-ocid": "demo.step9.email.input",
-                      disabled: status === "loading",
-                      style: {
-                        ...inputBase,
-                        ...emailFocused ? inputFocus : {},
-                        ...emailInvalid ? inputError : {}
-                      }
-                    }
-                  ),
-                  emailInvalid && /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "p",
-                    {
-                      className: "text-xs",
-                      style: { color: "oklch(0.65 0.22 25)" },
-                      "data-ocid": "demo.step9.email.field_error",
-                      children: "Please enter a valid email address."
-                    }
-                  )
-                ] }),
-                /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1.5", children: [
-                  /* @__PURE__ */ jsxRuntimeExports.jsxs(
-                    "label",
-                    {
-                      htmlFor: "trial-phone",
-                      className: "block text-xs font-semibold",
-                      style: { color: "oklch(0.6 0.02 280)" },
-                      children: [
-                        "Your mobile number",
-                        /* @__PURE__ */ jsxRuntimeExports.jsx(
-                          "span",
-                          {
-                            className: "ml-1 font-normal",
-                            style: { color: "oklch(0.45 0.02 280)" },
-                            children: "(we\\u2019ll send a welcome text)"
-                          }
-                        )
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ jsxRuntimeExports.jsx(
-                    "input",
-                    {
-                      id: "trial-phone",
-                      type: "tel",
-                      autoComplete: "tel",
-                      value: phone,
-                      onChange: (e3) => setPhone(formatPhone(e3.target.value)),
-                      onFocus: () => setPhoneFocused(true),
-                      onBlur: () => setPhoneFocused(false),
-                      onKeyDown: handleKeyDown,
-                      placeholder: "555-867-5309",
-                      "aria-label": "Mobile phone number",
-                      "data-ocid": "demo.step9.phone.input",
-                      disabled: status === "loading",
-                      style: {
-                        ...inputBase,
-                        ...phoneFocused ? inputFocus : {}
-                      }
-                    }
-                  )
-                ] })
               ]
             }
           ),
@@ -186923,7 +186827,7 @@ function DemoStep9CTA() {
                     },
                     children: status === "loading" ? /* @__PURE__ */ jsxRuntimeExports.jsxs(jsxRuntimeExports.Fragment, { children: [
                       /* @__PURE__ */ jsxRuntimeExports.jsx(LoaderCircle, { className: "w-5 h-5 animate-spin" }),
-                      "Activating your trial…"
+                      "Activating your trial\\u2026"
                     ] }) : "Activate My Free Trial — No Credit Card Required"
                   }
                 ),
@@ -210543,11 +210447,11 @@ function LeadCard$1({
             }
           ),
           lead.niche && /* @__PURE__ */ jsxRuntimeExports.jsx(Badge, { className: "badge-purple text-[10px] border capitalize", children: lead.niche }),
-          lead.enriched && /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border badge-emerald", children: [
+          lead.serpApiVerified || lead.enriched ? /* @__PURE__ */ jsxRuntimeExports.jsxs("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-500/20 text-emerald-300 border-emerald-500/30", children: [
             /* @__PURE__ */ jsxRuntimeExports.jsx(CircleCheck, { size: 8 }),
-            " Enriched"
-          ] }),
-          lead.isNewBusiness && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-emerald-500/20 text-emerald-300 border-emerald-500/30", children: "New Business" })
+            " Verified"
+          ] }) : /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-amber-500/20 text-amber-300 border-amber-500/30", children: "AI Generated" }),
+          (lead.isNewBusiness || lead.isNewFiling) && /* @__PURE__ */ jsxRuntimeExports.jsx("span", { className: "inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold border bg-blue-600/20 text-blue-300 border-blue-500/30", children: "New Filing" })
         ] }),
         /* @__PURE__ */ jsxRuntimeExports.jsxs("div", { className: "space-y-1", children: [
           lead.phone && /* @__PURE__ */ jsxRuntimeExports.jsxs("p", { className: "text-xs text-gray-400 flex items-center gap-1.5 truncate", children: [
@@ -210674,11 +210578,18 @@ function NewBusinessFilingsSearch({
     const niches2 = selectedNiches.length > 0 ? selectedNiches : ["general"];
     const city = [county, state].filter(Boolean).join(", ");
     for (const niche of niches2) {
-      onSearch(
-        `${niche} newly registered business DBA fictitious business filing`,
-        city || state || "nationwide",
-        true
-      );
+      const filingPrompt = [
+        niche,
+        "newly registered business",
+        "DBA filing",
+        "fictitious business name registration",
+        "new LLC formation",
+        "new corporation filing",
+        "registered this year",
+        state ? `in ${state}` : "",
+        county ? `${county} county` : ""
+      ].filter(Boolean).join(" ");
+      onSearch(filingPrompt, city || state || "nationwide", true);
     }
   };
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(
@@ -210830,22 +210741,27 @@ function exportToCSV(leads) {
   a2.click();
   URL.revokeObjectURL(url);
 }
-function normalizeLeads(raw) {
-  return raw.map((l2, i) => ({
-    id: `ai-lead-${Date.now()}-${i}`,
-    name: String(l2.name ?? ""),
-    ownerFirstName: String(l2.ownerFirstName ?? ""),
-    phone: String(l2.phone ?? ""),
-    address: String(l2.address ?? ""),
-    website: String(l2.website ?? ""),
-    description: String(l2.description ?? ""),
-    niche: String(l2.niche ?? ""),
-    city: String(l2.city ?? ""),
-    source: String(l2.source ?? "ai"),
-    enriched: Boolean(l2.enriched),
-    temperature: String(l2.temperature ?? "cold"),
-    score: typeof l2.score === "bigint" ? Number(l2.score) : Number(l2.score ?? 0)
-  }));
+function normalizeLeads(raw, isFilings = false) {
+  return raw.map((l2, i) => {
+    var _a3, _b3;
+    return {
+      id: `ai-lead-${Date.now()}-${i}`,
+      name: String(l2.name ?? ""),
+      ownerFirstName: String(l2.ownerFirstName ?? ""),
+      phone: String(l2.phone ?? ""),
+      address: String(l2.address ?? ""),
+      website: String(l2.website ?? ""),
+      description: String(l2.description ?? ""),
+      niche: String(l2.niche ?? ""),
+      city: String(l2.city ?? ""),
+      source: String(l2.source ?? "ai"),
+      enriched: Boolean(l2.enriched),
+      temperature: String(l2.temperature ?? "cold"),
+      score: typeof l2.score === "bigint" ? Number(l2.score) : Number(l2.score ?? 0),
+      serpApiVerified: ((_a3 = l2.source) == null ? void 0 : _a3.toString().toLowerCase().includes("serpapi")) || ((_b3 = l2.source) == null ? void 0 : _b3.toString().toLowerCase().includes("searxng")) || false,
+      isNewFiling: isFilings
+    };
+  });
 }
 function AILeadSearchPanel({ onPushToLake }) {
   const { actor } = useActor();
@@ -210873,7 +210789,7 @@ function AILeadSearchPanel({ onPushToLake }) {
   }, []);
   reactExports.useEffect(() => () => clearTimers(), [clearTimers]);
   const runSearch = reactExports.useCallback(
-    async (searchNiche, searchCity, _isFilings = false) => {
+    async (searchNiche, searchCity, isFilings = false) => {
       if (isLoading) return;
       setIsLoading(true);
       setTimedOut(false);
@@ -210911,7 +210827,7 @@ function AILeadSearchPanel({ onPushToLake }) {
         } else {
           const data = response.ok;
           setResult({
-            leads: normalizeLeads(data.leads ?? []),
+            leads: normalizeLeads(data.leads ?? [], isFilings),
             claudeCount: Number(data.claudeCount ?? 0),
             openAICount: Number(data.openAICount ?? 0),
             enrichedCount: Number(data.enrichedCount ?? 0),
@@ -252723,28 +252639,28 @@ function WhyUsPage() {
     /* @__PURE__ */ jsxRuntimeExports.jsx(PublicFooter, {})
   ] });
 }
-const NewslettersPage = reactExports.lazy(() => __vitePreload(() => import("./NewslettersPage-Ckyahix2.js"), true ? [] : void 0));
-const ScraperToolPage = reactExports.lazy(() => __vitePreload(() => import("./ScraperToolPage-CW6Qvklu.js"), true ? [] : void 0));
+const NewslettersPage = reactExports.lazy(() => __vitePreload(() => import("./NewslettersPage-DiZjTRDW.js"), true ? [] : void 0));
+const ScraperToolPage = reactExports.lazy(() => __vitePreload(() => import("./ScraperToolPage-Dp6UJbTE.js"), true ? [] : void 0));
 const OutreachAnalyticsPage = reactExports.lazy(
-  () => __vitePreload(() => import("./OutreachAnalyticsPage-DZV4oQjq.js"), true ? [] : void 0)
+  () => __vitePreload(() => import("./OutreachAnalyticsPage-Bu7oAhzc.js"), true ? [] : void 0)
 );
 const SocialContentGeneratorPage = reactExports.lazy(
-  () => __vitePreload(() => import("./SocialContentGeneratorPage-B_TXo-1z.js"), true ? __vite__mapDeps([0,1,2]) : void 0)
+  () => __vitePreload(() => import("./SocialContentGeneratorPage-dcpXxCVJ.js"), true ? __vite__mapDeps([0,1,2]) : void 0)
 );
-const SocialSchedulerPage = reactExports.lazy(() => __vitePreload(() => import("./SocialSchedulerPage-CuC-v4jY.js"), true ? __vite__mapDeps([3,1]) : void 0));
+const SocialSchedulerPage = reactExports.lazy(() => __vitePreload(() => import("./SocialSchedulerPage-Pey1DvH7.js"), true ? __vite__mapDeps([3,1]) : void 0));
 const SocialEngagementAgentPage = reactExports.lazy(
-  () => __vitePreload(() => import("./SocialEngagementAgentPage-CJsJn030.js"), true ? __vite__mapDeps([4,5,1]) : void 0)
+  () => __vitePreload(() => import("./SocialEngagementAgentPage-DMyYqU95.js"), true ? __vite__mapDeps([4,5,1]) : void 0)
 );
 const SocialProofPipelinePage = reactExports.lazy(
-  () => __vitePreload(() => import("./SocialProofPipelinePage-BBal7HL5.js"), true ? __vite__mapDeps([6,1,2]) : void 0)
+  () => __vitePreload(() => import("./SocialProofPipelinePage-ATDJOR32.js"), true ? __vite__mapDeps([6,1,2]) : void 0)
 );
 const CompetitorIntelligencePage = reactExports.lazy(
-  () => __vitePreload(() => import("./CompetitorIntelligencePage-CCf32R7q.js"), true ? __vite__mapDeps([7,1]) : void 0)
+  () => __vitePreload(() => import("./CompetitorIntelligencePage-B5aCml5s.js"), true ? __vite__mapDeps([7,1]) : void 0)
 );
 const SocialLeadCapturePage = reactExports.lazy(
-  () => __vitePreload(() => import("./SocialLeadCapturePage-DNKR_hi0.js"), true ? __vite__mapDeps([8,1]) : void 0)
+  () => __vitePreload(() => import("./SocialLeadCapturePage-B8RZO8vn.js"), true ? __vite__mapDeps([8,1]) : void 0)
 );
-const SocialDemoFunnelPage = reactExports.lazy(() => __vitePreload(() => import("./SocialDemoFunnelPage-Cl5g-GFh.js"), true ? __vite__mapDeps([9,5,1]) : void 0));
+const SocialDemoFunnelPage = reactExports.lazy(() => __vitePreload(() => import("./SocialDemoFunnelPage-CUX0P_bV.js"), true ? __vite__mapDeps([9,5,1]) : void 0));
 function ServicesDemoRedirect() {
   const search = useSearch({ from: "/services-demo" });
   const niche = search.niche;

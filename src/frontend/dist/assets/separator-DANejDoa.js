@@ -1,4 +1,4 @@
-import { r as reactExports, j as jsxRuntimeExports, b8 as Primitive, K as cn } from "./index-DAQiRbqG.js";
+import { r as reactExports, j as jsxRuntimeExports, b8 as Primitive, K as cn } from "./index-C3jwZdmd.js";
 var NAME = "Separator";
 var DEFAULT_ORIENTATION = "horizontal";
 var ORIENTATIONS = ["horizontal", "vertical"];

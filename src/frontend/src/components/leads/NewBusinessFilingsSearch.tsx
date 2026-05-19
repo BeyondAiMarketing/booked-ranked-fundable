@@ -107,11 +107,22 @@ export default function NewBusinessFilingsSearch({
     const niches = selectedNiches.length > 0 ? selectedNiches : ["general"];
     const city = [county, state].filter(Boolean).join(", ");
     for (const niche of niches) {
-      onSearch(
-        `${niche} newly registered business DBA fictitious business filing`,
-        city || state || "nationwide",
-        true,
-      );
+      // Explicit prompt that targets newly registered businesses from public filings.
+      // The city/state context gives the LLM enough to pull realistic recent registrations.
+      const filingPrompt = [
+        niche,
+        "newly registered business",
+        "DBA filing",
+        "fictitious business name registration",
+        "new LLC formation",
+        "new corporation filing",
+        "registered this year",
+        state ? `in ${state}` : "",
+        county ? `${county} county` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
+      onSearch(filingPrompt, city || state || "nationwide", true);
     }
   };
 

@@ -162,6 +162,12 @@ export default function DemoStep2Voice() {
   const abortRef = useRef(false);
   const audioFailureCountRef = useRef(0);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
+  // Guard: each line index can only play once
+  const playedLinesRef = useRef<Set<number>>(new Set());
+  // Guard: retry count per line index
+  const retryCountRef = useRef<Map<number, number>>(new Map());
+  // Guard: onComplete fires only once
+  const hasCompletedRef = useRef(false);
 
   // Niche pain stat for display before call
   const painStat =
@@ -305,16 +311,21 @@ export default function DemoStep2Voice() {
           nicheKey,
           lines,
           1,
-          () => {
+          (lineIdx) => {
+            // Only allow each line to be tracked once
+            if (playedLinesRef.current.has(lineIdx)) return;
+            playedLinesRef.current.add(lineIdx);
+            const retries = retryCountRef.current.get(lineIdx) ?? 0;
+            if (retries >= 3) return; // Skip permanently failed lines
             /* transcript driven by runTranscript */
           },
           () => {
-            // onComplete fires either at natural end or after 3 consecutive failures
-            if (!abortRef.current) {
-              setWaveActive(false);
-              setPhase("done");
-              setShowOverlay(true);
-            }
+            // onComplete fires only once
+            if (hasCompletedRef.current || abortRef.current) return;
+            hasCompletedRef.current = true;
+            setWaveActive(false);
+            setPhase("done");
+            setShowOverlay(true);
           },
           abortRef,
         );
@@ -326,11 +337,18 @@ export default function DemoStep2Voice() {
     // Line 0 itself failed immediately (null return) — increment guard and check threshold
     if (firstResult === null) {
       audioFailureCountRef.current++;
+      const retries = retryCountRef.current.get(0) ?? 0;
+      retryCountRef.current.set(0, retries + 1);
       if (audioFailureCountRef.current >= 3 || isAudioFallbackMode()) {
-        setPhase("done");
-        setShowOverlay(true);
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          setPhase("done");
+          setShowOverlay(true);
+        }
         return;
       }
+    } else {
+      playedLinesRef.current.add(0);
     }
 
     setPhase("call");
@@ -359,7 +377,12 @@ export default function DemoStep2Voice() {
     setBubbleShown(true);
     // Enable Next button after bubble has been visible for 2s so user can read it
     setTimeout(() => {
-      if (!abortRef.current) completeStep();
+      if (!abortRef.current) {
+        // Reset played/retry tracking for a clean state if demo is replayed
+        playedLinesRef.current.clear();
+        retryCountRef.current.clear();
+        completeStep();
+      }
     }, 2000);
   }, [completeStep]);
 

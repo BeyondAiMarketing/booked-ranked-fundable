@@ -15,7 +15,7 @@
  *   3. preloadNicheScripts() runs in the BACKGROUND after unlockAudioContext().
  *      By Step 2, audio is ready in the buffer map.
  *   4. If no premium audio: _audioFallbackMode=true, transcript shown instead.
- *      NEVER call SpeechSynthesis or SpeechSynthesisUtterance.
+ *      NEVER call SpeechSynthesis, SpeechSynthesisUtterance, or window.speechSynthesis.
  *
  * USAGE PATTERN:
  *   Step 0 submit: unlockAudioContext() → preloadNicheScripts() (background)
@@ -145,7 +145,7 @@ export function unlockAudioContext(): void {
     console.log("[audioService] AudioContext unlocked via user gesture ✓");
   } catch (err) {
     console.warn("[audioService] AudioContext unlock failed:", err);
-    // SpeechSynthesis fallback still works — no catastrophic failure
+    // Transcript-only fallback will be used — no robotic voices
   }
 }
 
@@ -198,7 +198,11 @@ export async function loadCachedNicheAudio(nicheId: string): Promise<boolean> {
           bytes.buffer.slice(0),
         );
         buffers[i] = audioBuf;
-      } catch {
+      } catch (decodeErr) {
+        console.error(
+          `[audioService] decodeAudioData failed for cache key ${getCacheKey(nicheId, i)}:`,
+          decodeErr,
+        );
         allLoaded = false;
       }
     }),
@@ -260,7 +264,15 @@ async function _fetchElevenLabsBuffer(
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
-    return await _audioCtx.decodeAudioData(arrayBuf);
+    try {
+      return await _audioCtx.decodeAudioData(arrayBuf);
+    } catch (decodeErr) {
+      console.error(
+        "[audioService] ElevenLabs decodeAudioData failed:",
+        decodeErr,
+      );
+      return null;
+    }
   } catch (err) {
     console.warn("[audioService] ElevenLabs fetch failed:", err);
     return null;
@@ -289,7 +301,15 @@ async function _fetchOpenAIBuffer(
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
-    return await _audioCtx.decodeAudioData(arrayBuf);
+    try {
+      return await _audioCtx.decodeAudioData(arrayBuf);
+    } catch (decodeErr) {
+      console.error(
+        "[audioService] OpenAI TTS decodeAudioData failed:",
+        decodeErr,
+      );
+      return null;
+    }
   } catch (err) {
     console.warn("[audioService] OpenAI TTS fetch failed:", err);
     return null;
@@ -554,11 +574,8 @@ export function playPreloadedAudio(
   return playPreloadedAudioWithText(nicheId, lineIndex, text, onEnded);
 }
 
-// SpeechSynthesis permanently removed — no robotic voices.
-function _speechSynthNoOp(): void {
-  /* intentionally empty */
-}
-void _speechSynthNoOp;
+// SpeechSynthesis permanently removed — no robotic voices. Transcript-only fallback used instead.
+// DO NOT add any SpeechSynthesisUtterance or window.speechSynthesis references here.
 
 /**
  * startAudioSequence — chains all lines after the first one.

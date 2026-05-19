@@ -7,7 +7,7 @@
  * No targetRef provided: renders nothing — never floats to empty space.
  */
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface ArrowCalloutProps {
   /** Visual label text describing the highlighted element */
@@ -34,6 +34,15 @@ export default function ArrowCallout({
   targetRef,
 }: ArrowCalloutProps) {
   const ringRef = useRef<(() => void) | null>(null);
+  // Deferred visibility: targetRef.current is null on first render even when ref is attached.
+  // We wait for the DOM to populate before deciding to render.
+  const [targetVisible, setTargetVisible] = useState(false);
+
+  useEffect(() => {
+    if (targetRef?.current) {
+      setTargetVisible(true);
+    }
+  }, [targetRef]);
 
   // Mobile: apply pulsing ring directly to the target element
   useEffect(() => {
@@ -60,8 +69,8 @@ export default function ArrowCallout({
     return () => ringRef.current?.();
   }, [targetRef]);
 
-  // No targetRef → render nothing to avoid pointing at empty space
-  if (!targetRef?.current) return null;
+  // No targetRef or not yet in DOM → render nothing to avoid pointing at empty space
+  if (!targetVisible) return null;
 
   // Mobile: ring is applied via useEffect, no JSX overlay needed
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;

@@ -1,4 +1,4 @@
-import { bq as buildResearchRouter, br as isResearchError, bs as LiteLLMAdapter } from "./index-DAQiRbqG.js";
+import { bq as buildResearchRouter, br as isResearchError, bs as LiteLLMAdapter } from "./index-C3jwZdmd.js";
 const PLATFORM_RULES = {
   facebook: {
     maxChars: 500,
