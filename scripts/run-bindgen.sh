@@ -31,5 +31,5 @@ if pnpm exec caffeine-bindgen --version >/dev/null 2>&1; then
 fi
 
 echo "ERROR: caffeine-bindgen is not available." >&2
-echo "Install it globally or add it to devDependencies so pnpm exec can resolve it." >&2
+echo "Install/provide caffeine-bindgen in the build environment (it is not auto-installable from this repo)." >&2
 exit 127
