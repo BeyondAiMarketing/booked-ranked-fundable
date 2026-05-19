@@ -415,15 +415,27 @@ export function DemoFlowProvider({ children }: { children: React.ReactNode }) {
       overlayTimerRef.current = setTimeout(() => {
         setGreenOverlay(null);
         greenDismissRef.current?.();
+        greenDismissRef.current = undefined;
+        overlayTimerRef.current = null;
       }, 4200);
     },
     [],
   );
 
   const hideGreenOverlay = useCallback(() => {
-    if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+    if (overlayTimerRef.current) {
+      clearTimeout(overlayTimerRef.current);
+      overlayTimerRef.current = null;
+    }
     setGreenOverlay(null);
     greenDismissRef.current?.();
+    greenDismissRef.current = undefined;
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
+    };
   }, []);
 
   // ── Transcript helpers ───────────────────────────────────────────────────────
