@@ -15,13 +15,18 @@ import { AppProvider, useApp } from "./context/AppContext";
 import { CredentialsProvider } from "./context/CredentialsContext";
 import { useActor } from "./hooks/useActor";
 import AILeadIntelligencePage from "./pages/AILeadIntelligencePage";
+import AdminAIChatPage from "./pages/AdminAIChatPage";
 import AdminAgentServicesPage from "./pages/AdminAgentServicesPage";
 import AdminBrandKitTrialsPage from "./pages/AdminBrandKitTrialsPage";
 import AdminBrfVoiceAgentPage from "./pages/AdminBrfVoiceAgentPage";
 import AdminChatAgentPage from "./pages/AdminChatAgentPage";
+import AdminCommandCenterPage from "./pages/AdminCommandCenterPage";
 import AdminPage from "./pages/AdminPage";
+import AdminTrialsPage from "./pages/AdminTrialsPage";
+import AdminVoiceManagerPage from "./pages/AdminVoiceManagerPage";
 import AgencyOnboardingPage from "./pages/AgencyOnboardingPage";
 import AgencyPartnersPage from "./pages/AgencyPartnersPage";
+import AgentOrchestrationPage from "./pages/AgentOrchestrationPage";
 import AgentServicesPage from "./pages/AgentServicesPage";
 import AgentWorkflowOSPage from "./pages/AgentWorkflowOSPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
@@ -50,12 +55,14 @@ import DentalPage from "./pages/DentalPage";
 import DomainSetupPage from "./pages/DomainSetupPage";
 import DripCampaignsPage from "./pages/DripCampaignsPage";
 import EstimatesPage from "./pages/EstimatesPage";
+import FeatureTogglePage from "./pages/FeatureTogglePage";
 import FreeAuditPage from "./pages/FreeAuditPage";
 import FundabilityPage from "./pages/FundabilityPage";
 import GbpManagementPage from "./pages/GbpManagementPage";
 import GoLivePage from "./pages/GoLivePage";
 import HVACPage from "./pages/HVACPage";
 import HomePage from "./pages/HomePage";
+import IntegrationHealthPage from "./pages/IntegrationHealthPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LeadAttributionPage from "./pages/LeadAttributionPage";
 import LeadsPage from "./pages/LeadsPage";
@@ -64,11 +71,13 @@ import LoginPage from "./pages/LoginPage";
 import MedSpaPage from "./pages/MedSpaPage";
 import MortgagePage from "./pages/MortgagePage";
 import MultiLocationPage from "./pages/MultiLocationPage";
+import NicheAnalyticsPage from "./pages/NicheAnalyticsPage";
 import NicheWebsitePreviewPage from "./pages/NicheWebsitePreviewPage";
 import NicheWebsiteStudioPage from "./pages/NicheWebsiteStudioPage";
 import OnboardingWizardPage from "./pages/OnboardingWizardPage";
 import OpenLeadLakePage from "./pages/OpenLeadLakePage";
 import OutreachAgentPage from "./pages/OutreachAgentPage";
+import OutreachPipelinePage from "./pages/OutreachPipelinePage";
 import PaidAdsAgentPage from "./pages/PaidAdsAgentPage";
 import PlumbingPage from "./pages/PlumbingPage";
 import PricingPage from "./pages/PricingPage";
@@ -93,6 +102,7 @@ import SocialROIDashboardPage from "./pages/SocialROIDashboardPage";
 import UnifiedDemoPage from "./pages/UnifiedDemoPage";
 import VoiceAgentPage from "./pages/VoiceAgentPage";
 import VoiceAgentPreviewPage from "./pages/VoiceAgentPreviewPage";
+import VoiceAgentStudioPage from "./pages/VoiceAgentStudioPage";
 import WebsiteAgentPage from "./pages/WebsiteAgentPage";
 import WebsiteAgentSettingsPage from "./pages/WebsiteAgentSettingsPage";
 import WhiteLabelHubPage from "./pages/WhiteLabelHubPage";
@@ -104,6 +114,45 @@ const NewslettersPage = lazy(() => import("./pages/NewslettersPage"));
 const ScraperToolPage = lazy(() => import("./pages/ScraperToolPage"));
 const OutreachAnalyticsPage = lazy(
   () => import("./pages/OutreachAnalyticsPage"),
+);
+
+// ─── AI Brain — Admin pages (lazy loaded) ─────────────────────────────────────
+const AdminAIProviderPage = lazy(() => import("./pages/AdminAIProviderPage"));
+const AdminCollectionManagerPage = lazy(
+  () => import("./pages/AdminCollectionManagerPage"),
+);
+const AdminRAGChatTesterPage = lazy(
+  () => import("./pages/AdminRAGChatTesterPage"),
+);
+const AdminAgentWorkflowRunnerPage = lazy(
+  () => import("./pages/AdminAgentWorkflowRunnerPage"),
+);
+const AdminWorkflowLibraryPage = lazy(
+  () => import("./pages/AdminWorkflowLibraryPage"),
+);
+const AdminN8NMigrationPage = lazy(
+  () => import("./pages/AdminN8NMigrationPage"),
+);
+const AdminAIUsageLogsPage = lazy(() => import("./pages/AdminAIUsageLogsPage"));
+const AdminVectorIndexPage = lazy(() => import("./pages/AdminVectorIndexPage"));
+const AdminClientAIManagerPage = lazy(
+  () => import("./pages/AdminClientAIManagerPage"),
+);
+
+// ─── AI Brain — Client pages (lazy loaded) ────────────────────────────────────
+const ClientAskAIPage = lazy(() => import("./pages/ClientAskAIPage"));
+const ClientAskAboutBusinessPage = lazy(
+  () => import("./pages/ClientAskAboutBusinessPage"),
+);
+const ClientAIReportsPage = lazy(() => import("./pages/ClientAIReportsPage"));
+const ClientAIRecommendationsPage = lazy(
+  () => import("./pages/ClientAIRecommendationsPage"),
+);
+const ClientUploadedDocsPage = lazy(
+  () => import("./pages/ClientUploadedDocsPage"),
+);
+const ClientWorkflowAgentPage = lazy(
+  () => import("./pages/ClientWorkflowAgentPage"),
 );
 
 // ─── New social pages (lazy loaded for code splitting) ────────────────────────
@@ -124,6 +173,26 @@ const SocialLeadCapturePage = lazy(
   () => import("./pages/SocialLeadCapturePage"),
 );
 const SocialDemoFunnelPage = lazy(() => import("./pages/SocialDemoFunnelPage"));
+const ContentCreationStudioPage = lazy(
+  () => import("./pages/ContentCreationStudioPage"),
+);
+
+// ─── MCP & Automation pages (lazy loaded) ─────────────────────────────────────
+const AdminMCPToolkitPage = lazy(() => import("./pages/AdminMCPToolkitPage"));
+const AccountBriefPage = lazy(() => import("./pages/AccountBriefPage"));
+const ComposioToolConnectPage = lazy(
+  () => import("./pages/ComposioToolConnectPage"),
+);
+const RoofingAutomationsPage = lazy(
+  () => import("./pages/RoofingAutomationsPage"),
+);
+const MasterAgentPage = lazy(() => import("./pages/MasterAgentPage"));
+const LocalRankingIntelligence = lazy(
+  () => import("./pages/LocalRankingIntelligence"),
+);
+const RoofingCampaignManager = lazy(
+  () => import("./pages/RoofingCampaignManager"),
+);
 
 // Redirect components for archived demo routes
 function ServicesDemoRedirect() {
@@ -871,6 +940,15 @@ const adminBrfVoiceAgentRoute = createRoute({
     </ProtectedRoute>
   ),
 });
+const adminTrialsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/trials",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminTrialsPage />
+    </ProtectedRoute>
+  ),
+});
 
 const aiLeadIntelligenceRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -878,6 +956,15 @@ const aiLeadIntelligenceRoute = createRoute({
   component: () => (
     <ProtectedRoute adminOnly>
       <AILeadIntelligencePage />
+    </ProtectedRoute>
+  ),
+});
+const agentOrchestrationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/agent-orchestration",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AgentOrchestrationPage />
     </ProtectedRoute>
   ),
 });
@@ -978,6 +1065,299 @@ const public3dViewerRoute = createRoute({
   component: Public3DViewerPage,
 });
 
+const adminVoiceManagerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin-voice-manager",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminVoiceManagerPage />
+    </ProtectedRoute>
+  ),
+});
+
+const adminCommandCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin-command-center",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminCommandCenterPage />
+    </ProtectedRoute>
+  ),
+});
+
+const outreachPipelineRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/outreach-pipeline",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <OutreachPipelinePage />
+    </ProtectedRoute>
+  ),
+});
+
+const adminAIChatRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin-ai-chat",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminAIChatPage />
+    </ProtectedRoute>
+  ),
+});
+
+const featureToggleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/feature-toggles",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <FeatureTogglePage />
+    </ProtectedRoute>
+  ),
+});
+const integrationHealthRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/integration-health",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <IntegrationHealthPage />
+    </ProtectedRoute>
+  ),
+});
+const nicheAnalyticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/niche-analytics",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <NicheAnalyticsPage />
+    </ProtectedRoute>
+  ),
+});
+
+// ─── AI Brain — Admin routes ──────────────────────────────────────────────────
+const adminAIProviderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/ai-providers",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminAIProviderPage />
+    </ProtectedRoute>
+  ),
+});
+const adminCollectionManagerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/knowledge-collections",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminCollectionManagerPage />
+    </ProtectedRoute>
+  ),
+});
+const adminRAGChatTesterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/rag-tester",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminRAGChatTesterPage />
+    </ProtectedRoute>
+  ),
+});
+const adminAgentWorkflowRunnerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/agent-workflows",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminAgentWorkflowRunnerPage />
+    </ProtectedRoute>
+  ),
+});
+const adminWorkflowLibraryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/workflow-library",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminWorkflowLibraryPage />
+    </ProtectedRoute>
+  ),
+});
+const adminN8NMigrationRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/n8n-migration",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminN8NMigrationPage />
+    </ProtectedRoute>
+  ),
+});
+const adminAIUsageLogsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/ai-usage-logs",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminAIUsageLogsPage />
+    </ProtectedRoute>
+  ),
+});
+const adminVectorIndexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/vector-index",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminVectorIndexPage />
+    </ProtectedRoute>
+  ),
+});
+const adminClientAIManagerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/client-ai-manager",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminClientAIManagerPage />
+    </ProtectedRoute>
+  ),
+});
+
+// ─── AI Brain — Client routes ─────────────────────────────────────────────────
+const clientAskAIRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ask-ai",
+  component: () => (
+    <ProtectedRoute>
+      <ClientAskAIPage />
+    </ProtectedRoute>
+  ),
+});
+const clientAskAboutBusinessRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ask-about-business",
+  component: () => (
+    <ProtectedRoute>
+      <ClientAskAboutBusinessPage />
+    </ProtectedRoute>
+  ),
+});
+const clientAIReportsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ai-reports",
+  component: () => (
+    <ProtectedRoute>
+      <ClientAIReportsPage />
+    </ProtectedRoute>
+  ),
+});
+const clientAIRecommendationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ai-recommendations",
+  component: () => (
+    <ProtectedRoute>
+      <ClientAIRecommendationsPage />
+    </ProtectedRoute>
+  ),
+});
+const clientUploadedDocsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/my-documents",
+  component: () => (
+    <ProtectedRoute>
+      <ClientUploadedDocsPage />
+    </ProtectedRoute>
+  ),
+});
+const clientWorkflowAgentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/workflow-agent",
+  component: () => (
+    <ProtectedRoute>
+      <ClientWorkflowAgentPage />
+    </ProtectedRoute>
+  ),
+});
+
+const adminMCPToolkitRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/mcp-toolkit",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <AdminMCPToolkitPage />
+    </ProtectedRoute>
+  ),
+});
+
+const accountBriefRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/account-brief",
+  component: () => (
+    <ProtectedRoute>
+      <AccountBriefPage />
+    </ProtectedRoute>
+  ),
+});
+
+const composioToolConnectRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/tools/connect",
+  component: () => (
+    <ProtectedRoute>
+      <ComposioToolConnectPage />
+    </ProtectedRoute>
+  ),
+});
+
+const roofingAutomationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/roofing-automations",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <RoofingAutomationsPage />
+    </ProtectedRoute>
+  ),
+});
+
+const voiceAgentStudioRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/voice-agent-studio",
+  component: () => (
+    <ProtectedRoute>
+      <VoiceAgentStudioPage />
+    </ProtectedRoute>
+  ),
+});
+const contentCreationStudioRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/content-creation-studio",
+  component: () => (
+    <ProtectedRoute>
+      <ContentCreationStudioPage />
+    </ProtectedRoute>
+  ),
+});
+const localRankingIntelligenceRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/local-ranking-intelligence",
+  component: () => (
+    <ProtectedRoute>
+      <LocalRankingIntelligence />
+    </ProtectedRoute>
+  ),
+});
+const roofingCampaignRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/roofing-campaign",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <RoofingCampaignManager />
+    </ProtectedRoute>
+  ),
+});
+const masterAgentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/master-agent",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <MasterAgentPage />
+    </ProtectedRoute>
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -1060,8 +1440,10 @@ const routeTree = rootRoute.addChildren([
   brandKitTrialRoute,
   adminBrandKitTrialsRoute,
   adminBrfVoiceAgentRoute,
+  adminTrialsRoute,
   agencyPartnersRoute,
   aiLeadIntelligenceRoute,
+  agentOrchestrationRoute,
   adminChatAgentRoute,
   adminVoicePreviewRoute,
   domainSetupRoute,
@@ -1073,6 +1455,39 @@ const routeTree = rootRoute.addChildren([
   newslettersRoute,
   outreachAnalyticsRoute,
   scraperToolRoute,
+  adminVoiceManagerRoute,
+  adminCommandCenterRoute,
+  outreachPipelineRoute,
+  adminAIChatRoute,
+  featureToggleRoute,
+  integrationHealthRoute,
+  nicheAnalyticsRoute,
+  // AI Brain — Admin routes
+  adminAIProviderRoute,
+  adminCollectionManagerRoute,
+  adminRAGChatTesterRoute,
+  adminAgentWorkflowRunnerRoute,
+  adminWorkflowLibraryRoute,
+  adminN8NMigrationRoute,
+  adminAIUsageLogsRoute,
+  adminVectorIndexRoute,
+  adminClientAIManagerRoute,
+  // AI Brain — Client routes
+  clientAskAIRoute,
+  clientAskAboutBusinessRoute,
+  clientAIReportsRoute,
+  clientAIRecommendationsRoute,
+  clientUploadedDocsRoute,
+  clientWorkflowAgentRoute,
+  adminMCPToolkitRoute,
+  accountBriefRoute,
+  composioToolConnectRoute,
+  roofingAutomationsRoute,
+  masterAgentRoute,
+  voiceAgentStudioRoute,
+  contentCreationStudioRoute,
+  localRankingIntelligenceRoute,
+  roofingCampaignRoute,
 ]);
 
 const router = createRouter({ routeTree });

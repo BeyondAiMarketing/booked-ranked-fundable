@@ -6,7 +6,7 @@ import type { AgentSubscription } from "../data/agentData";
 import type { AuditData, Lead } from "../data/demoData";
 import type { AgentArtifact } from "../types/agentWorkflow";
 import type { OpenSourceServiceConfig } from "../types/integrations";
-import { routeAICall } from "./openSourceAdapters";
+import { routeAICall, routeMasterAgentCall } from "./openSourceAdapters";
 
 export interface WorkflowStep {
   id: string;
@@ -114,11 +114,29 @@ const AGENT_PRICING: Record<
 export class WorkflowEngine {
   private static instance: WorkflowEngine;
 
+  /** Cached API keys — injected from MasterAgentPage via setApiKeys() */
+  private _apiKeys: {
+    openRouterKey: string;
+    openAIKey: string;
+    geminiApiKey: string;
+    nvidiaNimKey: string;
+  } = { openRouterKey: "", openAIKey: "", geminiApiKey: "", nvidiaNimKey: "" };
+
   static getInstance(): WorkflowEngine {
     if (!WorkflowEngine.instance) {
       WorkflowEngine.instance = new WorkflowEngine();
     }
     return WorkflowEngine.instance;
+  }
+
+  /** Call this from MasterAgentPage (or any consumer) after credentials load. */
+  setApiKeys(keys: {
+    openRouterKey: string;
+    openAIKey: string;
+    geminiApiKey: string;
+    nvidiaNimKey: string;
+  }) {
+    this._apiKeys = keys;
   }
 
   async executeStep(
@@ -242,8 +260,18 @@ export class WorkflowEngine {
       }
     }
 
-    // Fall back to simulated contextual response (existing behaviour — covers
-    // the case where no external provider is configured).
+    // Attempt routeMasterAgentCall (Owl Alpha → OpenAI → Gemini → NVIDIA fallback chain)
+    // Keys are injected via setApiKeys() — passing {} silently skips OpenRouter/OpenAI/NVIDIA.
+    try {
+      const masterResult = await routeMasterAgentCall(prompt, this._apiKeys);
+      if (masterResult.success && masterResult.content) {
+        return masterResult.content;
+      }
+    } catch {
+      // fall through to contextual response
+    }
+
+    // Final fallback to simulated contextual response
     await new Promise((resolve) =>
       setTimeout(resolve, 800 + Math.random() * 1200),
     );

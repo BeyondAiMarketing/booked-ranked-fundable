@@ -75,7 +75,7 @@ function ExploreDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
             data-ocid="nav.explore.dropdown_menu"
           >
             {/* Pages section */}
@@ -181,7 +181,7 @@ function IndustriesDropdown() {
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
             onMouseLeave={() => setOpen(false)}
-            className="absolute top-full left-0 mt-2 w-52 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute top-full left-0 mt-2 w-52 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
             data-ocid="nav.industries.dropdown_menu"
           >
             {INDUSTRIES.map(({ label, href, icon }) => (
@@ -294,7 +294,7 @@ function LoginDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -8, scale: 0.97 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-50"
+            className="absolute top-full right-0 mt-2 w-64 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
             data-ocid="nav.login.dropdown_menu"
           >
             <div className="px-3 pt-3 pb-1">
@@ -384,7 +384,7 @@ export default function PublicNav() {
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+        className={`fixed top-0 left-0 right-0 z-[999] transition-all duration-300 ${
           scrolled
             ? "bg-slate-900/97 backdrop-blur-md border-b border-white/10 shadow-2xl"
             : "bg-slate-900/85 backdrop-blur-sm"
@@ -483,7 +483,7 @@ export default function PublicNav() {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "tween", duration: 0.25 }}
-            className="fixed inset-0 z-50 lg:hidden"
+            className="fixed inset-0 z-[999] lg:hidden"
           >
             <button
               type="button"

@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import {
   AlertCircle,
   Bell,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
+import FunnelTimeline from "../components/FunnelTimeline";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -32,6 +34,7 @@ import { ScrollArea } from "../components/ui/scroll-area";
 import { Textarea } from "../components/ui/textarea";
 import { useApp } from "../context/AppContext";
 import { LEADS, type Lead } from "../data/demoData";
+import { useActor } from "../hooks/useActor";
 
 // ─── Pipeline Stage Config ────────────────────────────────────────────────────
 
@@ -366,6 +369,7 @@ export default function CrmPipelinePage() {
     getSmsThreadsByTenant,
     markThreadRead,
   } = useApp();
+  const { actor } = useActor();
   const rawLeads: Lead[] =
     LEADS[currentTenantId] ?? LEADS["tenant-oceanside"] ?? [];
 
@@ -415,23 +419,55 @@ export default function CrmPipelinePage() {
     [],
   );
 
-  const handleDrop = useCallback((stageId: PipelineStageId) => {
-    const id = dragRef.current;
-    if (!id) return;
-    setPipelineLeads((prev) =>
-      prev.map((l) =>
-        l.id === id
-          ? { ...l, pipelineStage: stageId, status: stageId as Lead["status"] }
-          : l,
-      ),
-    );
-    const stageName =
-      PIPELINE_STAGES.find((s) => s.id === stageId)?.label ?? stageId;
-    toast.success(`Lead moved to ${stageName}`);
-    setDraggingId(null);
-    setDragOverStage(null);
-    dragRef.current = null;
-  }, []);
+  const handleDrop = useCallback(
+    (stageId: PipelineStageId) => {
+      const id = dragRef.current;
+      if (!id) return;
+      setPipelineLeads((prev) =>
+        prev.map((l) =>
+          l.id === id
+            ? {
+                ...l,
+                pipelineStage: stageId,
+                status: stageId as Lead["status"],
+              }
+            : l,
+        ),
+      );
+      const stageName =
+        PIPELINE_STAGES.find((s) => s.id === stageId)?.label ?? stageId;
+      toast.success(`Lead moved to ${stageName}`);
+
+      if (stageId === "client") {
+        const lead = pipelineLeads.find((l) => l.id === id);
+        if (lead && actor) {
+          actor
+            .completeDemoAndProvisionTrial(lead.id)
+            .then((result) => {
+              if (result && typeof result === "object" && "ok" in result) {
+                toast.success(
+                  `${lead.name} is now a client — trial provisioned!`,
+                );
+              } else if (
+                result &&
+                typeof result === "object" &&
+                "err" in result
+              ) {
+                toast.error(`Trial provisioning failed: ${String(result.err)}`);
+              }
+            })
+            .catch((err: Error) => {
+              toast.error(`Trial provisioning error: ${err.message || err}`);
+            });
+        }
+      }
+
+      setDraggingId(null);
+      setDragOverStage(null);
+      dragRef.current = null;
+    },
+    [pipelineLeads, actor],
+  );
 
   const handleDragEnd = useCallback(() => {
     setDraggingId(null);
@@ -453,6 +489,30 @@ export default function CrmPipelinePage() {
     toast.success(
       `Moved to ${PIPELINE_STAGES.find((s) => s.id === stage)?.label}`,
     );
+
+    if (stage === "client" && actor) {
+      const lead = pipelineLeads.find((l) => l.id === leadId);
+      if (lead) {
+        actor
+          .completeDemoAndProvisionTrial(lead.id)
+          .then((result) => {
+            if (result && typeof result === "object" && "ok" in result) {
+              toast.success(
+                `${lead.name} is now a client — trial provisioned!`,
+              );
+            } else if (
+              result &&
+              typeof result === "object" &&
+              "err" in result
+            ) {
+              toast.error(`Trial provisioning failed: ${String(result.err)}`);
+            }
+          })
+          .catch((err: Error) => {
+            toast.error(`Trial provisioning error: ${err.message || err}`);
+          });
+      }
+    }
   };
 
   // ─── SMS handlers ────────────────────────────────────────────────────────────
@@ -531,7 +591,12 @@ export default function CrmPipelinePage() {
       <div className="flex items-center justify-between gap-4 px-1 pb-4 flex-wrap">
         <div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground mb-0.5">
-            <span>CRM</span>
+            <Link
+              to="/leads"
+              className="hover:text-foreground transition-colors"
+            >
+              CRM
+            </Link>
             <ChevronDown size={12} className="-rotate-90 opacity-50" />
             <span className="text-foreground font-medium">Pipeline</span>
           </div>
@@ -1608,6 +1673,11 @@ function LeadDetailDrawer({
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Funnel Timeline */}
+            <div className="mt-5">
+              <FunnelTimeline leadId={lead.id} />
             </div>
 
             {/* Add note */}

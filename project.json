@@ -1,31 +1,23 @@
 {
-  "overview": "BRF is a premium multi-tenant SaaS platform for local service businesses delivering AI-powered front desk, CRM, reputation management, SEO audit, fundability builder, lead generation, AI chat and voice agents, automated review flows, analytics, newsletter management, and a dual-sided campaigns module — all on the Internet Computer Protocol.",
+  "overview": "BRF is an AI-powered SaaS platform that helps local service businesses get booked, ranked, and fundable through automation, CRM, reputation management, and lead generation.",
   "features": [
-    "AI-powered inbound voice agent with ElevenLabs voices",
-    "Full CRM with Kanban pipeline and calendar sync",
-    "Newsletter module with subscriber management, campaign composer, merge tags, scheduling, and analytics",
-    "Outreach engine with bounce handling, lead segmentation, throttling controls, and analytics dashboard",
-    "Automated B2B lead discovery and drip campaigns",
-    "Reputation management with automated review requests",
-    "Business credit builder and fundability scoring",
-    "White-label agency support with branded dashboards",
-    "Multi-tenant role-based access (Super Admin, Agency, Client, Demo)",
-    "Social media publishing and engagement automation",
-    "Go Live credential dashboard with 25+ integrations"
+    "Premium real estate landing page for agents and brokers",
+    "Dynamic scorecard with rules-based instant scores and AI-generated explanations",
+    "9 audience selector cards (Solo Agent, Broker, Luxury, Listing, Buyer, Investor, Commercial, New Agent) that pre-fill the demo form",
+    "13 full page sections including hero, pain points, Booked/Ranked/Fundable framework, before/after comparison, offer stack, FAQ",
+    "Sticky CTA bar with smart scroll visibility",
+    "All CTAs route to unified BRF demo with niche=real-estate pre-selected",
+    "Dark navy, gold, and electric blue premium design system"
   ],
-  "category": "saas-business-tools",
+  "category": "saas-platform",
   "tags": [
-    "saas",
+    "real-estate",
+    "ai",
     "crm",
-    "newsletter",
-    "email-marketing",
-    "outreach",
     "lead-generation",
-    "ai-voice",
     "reputation-management",
-    "local-business",
-    "white-label",
-    "multi-tenant"
+    "landing-page",
+    "saas"
   ],
-  "last_updated": "2026-05-01T17:08:50.767Z"
+  "last_updated": "2026-06-02T14:43:58.709Z"
 }

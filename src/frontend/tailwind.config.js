@@ -74,6 +74,12 @@ export default {
       },
       boxShadow: {
         xs: "0 1px 2px 0 rgba(0,0,0,0.05)",
+        "agent-status-glow-active": "0 0 16px oklch(0.62 0.18 155 / 50%)",
+        "agent-status-glow-error": "0 0 16px oklch(0.58 0.22 25 / 50%)",
+        "agent-status-glow-warning": "0 0 16px oklch(0.72 0.18 75 / 50%)",
+        "command-center-lg": "0 12px 40px oklch(0 0 0 / 35%)",
+        "command-center-md": "0 8px 24px oklch(0 0 0 / 30%)",
+        "command-center-sm": "0 4px 12px oklch(0 0 0 / 25%)",
       },
       keyframes: {
         "accordion-down": {
@@ -122,6 +128,18 @@ export default {
           from: { width: "0%" },
           to: { width: "100%" },
         },
+        "agent-float": {
+          from: { transform: "translateY(0px)" },
+          to: { transform: "translateY(-4px)" },
+        },
+        "agent-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
+        },
+        "status-pulse": {
+          "0%, 100%": { boxShadow: "0 0 8px currentColor" },
+          "50%": { boxShadow: "0 0 16px currentColor" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -135,6 +153,9 @@ export default {
         "green-flash": "green-flash 1.2s ease-out forwards",
         "three-act-complete": "three-act-complete 0.8s ease-out forwards",
         "processing-fill": "processing-fill 3s ease-out forwards",
+        "agent-float": "agent-float 3s ease-in-out infinite",
+        "agent-pulse": "agent-pulse 2s ease-in-out infinite",
+        "status-pulse": "status-pulse 2s ease-in-out infinite",
       },
     },
   },

@@ -11,7 +11,7 @@ export function HomepageNicheSelector({
 }: HomepageNicheSelectorProps) {
   return (
     <div
-      className="sticky top-0 z-40 w-full"
+      className="sticky top-0 z-[30] w-full"
       style={{
         background: "rgba(2, 6, 23, 0.95)",
         backdropFilter: "blur(16px)",

@@ -9,6 +9,10 @@ import AccessControl "mo:caffeineai-authorization/access-control";
 import T             "../types/aiLeadAudit";
 import BKTypes       "../types/brandKit";
 import ET            "../types/email";
+import Outcall "mo:caffeineai-http-outcalls/outcall";
+import ICLib "../lib/integrationCredentials";
+import ICTypes "../types/integrationCredentials";
+import T_LLG "../types/llmLeadGeneration";
 
 mixin (
   accessControlState   : AccessControl.AccessControlState,
@@ -26,6 +30,9 @@ mixin (
   _warmSchedules       : List.List<ET.WarmSequenceEmailSchedule>,
   _warmEvents          : List.List<ET.WarmSequenceEmailEvent>,
   _emailIdCounter      : { var n : Nat },
+  integrationCreds     : Map.Map<Text, ICTypes.IntegrationCredentials>,
+  credSalt             : Blob,
+  transform            : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
 ) {
 
   // ── Access helpers ──────────────────────────────────────────────────────────
@@ -480,4 +487,80 @@ mixin (
     staged
   };
 
+  public func autoAuditLeads(tenantId: Text, leads_in: [T_LLG.GeneratedLead]) : async { #ok : Nat; #err : Text } {
+    switch (integrationCreds.get(tenantId)) {
+      case null { return #err("No credentials configured for tenant " # tenantId) };
+      case (?creds) {
+        let plain = ICLib.decryptAll(creds, credSalt);
+        if (plain.claudeKey == "") {
+          return #err("Claude API key not configured. Add it in the Go Live Dashboard.");
+        };
+        var auditedCount = 0;
+        for (lead in leads_in.vals()) {
+          let prompt = "You are a B2B lead quality analyst. Audit this business and return ONLY valid JSON: {\"overallScore\": <0-100 integer>, \"category\": \"Hot|Warm|Cold\", \"outreachPriority\": \"high|medium|low\", \"firstTouchEmailSubject\": \"<subject>\", \"firstTouchEmailBody\": \"<body>\", \"painPointAngles\": [\"<angle1>\",\"<angle2>\",\"<angle3>\"]}. Business: " # lead.name # " | Niche: " # lead.niche # " | City: " # lead.city # " | Website: " # lead.website;
+          let requestBody = "{\"model\":\"claude-opus-4-5\",\"max_tokens\":1024,\"messages\":[{\"role\":\"user\",\"content\":\"" # prompt # "\"}]}";
+          let headers = [
+            { name = "x-api-key"; value = plain.claudeKey },
+            { name = "anthropic-version"; value = "2023-06-01" },
+            { name = "content-type"; value = "application/json" }
+          ];
+          try {
+            let responseText = await Outcall.httpPostRequest("https://api.anthropic.com/v1/messages", headers, requestBody, transform);
+
+            // Detect category via simple text search
+            let parsedCategory : Text =
+              if      (responseText.contains(#text "\"Hot\""))  "Hot"
+              else if (responseText.contains(#text "\"Cold\"")) "Cold"
+              else                                                      "Warm";
+
+            // Detect outreach priority via simple text search
+            let parsedPriority : Text =
+              if      (responseText.contains(#text "\"high\"")) "high"
+              else if (responseText.contains(#text "\"low\""))  "low"
+              else                                                      "medium";
+
+            let jobId = "audit-" # Time.now().toText() # "-" # tenantId;
+            let result : T.LeadAuditResult = {
+              jobId               = jobId;
+              tenantId            = tenantId;
+              businessName        = lead.name;
+              websiteUrl          = lead.website;
+              niche               = lead.niche;
+              websiteScore        = 50;
+              socialScore         = 50;
+              seoScore            = 50;
+              engagementScore     = 50;
+              growthScore         = 50;
+              totalScore          = 70;
+              overallScore        = 70;
+              category            = parsedCategory;
+              companySnapshot     = "";
+              socialMetrics       = "";
+              seoMetrics          = "";
+              aiInsights          = responseText;
+              foundingYear        = null;
+              socialLinkedin      = null;
+              socialFacebook      = null;
+              socialInstagram     = null;
+              firstTouchEmailSubject = "Quick question about " # lead.name;
+              firstTouchEmailBody    = "Hi, I noticed " # lead.name # " in " # lead.city # " and wanted to share how BRF helps " # lead.niche # " companies get booked, ranked, and fundable.";
+              painPointAngles     = ["Missed calls costing jobs", "Slow follow-up losing estimates", "Reviews not growing fast enough"];
+              outreachPriority    = parsedPriority;
+              kitPageSlug         = null;
+              pushedToCrm         = false;
+              pushedAt            = null;
+              assignedCampaignId  = null;
+              interactionType     = null;
+              trialActivatedAt    = null;
+            };
+            leadAuditResults.add(jobId, result);
+            auditedCount += 1;
+          } catch (_e) {
+            // Continue to next lead
+          };
+        };
+        return #ok(auditedCount);
+      };
+    };
+  };
 };

@@ -7,20 +7,27 @@ import {
   Bot,
   Box,
   Brain,
+  BrainCircuit,
   Building2,
   Calendar,
   ChevronDown,
   ChevronRight,
+  ClipboardList,
   Cpu,
   CreditCard,
+  Crown,
   Database,
+  DatabaseZap,
   DollarSign,
   Eye,
   FileText,
   FileUp,
+  FlaskConical,
   GitBranch,
   GitMerge,
+  GitPullRequestArrow,
   Globe,
+  Hammer,
   Heart,
   Inbox,
   LayoutDashboard,
@@ -33,9 +40,11 @@ import {
   Menu,
   MessageSquare,
   MessageSquareDot,
+  Mic,
   Palette,
   Phone,
   PhoneCall,
+  Plug,
   Rocket,
   ScanLine,
   Search,
@@ -43,12 +52,17 @@ import {
   Settings,
   Share2,
   ShieldCheck,
+  Sliders,
   Sparkles,
   Star,
+  Table,
   Target,
   TrendingUp,
   User,
   Users,
+  Wand2,
+  Workflow,
+  Wrench,
   X,
   Zap,
 } from "lucide-react";
@@ -74,6 +88,7 @@ const NAV_GROUPS = [
     label: "GROWTH ENGINES",
     items: [
       { label: "Leads", path: "/leads", icon: Users },
+      { label: "CRM Pipeline", path: "/crm-pipeline", icon: Table },
       { label: "Reviews", path: "/reviews", icon: Star },
       { label: "Reputation Inbox", path: "/reputation-inbox", icon: Inbox },
       { label: "SEO Audit", path: "/audit", icon: Search },
@@ -84,11 +99,22 @@ const NAV_GROUPS = [
       { label: "My Website", path: "/my-website", icon: Globe },
       { label: "Chat Widget", path: "/chat-widget", icon: MessageSquare },
       { label: "Voice Agent", path: "/voice-agent", icon: Phone },
+      { label: "Voice Agent Studio", path: "/voice-agent-studio", icon: Mic },
+      {
+        label: "Content Studio",
+        path: "/content-creation-studio",
+        icon: Wand2,
+      },
       { label: "Call Log", path: "/call-log", icon: PhoneCall },
       { label: "SMS Inbox", path: "/sms-inbox", icon: MessageSquareDot },
       { label: "Review Requests", path: "/review-requests", icon: Send },
       { label: "Campaigns", path: "/campaigns", icon: Megaphone },
       { label: "Scraper Tool", path: "/scraper-tool", icon: ScanLine },
+      {
+        label: "Local Rankings",
+        path: "/local-ranking-intelligence",
+        icon: MapPin,
+      },
     ],
   },
   {
@@ -144,6 +170,7 @@ const NAV_GROUPS = [
     label: "ACCOUNT",
     items: [
       { label: "Settings", path: "/settings", icon: Settings },
+      { label: "Connected Tools", path: "/tools/connect", icon: Plug },
       { label: "Go Live", path: "/go-live", icon: Rocket },
     ],
   },
@@ -160,6 +187,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/analytics": "Analytics",
   "/settings": "Settings",
   "/admin": "Admin Panel",
+  "/admin-command-center": "Command Center",
   "/admin-agents": "Agent Services — Admin",
   "/agent-services": "Agent Services",
   "/billing": "Billing & Subscriptions",
@@ -184,6 +212,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/scraper-tool": "Web Scraper Tool",
   "/csv-lead-import": "Lead Import & Campaign Assignment",
   "/ai-lead-intelligence": "AI Lead Intelligence",
+  "/agent-orchestration": "Agent Orchestration",
   "/landing-pages": "Landing Page Builder",
   "/website-studio": "Niche Website Studio",
   "/my-website": "My Website",
@@ -204,8 +233,30 @@ const PAGE_TITLES: Record<string, string> = {
   "/autopilot-dashboard": "Autopilot Pipeline",
   "/admin/brf-voice-agent": "BRF Sales Voice Agent",
   "/admin/voice-preview": "Voice Agent Preview",
+  "/admin/ai-providers": "AI Providers",
+  "/admin/knowledge-collections": "Knowledge Collections",
+  "/admin/rag-tester": "RAG Chat Tester",
+  "/admin/agent-workflows": "Agent Workflow Runner",
+  "/admin/workflow-library": "N8N Workflow Library",
+  "/admin/ai-usage-logs": "AI Usage Logs",
+  "/admin/vector-index": "Vector Index Status",
+  "/admin/client-ai-manager": "Client AI Manager",
+  "/ask-ai": "Ask AI",
+  "/ask-about-business": "Ask About My Business",
+  "/ai-reports": "AI Reports",
+  "/ai-recommendations": "AI Recommendations",
+  "/my-documents": "My Documents",
+  "/workflow-agent": "Workflow Agent",
   "/go-live": "Go Live — Platform Activation",
   "/scanner-3d": "3D Property & Site Scanner",
+  "/crm-pipeline": "CRM Pipeline",
+  "/admin/mcp-toolkit": "MCP Toolkit",
+  "/admin/account-brief": "Account Brief",
+  "/tools/connect": "Connected Tools",
+  "/admin/roofing-automations": "Roofing Automations",
+  "/admin/roofing-campaign": "Roofing Campaign Manager",
+  "/local-ranking-intelligence": "Local Ranking Intelligence",
+  "/voice-agent-studio": "Voice Agent Studio",
 };
 
 const TYPE_ICONS: Record<Notification["type"], ReactNode> = {
@@ -348,6 +399,42 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               ADMIN
             </p>
             <Link
+              to="/admin/master-agent"
+              data-ocid="nav.masteragent.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/master-agent"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Crown size={16} />
+              Master Agent
+            </Link>
+            <Link
+              to="/admin-command-center"
+              data-ocid="nav.commandcenter.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin-command-center"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <LayoutDashboard size={16} />
+              Command Center
+            </Link>
+            <Link
+              to="/admin/integration-health"
+              data-ocid="nav.integrationhealth.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/integration-health"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Activity size={16} />
+              Integration Health
+            </Link>
+            <Link
               to="/admin"
               data-ocid="nav.admin.link"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
@@ -399,6 +486,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
                   {pendingApprovalCount}
                 </span>
               )}
+            </Link>
+            <Link
+              to="/admin/feature-toggles"
+              data-ocid="nav.featuretoggles.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/feature-toggles"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Sliders size={16} />
+              Feature Toggles
             </Link>
             <Link
               to="/outreach-agent"
@@ -473,6 +572,30 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               CRM Drip Sender
             </Link>
             <Link
+              to="/admin/roofing-automations"
+              data-ocid="nav.roofingautomations.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/roofing-automations"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Hammer size={16} />
+              Roofing Automations
+            </Link>
+            <Link
+              to="/admin/roofing-campaign"
+              data-ocid="nav.roofingcampaign.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/roofing-campaign"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Mail size={16} />
+              Roofing Campaign
+            </Link>
+            <Link
               to="/health-dashboard"
               data-ocid="nav.healthdashboard.link"
               className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
@@ -524,6 +647,144 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <Brain size={16} />
               <span className="flex-1">AI Lead Intelligence</span>
+            </Link>
+            <Link
+              to="/agent-orchestration"
+              data-ocid="nav.agentorchestration.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/agent-orchestration"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Cpu size={16} />
+              <span className="flex-1">Agent Orchestration</span>
+            </Link>
+
+            <Link
+              to="/admin/mcp-toolkit"
+              data-ocid="nav.mcptoolkit.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/mcp-toolkit"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Wrench size={16} />
+              MCP Toolkit
+            </Link>
+            <Link
+              to="/admin/account-brief"
+              data-ocid="nav.accountbrief.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/account-brief"
+                  ? "bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <ClipboardList size={16} />
+              Account Brief
+            </Link>
+
+            {/* ─── AI BRAIN ─────────────────────────────────── */}
+            <p className="text-[10px] font-semibold text-violet-500/80 uppercase tracking-wider px-2 mt-3 mb-1">
+              AI BRAIN
+            </p>
+            <Link
+              to="/admin/ai-providers"
+              data-ocid="nav.aiproviders.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/ai-providers"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <BrainCircuit size={16} />
+              <span className="flex-1">AI Providers</span>
+            </Link>
+            <Link
+              to="/admin/knowledge-collections"
+              data-ocid="nav.knowledgecollections.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/knowledge-collections"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Database size={16} />
+              <span className="flex-1">Knowledge Collections</span>
+            </Link>
+            <Link
+              to="/admin/rag-tester"
+              data-ocid="nav.ragtester.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/rag-tester"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <FlaskConical size={16} />
+              <span className="flex-1">RAG Tester</span>
+            </Link>
+            <Link
+              to="/admin/agent-workflows"
+              data-ocid="nav.agentworkflows.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/agent-workflows"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <GitPullRequestArrow size={16} />
+              <span className="flex-1">Agent Workflows</span>
+            </Link>
+            <Link
+              to="/admin/workflow-library"
+              data-ocid="nav.workflowlibrary.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/workflow-library"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Workflow size={16} />
+              <span className="flex-1">Workflow Library</span>
+            </Link>
+            <Link
+              to="/admin/ai-usage-logs"
+              data-ocid="nav.aiusagelogs.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/ai-usage-logs"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <BarChart2 size={16} />
+              <span className="flex-1">AI Usage</span>
+            </Link>
+            <Link
+              to="/admin/vector-index"
+              data-ocid="nav.vectorindex.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/vector-index"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <DatabaseZap size={16} />
+              <span className="flex-1">Vector Index</span>
+            </Link>
+            <Link
+              to="/admin/client-ai-manager"
+              data-ocid="nav.clientaimanager.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/client-ai-manager"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <Users size={16} />
+              <span className="flex-1">Client AI Manager</span>
             </Link>
           </div>
         )}
@@ -637,7 +898,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     <div className="flex flex-col h-screen bg-background overflow-hidden">
       {/* Demo Mode Banner */}
       {isDemoMode && !demoBannerDismissed && (
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 flex items-center justify-between flex-shrink-0 z-50">
+        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-4 py-2 flex items-center justify-between flex-shrink-0 z-[999]">
           <div className="flex items-center gap-2 text-sm">
             <Rocket size={14} className="text-purple-200 shrink-0" />
             <span className="font-medium">Demo Mode</span>
@@ -691,7 +952,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         {/* Mobile sidebar overlay */}
         {sidebarOpen && (
-          <div className="md:hidden fixed inset-0 z-50 flex">
+          <div className="md:hidden fixed inset-0 z-[999] flex">
             <button
               type="button"
               aria-label="Close sidebar"

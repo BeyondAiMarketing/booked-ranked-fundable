@@ -45,8 +45,25 @@ module {
     // Auto-browser agent base URL (e.g. https://auto-browser.bookedrankedfunded.org)
     autoBrowserUrl     : Text;
     // Lead finding
-    serpApiKey         : Text;
+    serpApiKey         : Text; // legacy serpapi.com
+    serpApiDevKey      : Text; // serpapi.dev free-tier (2 500 searches/mo)
+    tinyFishKey        : Text; // TinyFish agent/search API key
     sendgridKey        : Text;
+    nvidiaApiKey       : [Nat8];
+    n8nApiKey          : [Nat8];
+    n8nInstanceUrl     : Text;
+    abacusApiKey       : Text;
+    composioApiKey     : Text;
+    dograhApiKey       : Text;
+    openRouterApiKey   : Text;
+    // NVIDIA NIM (Text form; legacy nvidiaApiKey is [Nat8] raw bytes)
+    nvidiaNimApiKey    : Text;
+    // Google Gemini
+    geminiApiKey       : Text;
+    // Webhook secrets / inbound parse
+    vapiWebhookSecret  : Text;
+    sendgridInboundParseDomain : Text;
+    composioWebhookSecret : Text;
   };
 
   public type MaskedCredentials = {
@@ -80,8 +97,21 @@ module {
     elevenLabsVoiceId  : Text;
     perplexityApiKey   : Text;
     autoBrowserUrl     : Text;
-    serpApiKey         : Text;
+    serpApiKey         : Text; // legacy serpapi.com
+    serpApiDevKey      : Text; // serpapi.dev free-tier (2 500 searches/mo)
+    tinyFishKey        : Text; // TinyFish agent/search API key
     sendgridKey        : Text;
+    nvidiaApiKey       : Text;
+    n8nInstanceUrl     : Text;
+    abacusApiKey       : Text;
+    composioApiKey     : Text;
+    dograhApiKey       : Text;
+    openRouterApiKey   : Text;
+    nvidiaNimApiKey    : Text;
+    geminiApiKey       : Text;
+    vapiWebhookSecret  : Text;
+    sendgridInboundParseDomain : Text;
+    composioWebhookSecret : Text;
   };
 
   public type ReadinessBreakdownItem = {
@@ -97,10 +127,26 @@ module {
   };
 
   public type ConnectionTestResult = {
-    connected  : Bool;
-    message    : Text;
-    statusCode : Nat;
-    quotaInfo  : ?Text;
+    connected     : Bool;
+    message       : Text;
+    statusCode    : Nat;
+    quotaInfo     : ?Text;
+    lastTestedAt  : ?Int;
+    lastTestError : ?Text;
   };
 
+  /// A single API health ping snapshot for one service.
+  /// status is one of: "healthy" | "yellow" | "red"
+  public type ApiPingRecord = {
+    serviceId    : Text;
+    status       : Text;
+    lastPingTime : Int;
+    latencyMs    : Nat;
+    errorMessage : ?Text;
+  };
+
+  /// Ordered history of the last 10 pings for a service.
+  public type PingHistory = [ApiPingRecord];
+
 };
+

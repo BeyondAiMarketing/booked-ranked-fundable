@@ -94,7 +94,7 @@ export default function DemoNicheSelector({
   const inputId = useId();
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center px-4 py-16 z-[50] relative">
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}

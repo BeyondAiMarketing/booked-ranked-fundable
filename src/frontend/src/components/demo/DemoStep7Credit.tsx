@@ -1,460 +1,158 @@
-/**
- * DemoStep7Credit — THE SURPRISE: Business Credit Builder.
- * Dramatic animated reveal. No pain point intro — opens with impact.
- * Credit score 540→720, funding $0→$85K, 4 milestone cards sequentially.
- * Framework badge: Hormozi — "The Unexpected Bonus"
- */
-
-import { FRAMEWORK_BADGES } from "@/data/demoFlowData";
+import { getDemoContent } from "@/data/demoContentByNiche";
 import { useDemoFlow } from "@/hooks/useDemoFlow";
-import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
-import BenefitPill from "./BenefitPill";
-import CoachTipCard from "./CoachTipCard";
-import FrameworkBadge from "./FrameworkBadge";
-import GreenConfirmOverlay from "./GreenConfirmOverlay";
 
-// ── Animated counter hook ─────────────────────────────────────────────────────
-
-function useAnimatedCounter(
-  target: number,
-  durationMs: number,
-  active: boolean,
-  startFrom = 0,
-): number {
-  const [val, setVal] = useState(startFrom);
-  const rafRef = useRef<number>(0);
-
-  useEffect(() => {
-    if (!active) {
-      setVal(startFrom);
-      return;
-    }
-    const start = performance.now();
-    const range = target - startFrom;
-    function tick(now: number) {
-      const progress = Math.min((now - start) / durationMs, 1);
-      const ease = 1 - (1 - progress) ** 3;
-      setVal(Math.round(startFrom + range * ease));
-      if (progress < 1) rafRef.current = requestAnimationFrame(tick);
-    }
-    rafRef.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafRef.current);
-  }, [target, durationMs, active, startFrom]);
-
-  return val;
-}
-
-// ── Milestone card ────────────────────────────────────────────────────────────
-
-interface Milestone {
-  day: string;
-  label: string;
-  desc: string;
-  score: number;
-  funding: number;
-  isFinal: boolean;
-}
-
-const MILESTONES: Milestone[] = [
-  {
-    day: "Day 0",
-    label: "Business credit profile opened",
-    desc: "EIN registered, D-U-N-S number established, credit monitoring live.",
-    score: 540,
-    funding: 0,
-    isFinal: false,
-  },
-  {
-    day: "Day 30",
-    label: "First tradeline established — score +40",
-    desc: "Vendor accounts reporting. Score climbing. Bank doors opening.",
-    score: 580,
-    funding: 15000,
-    isFinal: false,
-  },
-  {
-    day: "Day 60",
-    label: "Bank credit accessed — score +60",
-    desc: "Business credit card approved. Revolving credit building momentum.",
-    score: 660,
-    funding: 45000,
-    isFinal: false,
-  },
-  {
-    day: "Day 90",
-    label: "Funding unlock: up to $85K available",
-    desc: "Strong credit profile unlocks SBA lines, equipment financing, and more.",
-    score: 720,
-    funding: 85000,
-    isFinal: true,
-  },
+const MILESTONES = [
+  { label: "Business Entity", done: true },
+  { label: "EIN Registered", done: true },
+  { label: "Net-30 Vendors", done: true },
+  { label: "Business Bank Account", done: false },
+  { label: "Credit Line", done: false },
 ];
 
-function MilestoneCard({
-  milestone,
-  visible,
-  animating,
-}: {
-  milestone: Milestone;
-  visible: boolean;
-  animating: boolean;
-}) {
-  const scoreVal = useAnimatedCounter(
-    milestone.score,
-    1200,
-    animating,
-    milestone.day === "Day 0" ? 500 : milestone.score - 60,
-  );
-  const fundingVal = useAnimatedCounter(milestone.funding, 1400, animating, 0);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 14, scale: 0.96 }}
-      animate={{
-        opacity: visible ? 1 : 0,
-        y: visible ? 0 : 14,
-        scale: visible ? 1 : 0.96,
-      }}
-      transition={{ type: "spring", damping: 22, stiffness: 280 }}
-      className="rounded-2xl p-4 relative overflow-hidden"
-      style={{
-        background: milestone.isFinal
-          ? "oklch(0.32 0.14 155 / 25%)"
-          : "oklch(0.13 0.016 285)",
-        border: milestone.isFinal
-          ? "1px solid oklch(0.58 0.22 155 / 55%)"
-          : "1px solid oklch(0.58 0.22 290 / 28%)",
-        boxShadow: milestone.isFinal
-          ? "0 0 28px oklch(0.55 0.22 155 / 28%), inset 0 0 40px oklch(0.55 0.22 155 / 8%)"
-          : "none",
-      }}
-      data-ocid={`demo.step7.milestone.${milestone.day.replace(" ", "").toLowerCase()}`}
-    >
-      {/* Glow on final */}
-      {milestone.isFinal && (
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background:
-              "radial-gradient(ellipse 80% 50% at 50% 0%, oklch(0.58 0.22 155 / 20%) 0%, transparent 70%)",
-          }}
-          aria-hidden="true"
-        />
-      )}
-
-      <div className="relative z-10">
-        {/* Day label */}
-        <div className="flex items-center justify-between mb-2">
-          <span
-            className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full"
-            style={{
-              background: milestone.isFinal
-                ? "oklch(0.55 0.22 155 / 25%)"
-                : "oklch(0.58 0.22 290 / 18%)",
-              color: milestone.isFinal
-                ? "oklch(0.78 0.2 155)"
-                : "oklch(0.78 0.16 290)",
-            }}
-          >
-            {milestone.day}
-          </span>
-          {milestone.isFinal && (
-            <span className="text-base animate-bounce">🎉</span>
-          )}
-        </div>
-
-        {/* Label */}
-        <p
-          className="text-sm font-bold mb-1 leading-tight"
-          style={{ color: milestone.isFinal ? "oklch(0.9 0.06 155)" : "white" }}
-        >
-          {milestone.label}
-        </p>
-        <p
-          className="text-[11px] leading-relaxed mb-3"
-          style={{ color: "oklch(0.58 0.02 280)" }}
-        >
-          {milestone.desc}
-        </p>
-
-        {/* Score + Funding */}
-        <div className="flex items-end justify-between">
-          <div>
-            <div
-              className="text-2xl font-black tabular-nums"
-              style={{
-                color: milestone.isFinal ? "oklch(0.85 0.18 155)" : "white",
-              }}
-            >
-              {animating ? scoreVal : milestone.score}
-            </div>
-            <div
-              className="text-[10px] font-semibold"
-              style={{ color: "oklch(0.48 0.02 280)" }}
-            >
-              Business Credit Score
-            </div>
-          </div>
-          <div className="text-right">
-            <div
-              className="text-xl font-black tabular-nums"
-              style={{
-                color: milestone.isFinal
-                  ? "oklch(0.82 0.2 155)"
-                  : milestone.funding > 0
-                    ? "oklch(0.78 0.16 290)"
-                    : "oklch(0.45 0.02 280)",
-              }}
-            >
-              {milestone.funding === 0
-                ? "$0"
-                : `$${(animating ? fundingVal : milestone.funding).toLocaleString()}`}
-            </div>
-            <div
-              className="text-[10px] font-semibold"
-              style={{ color: "oklch(0.48 0.02 280)" }}
-            >
-              Funding Access
-            </div>
-          </div>
-        </div>
-      </div>
-    </motion.div>
-  );
+interface Props {
+  onNext: () => void;
+  onPrev: () => void;
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+export default function DemoStep7Credit({ onNext }: Props) {
+  const { sessionData } = useDemoFlow();
+  const nicheContent = getDemoContent(sessionData.niche);
+  const businessName = sessionData.businessName || "Your Business";
 
-export default function DemoStep7Credit() {
-  const { businessName, city, completeStep } = useDemoFlow();
-  const biz = businessName || "Your Business";
-  const cityLabel = city || "your area";
-
-  const [visibleMilestone, setVisibleMilestone] = useState(-1);
-  const [animatingMilestone, setAnimatingMilestone] = useState(-1);
-  const [headlineVisible, setHeadlineVisible] = useState(false);
-  const [subVisible, setSubVisible] = useState(false);
-  const [showNextBtn, setShowNextBtn] = useState(false);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [coachDismissed, setCoachDismissed] = useState(false);
-
-  const handleOverlayDone = useCallback(() => {
-    setShowOverlay(false);
-    completeStep();
-  }, [completeStep]);
-
-  useEffect(() => {
-    const t0 = setTimeout(() => setHeadlineVisible(true), 200);
-    const t1 = setTimeout(() => setSubVisible(true), 800);
-
-    // Milestones appear staggered
-    const milestoneTimers = MILESTONES.map((_, i) =>
-      setTimeout(
-        () => {
-          setVisibleMilestone(i);
-          setAnimatingMilestone(i);
-        },
-        1400 + i * 1200,
-      ),
-    );
-
-    const lastMilestoneAt = 1400 + (MILESTONES.length - 1) * 1200 + 1500;
-    const tNext = setTimeout(() => {
-      setShowNextBtn(true);
-      completeStep();
-    }, lastMilestoneAt);
-
-    return () => {
-      clearTimeout(t0);
-      clearTimeout(t1);
-      milestoneTimers.forEach(clearTimeout);
-      clearTimeout(tNext);
-    };
-  }, [completeStep]);
+  const fundabilityScore = nicheContent?.creditContext?.fundabilityScore ?? 82;
+  const businessType =
+    nicheContent?.creditContext?.businessType ?? "Local Business";
+  const avgRevenue = nicheContent?.creditContext?.avgRevenue ?? "$25,000/mo";
+  const vendorRecs = nicheContent?.creditContext?.vendorRecommendations ?? [
+    "SBA Microloan",
+    "Business Line of Credit",
+    "Vendor Net-30",
+  ];
+  const revenueStats = nicheContent?.revenueStats;
+  const creditTip =
+    nicheContent?.coachTips?.credit ??
+    "Fundability turns your business into a credit-worthy entity — vendor lines, business credit cards, and financing all become accessible.";
 
   return (
-    <>
-      <div
-        className="w-full max-w-lg mx-auto flex flex-col gap-5 relative"
-        data-ocid="demo.step7.section"
-      >
-        {/* Benefit pill — desktop only, never overlaps mobile text */}
-        <BenefitPill
-          benefit={`Get ${biz} approved for the funding you deserve in ${cityLabel}.`}
-        />
-
-        {/* Dramatic headline — NO pain point stat */}
-        <div className="text-center">
-          <p
-            className="text-[10px] font-black uppercase tracking-[0.18em] mb-2"
-            style={{ color: "oklch(0.58 0.22 290)" }}
-          >
-            Act 2 · The Surprise
-          </p>
-
-          <AnimatePresence>
-            {headlineVisible && (
-              <motion.h2
-                key="headline"
-                initial={{ opacity: 0, scale: 0.92, y: 10 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                transition={{ type: "spring", damping: 16, stiffness: 220 }}
-                className="text-3xl sm:text-4xl font-black leading-tight mb-3"
-                style={{
-                  background:
-                    "linear-gradient(135deg, white 0%, oklch(0.88 0.18 290) 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}
-              >
-                Nobody Told You
-                <br />
-                About This Part.
-              </motion.h2>
-            )}
-          </AnimatePresence>
-
-          <AnimatePresence>
-            {subVisible && (
-              <motion.p
-                key="sub"
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="text-sm sm:text-base font-semibold leading-relaxed max-w-sm mx-auto"
-                style={{ color: "oklch(0.72 0.02 280)" }}
-              >
-                While most platforms just book appointments,{" "}
-                <span style={{ color: "oklch(0.78 0.18 155)" }}>
-                  BRF builds your business credit simultaneously.
-                </span>
-              </motion.p>
-            )}
-          </AnimatePresence>
-
-          {/* No-competitor badge */}
-          <AnimatePresence>
-            {subVisible && (
-              <motion.div
-                key="badge"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.3 }}
-                className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-full text-xs font-black"
-                style={{
-                  background: "oklch(0.62 0.22 40 / 15%)",
-                  border: "1px solid oklch(0.62 0.22 40 / 35%)",
-                  color: "oklch(0.85 0.2 40)",
-                }}
-              >
-                🏆 No other platform builds your business credit. Only BRF.
-              </motion.div>
-            )}
-          </AnimatePresence>
+    <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="text-center mb-8">
+        <div className="inline-block px-3 py-1 rounded-full bg-purple-900/50 border border-purple-500/50 text-purple-300 text-xs font-semibold uppercase tracking-widest mb-4">
+          Business Credit Builder
         </div>
-
-        {/* Milestone cards */}
-        <div className="grid grid-cols-1 gap-3">
-          {MILESTONES.map((milestone, i) => (
-            <MilestoneCard
-              key={milestone.day}
-              milestone={milestone}
-              visible={i <= visibleMilestone}
-              animating={i === animatingMilestone}
-            />
-          ))}
-        </div>
-
-        {/* Framework badge */}
-        <div className="flex justify-center">
-          <FrameworkBadge
-            badge={{
-              ...FRAMEWORK_BADGES.hormozi,
-              label: "Hormozi: The Unexpected Bonus",
-            }}
-            size="sm"
-          />
-        </div>
-
-        {/* Next button */}
-        <AnimatePresence>
-          {showNextBtn && (
-            <motion.div
-              key="step7-ready"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-            >
-              <p
-                className="text-center text-xs font-semibold mb-3"
-                style={{ color: "oklch(0.55 0.14 155)" }}
-              >
-                Ready! Tap Next to continue →
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowOverlay(true)}
-                className="w-full py-4 rounded-2xl font-black text-base tracking-wide transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                style={{
-                  background:
-                    "linear-gradient(135deg, oklch(0.58 0.22 155), oklch(0.48 0.22 145))",
-                  color: "white",
-                  boxShadow: "0 4px 20px oklch(0.55 0.22 155 / 40%)",
-                }}
-                data-ocid="demo.step7.next_button"
-              >
-                Next: See What You’re Losing →
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <h2 className="text-2xl md:text-3xl font-bold text-white">
+          Build Real Business Credit & Unlock Funding
+        </h2>
+        <p className="text-gray-400 mt-2 text-sm">
+          BRF guides every step. Most businesses qualify within 90 days.
+        </p>
       </div>
 
-      {/* Coach tip */}
-      <AnimatePresence>
-        {!coachDismissed && (
-          <CoachTipCard
-            message={`This tracks your business credit score for ${biz} and shows you exactly what to do next to qualify for better financing and bigger jobs in ${cityLabel}.`}
-            onDismiss={() => setCoachDismissed(true)}
+      <div className="bg-gradient-to-r from-purple-950 to-indigo-950 border border-purple-700/50 rounded-2xl p-6 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <span className="text-gray-300 text-sm font-medium">
+            Fundability Score for {businessName}
+          </span>
+          <span className="text-purple-300 font-bold text-sm">
+            {fundabilityScore} / 100
+          </span>
+        </div>
+        <p className="text-gray-500 text-xs mb-3">
+          {businessType} · Avg Revenue: {avgRevenue}
+        </p>
+        <div className="h-4 bg-gray-800 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-purple-500 to-indigo-400 rounded-full"
+            style={{
+              width: `${fundabilityScore}%`,
+              animation: "fundability-grow 2s ease-out forwards",
+            }}
           />
-        )}
-      </AnimatePresence>
+        </div>
+        <div className="flex justify-between mt-2">
+          <span className="text-gray-500 text-xs">Starting point</span>
+          <span className="text-purple-400 text-xs font-semibold">
+            {fundabilityScore >= 75
+              ? "Excellent \u2014 Funding Ready!"
+              : fundabilityScore >= 50
+                ? "Good \u2014 Building Fast"
+                : "Getting Started \u2014 90 Days to Ready"}
+          </span>
+        </div>
 
-      <AnimatePresence>
-        {showOverlay && (
-          <GreenConfirmOverlay
-            headline="Credit Building Activated"
-            subline="From 540 to 720 — $85K Unlocked in 90 Days"
-            items={[
-              {
-                icon: "📋",
-                label: "Day 0",
-                value: "Score 540 — Credit profile opened",
-              },
-              {
-                icon: "📈",
-                label: "Day 30",
-                value: "Score 580 — First tradeline: +$15K",
-              },
-              {
-                icon: "🏦",
-                label: "Day 60",
-                value: "Score 660 — Bank credit: +$45K",
-              },
-              {
-                icon: "🎉",
-                label: "Day 90",
-                value: "Score 720 — Funding unlocked: $85K",
-              },
-            ]}
-            closingLine="80% of small businesses are denied funding due to weak business credit. BRF fixes that."
-            onDone={handleOverlayDone}
-            dataOcid="demo.step7.credit_overlay"
-          />
+        <div className="flex flex-wrap gap-2 mt-4">
+          {MILESTONES.map((m) => (
+            <span
+              key={m.label}
+              className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium border ${
+                m.done
+                  ? "bg-green-900/40 border-green-700/50 text-green-300"
+                  : "bg-gray-800 border-gray-700 text-gray-500"
+              }`}
+            >
+              {m.done ? "\u2713" : "\u25cb"} {m.label}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-gray-900 border border-gray-800 rounded-2xl p-5 mb-6">
+        <p className="text-gray-400 text-xs font-semibold uppercase tracking-wide mb-3">
+          Recommended Vendor Credit Sources
+        </p>
+        <div className="space-y-3">
+          {vendorRecs.map((rec, idx) => (
+            <div key={rec} className="flex items-center justify-between">
+              <p className="text-white text-sm font-medium">{rec}</p>
+              <div className="text-right">
+                <span
+                  className={`text-xs ${
+                    idx === 0 ? "text-green-400" : "text-purple-400"
+                  }`}
+                >
+                  {idx === 0 ? "Ready Now" : "Eligible"}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="bg-gradient-to-r from-purple-900/60 to-indigo-900/60 border border-purple-600/50 rounded-2xl p-5 text-center mb-6">
+        <p className="text-purple-200 text-base font-semibold">
+          {businessName} could qualify for business credit within{" "}
+          <span className="text-purple-300 font-bold">90 days</span>
+        </p>
+        {revenueStats && (
+          <p className="text-gray-300 text-sm mt-2">
+            {revenueStats.leadsPerMonth} leads/mo · $
+            {revenueStats.avgJobValue.toLocaleString()} avg job value ·{" "}
+            {revenueStats.description}
+          </p>
         )}
-      </AnimatePresence>
-    </>
+        <p className="text-gray-400 text-xs mt-2">
+          BRF walks you through every step \u2014 no guessing, no expensive
+          advisors.
+        </p>
+      </div>
+
+      {/* Niche-specific coach tip banner */}
+      <div className="fixed bottom-24 left-0 right-0 px-4 z-40">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-purple-900 border border-purple-600/60 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg shadow-purple-900/40">
+            <span className="text-purple-300 text-lg">💡</span>
+            <p className="text-purple-100 text-sm font-medium">{creditTip}</p>
+          </div>
+        </div>
+      </div>
+
+      <button
+        data-ocid="demo.step7.next_button"
+        type="button"
+        onClick={onNext}
+        className="w-full py-4 px-8 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-200"
+      >
+        Claim My Free 7-Day Trial \u2192
+      </button>
+    </div>
   );
 }

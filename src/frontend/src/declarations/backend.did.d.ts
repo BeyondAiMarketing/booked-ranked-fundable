@@ -10,6 +10,67 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AbacusConfig {
+  'fallbackModels' : Array<string>,
+  'routingEnabled' : boolean,
+  'totalRoutedCalls' : bigint,
+  'apiKey' : string,
+  'callsToday' : bigint,
+  'lastPingStatus' : string,
+  'lastTestedAt' : [] | [bigint],
+  'preferredModel' : string,
+}
+export interface AbacusRouteRequest {
+  'temperature' : [] | [number],
+  'taskType' : string,
+  'prompt' : string,
+  'maxTokens' : [] | [bigint],
+}
+export interface AbacusRouteResponse {
+  'selectedModel' : string,
+  'tokensUsed' : bigint,
+  'routingReason' : string,
+  'response' : string,
+}
+export interface AccountBrief {
+  'respondTo' : Array<string>,
+  'accountId' : string,
+  'ignoreList' : Array<string>,
+  'tone' : string,
+  'offerSummary' : string,
+  'doNotRespondList' : Array<string>,
+  'updatedAt' : bigint,
+  'updatedBy' : string,
+  'priorityContacts' : Array<string>,
+  'flagKeywords' : Array<string>,
+}
+export interface AccountBriefUpdate {
+  'respondTo' : [] | [Array<string>],
+  'ignoreList' : [] | [Array<string>],
+  'tone' : [] | [string],
+  'offerSummary' : [] | [string],
+  'doNotRespondList' : [] | [Array<string>],
+  'priorityContacts' : [] | [Array<string>],
+  'flagKeywords' : [] | [Array<string>],
+}
+export interface ActivityFeedItem {
+  'id' : string,
+  'title' : string,
+  'description' : string,
+  'entityId' : [] | [string],
+  'timestamp' : bigint,
+  'entityType' : [] | [string],
+  'eventType' : string,
+}
+export interface ActivityFeedItemInput {
+  'id' : string,
+  'title' : string,
+  'description' : string,
+  'entityId' : [] | [string],
+  'timestamp' : bigint,
+  'entityType' : [] | [string],
+  'eventType' : string,
+}
 export type AdapterType = { 'native' : null } |
   { 'anthropic_claude' : null } |
   { 'ollama_local' : null } |
@@ -27,6 +88,11 @@ export interface AgencySettings {
   'stripeKey' : string,
   'openaiKey' : string,
 }
+export type AgentActionKind = { 'EditSequence' : null } |
+  { 'ModifyStep' : null } |
+  { 'FireBulkSend' : null } |
+  { 'Unknown' : null } |
+  { 'QueryLeads' : null };
 export interface AgentArtifact {
   'id' : string,
   'status' : ArtifactStatus,
@@ -54,6 +120,12 @@ export interface AgentArtifactRecord {
   'threadId' : string,
   'runId' : string,
 }
+export interface AgentCommandResult {
+  'requiresConfirmation' : boolean,
+  'preview' : string,
+  'error' : [] | [string],
+  'actionId' : string,
+}
 export interface AgentDeliverable {
   'id' : string,
   'status' : string,
@@ -67,6 +139,24 @@ export interface AgentDeliverable {
   'deliverableType' : string,
   'scoreImpact' : [] | [bigint],
   'attachments' : Array<string>,
+}
+export interface AgentLogEntry {
+  'result' : string,
+  'action' : string,
+  'actionType' : string,
+  'agentId' : string,
+  'logId' : string,
+  'timestamp' : bigint,
+  'isSuccess' : boolean,
+}
+export interface AgentLogEntryInput {
+  'result' : string,
+  'action' : string,
+  'actionType' : string,
+  'agentId' : string,
+  'logId' : string,
+  'timestamp' : bigint,
+  'isSuccess' : boolean,
 }
 export interface AgentMemory {
   'conversationHistory' : Array<ConversationEntry>,
@@ -170,6 +260,23 @@ export interface AgentServiceRequest {
   'priority' : string,
   'attachments' : Array<string>,
 }
+export interface AgentSessionState {
+  'startedAt' : bigint,
+  'lastSeenAt' : bigint,
+  'userId' : string,
+  'isActive' : boolean,
+  'sessionId' : string,
+}
+export interface AgentStatus {
+  'status' : string,
+  'nextScheduledAt' : [] | [bigint],
+  'lastRunAt' : [] | [bigint],
+  'agentName' : string,
+  'agentId' : string,
+  'isEnabled' : boolean,
+  'lastError' : [] | [string],
+  'config' : string,
+}
 export interface AgentSubscription {
   'id' : string,
   'status' : string,
@@ -258,6 +365,13 @@ export type AlertType = { 'buying_signal' : null } |
   { 'competitor_move' : null } |
   { 'negative_mention' : null } |
   { 'local_trend' : null };
+export interface ApiPingRecord {
+  'status' : string,
+  'errorMessage' : [] | [string],
+  'latencyMs' : bigint,
+  'serviceId' : string,
+  'lastPingTime' : bigint,
+}
 export interface ApprovalItem {
   'id' : string,
   'status' : ApprovalStatus,
@@ -465,7 +579,7 @@ export interface BrandKitProspect {
   'outreachKitOpenedAt' : [] | [bigint],
   'trialExpiresAt' : [] | [bigint],
   'featuresUsed' : Array<string>,
-  'trialStatus' : TrialStatus,
+  'trialStatus' : TrialStatus__1,
   'firstName' : string,
 }
 export interface BrandVoiceProfile {
@@ -576,6 +690,11 @@ export interface BulkSendJob {
   'deliveredCount' : bigint,
   'scheduledAt' : bigint,
 }
+export interface BulkToggleRequest {
+  'tierId' : string,
+  'enabled' : boolean,
+  'toolkitNames' : Array<string>,
+}
 export interface CampaignInstance {
   'id' : string,
   'status' : string,
@@ -584,12 +703,24 @@ export interface CampaignInstance {
   'templateId' : string,
   'tenantId' : TenantId,
 }
+export type CampaignLeadStatus = { 'active' : null } |
+  { 'unsubscribed' : null } |
+  { 'completed' : null } |
+  { 'paused' : null };
 export interface CampaignMetrics {
   'opened' : bigint,
   'unsubscribed' : bigint,
   'sent' : bigint,
   'converted' : bigint,
   'clicked' : bigint,
+}
+export interface CampaignStats {
+  'emailsSentAllTime' : bigint,
+  'emailsSentWeek' : bigint,
+  'clickRate' : number,
+  'totalEnrolled' : bigint,
+  'emailsSentToday' : bigint,
+  'openRate' : number,
 }
 export type CampaignStatus = { 'scheduled' : null } |
   { 'sent' : null } |
@@ -645,6 +776,17 @@ export interface ClientReport {
   'aiNarrative' : string,
   'topWins' : Array<string>,
 }
+export interface CommandLogEntry {
+  'id' : string,
+  'agentAction' : AgentActionKind,
+  'executedAt' : [] | [bigint],
+  'userId' : string,
+  'confirmationPreview' : string,
+  'executionResult' : [] | [string],
+  'timestamp' : bigint,
+  'sessionId' : string,
+  'commandText' : string,
+}
 export type CommentIntent = { 'question' : null } |
   { 'purchase_intent' : null } |
   { 'spam' : null } |
@@ -699,12 +841,49 @@ export interface ComplianceConfig {
   'softBounceRetries' : bigint,
   'maxComplaintRate' : number,
 }
+export interface ComposioTool {
+  'id' : string,
+  'accountId' : string,
+  'name' : string,
+  'description' : string,
+  'connected' : boolean,
+  'category' : string,
+}
 export interface ConnectionTestResult {
+  'lastTestError' : [] | [string],
   'message' : string,
   'connected' : boolean,
   'statusCode' : bigint,
   'quotaInfo' : [] | [string],
+  'lastTestedAt' : [] | [bigint],
 }
+export interface ContentGenerationRequest {
+  'accountId' : string,
+  'contentType' : ContentType,
+  'additionalContext' : [] | [string],
+  'niche' : string,
+  'prompt' : string,
+}
+export interface ContentGenerationResult {
+  'id' : string,
+  'status' : GenerationStatus,
+  'output' : string,
+  'accountId' : string,
+  'contentType' : ContentType,
+  'generatedAt' : bigint,
+  'mediaUrl' : [] | [string],
+  'niche' : string,
+  'prompt' : string,
+  'errorMsg' : [] | [string],
+}
+export interface ContentTierToggle {
+  'tier' : string,
+  'contentCreationEnabled' : boolean,
+}
+export type ContentType = { 'Blog' : null } |
+  { 'Image' : null } |
+  { 'AdCopy' : null } |
+  { 'Video' : null };
 export interface ConversationEntry {
   'content' : string,
   'role' : string,
@@ -780,6 +959,36 @@ export interface DnsCheckResult {
   'dkimPresent' : boolean,
   'checkedAt' : bigint,
 }
+export interface DograhAgent {
+  'id' : string,
+  'status' : string,
+  'name' : string,
+  'description' : string,
+  'lastModified' : bigint,
+  'nodeCount' : bigint,
+}
+export interface DograhCommandResult {
+  'nodesCreated' : bigint,
+  'agentId' : [] | [string],
+  'message' : string,
+  'success' : boolean,
+}
+export interface DograhConfig {
+  'baseUrl' : string,
+  'isEnabled' : boolean,
+  'apiKey' : string,
+}
+export interface DograhCreateAgentRequest {
+  'nlCommand' : string,
+  'name' : string,
+  'description' : string,
+  'niche' : string,
+}
+export interface DograhTestResult {
+  'agentCount' : bigint,
+  'message' : string,
+  'connected' : boolean,
+}
 export interface DomainSetupState {
   'propagationStatus' : PropagationStatus,
   'siteImportStatus' : string,
@@ -828,13 +1037,18 @@ export interface DripQueue {
 export interface DripQueueEmailLog {
   'id' : string,
   'status' : string,
+  'clickedAt' : [] | [bigint],
   'errorMessage' : [] | [string],
+  'trackingToken' : string,
   'sentAt' : [] | [bigint],
   'tenantId' : string,
   'retryCount' : bigint,
+  'clickCount' : bigint,
   'queueId' : string,
+  'openCount' : bigint,
   'recipientName' : string,
   'recipientEmail' : string,
+  'openedAt' : [] | [bigint],
 }
 export interface DripQueueThrottleConfig {
   'staggerEnabled' : boolean,
@@ -907,6 +1121,15 @@ export type EmailSequenceStatus = { 'active' : null } |
   { 'completed' : null } |
   { 'not_started' : null } |
   { 'paused' : null };
+export interface EmailTemplate {
+  'id' : bigint,
+  'day' : bigint,
+  'fallbackBody' : string,
+  'subject' : string,
+  'body' : string,
+  'updatedAt' : bigint,
+  'fallbackSubject' : string,
+}
 export type EmojiUsage = { 'low' : null } |
   { 'high' : null } |
   { 'none' : null } |
@@ -925,6 +1148,11 @@ export interface EngagementApproval {
 export type EngagementApprovalStatus = { 'pending' : null } |
   { 'approved' : null } |
   { 'rejected' : null };
+export interface EnrollmentResult {
+  'errors' : Array<string>,
+  'skippedCount' : bigint,
+  'enrolledCount' : bigint,
+}
 export interface Estimate {
   'id' : string,
   'customerName' : string,
@@ -1000,6 +1228,31 @@ export interface ExtendedLeadInput {
   'totalReviews' : [] | [string],
   'localAds' : [] | [string],
 }
+export interface FeatureFlags {
+  'crm' : boolean,
+  'social' : boolean,
+  'analytics' : boolean,
+  'reputation' : boolean,
+  'voiceAgent' : boolean,
+  'creditBuilder' : boolean,
+}
+export interface FeatureToggle {
+  'proEnabled' : boolean,
+  'agencyEnabled' : boolean,
+  'basicEnabled' : boolean,
+  'lastModifiedBy' : string,
+  'lastModifiedTime' : bigint,
+  'featureName' : string,
+}
+export interface FeatureToggleLog {
+  'id' : string,
+  'modifiedAt' : bigint,
+  'modifiedBy' : string,
+  'tier' : string,
+  'newValue' : boolean,
+  'previousValue' : boolean,
+  'featureName' : string,
+}
 export interface FreeAuditLead {
   'id' : string,
   'overallScore' : bigint,
@@ -1018,9 +1271,42 @@ export interface FundabilityScore {
   'eligibilityPhase' : bigint,
   'creditworthinessPhase' : bigint,
 }
+export interface FunnelEvent {
+  'metadata' : [] | [string],
+  'step' : FunnelStepType,
+  'leadId' : string,
+  'timestamp' : bigint,
+}
+export interface FunnelRecord {
+  'demoCompletedAt' : [] | [bigint],
+  'demoStartedAt' : [] | [bigint],
+  'clickedAt' : [] | [bigint],
+  'funnelStep' : string,
+  'emailSentAt' : [] | [bigint],
+  'campaignId' : string,
+  'leadId' : string,
+  'niche' : string,
+  'enrolledAt' : bigint,
+  'trialProvisionedAt' : [] | [bigint],
+  'openedAt' : [] | [bigint],
+}
 export type FunnelStage = { 'bofu' : null } |
   { 'mofu' : null } |
   { 'tofu' : null };
+export type FunnelStepType = { 'EmailSent' : null } |
+  { 'TrialActivated' : null } |
+  { 'DemoCompleted' : null } |
+  { 'DemoStarted' : null } |
+  { 'DemoStep1' : null } |
+  { 'DemoStep2' : null } |
+  { 'DemoStep3' : null } |
+  { 'DemoStep4' : null } |
+  { 'EmailOpened' : null } |
+  { 'EmailClicked' : null };
+export interface FunnelTimeline {
+  'events' : Array<FunnelEvent>,
+  'leadId' : string,
+}
 export interface GapItem {
   'area' : string,
   'description' : string,
@@ -1040,6 +1326,38 @@ export interface GeneratedLead {
   'enriched' : boolean,
   'phone' : string,
 }
+export type GenerationStatus = { 'Failed' : null } |
+  { 'Generating' : null } |
+  { 'Complete' : null } |
+  { 'Pending' : null };
+export interface GridAuditResult {
+  'gridPoints' : Array<GridPoint>,
+  'coverageZoneSummary' : string,
+  'scannedAt' : bigint,
+  'city' : string,
+  'leadEmail' : string,
+  'businessName' : string,
+  'state' : string,
+}
+export interface GridAuditSnapshot {
+  'result' : GridAuditResult,
+  'snapshotAt' : bigint,
+}
+export interface GridPoint {
+  'lat' : number,
+  'lng' : number,
+  'direction' : string,
+  'competitorAtTop' : string,
+  'rankPosition' : bigint,
+  'searched' : boolean,
+}
+export interface HealthMetrics {
+  'trialsActive' : bigint,
+  'apiStatus' : boolean,
+  'demosRunning' : bigint,
+  'outreachSent' : bigint,
+  'leadsToday' : bigint,
+}
 export interface HealthScoreComponent {
   'weight' : bigint,
   'status' : string,
@@ -1058,13 +1376,33 @@ export interface HumanOversightAssignment {
   'priority' : string,
   'strategist' : string,
 }
+export interface InboundReply {
+  'id' : string,
+  'claudeSuggestedAction' : string,
+  'subjectLine' : string,
+  'actionStatus' : string,
+  'claudeSentiment' : string,
+  'prospectEmail' : string,
+  'receivedAt' : bigint,
+  'claudePainPoints' : string,
+  'leadId' : string,
+  'bodyText' : string,
+}
 export interface IntegrationCredentials {
   'serpApiKey' : string,
+  'geminiApiKey' : string,
+  'serpApiDevKey' : string,
   'claudeKey' : string,
   'twilioSid' : string,
+  'sendgridInboundParseDomain' : string,
+  'dograhApiKey' : string,
   'yelpApiKey' : string,
+  'vapiWebhookSecret' : string,
   'googleClientId' : string,
+  'n8nInstanceUrl' : string,
+  'abacusApiKey' : string,
   'twilioAuth' : string,
+  'composioApiKey' : string,
   'searxngUrl' : string,
   'neverBounceKey' : string,
   'autoBrowserUrl' : string,
@@ -1074,6 +1412,7 @@ export interface IntegrationCredentials {
   'emailSmtpPass' : string,
   'emailSmtpPort' : string,
   'emailSmtpUser' : string,
+  'openRouterApiKey' : string,
   'elevenLabsVoiceId' : string,
   'listmonkUrl' : string,
   'litellmKey' : string,
@@ -1084,13 +1423,30 @@ export interface IntegrationCredentials {
   'listmonkPass' : string,
   'listmonkUser' : string,
   'sendgridKey' : string,
+  'n8nApiKey' : Uint8Array,
+  'tinyFishKey' : string,
   'googleClientSecret' : string,
   'twilioNumber' : string,
+  'nvidiaApiKey' : Uint8Array,
   'facebookAppSecret' : string,
+  'composioWebhookSecret' : string,
   'stripeKey' : string,
   'ollamaUrl' : string,
   'stripeWebhookSecret' : string,
+  'nvidiaNimApiKey' : string,
   'openaiKey' : string,
+}
+export interface IntegrationHealthSummary {
+  'failedWebhookCounts' : Array<[string, bigint]>,
+  'secondary' : Array<IntegrationTestResult>,
+  'critical' : Array<IntegrationTestResult>,
+}
+export interface IntegrationTestResult {
+  'provider' : string,
+  'testedAt' : bigint,
+  'latencyMs' : [] | [bigint],
+  'message' : string,
+  'connected' : boolean,
 }
 export interface Invoice {
   'id' : string,
@@ -1103,13 +1459,16 @@ export interface Invoice {
   'amount' : bigint,
 }
 export interface LLMLeadSearchResult {
+  'totalFound' : bigint,
   'enrichedCount' : bigint,
+  'tinyFishCount' : bigint,
   'errors' : Array<string>,
   'openAICount' : bigint,
   'leads' : Array<GeneratedLead>,
   'claudeCount' : bigint,
   'searchedAt' : bigint,
   'serpApiUsed' : boolean,
+  'serpApiCount' : bigint,
 }
 export interface Lead {
   'id' : string,
@@ -1123,6 +1482,21 @@ export interface Lead {
   'notes' : string,
   'phone' : string,
   'agentSubscriptions' : Array<string>,
+}
+export interface LeadAIEnrichment {
+  'model' : string,
+  'leadId' : string,
+  'companyIntel' : string,
+  'decisionMakerInfo' : string,
+  'enrichedAt' : bigint,
+  'webPresence' : string,
+}
+export interface LeadAIScore {
+  'scoredAt' : bigint,
+  'signals' : Array<string>,
+  'score' : bigint,
+  'fitReason' : string,
+  'leadId' : string,
 }
 export interface LeadAttributionRecord {
   'id' : string,
@@ -1154,6 +1528,8 @@ export interface LeadAuditResult {
   'growthScore' : bigint,
   'interactionType' : [] | [string],
   'socialInstagram' : [] | [string],
+  'outreachPriority' : string,
+  'overallScore' : bigint,
   'pushedAt' : [] | [bigint],
   'socialFacebook' : [] | [string],
   'websiteUrl' : string,
@@ -1179,14 +1555,31 @@ export interface LeadAuditResult {
   'trialActivatedAt' : [] | [bigint],
   'engagementScore' : bigint,
   'firstTouchEmailSubject' : string,
+  'painPointAngles' : Array<string>,
 }
-export interface LeadEnrichment {
-  'emailVerificationStatus' : VerificationStatus,
-  'emailVerifiedAt' : [] | [bigint],
-  'canReceiveOutreach' : boolean,
-  'phoneVerifiedAt' : [] | [bigint],
-  'leadId' : string,
-  'phoneVerificationStatus' : VerificationStatus,
+export interface LeadCampaignDetails {
+  'auditScore' : [] | [bigint],
+  'lastSentAt' : [] | [bigint],
+  'usedFallback' : [] | [boolean],
+  'missingServices' : [] | [string],
+  'topCompetitor' : [] | [string],
+  'templateVersionUsed' : [] | [bigint],
+  'currentEmailDay' : bigint,
+  'deadZones' : [] | [bigint],
+}
+export interface LeadCampaignStatus {
+  'status' : CampaignLeadStatus,
+  'lastSentAt' : [] | [bigint],
+  'city' : string,
+  'leadEmail' : string,
+  'lastOpenedAt' : [] | [bigint],
+  'businessType' : string,
+  'website' : [] | [string],
+  'state' : string,
+  'currentStep' : bigint,
+  'enrolledAt' : bigint,
+  'companyName' : string,
+  'phone' : [] | [string],
 }
 export interface LeadExtractionResult {
   'count' : bigint,
@@ -1217,11 +1610,19 @@ export type MarketingFramework = { 'bly' : null } |
   { 'ogilvy' : null };
 export interface MaskedCredentials {
   'serpApiKey' : string,
+  'geminiApiKey' : string,
+  'serpApiDevKey' : string,
   'claudeKey' : string,
   'twilioSid' : string,
+  'sendgridInboundParseDomain' : string,
+  'dograhApiKey' : string,
   'yelpApiKey' : string,
+  'vapiWebhookSecret' : string,
   'googleClientId' : string,
+  'n8nInstanceUrl' : string,
+  'abacusApiKey' : string,
   'twilioAuth' : string,
+  'composioApiKey' : string,
   'searxngUrl' : string,
   'neverBounceKey' : string,
   'autoBrowserUrl' : string,
@@ -1231,6 +1632,7 @@ export interface MaskedCredentials {
   'emailSmtpPass' : string,
   'emailSmtpPort' : string,
   'emailSmtpUser' : string,
+  'openRouterApiKey' : string,
   'elevenLabsVoiceId' : string,
   'listmonkUrl' : string,
   'litellmKey' : string,
@@ -1241,18 +1643,45 @@ export interface MaskedCredentials {
   'listmonkPass' : string,
   'listmonkUser' : string,
   'sendgridKey' : string,
+  'tinyFishKey' : string,
   'googleClientSecret' : string,
   'twilioNumber' : string,
+  'nvidiaApiKey' : string,
   'facebookAppSecret' : string,
+  'composioWebhookSecret' : string,
   'stripeKey' : string,
   'ollamaUrl' : string,
   'stripeWebhookSecret' : string,
+  'nvidiaNimApiKey' : string,
   'openaiKey' : string,
+}
+export interface MasterAgentContextSnapshot {
+  'recentActivity' : Array<string>,
+  'totalLeads' : bigint,
+  'timestamp' : bigint,
+  'activeTrials' : bigint,
+  'totalCampaigns' : bigint,
+  'totalAccounts' : bigint,
+}
+export interface MasterAgentMessage {
+  'content' : string,
+  'role' : MessageRole,
+  'timestamp' : bigint,
+}
+export interface MasterAgentSession {
+  'startedAt' : bigint,
+  'messages' : Array<MasterAgentMessage>,
+  'lastActiveAt' : bigint,
+  'platformContext' : [] | [string],
+  'sessionId' : string,
 }
 export type MemoryMode = { 'none' : null } |
   { 'with_notes' : null } |
   { 'conversation_only' : null } |
   { 'with_summary' : null };
+export type MessageRole = { 'System' : null } |
+  { 'User' : null } |
+  { 'Assistant' : null };
 export interface NewsletterCampaign {
   'id' : string,
   'htmlBody' : string,
@@ -1298,6 +1727,12 @@ export interface NewsletterSubscriber {
   'customFields' : Array<[string, string]>,
   'phone' : [] | [string],
 }
+export interface NicheConversionData {
+  'paid_customers' : bigint,
+  'niche' : string,
+  'demos_started' : bigint,
+  'trials_activated' : bigint,
+}
 export interface NicheScript {
   'voiceName' : string,
   'nicheId' : string,
@@ -1319,6 +1754,37 @@ export interface NotificationRecord {
   'read' : boolean,
   'tenantId' : TenantId,
 }
+export interface OAuthInitRequest {
+  'accountId' : string,
+  'redirectUri' : string,
+  'toolId' : string,
+}
+export interface OAuthInitResponse { 'state' : string, 'authUrl' : string }
+export interface OperatorChatMessage {
+  'id' : string,
+  'content' : string,
+  'createdAt' : Time,
+  'role' : string,
+  'commandType' : [] | [string],
+}
+export interface OperatorCommandResult {
+  'requires_confirmation' : boolean,
+  'intent' : string,
+  'affected_count' : bigint,
+  'recommended_actions' : Array<string>,
+  'affected_niche' : string,
+}
+export interface OperatorReportData {
+  'generated_at' : Time,
+  'report_type' : string,
+  'sections' : Array<[string, string]>,
+}
+export interface OperatorStats {
+  'leads_today' : bigint,
+  'api_health_summary' : string,
+  'trials_this_week' : bigint,
+  'outreach_sent_today' : bigint,
+}
 export type OutputFormat = { 'both' : null } |
   { 'html' : null } |
   { 'text' : null };
@@ -1334,6 +1800,25 @@ export interface OutreachEvent {
   'sequenceId' : string,
   'utmCampaign' : string,
   'eventType' : string,
+}
+export interface OutreachQueuedAction {
+  'id' : string,
+  'status' : string,
+  'emailSubject' : [] | [string],
+  'actionType' : string,
+  'leadId' : string,
+  'emailBody' : [] | [string],
+  'autoFireAt' : bigint,
+  'scheduledAt' : bigint,
+}
+export interface OutreachSequence {
+  'id' : string,
+  'generatedAt' : bigint,
+  'framework' : string,
+  'emails' : Array<string>,
+  'smsMessages' : Array<string>,
+  'leadId' : string,
+  'niche' : string,
 }
 export interface PaidAdsAdCopy {
   'id' : string,
@@ -1425,6 +1910,11 @@ export interface PaymentMethod {
   'isDefault' : boolean,
   'cardLast4' : string,
 }
+export interface PipelineActivityEntry {
+  'action' : string,
+  'timestamp' : bigint,
+  'details' : string,
+}
 export interface PipelineFunnelStats {
   'leadsSourced' : bigint,
   'warmSequenceActive' : bigint,
@@ -1434,6 +1924,21 @@ export interface PipelineFunnelStats {
   'callBooked' : bigint,
   'niche' : string,
   'contacted' : bigint,
+}
+export interface PipelineLead {
+  'id' : string,
+  'ownerEmail' : string,
+  'autoTriggerScheduledAt' : [] | [bigint],
+  'source' : string,
+  'laneStatus' : string,
+  'businessName' : string,
+  'tenantId' : string,
+  'activityLog' : Array<PipelineActivityEntry>,
+  'autoTriggerCancelled' : boolean,
+  'laneMoveTimestamp' : bigint,
+  'leadId' : string,
+  'niche' : string,
+  'autoTriggerFiredAt' : [] | [bigint],
 }
 export interface PlatformFormatting {
   'hashtags' : Array<string>,
@@ -1478,6 +1983,19 @@ export interface ReadinessScore {
   'score' : bigint,
   'autoBrowserConfigured' : boolean,
 }
+export interface ReplyAnalysis {
+  'suggestedResponse' : string,
+  'summary' : string,
+  'leadId' : string,
+  'analyzedAt' : bigint,
+  'replyId' : string,
+  'classification' : ReplyClassification,
+}
+export type ReplyClassification = { 'HotLead' : null } |
+  { 'Unsubscribe' : null } |
+  { 'Neutral' : null } |
+  { 'PositiveSignal' : null } |
+  { 'Objection' : null };
 export interface ReplyInboxItem {
   'id' : string,
   'status' : string,
@@ -1582,6 +2100,15 @@ export interface RobotsCheckResult {
   'url' : string,
   'allowed' : boolean,
   'reason' : string,
+}
+export interface RoofingLead {
+  'city' : string,
+  'businessType' : string,
+  'email' : string,
+  'website' : [] | [string],
+  'state' : string,
+  'companyName' : string,
+  'phone' : [] | [string],
 }
 export type RunStatus = { 'cancelled' : null } |
   { 'completed' : null } |
@@ -1962,6 +2489,13 @@ export interface SocialROIMetrics {
   'aiNarrative' : string,
   'bookingsFromSocial' : bigint,
 }
+export interface SourceQualityData {
+  'paid_converted' : bigint,
+  'source' : string,
+  'trials_converted' : bigint,
+  'avg_quality_score' : number,
+  'total_leads' : bigint,
+}
 export interface SubscriberImportResult {
   'imported' : bigint,
   'skipped' : bigint,
@@ -1973,6 +2507,17 @@ export type SubscriberStatus = { 'active' : null } |
   { 'bounced' : null };
 export type TenantId = string;
 export type Time = bigint;
+export interface ToolActionRequest {
+  'action' : string,
+  'accountId' : string,
+  'toolId' : string,
+  'params' : Array<[string, string]>,
+}
+export interface ToolActionResponse {
+  'result' : string,
+  'errorMessage' : [] | [string],
+  'success' : boolean,
+}
 export interface ToolDefinition {
   'id' : string,
   'permissions' : Array<string>,
@@ -1984,6 +2529,12 @@ export interface ToolDefinition {
   'category' : string,
   'requiresApproval' : boolean,
 }
+export interface ToolkitToggle {
+  'appliedAt' : bigint,
+  'tierId' : string,
+  'enabled' : boolean,
+  'toolkitName' : string,
+}
 export interface TransformationInput {
   'context' : Uint8Array,
   'response' : http_request_result,
@@ -1993,10 +2544,63 @@ export interface TransformationOutput {
   'body' : Uint8Array,
   'headers' : Array<http_header>,
 }
+export interface TrialAccount {
+  'id' : string,
+  'status' : TrialStatus,
+  'expiresAt' : bigint,
+  'city' : string,
+  'businessName' : string,
+  'email' : string,
+  'website' : [] | [string],
+  'provisionedAt' : bigint,
+  'leadId' : string,
+  'niche' : string,
+  'phone' : [] | [string],
+}
+export interface TrialProvisionRequest {
+  'city' : string,
+  'businessName' : string,
+  'email' : string,
+  'website' : [] | [string],
+  'leadId' : string,
+  'niche' : string,
+  'phone' : [] | [string],
+}
 export type TrialStatus = { 'Active' : null } |
+  { 'Converted' : null } |
+  { 'Expired' : null };
+export type TrialStatus__1 = { 'Active' : null } |
   { 'Converted' : null } |
   { 'Expired' : null } |
   { 'NotStarted' : null };
+export interface TriggerRule {
+  'action' : string,
+  'ruleId' : string,
+  'name' : string,
+  'createdAt' : bigint,
+  'actionType' : string,
+  'conditionType' : string,
+  'isEnabled' : boolean,
+  'condition' : string,
+}
+export interface TriggerRuleInput {
+  'action' : string,
+  'ruleId' : string,
+  'name' : string,
+  'createdAt' : bigint,
+  'actionType' : string,
+  'conditionType' : string,
+  'isEnabled' : boolean,
+  'condition' : string,
+}
+export interface TriggerRuleUpdate {
+  'action' : [] | [string],
+  'name' : [] | [string],
+  'actionType' : [] | [string],
+  'conditionType' : [] | [string],
+  'isEnabled' : [] | [boolean],
+  'condition' : [] | [string],
+}
 export interface UserProfile {
   'name' : string,
   'role' : string,
@@ -2019,6 +2623,7 @@ export interface VapiCallLog {
   'duration' : bigint,
   'callerPhone' : string,
   'endedAt' : [] | [bigint],
+  'recordingUrl' : [] | [string],
   'recordedAt' : bigint,
   'tenantId' : string,
   'callId' : string,
@@ -2033,10 +2638,6 @@ export interface VapiProvisioningStatus {
   'assistantId' : [] | [string],
   'lastSynced' : [] | [bigint],
 }
-export type VerificationStatus = { 'Invalid' : null } |
-  { 'Unverified' : null } |
-  { 'Verified' : null } |
-  { 'Pending' : null };
 export interface VoiceAgentConfig {
   'callRouting' : { 'ai' : null } |
     { 'voicemail' : string } |
@@ -2077,6 +2678,15 @@ export interface WarmSequenceEmailSchedule {
   'touchIndex' : bigint,
   'sendAfter' : bigint,
   'scheduledAt' : bigint,
+}
+export interface WebhookEvent {
+  'status' : { 'ok' : null } |
+    { 'failed' : null },
+  'provider' : string,
+  'receivedAt' : bigint,
+  'errorMsg' : [] | [string],
+  'payload' : string,
+  'eventType' : string,
 }
 export interface WebsiteAgentScore {
   'id' : string,
@@ -2190,15 +2800,14 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'activateTrial' : ActorMethod<
-    [
-      string,
-      string,
-      [] | [string],
-      [] | [string],
-      [] | [string],
-      [] | [string],
-    ],
-    { 'ok' : DemoSession } |
+    [string, string, string, string, string, string, string, string],
+    {
+        'ok' : {
+          'loginUrl' : string,
+          'emailWarning' : [] | [string],
+          'trialAccountId' : string,
+        }
+      } |
       { 'err' : string }
   >,
   'activateTrialForDemo' : ActorMethod<
@@ -2206,10 +2815,18 @@ export interface _SERVICE {
     { 'ok' : { 'trialEndsAt' : bigint } } |
       { 'err' : string }
   >,
+  'addActivityFeedItem' : ActorMethod<[ActivityFeedItemInput], undefined>,
+  'addAgentLog' : ActorMethod<[AgentLogEntryInput], undefined>,
   'addAttributionTouch' : ActorMethod<[string, AttributionTouch], boolean>,
+  'addConversationMessage' : ActorMethod<
+    [string, string, string, string],
+    undefined
+  >,
   'addDemoFunnelEntry' : ActorMethod<[DemoFunnelEntry], undefined>,
+  'addInboundReply' : ActorMethod<[InboundReply], undefined>,
   'addLeadFromSocialComment' : ActorMethod<[string, string, string], undefined>,
   'addPaidAdsScore' : ActorMethod<[PaidAdsScore], undefined>,
+  'addPipelineLead' : ActorMethod<[PipelineLead], undefined>,
   'addScanPhoto' : ActorMethod<[string, string, string], string>,
   'addSeoGeoScore' : ActorMethod<[SeoGeoScore], undefined>,
   'addSeoGeoVisibilitySnapshot' : ActorMethod<
@@ -2221,8 +2838,10 @@ export interface _SERVICE {
     { 'ok' : SMSMessage } |
       { 'err' : string }
   >,
+  'addTriggerRule' : ActorMethod<[TriggerRuleInput], TriggerRule>,
   'addWebsiteAgentScore' : ActorMethod<[WebsiteAgentScore], undefined>,
   'advanceWarmupDay' : ActorMethod<[], undefined>,
+  'analyzeReply' : ActorMethod<[string, string, string, string], ReplyAnalysis>,
   'appendAuditLog' : ActorMethod<[AuditLogEntry], undefined>,
   'approveAndPushToCrm' : ActorMethod<[string, string], boolean>,
   'approveBrowserAudit' : ActorMethod<
@@ -2231,6 +2850,7 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'approveEngagement' : ActorMethod<[string, string], undefined>,
+  'approveQueuedAction' : ActorMethod<[string], undefined>,
   'approveReplyDraft' : ActorMethod<[string], boolean>,
   'archiveSmsThread' : ActorMethod<
     [string],
@@ -2240,26 +2860,64 @@ export interface _SERVICE {
   'archiveThread' : ActorMethod<[string], boolean>,
   'assignCallerUserRole' : ActorMethod<[Principal, UserRole], undefined>,
   'assignSegmentToQueue' : ActorMethod<[string, Array<string>], boolean>,
+  'autoAuditLeads' : ActorMethod<
+    [string, Array<GeneratedLead>],
+    { 'ok' : bigint } |
+      { 'err' : string }
+  >,
+  'autoEnrollOnInit' : ActorMethod<[], undefined>,
   'batchScrape' : ActorMethod<[BatchScrapeRequest, string], BatchScrapeResult>,
   'buildComplianceFooter' : ActorMethod<[string], string>,
+  'bulkApplyToggleToTier' : ActorMethod<
+    [BulkToggleRequest],
+    { 'ok' : bigint } |
+      { 'err' : string }
+  >,
+  'bulkEnrollRoofingLeads' : ActorMethod<
+    [],
+    { 'ok' : bigint } |
+      { 'err' : string }
+  >,
   'bulkImportLeads' : ActorMethod<
     [string, Array<ExtendedLeadInput>],
     BulkImportResult
   >,
+  'bulkSetFeatureToggles' : ActorMethod<
+    [string, Array<[string, boolean]>, string],
+    boolean
+  >,
+  'callOpenRouterForTask' : ActorMethod<[string, string, string], string>,
+  'cancelAutoTrigger' : ActorMethod<[string], undefined>,
+  'cancelQueuedAction' : ActorMethod<[string], undefined>,
   'checkDnsRecords' : ActorMethod<[string], DnsCheckResult>,
   'checkRobotsTxt' : ActorMethod<[string], RobotsCheckResult>,
   'checkSocialPresence' : ActorMethod<[string], SocialPresence>,
   'checkSocialPresencePublic' : ActorMethod<[string], SocialPresence>,
+  'clearComposioWebhookSecret' : ActorMethod<
+    [],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'clearMemory' : ActorMethod<[string], boolean>,
   'clearNicheAudioCache' : ActorMethod<[string], undefined>,
   'clearScrapeHistory' : ActorMethod<[string], undefined>,
+  'commitWorkflowBatch' : ActorMethod<[string], boolean>,
   'completeDemo' : ActorMethod<
     [string, string],
     { 'ok' : AuditReport } |
       { 'err' : string }
   >,
+  'completeDemoAndProvisionTrial' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'completeRun' : ActorMethod<[string, string, Array<string>], boolean>,
   'createAgentArtifact' : ActorMethod<[AgentArtifactRecord], boolean>,
+  'createAgentFromCommand' : ActorMethod<
+    [DograhCreateAgentRequest],
+    DograhCommandResult
+  >,
   'createAgentRun' : ActorMethod<[AgentRunRecord], boolean>,
   'createAgentThread' : ActorMethod<[AgentThreadRecord], boolean>,
   'createApprovalItem' : ActorMethod<
@@ -2403,6 +3061,11 @@ export interface _SERVICE {
   'deleteChatWidgetConfig' : ActorMethod<[TenantId], undefined>,
   'deleteCompetitorAlert' : ActorMethod<[string], undefined>,
   'deleteCompetitorProfile' : ActorMethod<[string], undefined>,
+  'deleteCredential' : ActorMethod<
+    [string, string],
+    { 'ok' : boolean, 'message' : string }
+  >,
+  'deleteGeneratedContent' : ActorMethod<[string], undefined>,
   'deleteLead' : ActorMethod<[TenantId, string], undefined>,
   'deleteLeadAttribution' : ActorMethod<[string], undefined>,
   'deleteLocationProfile' : ActorMethod<[string], undefined>,
@@ -2413,9 +3076,17 @@ export interface _SERVICE {
   'deleteScanModel' : ActorMethod<[string, string], undefined>,
   'deleteSocialPost' : ActorMethod<[string, string], undefined>,
   'deleteTemplate' : ActorMethod<[string], boolean>,
+  'deleteTriggerRule' : ActorMethod<[string], undefined>,
   'deleteVoiceAgentConfig' : ActorMethod<[TenantId], undefined>,
+  'deleteWorkflowDef' : ActorMethod<[string], boolean>,
+  'deployAgent' : ActorMethod<
+    [string],
+    { 'message' : string, 'success' : boolean }
+  >,
   'dismissCompetitorAlert' : ActorMethod<[string], boolean>,
   'dismissSocialListeningAlert' : ActorMethod<[string, string], undefined>,
+  'dograhTransform' : ActorMethod<[TransformationInput], TransformationOutput>,
+  'editAgentFromCommand' : ActorMethod<[string, string], DograhCommandResult>,
   'enqueueLeadSequence' : ActorMethod<
     [string, string, string, string, string],
     bigint
@@ -2424,11 +3095,90 @@ export interface _SERVICE {
     [string, string, Array<string>],
     bigint
   >,
+  'enrichLead' : ActorMethod<
+    [string, string, string, string],
+    LeadAIEnrichment
+  >,
+  'enrollAllRoofingLeads' : ActorMethod<
+    [string, bigint],
+    { 'ok' : EnrollmentResult } |
+      { 'err' : string }
+  >,
+  'enrollLeadInFunnel' : ActorMethod<
+    [string, string, string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'enrollRoofingLead' : ActorMethod<
+    [RoofingLead],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'enrollRoofingLeadsIntoCampaign' : ActorMethod<
+    [],
+    { 'enrolled' : bigint, 'skipped' : bigint }
+  >,
+  'executeAgentAction' : ActorMethod<
+    [string],
+    { 'ok' : boolean, 'error' : [] | [string], 'logId' : string }
+  >,
+  'executeOperatorCommand' : ActorMethod<[string], OperatorCommandResult>,
+  'executeToolAction' : ActorMethod<
+    [ToolActionRequest],
+    { 'ok' : ToolActionResponse } |
+      { 'err' : string }
+  >,
   'extractLeads' : ActorMethod<[string, string], LeadExtractionResult>,
   'failRun' : ActorMethod<[string, string], boolean>,
   'flagEngagement' : ActorMethod<[string, string, string], undefined>,
   'flushSmsQueue' : ActorMethod<[], bigint>,
+  'generateContent' : ActorMethod<[ContentGenerationRequest], string>,
+  'generateOutreachSequence' : ActorMethod<
+    [string, string, string, string, string],
+    OutreachSequence
+  >,
+  'generateTailoredEmailCopy' : ActorMethod<
+    [string, string, string, bigint, string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'generateTailoredEmailForLead' : ActorMethod<
+    [string, string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'generateUnsubscribeToken' : ActorMethod<[string], string>,
+  'getAIUsageLogs' : ActorMethod<
+    [string],
+    Array<
+      {
+        'id' : string,
+        'provider' : string,
+        'inputTokens' : bigint,
+        'success' : boolean,
+        'loggedAt' : bigint,
+      }
+    >
+  >,
+  'getAbacusApiKeyStatus' : ActorMethod<
+    [string],
+    { 'maskedKey' : string, 'configured' : boolean }
+  >,
+  'getAbacusStats' : ActorMethod<
+    [],
+    { 'ok' : AbacusConfig } |
+      { 'err' : string }
+  >,
+  'getAccountBrief' : ActorMethod<
+    [string],
+    { 'ok' : AccountBrief } |
+      { 'err' : string }
+  >,
+  'getAccountToolkit' : ActorMethod<
+    [string],
+    { 'ok' : Array<string> } |
+      { 'err' : string }
+  >,
   'getActiveAdapter' : ActorMethod<[string], [] | [ProviderAdapterConfig]>,
   'getActiveChatWidgetConfigs' : ActorMethod<[], Array<ChatWidgetConfig>>,
   'getActiveNewsletterSubscribers' : ActorMethod<
@@ -2440,18 +3190,25 @@ export interface _SERVICE {
     [TenantId],
     Array<AgentDeliverable>
   >,
+  'getAgentLogs' : ActorMethod<[string, bigint], Array<AgentLogEntry>>,
   'getAgentMemoryByThread' : ActorMethod<[string], Array<AgentMemoryRecord>>,
   'getAgentPerformanceSnapshotsByTenant' : ActorMethod<
     [TenantId],
     Array<AgentPerformanceSnapshot>
   >,
   'getAgentProducts' : ActorMethod<[], Array<AgentProduct>>,
+  'getAgentQuota' : ActorMethod<
+    [],
+    { 'dailyCount' : bigint, 'dailyLimit' : bigint, 'remaining' : bigint }
+  >,
   'getAgentRunsByTenant' : ActorMethod<[string], Array<AgentRunRecord>>,
   'getAgentRunsByThread' : ActorMethod<[string], Array<AgentRunRecord>>,
   'getAgentServiceRequestsByTenant' : ActorMethod<
     [TenantId],
     Array<AgentServiceRequest>
   >,
+  'getAgentSession' : ActorMethod<[], [] | [AgentSessionState]>,
+  'getAgentStatuses' : ActorMethod<[], Array<AgentStatus>>,
   'getAgentSubscriptionsByTenant' : ActorMethod<
     [TenantId],
     Array<AgentSubscription>
@@ -2463,11 +3220,25 @@ export interface _SERVICE {
   >,
   'getAgentThread' : ActorMethod<[string], [] | [AgentThreadRecord]>,
   'getAgentThreadsByTenant' : ActorMethod<[string], Array<AgentThreadRecord>>,
+  'getAllAgentLogs' : ActorMethod<[bigint], Array<AgentLogEntry>>,
   'getAllAgentServiceRequests' : ActorMethod<[], Array<AgentServiceRequest>>,
   'getAllAgentSubscriptions' : ActorMethod<[], Array<AgentSubscription>>,
   'getAllAgentTasks' : ActorMethod<[], Array<AgentTask>>,
   'getAllBrandKitProspects' : ActorMethod<[], Array<BrandKitProspect>>,
   'getAllClientHealthScores' : ActorMethod<[], Array<ClientHealthScore>>,
+  'getAllComposioTools' : ActorMethod<
+    [],
+    { 'ok' : Array<ComposioTool> } |
+      { 'err' : string }
+  >,
+  'getAllEnrolledLeads' : ActorMethod<[], Array<LeadCampaignStatus>>,
+  'getAllFunnelEvents' : ActorMethod<
+    [],
+    { 'ok' : Array<[string, FunnelTimeline]> } |
+      { 'err' : string }
+  >,
+  'getAllGeneratedContent' : ActorMethod<[], Array<ContentGenerationResult>>,
+  'getAllLeadCampaignDetails' : ActorMethod<[], Array<LeadCampaignDetails>>,
   'getAllNewsletterSubscribers' : ActorMethod<
     [string],
     Array<NewsletterSubscriber>
@@ -2478,6 +3249,16 @@ export interface _SERVICE {
   'getAllSeoGeoRequests' : ActorMethod<[], Array<SeoGeoRequest>>,
   'getAllSeoGeoSubscriptions' : ActorMethod<[], Array<SeoGeoSubscription>>,
   'getAllTenants' : ActorMethod<[], Array<string>>,
+  'getAllToolkitToggles' : ActorMethod<
+    [],
+    { 'ok' : Array<ToolkitToggle> } |
+      { 'err' : string }
+  >,
+  'getAllTrialAccounts' : ActorMethod<
+    [],
+    { 'ok' : Array<TrialAccount> } |
+      { 'err' : string }
+  >,
   'getAllWebsiteAgentSubscriptions' : ActorMethod<
     [],
     Array<WebsiteAgentSubscription>
@@ -2502,6 +3283,16 @@ export interface _SERVICE {
   'getAudioCacheKeys' : ActorMethod<[], Array<string>>,
   'getAuditLog' : ActorMethod<[], Array<AuditLogEntry>>,
   'getAuditScore' : ActorMethod<[TenantId], [] | [AuditScore]>,
+  'getAutomationConfigs' : ActorMethod<
+    [string],
+    Array<
+      {
+        'trigger' : string,
+        'isEnabled' : boolean,
+        'requiresApproval' : boolean,
+      }
+    >
+  >,
   'getAutopilotEmailConfig' : ActorMethod<[], AutopilotConfig>,
   'getBatchAuditJobs' : ActorMethod<[string], Array<BatchAuditJob>>,
   'getBillingRecordsByTenant' : ActorMethod<[TenantId], Array<BillingRecord>>,
@@ -2559,11 +3350,13 @@ export interface _SERVICE {
     [TenantId],
     Array<CampaignInstance>
   >,
+  'getCampaignStats' : ActorMethod<[], CampaignStats>,
   'getCampaignTemplates' : ActorMethod<[], Array<CampaignTemplate>>,
   'getChatWidgetConfig' : ActorMethod<[TenantId], [] | [ChatWidgetConfig]>,
   'getClientHealthScore' : ActorMethod<[string], [] | [ClientHealthScore]>,
   'getClientReportById' : ActorMethod<[string], [] | [ClientReport]>,
   'getClientReports' : ActorMethod<[string], Array<ClientReport>>,
+  'getCommandHistory' : ActorMethod<[bigint, bigint], Array<CommandLogEntry>>,
   'getCompetitorAlertsByTenant' : ActorMethod<[string], Array<CompetitorAlert>>,
   'getCompetitorIntelReport' : ActorMethod<
     [string],
@@ -2575,7 +3368,37 @@ export interface _SERVICE {
     Array<CompetitorProfile>
   >,
   'getComplianceConfig' : ActorMethod<[], ComplianceConfig>,
+  'getComposioApiKeyStatus' : ActorMethod<
+    [string],
+    { 'maskedKey' : string, 'configured' : boolean }
+  >,
+  'getComposioToolkitStatus' : ActorMethod<
+    [string],
+    { 'tools' : Array<string>, 'accountId' : string, 'usingDefault' : boolean }
+  >,
+  'getComposioWebhookSecretStatus' : ActorMethod<
+    [],
+    { 'configured' : boolean }
+  >,
   'getConfiguredVoiceAgents' : ActorMethod<[], Array<VoiceAgentConfig>>,
+  'getConnectedTools' : ActorMethod<
+    [string],
+    { 'ok' : Array<ComposioTool> } |
+      { 'err' : string }
+  >,
+  'getContentTierToggles' : ActorMethod<[], Array<ContentTierToggle>>,
+  'getConversationHistory' : ActorMethod<
+    [string, string],
+    Array<
+      {
+        'id' : string,
+        'content' : string,
+        'role' : string,
+        'timestamp' : bigint,
+        'citations' : Array<string>,
+      }
+    >
+  >,
   'getCsvImportBatches' : ActorMethod<[string], Array<CsvImportBatch>>,
   'getDecryptedCredential' : ActorMethod<[string, string], [] | [string]>,
   'getDeliverabilityEvents' : ActorMethod<[], Array<DeliverabilityEvent>>,
@@ -2598,6 +3421,8 @@ export interface _SERVICE {
   'getDemoFunnelEntries' : ActorMethod<[string], Array<DemoFunnelEntry>>,
   'getDemoSession' : ActorMethod<[string], [] | [DemoSession]>,
   'getDiscoveryConfig' : ActorMethod<[], DiscoveryConfig>,
+  'getDograhAgents' : ActorMethod<[], Array<DograhAgent>>,
+  'getDograhConfig' : ActorMethod<[], [] | [DograhConfig]>,
   'getDomainSetupState' : ActorMethod<
     [string],
     { 'ok' : [] | [DomainSetupState] } |
@@ -2624,17 +3449,72 @@ export interface _SERVICE {
     }
   >,
   'getEmailReplyRecords' : ActorMethod<[], Array<EmailReplyRecord>>,
+  'getEmailStats' : ActorMethod<
+    [string],
+    { 'ok' : { 'opened' : bigint, 'sent' : bigint, 'clicked' : bigint } } |
+      { 'err' : string }
+  >,
+  'getEmailTemplates' : ActorMethod<[], Array<EmailTemplate>>,
   'getEngagementApprovals' : ActorMethod<[string], Array<EngagementApproval>>,
   'getEstimatesByTenant' : ActorMethod<[string], Array<Estimate>>,
+  'getExecutionLog' : ActorMethod<
+    [[] | [string]],
+    Array<
+      {
+        'id' : string,
+        'status' : string,
+        'completedAt' : [] | [bigint],
+        'startedAt' : bigint,
+        'errorMessage' : [] | [string],
+        'tenantId' : string,
+        'outputData' : string,
+        'workflowId' : string,
+      }
+    >
+  >,
   'getExtendedLeadsByTenant' : ActorMethod<[string], Array<ExtendedLead>>,
+  'getFeatureToggleLogs' : ActorMethod<[], Array<FeatureToggleLog>>,
+  'getFeatureToggles' : ActorMethod<[], Array<FeatureToggle>>,
   'getFreeAuditLeads' : ActorMethod<[], Array<FreeAuditLead>>,
   'getFundabilityScore' : ActorMethod<[TenantId], [] | [FundabilityScore]>,
+  'getFunnelRecord' : ActorMethod<
+    [string],
+    { 'ok' : FunnelRecord } |
+      { 'err' : string }
+  >,
+  'getFunnelTimeline' : ActorMethod<
+    [string],
+    { 'ok' : FunnelTimeline } |
+      { 'err' : string }
+  >,
+  'getGeminiKeyStatus' : ActorMethod<[], { 'configured' : boolean }>,
+  'getGeneratedContent' : ActorMethod<[string], Array<ContentGenerationResult>>,
+  'getGeneratedContentById' : ActorMethod<
+    [string],
+    [] | [ContentGenerationResult]
+  >,
+  'getGridAudit' : ActorMethod<[string], [] | [GridAuditResult]>,
+  'getGridHistory' : ActorMethod<[string], Array<GridAuditSnapshot>>,
+  'getHealthMetrics' : ActorMethod<[], HealthMetrics>,
   'getHumanOversightAssignmentsByTenant' : ActorMethod<
     [TenantId],
     Array<HumanOversightAssignment>
   >,
+  'getInboundReplies' : ActorMethod<[[] | [string]], Array<InboundReply>>,
   'getIntegrationCredentials' : ActorMethod<[string], MaskedCredentials>,
+  'getIntegrationHealth' : ActorMethod<[], IntegrationHealthSummary>,
   'getInvoicesByTenant' : ActorMethod<[TenantId], Array<Invoice>>,
+  'getKnowledgeDocuments' : ActorMethod<
+    [string, string],
+    Array<
+      {
+        'id' : string,
+        'title' : string,
+        'chunkCount' : bigint,
+        'uploadedAt' : bigint,
+      }
+    >
+  >,
   'getLastDiscoveryJob' : ActorMethod<[], [] | [ScheduledDiscoveryJob]>,
   'getLeadAttribution' : ActorMethod<[string], [] | [LeadAttributionRecord]>,
   'getLeadAttributionsByLead' : ActorMethod<
@@ -2650,8 +3530,17 @@ export interface _SERVICE {
   'getLeadAuditResult' : ActorMethod<[string], [] | [LeadAuditResult]>,
   'getLeadAuditResults' : ActorMethod<[string], Array<LeadAuditResult>>,
   'getLeadById' : ActorMethod<[TenantId, string], [] | [Lead]>,
-  'getLeadEnrichment' : ActorMethod<[string], [] | [LeadEnrichment]>,
+  'getLeadCampaignDetails' : ActorMethod<[string], [] | [LeadCampaignDetails]>,
+  'getLeadEnrichment' : ActorMethod<[string], [] | [LeadAIEnrichment]>,
+  'getLeadEnrollmentStatus' : ActorMethod<
+    [string],
+    { 'ok' : { 'total' : bigint, 'pending' : bigint, 'enrolled' : bigint } } |
+      { 'err' : string }
+  >,
+  'getLeadQualityBySource' : ActorMethod<[], Array<SourceQualityData>>,
+  'getLeadScore' : ActorMethod<[string], [] | [LeadAIScore]>,
   'getLeadsByBatch' : ActorMethod<[string], Array<ExtendedLead>>,
+  'getLeadsByNiche' : ActorMethod<[string], Array<ExtendedLead>>,
   'getLeadsBySegment' : ActorMethod<
     [string, [] | [string], Array<string>, Array<[string, string]>],
     Array<ExtendedLead>
@@ -2660,6 +3549,16 @@ export interface _SERVICE {
   'getLocationProfile' : ActorMethod<[string], [] | [LocationProfile]>,
   'getLocationProfilesByTenant' : ActorMethod<[string], Array<LocationProfile>>,
   'getMemory' : ActorMethod<[string], [] | [AgentMemory]>,
+  'getN8NConfig' : ActorMethod<
+    [],
+    {
+      'instanceUrl' : string,
+      'activeWorkflowCount' : bigint,
+      'isConnected' : boolean,
+      'lastTestedAt' : [] | [bigint],
+      'totalExecutionsToday' : bigint,
+    }
+  >,
   'getNewsletterAnalytics' : ActorMethod<[string], NewsletterCampaignStats>,
   'getNewsletterCampaignById' : ActorMethod<
     [string, string],
@@ -2678,6 +3577,7 @@ export interface _SERVICE {
     [string, string],
     [] | [NewsletterSubscriber]
   >,
+  'getNicheConversionFunnels' : ActorMethod<[], Array<NicheConversionData>>,
   'getNicheScript' : ActorMethod<[string], [] | [NicheScript]>,
   'getNicheScriptForSession' : ActorMethod<[string], [] | [NicheScript]>,
   'getNicheScriptLines' : ActorMethod<[string], [] | [Array<string>]>,
@@ -2690,6 +3590,20 @@ export interface _SERVICE {
     [TenantId],
     Array<NotificationRecord>
   >,
+  'getOpenRouterStatus' : ActorMethod<
+    [],
+    {
+      'costPerMillion' : string,
+      'contextWindow' : bigint,
+      'isConnected' : boolean,
+      'defaultModel' : string,
+      'lastPingTime' : [] | [bigint],
+    }
+  >,
+  'getOpenRouterTaskOverrides' : ActorMethod<[], Array<[string, string]>>,
+  'getOperatorChatHistory' : ActorMethod<[], Array<OperatorChatMessage>>,
+  'getOperatorReportData' : ActorMethod<[string], OperatorReportData>,
+  'getOperatorStats' : ActorMethod<[], OperatorStats>,
   'getOptedOutEmails' : ActorMethod<[], Array<string>>,
   'getOptedOutPhones' : ActorMethod<[], Array<string>>,
   'getOutreachEvents' : ActorMethod<[string], Array<OutreachEvent>>,
@@ -2702,6 +3616,10 @@ export interface _SERVICE {
       'pendingBounces' : bigint,
       'avgResponseRate' : number,
     }
+  >,
+  'getOutreachSequencesForLead' : ActorMethod<
+    [string],
+    Array<OutreachSequence>
   >,
   'getPaidAdsAdCopiesByTenant' : ActorMethod<[TenantId], Array<PaidAdsAdCopy>>,
   'getPaidAdsAlertsByTenant' : ActorMethod<[TenantId], Array<PaidAdsAlert>>,
@@ -2728,8 +3646,24 @@ export interface _SERVICE {
     Array<ApprovalItemRecord>
   >,
   'getPendingApprovals' : ActorMethod<[string], Array<ApprovalItem>>,
+  'getPendingQueuedActions' : ActorMethod<[], Array<OutreachQueuedAction>>,
+  'getPingHistory' : ActorMethod<[string], Array<ApiPingRecord>>,
+  'getPingStatus' : ActorMethod<[], Array<ApiPingRecord>>,
   'getPipelineFunnelStats' : ActorMethod<[string], PipelineFunnelStats>,
+  'getPipelineLeads' : ActorMethod<[], Array<PipelineLead>>,
   'getProviderAdapters' : ActorMethod<[string], Array<ProviderAdapterConfig>>,
+  'getProviderConfigs' : ActorMethod<
+    [],
+    Array<
+      {
+        'id' : string,
+        'isActive' : boolean,
+        'modelName' : string,
+        'lastPingStatus' : [] | [string],
+        'providerType' : string,
+      }
+    >
+  >,
   'getQueuePerformanceStats' : ActorMethod<
     [string],
     Array<
@@ -2750,6 +3684,8 @@ export interface _SERVICE {
     [] | [DripQueueThrottleConfig]
   >,
   'getReadinessScore' : ActorMethod<[string], ReadinessScore>,
+  'getRecentActivity' : ActorMethod<[bigint], Array<ActivityFeedItem>>,
+  'getReplyAnalysis' : ActorMethod<[string], [] | [ReplyAnalysis]>,
   'getReplyInboxItems' : ActorMethod<[], Array<ReplyInboxItem>>,
   'getReportSchedule' : ActorMethod<[string], [] | [ReportSchedule]>,
   'getReviewById' : ActorMethod<[TenantId, string], [] | [Review]>,
@@ -2764,6 +3700,7 @@ export interface _SERVICE {
     Array<ReviewSyncRecord>
   >,
   'getReviewsByTenantId' : ActorMethod<[TenantId], Array<Review>>,
+  'getRoofingCampaignStatus' : ActorMethod<[string], [] | [LeadCampaignStatus]>,
   'getRunsByTenant' : ActorMethod<[string], Array<AgentRun>>,
   'getRunsByThread' : ActorMethod<[string], Array<AgentRun>>,
   'getScanModel' : ActorMethod<[string], [] | [ScanModel]>,
@@ -2831,12 +3768,31 @@ export interface _SERVICE {
     [] | [AgentThread]
   >,
   'getThreadsByTenant' : ActorMethod<[string], Array<AgentThread>>,
+  'getToolkitToggles' : ActorMethod<
+    [string],
+    { 'ok' : Array<ToolkitToggle> } |
+      { 'err' : string }
+  >,
   'getTools' : ActorMethod<[], Array<ToolDefinition>>,
   'getToolsByCategory' : ActorMethod<[string], Array<ToolDefinition>>,
+  'getTopPerformingNiche' : ActorMethod<[], [] | [NicheConversionData]>,
+  'getTrialAccount' : ActorMethod<
+    [string],
+    { 'ok' : TrialAccount } |
+      { 'err' : string }
+  >,
+  'getTrialActivityScore' : ActorMethod<[string], bigint>,
+  'getTrialByLeadId' : ActorMethod<
+    [string],
+    { 'ok' : TrialAccount } |
+      { 'err' : string }
+  >,
+  'getTrialFeatureFlags' : ActorMethod<[string], [] | [FeatureFlags]>,
   'getTrialNudgeSchedule' : ActorMethod<
     [string],
     Array<WarmSequenceEmailSchedule>
   >,
+  'getTriggerRules' : ActorMethod<[], Array<TriggerRule>>,
   'getUserProfile' : ActorMethod<[Principal], [] | [UserProfile]>,
   /**
    * / Returns stored Vapi call logs for a tenant.
@@ -2859,6 +3815,14 @@ export interface _SERVICE {
       'assistantIds' : Array<[string, string]>,
     }
   >,
+  'getVectorIndexStatus' : ActorMethod<
+    [],
+    {
+      'collectionsCount' : bigint,
+      'totalChunks' : bigint,
+      'totalDocuments' : bigint,
+    }
+  >,
   'getVoiceAgentConfig' : ActorMethod<[TenantId], [] | [VoiceAgentConfig]>,
   'getWarmLeadHandoffs' : ActorMethod<[], Array<WarmLeadHandoff>>,
   'getWarmSequenceEvents' : ActorMethod<
@@ -2868,6 +3832,18 @@ export interface _SERVICE {
   'getWarmSequenceSchedules' : ActorMethod<
     [string],
     Array<WarmSequenceEmailSchedule>
+  >,
+  'getWebhookLog' : ActorMethod<[string], Array<WebhookEvent>>,
+  'getWebhookUrl' : ActorMethod<[], string>,
+  'getWebhookUrls' : ActorMethod<
+    [],
+    {
+      'stripe' : string,
+      'twilio' : string,
+      'vapi' : string,
+      'composio' : string,
+      'sendgrid' : string,
+    }
   >,
   'getWebsiteAgentScores' : ActorMethod<[TenantId], Array<WebsiteAgentScore>>,
   'getWebsiteAgentSubscription' : ActorMethod<
@@ -2892,6 +3868,21 @@ export interface _SERVICE {
     Array<WebsitePageQueueItem>
   >,
   'getWhiteLabelConfig' : ActorMethod<[TenantId], [] | [WhiteLabelConfig]>,
+  'getWorkflowDefs' : ActorMethod<
+    [],
+    Array<
+      {
+        'id' : string,
+        'pushedToAccounts' : Array<string>,
+        'name' : string,
+        'createdAt' : bigint,
+        'tags' : Array<string>,
+        'description' : string,
+        'isActive' : boolean,
+        'scope' : string,
+      }
+    >
+  >,
   'handleNewsletterBounce' : ActorMethod<
     [string, string, BounceType, string],
     boolean
@@ -2939,13 +3930,55 @@ export interface _SERVICE {
     [string, Array<string>],
     SubscriberImportResult
   >,
+  'importWorkflowBatch' : ActorMethod<
+    [
+      Array<
+        {
+          'id' : string,
+          'name' : string,
+          'tags' : Array<string>,
+          'description' : string,
+          'scope' : string,
+          'workflowJson' : string,
+        }
+      >,
+    ],
+    {
+      'results' : Array<
+        {
+          'id' : string,
+          'valid' : boolean,
+          'name' : string,
+          'errors' : Array<string>,
+          'index' : bigint,
+        }
+      >,
+      'batchId' : string,
+    }
+  >,
   'incrementScanModelViews' : ActorMethod<[string], undefined>,
   'initDefaultTools' : ActorMethod<[], undefined>,
+  'initiateOAuthFlow' : ActorMethod<
+    [OAuthInitRequest],
+    { 'ok' : OAuthInitResponse } |
+      { 'err' : string }
+  >,
   'isCallerAdmin' : ActorMethod<[], boolean>,
+  'isComposioRoutingEnabled' : ActorMethod<[], boolean>,
+  'isContentEnabledForTier' : ActorMethod<[string], boolean>,
   'isDemoSessionExpired' : ActorMethod<[string], boolean>,
   'linkSocialLeadToCRM' : ActorMethod<[string, string, string], undefined>,
+  'listLeadEnrichments' : ActorMethod<[], Array<LeadAIEnrichment>>,
+  'listLeadScores' : ActorMethod<[], Array<LeadAIScore>>,
+  'listOutreachSequences' : ActorMethod<[], Array<OutreachSequence>>,
+  'listReplyAnalyses' : ActorMethod<[], Array<ReplyAnalysis>>,
   'lockSocialContent' : ActorMethod<[string], boolean>,
   'logDripEmailSent' : ActorMethod<[DripQueueEmailLog], undefined>,
+  'logFunnelStep' : ActorMethod<
+    [string, string, [] | [string]],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'logTrialInteraction' : ActorMethod<[string, string], undefined>,
   'markBrandKitConverted' : ActorMethod<
     [string],
@@ -2958,19 +3991,35 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'markNotificationRead' : ActorMethod<[string], undefined>,
+  'markReplyActionComplete' : ActorMethod<[string], undefined>,
+  'markRoofingEmailOpened' : ActorMethod<[string], undefined>,
   'markSmsMessagesRead' : ActorMethod<
     [string],
     { 'ok' : boolean } |
       { 'err' : string }
   >,
   'markSocialCommentResponded' : ActorMethod<[string, string], undefined>,
+  'masterAgentAppendMessage' : ActorMethod<
+    [string, MessageRole, string],
+    string
+  >,
+  'masterAgentDeleteSession' : ActorMethod<[string], boolean>,
+  'masterAgentEndSession' : ActorMethod<[string], boolean>,
+  'masterAgentGetActiveSession' : ActorMethod<[], [] | [string]>,
+  'masterAgentGetContextSnapshot' : ActorMethod<[], MasterAgentContextSnapshot>,
+  'masterAgentGetMessages' : ActorMethod<[string], Array<MasterAgentMessage>>,
+  'masterAgentListSessions' : ActorMethod<[], Array<MasterAgentSession>>,
+  'masterAgentStartSession' : ActorMethod<[[] | [string]], string>,
   'mergeBrowserScoresIntoAuditResult' : ActorMethod<
     [string, string],
     { 'ok' : null } |
       { 'err' : string }
   >,
+  'movePipelineLead' : ActorMethod<[string, string], undefined>,
+  'n8nTransform' : ActorMethod<[TransformationInput], TransformationOutput>,
   'pauseAutopilotEmail' : ActorMethod<[], undefined>,
   'pauseNewsletterCampaign' : ActorMethod<[string, string], boolean>,
+  'pauseRoofingCampaign' : ActorMethod<[], { 'ok' : null }>,
   'pauseRunForApproval' : ActorMethod<[string, string], string>,
   'pauseSubdomain' : ActorMethod<[string], undefined>,
   'processBounceEvent' : ActorMethod<
@@ -2982,6 +4031,7 @@ export interface _SERVICE {
   'processDripQueueStep' : ActorMethod<[string], boolean>,
   'processEmailReply' : ActorMethod<[string, string], string>,
   'processNewsletterMergeTags' : ActorMethod<[string, string, string], string>,
+  'processNextRoofingCampaignSend' : ActorMethod<[], undefined>,
   'processSmsReply' : ActorMethod<[string, string, string, string], string>,
   'processSmsStop' : ActorMethod<[string], undefined>,
   'processUnsubscribeRequest' : ActorMethod<[string, string, string], boolean>,
@@ -2995,6 +4045,11 @@ export interface _SERVICE {
     { 'ok' : string } |
       { 'err' : string }
   >,
+  'provisionTrialAccount' : ActorMethod<
+    [TrialProvisionRequest],
+    { 'ok' : TrialAccount } |
+      { 'err' : string }
+  >,
   /**
    * / Create a new Vapi assistant for a tenant and store the returned assistantId.
    * / Reads vapiKey from encrypted integration credentials.
@@ -3005,10 +4060,53 @@ export interface _SERVICE {
     { 'ok' : string } |
       { 'err' : string }
   >,
+  'pushRoofingTemplate' : ActorMethod<
+    [string],
+    { 'accountsUpdated' : bigint, 'message' : string, 'success' : boolean }
+  >,
+  'pushWorkflowPlatformWide' : ActorMethod<[string], undefined>,
+  'pushWorkflowToAccounts' : ActorMethod<[string, Array<string>], undefined>,
+  'pushWorkflowToScope' : ActorMethod<[string, string], undefined>,
+  'queryRAG' : ActorMethod<
+    [string, string, string],
+    {
+      'insufficiencyMessage' : [] | [string],
+      'isInsufficient' : boolean,
+      'citations' : Array<string>,
+      'chunks' : Array<
+        { 'id' : string, 'content' : string, 'chunkIndex' : bigint }
+      >,
+    }
+  >,
   'queueSmsForRule' : ActorMethod<
     [string, string, string, string, string, string],
     string
   >,
+  'reEnrollLead' : ActorMethod<[string], { 'ok' : null } | { 'err' : string }>,
+  'receiveComposioWebhook' : ActorMethod<
+    [string, string, string, string],
+    {
+      'body' : string,
+      'statusCode' : bigint,
+      'success' : boolean,
+      'eventType' : string,
+    }
+  >,
+  'receiveN8NWebhook' : ActorMethod<[string, string], undefined>,
+  'receiveSendgridEvents' : ActorMethod<
+    [string],
+    { 'success' : boolean, 'processed' : bigint }
+  >,
+  'receiveSendgridInbound' : ActorMethod<[Array<[string, string]>], string>,
+  'receiveStripeWebhook' : ActorMethod<
+    [string, string],
+    { 'success' : boolean, 'eventType' : string }
+  >,
+  'receiveTwilioWebhook' : ActorMethod<
+    [string, Array<[string, string]>, string],
+    string
+  >,
+  'receiveVapiWebhook' : ActorMethod<[string, string], string>,
   'recordBrandKitActivity' : ActorMethod<[string, string], undefined>,
   'recordBrfCallAttemptResult' : ActorMethod<
     [
@@ -3027,6 +4125,11 @@ export interface _SERVICE {
   >,
   'recordNewsletterBounce' : ActorMethod<[string, string, BounceType], boolean>,
   'recordOutreachEvent' : ActorMethod<[OutreachEvent], undefined>,
+  'recordPingResult' : ActorMethod<
+    [string, string, bigint, [] | [string]],
+    undefined
+  >,
+  'recordTrialActivity' : ActorMethod<[string, string], bigint>,
   'recordWarmLeadHandoff' : ActorMethod<[WarmLeadHandoff], undefined>,
   'refreshCompetitorIntel' : ActorMethod<[CompetitorIntelReport], undefined>,
   'registerSubdomain' : ActorMethod<[string], undefined>,
@@ -3049,6 +4152,7 @@ export interface _SERVICE {
   'resetEmailSchedulerTimer' : ActorMethod<[], undefined>,
   'resetNicheScript' : ActorMethod<[string], undefined>,
   'resetSmsSchedulerTimer' : ActorMethod<[], undefined>,
+  'resetToDefaults' : ActorMethod<[], boolean>,
   'resolveApproval' : ActorMethod<
     [string, { 'approved' : null } | { 'rejected' : null }, [] | [string]],
     boolean
@@ -3062,12 +4166,56 @@ export interface _SERVICE {
    */
   'respondToReview' : ActorMethod<[TenantId, string, string], undefined>,
   'resumeAutopilotEmail' : ActorMethod<[], undefined>,
+  'resumeRoofingCampaign' : ActorMethod<[], { 'ok' : null }>,
+  'routeModelRequest' : ActorMethod<
+    [AbacusRouteRequest],
+    { 'ok' : AbacusRouteResponse } |
+      { 'err' : string }
+  >,
+  'routeThroughComposio' : ActorMethod<
+    [string, Array<[string, string]>, string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'runAgentNode' : ActorMethod<
+    [string, string, string],
+    {
+      'id' : string,
+      'outputData' : string,
+      'runAt' : bigint,
+      'nodeType' : string,
+    }
+  >,
   'runPageSpeedAudit' : ActorMethod<[string], string>,
   'runPageSpeedAuditPublic' : ActorMethod<[string], string>,
+  'saveAbacusApiKey' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'saveAccountBrief' : ActorMethod<
+    [AccountBrief],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'saveAgentMemory' : ActorMethod<[AgentMemoryRecord], boolean>,
   'saveAgentTemplate' : ActorMethod<[AgentTemplateStorageRecord], boolean>,
+  'saveAutomationConfig' : ActorMethod<
+    [string, boolean, boolean, string],
+    undefined
+  >,
   'saveBrowserAuditResult' : ActorMethod<[BrowserAuditResult], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
+  'saveComposioApiKey' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'saveComposioWebhookSecret' : ActorMethod<
+    [string],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'saveDemoAudio' : ActorMethod<[string, string], undefined>,
   'saveDemoAuditReport' : ActorMethod<
     [DemoAuditReport],
@@ -3075,6 +4223,10 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'saveDemoAuditScore' : ActorMethod<[string, bigint], boolean>,
+  'saveDograhApiKey' : ActorMethod<
+    [string],
+    { 'message' : string, 'success' : boolean }
+  >,
   'saveDomainSetupState' : ActorMethod<
     [string, DomainSetupState],
     { 'ok' : null } |
@@ -3099,6 +4251,12 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'saveLeadAuditResult' : ActorMethod<[LeadAuditResult], undefined>,
+  'saveN8NConfig' : ActorMethod<[string, string], undefined>,
+  'saveOpenRouterApiKey' : ActorMethod<[string], undefined>,
+  'saveOperatorChatMessage' : ActorMethod<
+    [string, string, [] | [string]],
+    string
+  >,
   /**
    * / Save Vapi API key and assistant ID for a tenant, then auto-provision any
    * / niches that are not yet configured if vapiKey is non-empty.
@@ -3106,6 +4264,15 @@ export interface _SERVICE {
   'saveVapiCredentials' : ActorMethod<
     [string, string, string],
     { 'ok' : boolean, 'error' : [] | [string] }
+  >,
+  'saveWebhookSecrets' : ActorMethod<
+    [string, string, string],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'saveWorkflowDef' : ActorMethod<
+    [string, string, string, Array<string>, string, string],
+    undefined
   >,
   'scheduleBrfOutboundCall' : ActorMethod<
     [string],
@@ -3118,6 +4285,7 @@ export interface _SERVICE {
     [string, bigint, bigint, string, string, string],
     string
   >,
+  'scoreLead' : ActorMethod<[string, string, string], LeadAIScore>,
   'scrapeUrl' : ActorMethod<[ScrapeRequest, string], ScrapeResult>,
   'searchLeadsWithLLM' : ActorMethod<
     [string, string, bigint, boolean],
@@ -3154,14 +4322,25 @@ export interface _SERVICE {
     [string, bigint, bigint, string, string, string],
     EmailSendResult
   >,
+  'setAccountToolkit' : ActorMethod<
+    [string, Array<string>],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'setAgentEnabled' : ActorMethod<[string, boolean], undefined>,
   'setBrandVoiceProfile' : ActorMethod<[string, BrandVoiceProfile], undefined>,
   'setCachedAudio' : ActorMethod<[string, string], undefined>,
+  'setComposioAsPrimaryMCP' : ActorMethod<[boolean], { 'ok' : string }>,
+  'setContentTierToggle' : ActorMethod<[string, boolean], undefined>,
+  'setFeatureToggle' : ActorMethod<[string, string, boolean, string], boolean>,
+  'setGeminiApiKey' : ActorMethod<[string], undefined>,
   'setNewsletterCampaignStatus' : ActorMethod<
     [string, string, CampaignStatus],
     boolean
   >,
   'setNicheScriptLines' : ActorMethod<[string, Array<string>], undefined>,
   'setNicheVoiceAssignment' : ActorMethod<[string, string, string], undefined>,
+  'setOpenRouterTaskModel' : ActorMethod<[string, string], undefined>,
   'setProviderAdapter' : ActorMethod<
     [string, AdapterType, boolean, [] | [string], [] | [string], [] | [string]],
     string
@@ -3176,6 +4355,11 @@ export interface _SERVICE {
     undefined
   >,
   'setSocialCommentResponse' : ActorMethod<[string, string, string], undefined>,
+  'setToolkitToggle' : ActorMethod<
+    [ToolkitToggle],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'shouldLockSocialContent' : ActorMethod<[string], boolean>,
   'stageBulkLeadsFromSearch' : ActorMethod<
     [string, string, Array<BulkLeadInput>],
@@ -3183,6 +4367,7 @@ export interface _SERVICE {
   >,
   'stageScrapeLeads' : ActorMethod<[string, bigint], bigint>,
   'storeDeliverabilityEvent' : ActorMethod<[DeliverabilityEvent], undefined>,
+  'submitAgentCommand' : ActorMethod<[string, string], AgentCommandResult>,
   /**
    * / Fetch call logs from Vapi and store new entries in canister state.
    * / Returns the count of newly stored logs.
@@ -3192,6 +4377,18 @@ export interface _SERVICE {
     { 'ok' : bigint } |
       { 'err' : string }
   >,
+  'testAbacusConnection' : ActorMethod<
+    [],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'testAllConnections' : ActorMethod<[], IntegrationHealthSummary>,
+  'testComposioConnection' : ActorMethod<
+    [],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'testDograhConnection' : ActorMethod<[], DograhTestResult>,
   /**
    * / Tests connectivity to the ElevenLabs API using the stored platform key.
    * / Makes an HTTP outcall to GET /v1/voices and returns the voice count on success.
@@ -3200,9 +4397,20 @@ export interface _SERVICE {
     [],
     { 'message' : string, 'success' : boolean, 'voiceCount' : bigint }
   >,
+  'testEmailSend' : ActorMethod<
+    [],
+    { 'message' : string, 'timestamp' : bigint, 'success' : boolean }
+  >,
   'testIntegration' : ActorMethod<[string, string], ConnectionTestResult>,
+  'testLeadFinderDiagnostic' : ActorMethod<[], string>,
+  'testN8NConnection' : ActorMethod<[], boolean>,
+  'testNvidiaConnection' : ActorMethod<[], IntegrationTestResult>,
+  'testOpenRouterConnection' : ActorMethod<[], boolean>,
   'testServiceConnection' : ActorMethod<[string, string], ConnectionTestResult>,
+  'toggleTriggerRule' : ActorMethod<[string, boolean], undefined>,
   'trackComplaintRate' : ActorMethod<[], Array<[string, number]>>,
+  'trackEmailClick' : ActorMethod<[string], undefined>,
+  'trackEmailOpen' : ActorMethod<[string], undefined>,
   'trackWarmSequenceEvent' : ActorMethod<[string, bigint, string], undefined>,
   'transform' : ActorMethod<[TransformationInput], TransformationOutput>,
   'triggerBrowserAudit' : ActorMethod<
@@ -3210,10 +4418,37 @@ export interface _SERVICE {
     { 'ok' : string } |
       { 'err' : string }
   >,
+  'triggerGridAudit' : ActorMethod<
+    [string],
+    { 'ok' : GridAuditResult } |
+      { 'err' : string }
+  >,
   'triggerManualDiscovery' : ActorMethod<[], string>,
   'triggerOutreachEmailSequence' : ActorMethod<[string], undefined>,
+  'triggerWorkflow' : ActorMethod<
+    [string, string, string, Array<[string, string]>],
+    {
+      'id' : string,
+      'status' : string,
+      'startedAt' : bigint,
+      'errorMessage' : [] | [string],
+      'outputData' : string,
+      'workflowId' : string,
+    }
+  >,
+  'unsubscribeFromCampaign' : ActorMethod<
+    [string],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'unsubscribeNewsletterEmail' : ActorMethod<[string, string], boolean>,
+  'updateAccountBrief' : ActorMethod<
+    [string, AccountBriefUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateAgencySettings' : ActorMethod<[AgencySettings], undefined>,
+  'updateAgentConfig' : ActorMethod<[string, string], undefined>,
   'updateAgentRun' : ActorMethod<
     [
       string,
@@ -3226,6 +4461,7 @@ export interface _SERVICE {
     ],
     boolean
   >,
+  'updateAgentStatus' : ActorMethod<[string, string, [] | [string]], undefined>,
   'updateAgentThread' : ActorMethod<[string, string, bigint, string], boolean>,
   'updateArtifactRecordStatus' : ActorMethod<[string, string], boolean>,
   'updateArtifactStatus' : ActorMethod<[string, ArtifactStatus], boolean>,
@@ -3241,6 +4477,10 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'updateComplianceConfig' : ActorMethod<[ComplianceConfig], undefined>,
+  'updateContentResult' : ActorMethod<
+    [string, GenerationStatus, string, [] | [string], [] | [string]],
+    undefined
+  >,
   'updateDemoFunnelEntry' : ActorMethod<
     [string, string, DemoFunnelEntry],
     undefined
@@ -3256,15 +4496,25 @@ export interface _SERVICE {
     [string, DualModelSearchJobUpdate],
     boolean
   >,
+  'updateEmailTemplate' : ActorMethod<
+    [bigint, string, string, string, string],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
   'updateEstimateStatus' : ActorMethod<
     [string, EstimateStatus, string],
     { 'ok' : Estimate } |
       { 'err' : string }
   >,
   'updateFundabilityScore' : ActorMethod<[TenantId, bigint], undefined>,
+  'updateFunnelStep' : ActorMethod<
+    [string, string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateHealthMetric' : ActorMethod<[string, bigint], undefined>,
   'updateLead' : ActorMethod<[TenantId, string, Lead], undefined>,
   'updateLeadAuditJobStatus' : ActorMethod<[string, string, string], boolean>,
-  'updateLeadEnrichment' : ActorMethod<[LeadEnrichment], undefined>,
   'updateMemory' : ActorMethod<
     [string, string, ConversationEntry, [] | [string], [] | [string]],
     boolean
@@ -3313,6 +4563,12 @@ export interface _SERVICE {
     boolean
   >,
   'updateThreadSummary' : ActorMethod<[string, string, [] | [string]], boolean>,
+  'updateTrialFeatureFlags' : ActorMethod<
+    [string, FeatureFlags],
+    { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'updateTriggerRule' : ActorMethod<[string, TriggerRuleUpdate], undefined>,
   /**
    * / Update an existing Vapi assistant when client info changes.
    */
@@ -3320,6 +4576,10 @@ export interface _SERVICE {
     [string, string, VapiAssistantUpdate],
     { 'ok' : null } |
       { 'err' : string }
+  >,
+  'uploadDocument' : ActorMethod<
+    [string, string, string, string, string],
+    string
   >,
   'upsertAgentDeliverable' : ActorMethod<[AgentDeliverable], undefined>,
   'upsertAgentPerformanceSnapshot' : ActorMethod<

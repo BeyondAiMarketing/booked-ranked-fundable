@@ -1,4 +1,5 @@
 import Map "mo:core/Map";
+
 import List "mo:core/List";
 import Queue "mo:core/Queue";
 import Set "mo:core/Set";
@@ -14,6 +15,8 @@ import _Result "mo:core/Result";
 import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
 import AccessControl "mo:caffeineai-authorization/access-control";
 import Outcall "mo:caffeineai-http-outcalls/outcall";
+
+
 import WarmSequencesTypes "types/warmSequences";
 import ICTypes "types/integrationCredentials";
 import ICLib "lib/integrationCredentials";
@@ -55,7 +58,71 @@ import _NewsletterTypes          "types/newsletter";
 import NewsletterMixin           "mixins/newsletter-api";
 import WebScraperTypes "types/webScraper";
 import WebScraperMixin "mixins/webScraper-api";
-import LLMLeadGenMixin  "mixins/llmLeadGeneration-api";
+import LLMLeadGenMixin  "mixins/llmLeadGeneration-api";import AdminCommandTypes "types/adminCommand";
+import AdminCommandMixin  "mixins/adminCommand-api";
+import OutreachPipelineTypes "types/outreachPipeline";
+import OutreachPipelineMixin "mixins/outreachPipeline-api";
+import FTTypes "types/featureToggle";
+import IntegrationHealthMixin "mixins/integrationHealth-api";
+import FeatureToggleMixin     "mixins/featureToggle-api";
+import OperatorChatTypes "types/operatorChat";
+import NicheAnalyticsMixin "mixins/nicheAnalytics-api";
+import OperatorChatMixin "mixins/operatorChat-api";
+import RagBrainLib "src/libraries/ragBrain";
+import RagBrainMixin "mixins/ragBrain-api";
+import N8NWorkflowLib   "src/libraries/n8nWorkflow";
+import N8NWorkflowMixin "mixins/n8nWorkflow-api";
+import VOALib  "libraries/voiceOutreachAgent";
+import VOAMixin "mixins/voiceOutreachAgent-api";
+import AbacusMixin      "mixins/abacus-api";
+import AbacusLib        "lib/abacus";
+import ComposioMixin    "mixins/composio-api";
+import AccountBriefMixin "mixins/accountBrief-api";
+import ToolkitTogglesMixin "mixins/toolkitToggles-api";
+import ComposioLib "lib/composio";
+import AccountBriefLib "lib/accountBrief";
+import ToolkitTogglesLib "lib/toolkitToggles";
+import DograhMixin       "mixins/dograh-api";
+import DograhLib         "lib/dograh";
+import OpenRouterLib     "lib/openRouter";
+import OpenRouterMixin   "mixins/openRouter-api";
+import FunnelTrackingLib   "lib/funnelTracking";
+import FunnelTrackingMixin "mixins/funnelTracking-api";
+import EmailTrackingLib    "lib/emailTracking";
+import EmailTrackingMixin  "mixins/emailTracking-api";
+import TrialProvLib        "lib/trialProvisioning";
+import TrialProvMixin      "mixins/trialProvisioning-api";
+import LeadEnrollLib       "lib/leadEnrollment";
+import LeadEnrollMixin     "mixins/leadEnrollment-api";
+import AIEmailGenMixin     "mixins/aiEmailGen-api";
+import MasterAgentTypes "types/masterAgent";
+import MasterAgentMixin  "mixins/masterAgent-api";
+import CSTypes "types/contentStudio";
+import LeadAITypes "lead-ai-types";
+import ContentStudioMixin "mixins/contentStudio-api";
+import LeadAIMixin "mixins/leadAI-api";
+import WebhookState "types/webhookState";
+import WebhooksAndIntegrationsMixin "mixins/webhooksAndIntegrations-api";
+
+import RoofingCampaignTypes "types/roofingCampaign";
+import RoofingCampaignLib   "lib/roofingCampaign";
+import RoofingCampaignMixin "mixins/roofingCampaign-api";
+import EmailTemplateTypes   "types/emailTemplate";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -1079,13 +1146,24 @@ actor {
     perplexityApiKey = "";
     autoBrowserUrl = "";
     serpApiKey = "";
+    serpApiDevKey = "";
     sendgridKey = "";
+    tinyFishKey = "";
+    nvidiaApiKey = "";
+    nvidiaNimApiKey = "";
+    n8nInstanceUrl = "";
+    vapiWebhookSecret = "";
+    sendgridInboundParseDomain = "";
+    abacusApiKey = "";
+    composioApiKey = "";
+    dograhApiKey = "";
+    openRouterApiKey = "";
+    composioWebhookSecret = "";
+    geminiApiKey = "";
   };
-
-  // Stable obfuscation salt — a fixed 32-byte sequence unique to this codebase.
-  // XOR obfuscation with this salt prevents plaintext exposure in memory dumps
-  // without requiring a truly random value (which would change on reinstall
-  // and corrupt stored credentials).
+  // emptyMasked closes above. credSalt: a fixed 32-byte sequence unique to this
+  // codebase. XOR obfuscation prevents plaintext exposure in memory dumps without
+  // requiring a truly random value (which would change on reinstall and corrupt stored credentials).
   let credSalt : Blob = "\d4\2f\7a\c1\88\3e\b5\60\19\f2\44\97\cb\0e\56\a3\77\bc\2d\e8\f1\34\6c\90\b2\5a\1e\83\c7\49\d6\0f";
 
   // Notifications
@@ -1181,7 +1259,7 @@ actor {
   // Warm sequences pipeline state
   let outreachEvents = Map.empty<Text, OutreachEvent>();
   let warmLeadHandoffs = Map.empty<Text, WarmLeadHandoff>();
-  let leadEnrichments = Map.empty<Text, LeadEnrichment>();
+  // leadEnrichments removed — enrichment is now handled by LeadAIMixin
 
   // ---- HTTP TRANSFORM (required by ICP http outcalls) ----
 
@@ -1239,6 +1317,9 @@ actor {
     warmEmailSchedules,
     warmEmailEvents,
     emailIdCounter,
+    integrationCreds,
+    credSalt,
+    transform,
   );
 
   // Social Media Engagement Engine state
@@ -1291,6 +1372,11 @@ actor {
   let auditReports = Map.empty<Text, DemoSessionTypes.AuditReport>();
   // Prospect contact data captured at trial activation — separate from DemoSession for stable-compat
   let prospectDataStore = Map.empty<Text, DemoSessionTypes.ProspectData>();
+  let trialAccounts = Map.empty<Text, DemoSessionTypes.TrialAccount>();
+  let pipelineLeadsStore = Map.empty<Text, OutreachPipelineTypes.PipelineLead>();
+  let inboundRepliesStore = Map.empty<Text, OutreachPipelineTypes.InboundReply>();
+  let trialActivityEventsStore = Map.empty<Text, OutreachPipelineTypes.TrialActivityEvent>();
+  let queuedActionsStore = Map.empty<Text, OutreachPipelineTypes.OutreachQueuedAction>();
 
   // Niche Voice Assignments, Script Overrides & Audio Cache
   // Declared before DemoSessionMixin so the cache can be passed as a mixin parameter.
@@ -1298,7 +1384,7 @@ actor {
   let nicheScriptOverrides  = Map.empty<Text, [Text]>();
   let elevenLabsAudioCache  = Map.empty<Text, Text>();
 
-  include DemoSessionMixin(demoSessions, auditReports, elevenLabsAudioCache, prospectDataStore, transform);
+  include DemoSessionMixin(demoSessions, auditReports, elevenLabsAudioCache, prospectDataStore, trialAccounts, emailLogs, emailIdCounter, transform);
 
   // Seed default voice assignments from hardcoded NicheScript constants on first run.
   NicheVoiceLib.seedDefaults(nicheVoiceAssignments);
@@ -1376,7 +1462,7 @@ actor {
       businessName      = "Booked Ranked Funded";
       physicalAddress   = "1234 Business Ave, Dallas, TX 75001, USA";
       unsubscribeBase   = "https://bookedrankedfunded.org/unsubscribe";
-      adminEmail        = "admin@bookedrankedfunded.org";
+      adminEmail        = "BeyondAI.marketing@gmail.com";
       maxComplaintRate  = 0.003;
       maxBounceRate     = 0.05;
       softBounceRetries = 3;
@@ -1483,6 +1569,143 @@ actor {
 
   // LLM Lead Generation Engine — direct frontend endpoint using Claude + OpenAI GPT-4o
   include LLMLeadGenMixin(integrationCreds, credSalt, transform);
+  // Admin Command Centre — Unified Command Center + Agent Orchestration Panel
+  let commandCenterFeed    = List.empty<AdminCommandTypes.ActivityFeedItem>();
+  let commandCenterMetrics = { var leadsToday : Nat = 0; var demosRunning : Nat = 0; var trialsActive : Nat = 0; var outreachSent : Nat = 0; var apiStatus : Bool = true };
+  let commandCenterAgents  = Map.empty<Text, AdminCommandTypes.AgentStatus>();
+  let commandCenterLogs    = List.empty<AdminCommandTypes.AgentLogEntry>();
+  let commandCenterRules   = Map.empty<Text, AdminCommandTypes.TriggerRule>();
+  include AdminCommandMixin(commandCenterFeed, commandCenterMetrics, commandCenterAgents, commandCenterLogs, commandCenterRules);
+  include OutreachPipelineMixin(pipelineLeadsStore, inboundRepliesStore, trialActivityEventsStore, queuedActionsStore);
+
+  // ---- INTEGRATION HEALTH MONITOR state ----
+  let apiPingState = Map.empty<Text, List.List<ICTypes.ApiPingRecord>>();
+  include IntegrationHealthMixin(apiPingState);
+
+  // ---- FEATURE TOGGLE state ----
+  let featureToggles    = Map.empty<Text, FTTypes.FeatureToggle>();
+  let featureToggleLogs = List.empty<FTTypes.FeatureToggleLog>();
+  let ftLogIdCounter    = { var value : Nat = 0 };
+  include FeatureToggleMixin(featureToggles, featureToggleLogs, ftLogIdCounter);
+  // ---- NICHE ANALYTICS & OPERATOR CHAT state ----
+  var operatorChatMessages : List.List<OperatorChatTypes.OperatorChatMessage> = List.empty();
+  let operatorChatState = { var nextMsgId : Nat = 0 };
+  include NicheAnalyticsMixin(leads);
+  include OperatorChatMixin(operatorChatMessages, operatorChatState, List.empty());
+  // RAG Brain state
+  let ragBrainState = RagBrainLib.emptyState();
+  include RagBrainMixin(ragBrainState, transform);
+  // N8N Workflow state
+  let n8nState = N8NWorkflowLib.emptyState();
+  include N8NWorkflowMixin(n8nState);
+  // Voice Outreach Agent state
+  let voaState = VOALib.emptyState();
+  include VOAMixin(voaState, pipelineLeadsStore);  // Abacus / Composio / Account Brief / Toolkit Toggles
+  let abacusState         = AbacusLib.emptyState();
+  let composioState       = ComposioLib.emptyState();
+  let accountBriefState   = AccountBriefLib.emptyState();
+  let toolkitTogglesState = ToolkitTogglesLib.emptyState();
+  include AbacusMixin(abacusState, integrationCreds, credSalt, transform);
+  include ComposioMixin(composioState, integrationCreds, credSalt, transform);
+  include AccountBriefMixin(accountBriefState);
+  include ToolkitTogglesMixin(toolkitTogglesState);
+
+  let dograhState = DograhLib.emptyState();
+  include DograhMixin(dograhState, integrationCreds, credSalt);
+
+  // ---- OpenRouter AI Router ----
+  let openRouterState = OpenRouterLib.emptyState();
+  include OpenRouterMixin(openRouterState, integrationCreds, credSalt, transform);
+
+  // ---- Funnel Tracking ----
+  let funnelTrackingState = FunnelTrackingLib.emptyState();
+  include FunnelTrackingMixin(funnelTrackingState);
+
+  // ---- Email Open/Click Tracking ----
+  let emailTrackingIdx = EmailTrackingLib.emptyIndex();
+  include EmailTrackingMixin(emailTrackingIdx, dripEmailLogs, funnelTrackingState);
+
+  // ---- Trial Provisioning ----
+  let trialProvState = TrialProvLib.emptyState();
+  include TrialProvMixin(trialProvState, funnelTrackingState);
+
+  // ---- Lead Auto-Enrollment ----
+  let leadEnrollState = LeadEnrollLib.emptyState();
+  include LeadEnrollMixin(leadEnrollState, extendedLeads, dripQueues, funnelTrackingState);
+
+  // ---- AI Email Generation ----
+  include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt);
+  // ---- Master Agent state ----
+  let masterAgentState : MasterAgentTypes.MasterAgentState = {
+    sessions        = List.empty<MasterAgentTypes.MasterAgentSession>();
+    activeSessionId = { var value = null };
+  };
+  include MasterAgentMixin(
+    masterAgentState,
+    openRouterState,
+    accessControlState,
+    { value = 0 },
+    { value = 0 },
+    { var value = 0 },
+    transform,
+    integrationCreds,
+    credSalt,
+  );
+
+  // ---- Content Studio state ----
+  let contentStudioState : CSTypes.ContentStudioState = CSTypes.emptyState();
+  include ContentStudioMixin(contentStudioState, openRouterState, transform, integrationCreds, credSalt);
+
+  // ---- Lead AI state ----
+  let leadAIState : LeadAITypes.LeadAIState = LeadAITypes.emptyLeadAIState();
+  include LeadAIMixin(accessControlState, leadAIState, openRouterState, transform, integrationCreds, credSalt);
+  // ---- Webhooks & Integrations state ----
+  let webhookStateRef : { var s : WebhookState.WebhookState } = { var s = WebhookState.empty() };
+  let vapiCallLogs = Map.empty<Text, List.List<VapiCallLog>>();
+  // Post-call follow-up log: (callerPhone, smsSentTo, emailSentTo, timestamp, success, errorMsg)
+  let postCallFollowUpLog = List.empty<(Text, Text, ?Text, Int, Bool, ?Text)>();
+  include WebhooksAndIntegrationsMixin(webhookStateRef, integrationCreds, credSalt, transform, vapiCallLogs, postCallFollowUpLog);
+
+  // ---- Roofing Outreach Campaign state ----
+  // roofingLeadStatuses: email -> LeadCampaignStatus (enrollment & step tracking)
+  let roofingLeadStatuses = Map.empty<Text, RoofingCampaignTypes.LeadCampaignStatus>();
+  // gridAuditResults: email -> latest GridAuditResult
+  let gridAuditResults    = Map.empty<Text, RoofingCampaignTypes.GridAuditResult>();
+  // gridAuditHistory: email -> list of GridAuditSnapshot
+  let gridAuditHistory    = Map.empty<Text, List.List<RoofingCampaignTypes.GridAuditSnapshot>>();
+  // campaignCounters: mutable aggregate counters
+  let roofingCampaignCounters : RoofingCampaignTypes.CampaignCounters = {
+    var totalSent     = 0;
+    var sentToday     = 0;
+    var sentThisWeek  = 0;
+    var totalOpens    = 0;
+    var totalClicks   = 0;
+    var lastDayReset  = 0;
+    var lastWeekReset = 0;
+    var paused        = false;
+  };
+  // emailTemplates: id -> EmailTemplate (pre-written campaign templates)
+  let emailTemplates      = Map.empty<Nat, EmailTemplateTypes.EmailTemplate>();
+  // templateInitialized: one-time seed guard
+  let templateInitialized = { var v = false };
+  // sendLogs: email -> list of SendLogEntry (per-lead send history)
+  let sendLogs            = Map.empty<Text, List.List<EmailTemplateTypes.SendLogEntry>>();
+
+  include RoofingCampaignMixin(
+    accessControlState,
+    integrationCreds,
+    credSalt,
+    roofingLeadStatuses,
+    gridAuditResults,
+    gridAuditHistory,
+    roofingCampaignCounters,
+    transform,
+    extendedLeads,
+    emailTemplates,
+    templateInitialized,
+    sendLogs,
+  );
+
 
   func checkUrl(url : Text) : async Bool {
     try {
@@ -1632,6 +1855,33 @@ actor {
     };
     tenantLeads.add(lead.id, lead);
     leads.add(lead.tenantId, tenantLeads);
+    // Auto-enroll roofing leads into the roofing outreach campaign
+    if (lead.niche.toLower().contains(#text "roof")) {
+      let rl : RoofingCampaignTypes.RoofingLead = {
+        email        = lead.email;
+        companyName  = lead.name;
+        city         = "";
+        state        = "";
+        phone        = if (lead.phone == "") null else ?lead.phone;
+        website      = null;
+        businessType = "roofing contractor";
+      };
+      let normEmail = rl.email.toLower().trim(#char ' ');
+      switch (roofingLeadStatuses.get(normEmail)) {
+        case null {
+          let status = RoofingCampaignLib.newLeadStatus(rl, Time.now());
+          roofingLeadStatuses.add(normEmail, status);
+        };
+        case (?existing) {
+          switch (existing.status) {
+            case (#unsubscribed or #active or #completed) {}; // skip
+            case (#paused) {
+              roofingLeadStatuses.add(normEmail, { existing with status = #active });
+            };
+          };
+        };
+      };
+    };
   };
 
   public shared ({ caller }) func createLead(lead : Lead) : async () {
@@ -2038,7 +2288,21 @@ actor {
             perplexityApiKey = "";
             autoBrowserUrl = "";
             serpApiKey = "";
+            serpApiDevKey = "";
             sendgridKey = "";
+            tinyFishKey = "";
+            n8nInstanceUrl = "";
+            n8nApiKey = [];
+            nvidiaApiKey = [];
+            nvidiaNimApiKey = "";
+            abacusApiKey = "";
+            composioApiKey = "";
+            dograhApiKey = "";
+            openRouterApiKey = "";
+            vapiWebhookSecret = "";
+            sendgridInboundParseDomain = "";
+            composioWebhookSecret = "";
+            geminiApiKey = "";
           }
         };
       };
@@ -4474,20 +4738,6 @@ actor {
     }
   };
 
-  public shared ({ caller }) func updateLeadEnrichment(enrichment : LeadEnrichment) : async () {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Users only");
-    };
-    leadEnrichments.add(enrichment.leadId, enrichment);
-  };
-
-  public query ({ caller }) func getLeadEnrichment(leadId : Text) : async ?LeadEnrichment {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Users only");
-    };
-    leadEnrichments.get(leadId)
-  };
-
   // ---- VAPI PROVISIONING TYPES ----
 
   public type VapiProvisioningStatus = {
@@ -4514,6 +4764,7 @@ actor {
     duration    : Nat;
     transcript  : Text;
     callerPhone : Text;
+    recordingUrl : ?Text;
     endedAt     : ?Int;
     recordedAt  : Int;
   };
@@ -4521,7 +4772,6 @@ actor {
   // ---- VAPI STATE ----
 
   let vapiProvisioningStatuses = Map.empty<Text, VapiProvisioningStatus>();
-  let vapiCallLogs = Map.empty<Text, List.List<VapiCallLog>>();
 
   // ---- VAPI HELPERS ----
 
@@ -5029,22 +5279,27 @@ actor {
             callId := callId # Text.fromChar(ch);
             idStart += 1;
           };
-          if (callId != "" and not existingIds.contains(callId)) {
-            let logEntry : VapiCallLog = {
-              id         = "vcl-" # callId;
-              tenantId   = tid;
-              callId;
-              direction  = "inbound";
-              status     = "completed";
-              duration   = 0;
-              transcript = "";
-              callerPhone = "";
-              endedAt    = null;
-              recordedAt = now;
+          if (callId != "") {
+            if (not existingIds.contains(callId)) {
+              // New stub — add it
+              let logEntry : VapiCallLog = {
+                id          = "vcl-" # callId;
+                tenantId    = tid;
+                callId;
+                direction   = "inbound";
+                status      = "completed";
+                duration    = 0;
+                transcript  = "";
+                callerPhone = "";
+                recordingUrl = null;
+                endedAt     = null;
+                recordedAt  = now;
+              };
+              existing.add(logEntry);
+              existingIds.add(callId);
+              newCount += 1;
             };
-            existing.add(logEntry);
-            existingIds.add(callId);
-            newCount += 1;
+            // else: already stored (either from webhook or prior sync) — keep existing rich data
           };
           searchFrom := idStart;
         } else {
@@ -5153,7 +5408,21 @@ actor {
           perplexityApiKey = "";
           autoBrowserUrl = "";
           serpApiKey = "";
+          serpApiDevKey = "";
           sendgridKey = "";
+          tinyFishKey = "";
+          n8nInstanceUrl = "";
+          n8nApiKey = [];
+          nvidiaApiKey = [];
+          nvidiaNimApiKey = "";
+          abacusApiKey = "";
+          composioApiKey = "";
+          dograhApiKey = "";
+          openRouterApiKey = "";
+          vapiWebhookSecret = "";
+          sendgridInboundParseDomain = "";
+          composioWebhookSecret = "";
+          geminiApiKey = "";
         }
       };
     };
@@ -5299,7 +5568,21 @@ actor {
       perplexityApiKey = "";
       autoBrowserUrl = "";
       serpApiKey = "";
+      serpApiDevKey = "";
       sendgridKey = "";
+      tinyFishKey = "";
+      n8nInstanceUrl = "";
+      n8nApiKey = [];
+      abacusApiKey = "";
+      composioApiKey = "";
+      dograhApiKey = "";
+      openRouterApiKey = "";
+      nvidiaApiKey = [];
+      nvidiaNimApiKey = "";
+      vapiWebhookSecret = "";
+      sendgridInboundParseDomain = "";
+      composioWebhookSecret = "";
+      geminiApiKey = "";
     };
     let existing = switch (integrationCreds.get("platform")) {
       case (?e) { e };

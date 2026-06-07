@@ -365,7 +365,7 @@ export default function AiBusinessManagerPanel() {
     <Sheet open={aiPanelOpen} onOpenChange={setAiPanelOpen}>
       <SheetContent
         side="right"
-        className="w-full sm:w-[420px] p-0 bg-gray-900 border-l border-gray-800 flex flex-col"
+        className="z-[9999] w-full sm:w-[420px] p-0 bg-gray-900 border-l border-gray-800 flex flex-col"
         data-ocid="ai.panel"
       >
         {/* Header */}

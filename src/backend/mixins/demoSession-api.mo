@@ -4,12 +4,18 @@ import Text      "mo:core/Text";
 import Outcall   "mo:caffeineai-http-outcalls/outcall";
 import T         "../types/demoSession";
 import DSLib     "../lib/demoSession";
+import Error "mo:core/Error";
+import List "mo:core/List";
+import EmailTypes "../types/email";
 
 mixin (
   demoSessions          : Map.Map<Text, T.DemoSession>,
   auditReports          : Map.Map<Text, T.AuditReport>,
   elevenLabsAudioCache  : Map.Map<Text, Text>,
   prospectDataStore     : Map.Map<Text, T.ProspectData>,
+  trialAccounts         : Map.Map<Text, T.TrialAccount>,
+  emailLogs             : List.List<EmailTypes.EmailLogRecord>,
+  emailIdCounter        : { var n : Nat },
   transform             : query Outcall.TransformationInput -> async Outcall.TransformationOutput,
 ) {
 
@@ -44,8 +50,9 @@ mixin (
     let headers   = [{ name = "Content-Type"; value = "application/json" }];
     try {
       ignore await Outcall.httpPostRequest(demoEmailEndpoint, headers, payload, transform);
-    } catch (_) {
-      // Email failure is non-fatal
+    } catch (e) {
+      // Email failure is non-fatal but surfaced in debug
+      let _ = "sendAuditEmail failed: " # e.message();
     };
   };
 
@@ -138,59 +145,139 @@ mixin (
   };
 
   /// Activate the 7-day trial for demo prospects (accepts anonymous callers).
-  /// Stores full prospect contact data in a separate map for CRM pickup.
-  /// Returns #ok(session) on success, #err(message) on failure.
+  /// Stores a full TrialAccount record, fires prospect confirmation and admin notification emails.
+  /// Returns trialAccountId and loginUrl on success, error Text on failure.
   public shared func activateTrial(
-    sessionId  : Text,
-    email      : Text,
-    firstName  : ?Text,
-    city       : ?Text,
-    niche      : ?Text,
-    phone      : ?Text,
-  ) : async { #ok : T.DemoSession; #err : Text } {
+    sessionId   : Text,
+    firstName   : Text,
+    businessName: Text,
+    city        : Text,
+    niche       : Text,
+    phone       : Text,
+    email       : Text,
+    website     : Text,
+  ) : async { #ok : { trialAccountId : Text; loginUrl : Text; emailWarning : ?Text }; #err : Text } {
     if (email.size() == 0) {
       return #err("EMPTY_EMAIL");
     };
-    let now    = Time.now();
-    let lockAt : Int = now + DSLib.sessionDurationNs();
+    let now           = Time.now();
+    let lockAt : Int  = now + DSLib.sessionDurationNs();
+    let slug          = businessName.replace(#char ' ', "-");
+    let trialAccountId = "trial-" # slug # "-" # now.toText();
+    let loginUrl      = "https://bookedrankedfunded.org/dashboard?trial=" # trialAccountId;
+
+    // Update demo session if one exists
     switch (demoSessions.get(sessionId)) {
-      case (null) { #err("SESSION_NOT_FOUND") };
       case (?session) {
-        // Return specific error if trial already activated
-        switch (session.trialActivatedAt) {
-          case (?_) { return #err("ALREADY_ACTIVATED") };
-          case (null) {};
-        };
         let updated : T.DemoSession = {
           session with
           trialActivatedAt      = ?now;
           socialContentLockedAt = ?lockAt;
         };
         demoSessions.add(sessionId, updated);
-        // Store full prospect contact data in a dedicated map (preserves DemoSession schema)
-        let nicheVal : ?Text = switch (niche) {
-          case (?n) { if (n.size() > 0) ?n else null };
-          case (null) { null };
-        };
-        let prospect : T.ProspectData = {
-          sessionId;
-          email;
-          firstName;
-          city;
-          niche = nicheVal;
-          phone;
-          capturedAt = now;
-        };
-        prospectDataStore.add(sessionId, prospect);
         switch (auditReports.get(sessionId)) {
           case (null) {
             let report = DSLib.generateAuditReport(updated, email, now);
             auditReports.add(sessionId, report);
-            ignore sendAuditEmail(report);
+            try {
+              await sendAuditEmail(report);
+            } catch (e) {
+              let _ = "sendAuditEmail failed: " # e.message();
+            };
           };
           case (?_) {};
         };
-        #ok(updated)
+      };
+      case (null) {};
+    };
+
+    // Store prospect contact data
+    let prospect : T.ProspectData = {
+      sessionId;
+      email;
+      firstName = ?firstName;
+      city      = ?city;
+      niche     = if (niche.size() > 0) ?niche else null;
+      phone     = ?phone;
+      capturedAt = now;
+    };
+    prospectDataStore.add(sessionId, prospect);
+
+    // Store full trial account record
+    let trialAccount : T.TrialAccount = {
+      trialAccountId;
+      sessionId;
+      firstName;
+      businessName;
+      city;
+      niche;
+      phone;
+      email;
+      website;
+      activatedAt      = now;
+      expiresAt        = now + 604_800_000_000_000;
+      activityScore    = 0;
+      day5ReminderSent = false;
+      convertedAt      = null;
+      features    = {
+        crm           = true;
+        social        = true;
+        reputation    = true;
+        voiceAgent    = true;
+        creditBuilder = true;
+        analytics     = true;
+      };
+    };
+    trialAccounts.add(trialAccountId, trialAccount);
+
+    // Format trial end date as readable text
+    let trialEndNs : Int = now + 604_800_000_000_000;
+    let trialEndDate = "7 days from today";
+
+    // Send prospect confirmation email — surface error but don't trap
+    var emailError : ?Text = null;
+    try {
+      await sendProspectConfirmationEmail(
+        firstName, businessName, city, niche, email, trialEndDate, loginUrl
+      );
+    } catch (e) {
+      emailError := ?("prospect email failed: " # e.message());
+    };
+
+    // Send admin notification email — surface error but don't trap
+    try {
+      await sendAdminNotificationEmail(
+        firstName, businessName, city, niche, phone, email, website, trialAccountId
+      );
+    } catch (e) {
+      let adminErr = "admin email failed: " # e.message();
+      emailError := switch (emailError) {
+        case (null)  { ?adminErr };
+        case (?prev) { ?(prev # "; " # adminErr) };
+      };
+    };
+
+    #ok({ trialAccountId; loginUrl; emailWarning = emailError })
+  };
+
+  /// Return the feature flags for a trial account.
+  public query func getTrialFeatureFlags(trialAccountId : Text) : async ?T.FeatureFlags {
+    switch (trialAccounts.get(trialAccountId)) {
+      case (?ta) { ?ta.features };
+      case (null) { null };
+    }
+  };
+
+  /// Update feature flags for a trial account (admin only).
+  public shared func updateTrialFeatureFlags(
+    trialAccountId : Text,
+    features       : T.FeatureFlags,
+  ) : async { #ok; #err : Text } {
+    switch (trialAccounts.get(trialAccountId)) {
+      case (null) { #err("TRIAL_NOT_FOUND") };
+      case (?ta)  {
+        trialAccounts.add(trialAccountId, { ta with features });
+        #ok
       };
     }
   };
@@ -275,6 +362,72 @@ mixin (
   };
 
   /// Return cache statistics for monitoring.
+
+  // ── Trial email helpers ─────────────────────────────────────────────────────────────────────
+
+  func sendProspectConfirmationEmail(
+    firstName    : Text,
+    businessName : Text,
+    city         : Text,
+    niche        : Text,
+    email        : Text,
+    trialEndDate : Text,
+    loginUrl     : Text,
+  ) : async () {
+    let subject = "Your BRF 7-Day Trial is Live, " # firstName # "!";
+    let body =
+      "<p>Welcome, " # esc(firstName) # "!</p>" #
+      "<p>Your 7-day trial for <strong>" # esc(businessName) # "</strong> (" # esc(niche) # " — " # esc(city) # ") is now active.</p>" #
+      "<p>You have full access to:<ul>" #
+      "<li>CRM &amp; Lead Management</li>" #
+      "<li>Social Media Campaign Scheduler</li>" #
+      "<li>Reputation Management</li>" #
+      "<li>AI Voice Agent Setup</li>" #
+      "<li>Business Credit Builder</li>" #
+      "<li>Analytics Dashboard</li>" #
+      "</ul></p>" #
+      "<p>Trial expires: " # esc(trialEndDate) # "</p>" #
+      "<p><a href='" # loginUrl # "'>Log in now</a></p>" #
+      "<p>Quick-start steps:<ol>" #
+      "<li>Visit your dashboard and connect your Google Business profile</li>" #
+      "<li>Schedule your first 7-day social media campaign</li>" #
+      "<li>Set up your AI voice agent with your business info</li>" #
+      "</ol></p>" #
+      "<p>Welcome aboard!<br/>— The BRF Team</p>";
+    let payload = buildEmailPayload(email, subject, body);
+    let headers = [{ name = "Content-Type"; value = "application/json" }];
+    ignore await Outcall.httpPostRequest(demoEmailEndpoint, headers, payload, transform);
+  };
+
+  func sendAdminNotificationEmail(
+    firstName      : Text,
+    businessName   : Text,
+    city           : Text,
+    niche          : Text,
+    phone          : Text,
+    email          : Text,
+    website        : Text,
+    trialAccountId : Text,
+  ) : async () {
+    let subject = "New Trial Activated — " # businessName # " (" # niche # ", " # city # ")";
+    let body =
+      "<p>A new 7-day trial was just activated.</p>" #
+      "<table>" #
+      "<tr><td><strong>Prospect</strong></td><td>" # esc(firstName) # "</td></tr>" #
+      "<tr><td><strong>Business</strong></td><td>" # esc(businessName) # "</td></tr>" #
+      "<tr><td><strong>Niche</strong></td><td>" # esc(niche) # "</td></tr>" #
+      "<tr><td><strong>City</strong></td><td>" # esc(city) # "</td></tr>" #
+      "<tr><td><strong>Phone</strong></td><td>" # esc(phone) # "</td></tr>" #
+      "<tr><td><strong>Email</strong></td><td>" # esc(email) # "</td></tr>" #
+      "<tr><td><strong>Website</strong></td><td>" # esc(website) # "</td></tr>" #
+      "<tr><td><strong>Trial ID</strong></td><td>" # esc(trialAccountId) # "</td></tr>" #
+      "</table>" #
+      "<p><a href='https://bookedrankedfunded.org/admin'>Manage this account</a></p>";
+    let payload = buildEmailPayload("BeyondAI.marketing@gmail.com", subject, body);
+    let headers = [{ name = "Content-Type"; value = "application/json" }];
+    ignore await Outcall.httpPostRequest(demoEmailEndpoint, headers, payload, transform);
+  };
+
   public query func getCacheStats() : async T.AudioCacheStats {
     let entryCount = elevenLabsAudioCache.size();
     { entryCount; estimatedSizeKB = entryCount * 15 }

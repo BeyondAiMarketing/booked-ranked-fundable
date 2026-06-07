@@ -30,23 +30,9 @@ import {
 } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { Skeleton } from "../components/ui/skeleton";
+import { useDemoFlow } from "../hooks/useDemoFlow";
 import { useSocialMedia } from "../hooks/useSocialMedia";
 import type { CompetitorProfile, NicheType } from "../types/socialMedia";
-
-// ─── Static niche options ────────────────────────────────────────────────────
-
-const NICHE_OPTIONS: { value: NicheType; label: string }[] = [
-  { value: "plumbing", label: "Plumbing" },
-  { value: "hvac", label: "HVAC" },
-  { value: "restoration", label: "Restoration" },
-  { value: "carpet_cleaning", label: "Carpet Cleaning" },
-  { value: "roofing", label: "Roofing" },
-  { value: "med_spa", label: "Med Spa" },
-  { value: "real_estate", label: "Real Estate" },
-  { value: "mortgage", label: "Mortgage" },
-  { value: "chiropractor", label: "Chiropractor" },
-  { value: "dental", label: "Dental" },
-];
 
 // ─── Refresh progress steps ──────────────────────────────────────────────────
 
@@ -58,232 +44,638 @@ const REFRESH_STEPS = [
   { label: "Generating insights…", icon: Sparkles },
 ];
 
-// ─── Extended rich demo data ─────────────────────────────────────────────────
+// ─── Niche-scoped demo data ───────────────────────────────────────────────────
 
-const RICH_COMPETITOR_PROFILES: CompetitorProfile[] = [
-  {
-    name: "FastFlow Plumbing",
-    website: "fastflowplumbing.com",
-    platforms: ["facebook", "instagram"],
-    averageEngagement: 218,
-    rankingPosition: 2,
-    recentPosts: [
-      {
-        platform: "facebook",
-        content: "Before/after: clogged drain → crystal clear 🚿",
-        estimatedEngagement: 312,
-        postedAt: Date.now() - 86400000,
-        format: "image",
-      },
-    ],
-    strengths: [
-      "Fast response messaging",
-      "Before/after photos",
-      "Consistent posting (5×/wk)",
-    ],
-    gaps: [
-      "No video content",
-      "Rarely posts on LinkedIn",
-      "No seasonal urgency posts",
-    ],
-  },
-  {
-    name: "Pacific Drain Pros",
-    website: "pacificdrainpros.com",
-    platforms: ["facebook"],
-    averageEngagement: 95,
-    rankingPosition: 3,
-    recentPosts: [],
-    strengths: ["Consistent posting schedule", "Strong Google review volume"],
-    gaps: [
-      "Generic copy",
-      "No CTA in posts",
-      "No Instagram presence",
-      "No video",
-    ],
-  },
-  {
-    name: "SoCal Pipe Works",
-    website: "socalpipeworks.com",
-    platforms: ["facebook", "google_business"],
-    averageEngagement: 142,
-    rankingPosition: 4,
-    recentPosts: [],
-    strengths: ["High Google Business activity", "Active review responses"],
-    gaps: ["No social media strategy", "Posts 1× per week", "No Instagram"],
-  },
-  {
-    name: "Reliable Rooter Co.",
-    website: "reliablerooter.com",
-    platforms: ["facebook", "instagram", "google_business"],
-    averageEngagement: 178,
-    rankingPosition: 5,
-    recentPosts: [],
-    strengths: ["Active on 3 platforms", "Emergency service posts"],
-    gaps: [
-      "Low engagement on Instagram",
-      "No LinkedIn",
-      "No before/after content",
-    ],
-  },
-  {
-    name: "AquaFix Plumbing",
-    website: "aquafixplumbing.com",
-    platforms: ["instagram"],
-    averageEngagement: 66,
-    rankingPosition: 6,
-    recentPosts: [],
-    strengths: ["Clean Instagram aesthetic"],
-    gaps: ["No Facebook presence", "No CTAs", "Inconsistent posting (1–2×/mo)"],
-  },
-];
-
-const WEEKLY_DIGEST = {
-  topThemes: [
-    "Before/after transformations",
-    "Emergency service availability",
-    "5-star review showcases",
-  ],
-  winningThemes: [
-    "Seasonal urgency posts (0 competitors running these — huge gap)",
-    "Video walkthroughs get 3× more organic reach vs. static images",
-    "LinkedIn completely untapped — first mover wins",
-  ],
-  topHashtags: [
-    { tag: "#plumber", volume: "High" },
-    { tag: "#plumbing", volume: "High" },
-    { tag: "#emergencyplumber", volume: "Medium" },
-    { tag: "#sandiegoplumber", volume: "Medium" },
-    { tag: "#homerepair", volume: "High" },
-    { tag: "#waterdamage", volume: "Medium" },
-    { tag: "#draincleaning", volume: "Low" },
-  ],
-  actionableOpportunities: [
-    "Post a 60-second 'how to prevent a burst pipe before winter' video — no competitor is doing educational video content",
-    "Start a weekly 'Money Monday' post showing how much homeowners save by fixing issues early vs. emergency calls",
-    "Launch a LinkedIn presence targeting property managers — zero competition in this market segment locally",
-  ],
-  summary:
-    "This week your top 5 competitors focused heavily on static before/after images and review-sharing content. Video and LinkedIn represent the biggest gaps — first mover advantage is available in both. Seasonal urgency content (winter prep, freeze warnings) is completely untapped and typically drives 40–60% higher engagement in home services niches.",
+type NicheContentData = {
+  competitors: CompetitorProfile[];
+  weeklyDigest: {
+    topThemes: string[];
+    winningThemes: string[];
+    topHashtags: { tag: string; volume: string }[];
+    actionableOpportunities: string[];
+    summary: string;
+  };
+  contentThemes: {
+    theme: string;
+    clientPct: number;
+    competitorPct: number;
+    icon: React.ElementType;
+    color: string;
+  }[];
+  opportunities: {
+    id: string;
+    title: string;
+    evidence: string;
+    impact: string;
+    theme: string;
+    icon: React.ElementType;
+    color: string;
+    badgeClass: string;
+  }[];
+  trendingTopics: { keyword: string; volume: number; trend: string }[];
 };
 
-const CONTENT_THEME_DATA = [
-  {
-    theme: "Educational",
-    clientPct: 22,
-    competitorPct: 8,
-    icon: BookOpen,
-    color: "bg-primary",
+const NICHE_CONTENT: Record<string, NicheContentData> = {
+  roofing: {
+    competitors: [
+      {
+        name: "SkyLine Roofing Co.",
+        website: "skylineroofers.com",
+        platforms: ["facebook", "instagram", "google_business"],
+        averageEngagement: 312,
+        rankingPosition: 2,
+        recentPosts: [
+          {
+            platform: "facebook",
+            content:
+              "Storm damage? We're on it in 2 hours — before/after thread 🏠",
+            estimatedEngagement: 487,
+            postedAt: Date.now() - 86400000,
+            format: "image",
+          },
+        ],
+        strengths: [
+          "Storm emergency posts",
+          "Before/after photos",
+          "Active on 3 platforms",
+        ],
+        gaps: [
+          "No educational video content",
+          "No LinkedIn",
+          "No seasonal prep campaigns",
+        ],
+      },
+      {
+        name: "Apex Roof Specialists",
+        website: "apexroofspecialists.com",
+        platforms: ["facebook"],
+        averageEngagement: 148,
+        rankingPosition: 3,
+        recentPosts: [],
+        strengths: ["Google Ads active", "High review volume"],
+        gaps: [
+          "No Instagram",
+          "Generic post copy",
+          "No video content",
+          "No CTAs",
+        ],
+      },
+      {
+        name: "ProShield Roofing",
+        website: "proshieldroofing.com",
+        platforms: ["facebook", "google_business"],
+        averageEngagement: 97,
+        rankingPosition: 4,
+        recentPosts: [],
+        strengths: ["Active Google Business Profile", "Consistent posting"],
+        gaps: ["No social media strategy", "Posts 1× per week", "No Instagram"],
+      },
+      {
+        name: "Storm Guard Roofing",
+        website: "stormguardroofsd.com",
+        platforms: ["facebook"],
+        averageEngagement: 54,
+        rankingPosition: 5,
+        recentPosts: [],
+        strengths: ["Emergency service posts"],
+        gaps: [
+          "Low engagement",
+          "No video",
+          "No before/after content",
+          "No Instagram",
+        ],
+      },
+    ],
+    weeklyDigest: {
+      topThemes: [
+        "Storm damage before/after",
+        "Emergency response time",
+        "5-star review showcases",
+      ],
+      winningThemes: [
+        "Seasonal hail/storm prep posts (0 competitors running these — huge gap)",
+        "Video roof walkthroughs get 3× more organic reach vs. static images",
+        "LinkedIn targeting insurance adjusters and property managers — untapped",
+      ],
+      topHashtags: [
+        { tag: "#roofing", volume: "High" },
+        { tag: "#roofer", volume: "High" },
+        { tag: "#stormrepair", volume: "Medium" },
+        { tag: "#sandiegoroofer", volume: "Medium" },
+        { tag: "#roofrepair", volume: "High" },
+        { tag: "#hailseasondamage", volume: "Medium" },
+        { tag: "#roofinstall", volume: "Low" },
+      ],
+      actionableOpportunities: [
+        "Post a 60-second 'what to check after a storm' video — no competitor is doing educational roofing video content",
+        "Start a weekly 'Roof Rescue Monday' post showing before/after repairs with homeowner quotes",
+        "Launch a LinkedIn presence targeting property managers and insurance adjusters — zero competition locally",
+      ],
+      summary:
+        "This week your top 4 roofing competitors focused on storm damage before/afters and review sharing. Video content and LinkedIn represent the biggest untapped gaps — first mover advantage is available in both. Seasonal storm prep campaigns are completely missing and typically drive 40–60% higher engagement.",
+    },
+    contentThemes: [
+      {
+        theme: "Educational",
+        clientPct: 24,
+        competitorPct: 7,
+        icon: BookOpen,
+        color: "bg-primary",
+      },
+      {
+        theme: "Promotional",
+        clientPct: 32,
+        competitorPct: 54,
+        icon: Zap,
+        color: "bg-amber-500",
+      },
+      {
+        theme: "Testimonials",
+        clientPct: 20,
+        competitorPct: 26,
+        icon: Users,
+        color: "bg-emerald-500",
+      },
+      {
+        theme: "Behind-the-Scenes",
+        clientPct: 14,
+        competitorPct: 5,
+        icon: Eye,
+        color: "bg-rose-500",
+      },
+      {
+        theme: "Video Content",
+        clientPct: 6,
+        competitorPct: 2,
+        icon: Video,
+        color: "bg-blue-500",
+      },
+      {
+        theme: "Local Community",
+        clientPct: 4,
+        competitorPct: 6,
+        icon: Target,
+        color: "bg-purple-500",
+      },
+    ],
+    opportunities: [
+      {
+        id: "opp-1",
+        title: "No competitor posts roofing video content",
+        evidence:
+          "Top 4 competitors post 0–1 videos/week. Roof walkthrough videos get 3× more reach.",
+        impact: "High",
+        theme: "video",
+        icon: Video,
+        color: "border-l-primary",
+        badgeClass: "badge-purple",
+      },
+      {
+        id: "opp-2",
+        title: "LinkedIn untapped for roofing locally",
+        evidence:
+          "0 of 4 competitors have an active LinkedIn presence — property managers and adjusters are there.",
+        impact: "High",
+        theme: "linkedin",
+        icon: Users,
+        color: "border-l-emerald-400",
+        badgeClass: "badge-emerald",
+      },
+      {
+        id: "opp-3",
+        title: "No competitor runs storm prep campaigns",
+        evidence:
+          "Hail season / freeze warning posts drive 40–60% higher engagement — none are posting them.",
+        impact: "High",
+        theme: "seasonal",
+        icon: Lightbulb,
+        color: "border-l-amber-400",
+        badgeClass: "badge-amber",
+      },
+      {
+        id: "opp-4",
+        title: "Educational roofing content gap",
+        evidence:
+          "Competitors average only 7% educational posts. Homeowners want 'what to check' guides.",
+        impact: "Medium",
+        theme: "educational",
+        icon: BookOpen,
+        color: "border-l-blue-400",
+        badgeClass: "badge-blue",
+      },
+      {
+        id: "opp-5",
+        title: "Behind-the-scenes job site content underused",
+        evidence:
+          "Only 5% of competitor posts show real crew/job content — builds trust 2× faster.",
+        impact: "Medium",
+        theme: "behind-scenes",
+        icon: Eye,
+        color: "border-l-rose-400",
+        badgeClass: "badge-rose",
+      },
+    ],
+    trendingTopics: [
+      { keyword: "roof replacement San Diego", volume: 94, trend: "up" },
+      { keyword: "storm damage roof repair", volume: 91, trend: "up" },
+      { keyword: "hail damage roofing claim", volume: 86, trend: "up" },
+      { keyword: "roofing company near me", volume: 82, trend: "stable" },
+      { keyword: "emergency roof repair", volume: 78, trend: "up" },
+      { keyword: "roof inspection cost 2025", volume: 71, trend: "up" },
+      { keyword: "flat roof repair contractor", volume: 64, trend: "stable" },
+      { keyword: "metal roofing installation", volume: 59, trend: "up" },
+      { keyword: "roof leak repair near me", volume: 55, trend: "stable" },
+      { keyword: "residential roofer estimate", volume: 50, trend: "down" },
+      { keyword: "roof replacement cost calculator", volume: 46, trend: "up" },
+      { keyword: "best roofer San Diego", volume: 41, trend: "stable" },
+    ],
   },
-  {
-    theme: "Promotional",
-    clientPct: 35,
-    competitorPct: 52,
-    icon: Zap,
-    color: "bg-amber-500",
+  hvac: {
+    competitors: [
+      {
+        name: "Arctic Air HVAC",
+        website: "arcticairhvac.com",
+        platforms: ["facebook", "instagram"],
+        averageEngagement: 204,
+        rankingPosition: 2,
+        recentPosts: [
+          {
+            platform: "facebook",
+            content: "AC tune-up special before summer hits — book this week 🌡️",
+            estimatedEngagement: 318,
+            postedAt: Date.now() - 86400000,
+            format: "image",
+          },
+        ],
+        strengths: [
+          "Seasonal urgency posts",
+          "Consistent Facebook presence",
+          "Before/after photos",
+        ],
+        gaps: ["No video content", "No LinkedIn", "No educational posts"],
+      },
+      {
+        name: "ComfortPro HVAC",
+        website: "comfortprohvac.com",
+        platforms: ["facebook"],
+        averageEngagement: 88,
+        rankingPosition: 3,
+        recentPosts: [],
+        strengths: ["Active Google Business", "High review count"],
+        gaps: ["No Instagram", "No video", "Generic copy", "No CTAs"],
+      },
+      {
+        name: "Premier Air Solutions",
+        website: "premierairsolutions.com",
+        platforms: ["facebook", "google_business"],
+        averageEngagement: 121,
+        rankingPosition: 4,
+        recentPosts: [],
+        strengths: ["GBP updated regularly", "Responds to reviews"],
+        gaps: ["No social media strategy", "Posts 1×/week", "No Instagram"],
+      },
+    ],
+    weeklyDigest: {
+      topThemes: [
+        "Seasonal tune-up offers",
+        "Energy savings tips",
+        "5-star review showcases",
+      ],
+      winningThemes: [
+        "Indoor air quality content (0 competitors covering it — huge gap)",
+        "Video system walkthroughs get 3× more reach than static images",
+        "LinkedIn targeting property managers and commercial building owners — untapped",
+      ],
+      topHashtags: [
+        { tag: "#hvac", volume: "High" },
+        { tag: "#airconditioning", volume: "High" },
+        { tag: "#hvacrepair", volume: "Medium" },
+        { tag: "#furnacerepair", volume: "Medium" },
+        { tag: "#airquality", volume: "High" },
+        { tag: "#hvactechnician", volume: "Medium" },
+        { tag: "#acinstall", volume: "Low" },
+      ],
+      actionableOpportunities: [
+        "Post a 60-second 'signs your AC needs service before summer' video — no competitor is doing this",
+        "Start a 'Filter Friday' weekly post showing dirty vs. clean filters with energy cost comparisons",
+        "Launch a LinkedIn presence targeting commercial property managers — zero competition locally",
+      ],
+      summary:
+        "This week HVAC competitors focused on seasonal tune-up promotions and review sharing. Indoor air quality content and LinkedIn are completely untapped. Video content showing real system installs and before/afters gets 3× more reach than anything competitors are currently posting.",
+    },
+    contentThemes: [
+      {
+        theme: "Educational",
+        clientPct: 20,
+        competitorPct: 6,
+        icon: BookOpen,
+        color: "bg-primary",
+      },
+      {
+        theme: "Promotional",
+        clientPct: 38,
+        competitorPct: 56,
+        icon: Zap,
+        color: "bg-amber-500",
+      },
+      {
+        theme: "Testimonials",
+        clientPct: 17,
+        competitorPct: 25,
+        icon: Users,
+        color: "bg-emerald-500",
+      },
+      {
+        theme: "Behind-the-Scenes",
+        clientPct: 13,
+        competitorPct: 5,
+        icon: Eye,
+        color: "bg-rose-500",
+      },
+      {
+        theme: "Video Content",
+        clientPct: 7,
+        competitorPct: 3,
+        icon: Video,
+        color: "bg-blue-500",
+      },
+      {
+        theme: "Local Community",
+        clientPct: 5,
+        competitorPct: 5,
+        icon: Target,
+        color: "bg-purple-500",
+      },
+    ],
+    opportunities: [
+      {
+        id: "opp-1",
+        title: "No competitor posts HVAC video content",
+        evidence:
+          "Competitors post 0–1 videos/week. System install walkthroughs get 3× more reach.",
+        impact: "High",
+        theme: "video",
+        icon: Video,
+        color: "border-l-primary",
+        badgeClass: "badge-purple",
+      },
+      {
+        id: "opp-2",
+        title: "Indoor air quality content completely untapped",
+        evidence:
+          "0 of 3 competitors post air quality educational content — high search interest.",
+        impact: "High",
+        theme: "air-quality",
+        icon: Lightbulb,
+        color: "border-l-amber-400",
+        badgeClass: "badge-amber",
+      },
+      {
+        id: "opp-3",
+        title: "LinkedIn untapped for HVAC commercial leads",
+        evidence:
+          "0 competitors have a LinkedIn presence — property managers and building owners are there.",
+        impact: "High",
+        theme: "linkedin",
+        icon: Users,
+        color: "border-l-emerald-400",
+        badgeClass: "badge-emerald",
+      },
+      {
+        id: "opp-4",
+        title: "Educational content gap in HVAC niche",
+        evidence:
+          "Competitors average only 6% educational posts. Homeowners want 'how to save on energy bills' guides.",
+        impact: "Medium",
+        theme: "educational",
+        icon: BookOpen,
+        color: "border-l-blue-400",
+        badgeClass: "badge-blue",
+      },
+      {
+        id: "opp-5",
+        title: "Behind-the-scenes job content underused",
+        evidence:
+          "Only 5% of competitor posts show real installs — builds trust 2× faster.",
+        impact: "Medium",
+        theme: "behind-scenes",
+        icon: Eye,
+        color: "border-l-rose-400",
+        badgeClass: "badge-rose",
+      },
+    ],
+    trendingTopics: [
+      { keyword: "AC repair near me", volume: 93, trend: "up" },
+      { keyword: "furnace replacement cost", volume: 87, trend: "up" },
+      { keyword: "HVAC tune up special", volume: 83, trend: "up" },
+      { keyword: "air conditioner not cooling", volume: 79, trend: "stable" },
+      { keyword: "mini split installation", volume: 75, trend: "up" },
+      { keyword: "HVAC maintenance contract", volume: 68, trend: "up" },
+      { keyword: "heat pump vs furnace 2025", volume: 62, trend: "stable" },
+      { keyword: "emergency AC repair", volume: 58, trend: "up" },
+      { keyword: "indoor air quality testing", volume: 53, trend: "up" },
+      { keyword: "smart thermostat install", volume: 47, trend: "down" },
+      { keyword: "duct cleaning San Diego", volume: 43, trend: "stable" },
+      { keyword: "commercial HVAC service", volume: 38, trend: "stable" },
+    ],
   },
-  {
-    theme: "Testimonials",
-    clientPct: 18,
-    competitorPct: 28,
-    icon: Users,
-    color: "bg-emerald-500",
+  med_spa: {
+    competitors: [
+      {
+        name: "Glow Aesthetics Studio",
+        website: "glowaesthetics.com",
+        platforms: ["instagram", "facebook", "google_business"],
+        averageEngagement: 386,
+        rankingPosition: 2,
+        recentPosts: [
+          {
+            platform: "instagram",
+            content: "Botox before/after — 3 weeks post-treatment results ✨",
+            estimatedEngagement: 612,
+            postedAt: Date.now() - 86400000,
+            format: "image",
+          },
+        ],
+        strengths: [
+          "Strong Instagram presence",
+          "Before/after photo content",
+          "Active on 3 platforms",
+        ],
+        gaps: ["No educational Reels", "No LinkedIn", "No seasonal promotions"],
+      },
+      {
+        name: "Luxe Skin Clinic",
+        website: "luxeskinclinic.com",
+        platforms: ["instagram", "facebook"],
+        averageEngagement: 214,
+        rankingPosition: 3,
+        recentPosts: [],
+        strengths: ["High review velocity", "Promotional post cadence"],
+        gaps: ["No video content", "Generic captions", "No TikTok presence"],
+      },
+      {
+        name: "Pure Radiance MedSpa",
+        website: "pureradiancemedspa.com",
+        platforms: ["instagram"],
+        averageEngagement: 97,
+        rankingPosition: 4,
+        recentPosts: [],
+        strengths: ["Clean Instagram aesthetic"],
+        gaps: ["No Facebook", "No CTAs", "Inconsistent posting (1–2×/mo)"],
+      },
+    ],
+    weeklyDigest: {
+      topThemes: [
+        "Before/after treatment photos",
+        "Seasonal promotions",
+        "5-star review highlights",
+      ],
+      winningThemes: [
+        "Educational Reels explaining treatments (0 competitors doing this — huge gap)",
+        "TikTok completely untapped — first mover gets massive organic reach",
+        "Client transformation stories drive 4× higher engagement than promos",
+      ],
+      topHashtags: [
+        { tag: "#medspa", volume: "High" },
+        { tag: "#botox", volume: "High" },
+        { tag: "#aesthetics", volume: "Medium" },
+        { tag: "#skincare", volume: "High" },
+        { tag: "#fillers", volume: "Medium" },
+        { tag: "#austinmedspa", volume: "Medium" },
+        { tag: "#glowup", volume: "Low" },
+      ],
+      actionableOpportunities: [
+        "Post a 60-second 'what to expect from your first Botox appointment' Reel — no competitor is doing educational video",
+        "Start a 'Transformation Tuesday' series showing real client journeys with consent — builds trust and goes viral",
+        "Launch TikTok targeting 25–45 year olds — zero local competition on the platform",
+      ],
+      summary:
+        "This week med spa competitors focused on before/after photos and seasonal promotions. Educational Reels and TikTok are completely untapped. Client transformation stories with real narratives get 4× the engagement of promotional posts, and no competitor is doing them consistently.",
+    },
+    contentThemes: [
+      {
+        theme: "Educational",
+        clientPct: 18,
+        competitorPct: 4,
+        icon: BookOpen,
+        color: "bg-primary",
+      },
+      {
+        theme: "Promotional",
+        clientPct: 30,
+        competitorPct: 58,
+        icon: Zap,
+        color: "bg-amber-500",
+      },
+      {
+        theme: "Transformations",
+        clientPct: 25,
+        competitorPct: 30,
+        icon: Users,
+        color: "bg-emerald-500",
+      },
+      {
+        theme: "Behind-the-Scenes",
+        clientPct: 15,
+        competitorPct: 4,
+        icon: Eye,
+        color: "bg-rose-500",
+      },
+      {
+        theme: "Video Content",
+        clientPct: 9,
+        competitorPct: 2,
+        icon: Video,
+        color: "bg-blue-500",
+      },
+      {
+        theme: "Local Community",
+        clientPct: 3,
+        competitorPct: 2,
+        icon: Target,
+        color: "bg-purple-500",
+      },
+    ],
+    opportunities: [
+      {
+        id: "opp-1",
+        title: "Educational treatment Reels completely absent",
+        evidence:
+          "0 competitors post educational video content. 'What to expect' Reels get 5× more saves.",
+        impact: "High",
+        theme: "video",
+        icon: Video,
+        color: "border-l-primary",
+        badgeClass: "badge-purple",
+      },
+      {
+        id: "opp-2",
+        title: "TikTok first-mover advantage available",
+        evidence:
+          "0 local med spa competitors are on TikTok — organic reach is massive for aesthetics content.",
+        impact: "High",
+        theme: "tiktok",
+        icon: Zap,
+        color: "border-l-amber-400",
+        badgeClass: "badge-amber",
+      },
+      {
+        id: "opp-3",
+        title: "Client transformation stories underused",
+        evidence:
+          "Transformation narratives with real stories drive 4× engagement vs. promotional posts.",
+        impact: "High",
+        theme: "transformation",
+        icon: Users,
+        color: "border-l-emerald-400",
+        badgeClass: "badge-emerald",
+      },
+      {
+        id: "opp-4",
+        title: "Educational skincare content gap",
+        evidence:
+          "Only 4% of competitor posts are educational. Clients want 'how it works' treatment guides.",
+        impact: "Medium",
+        theme: "educational",
+        icon: BookOpen,
+        color: "border-l-blue-400",
+        badgeClass: "badge-blue",
+      },
+      {
+        id: "opp-5",
+        title: "Behind-the-scenes clinic content underused",
+        evidence:
+          "Only 4% of competitor posts show real clinic/team content — builds trust faster than promos.",
+        impact: "Medium",
+        theme: "behind-scenes",
+        icon: Eye,
+        color: "border-l-rose-400",
+        badgeClass: "badge-rose",
+      },
+    ],
+    trendingTopics: [
+      { keyword: "Botox near me Austin", volume: 95, trend: "up" },
+      { keyword: "lip filler cost 2025", volume: 90, trend: "up" },
+      { keyword: "best med spa Austin", volume: 85, trend: "up" },
+      { keyword: "laser hair removal near me", volume: 80, trend: "stable" },
+      { keyword: "hydrafacial benefits", volume: 74, trend: "up" },
+      { keyword: "dermal fillers vs Botox", volume: 69, trend: "up" },
+      { keyword: "med spa membership worth it", volume: 63, trend: "stable" },
+      { keyword: "microneedling results", volume: 57, trend: "up" },
+      { keyword: "coolsculpting near me", volume: 52, trend: "stable" },
+      { keyword: "Kybella double chin", volume: 46, trend: "down" },
+      { keyword: "PRP facial near me", volume: 42, trend: "up" },
+      {
+        keyword: "med spa first time what to expect",
+        volume: 37,
+        trend: "stable",
+      },
+    ],
   },
-  {
-    theme: "Behind-the-Scenes",
-    clientPct: 12,
-    competitorPct: 6,
-    icon: Eye,
-    color: "bg-rose-500",
-  },
-  {
-    theme: "Video Content",
-    clientPct: 8,
-    competitorPct: 2,
-    icon: Video,
-    color: "bg-blue-500",
-  },
-  {
-    theme: "Local Community",
-    clientPct: 5,
-    competitorPct: 4,
-    icon: Target,
-    color: "bg-purple-500",
-  },
-];
+};
 
-const OUTPERFORMANCE_OPPORTUNITIES = [
-  {
-    id: "opp-1",
-    title: "Competitors are weak on video content",
-    evidence:
-      "Top 5 competitors post 0–2 videos/week. Videos get 3× more reach.",
-    impact: "High",
-    theme: "video",
-    icon: Video,
-    color: "border-l-primary",
-    badgeClass: "badge-purple",
-  },
-  {
-    id: "opp-2",
-    title: "LinkedIn is completely untapped locally",
-    evidence:
-      "0 of 5 competitors have an active LinkedIn presence in this market.",
-    impact: "High",
-    theme: "linkedin",
-    icon: Users,
-    color: "border-l-emerald-400",
-    badgeClass: "badge-emerald",
-  },
-  {
-    id: "opp-3",
-    title: "No competitor runs seasonal urgency campaigns",
-    evidence:
-      "Winter prep / freeze warning posts drive 40–60% higher engagement — none are posting them.",
-    impact: "High",
-    theme: "seasonal",
-    icon: Lightbulb,
-    color: "border-l-amber-400",
-    badgeClass: "badge-amber",
-  },
-  {
-    id: "opp-4",
-    title: "Educational content gap in your niche",
-    evidence:
-      "Competitors average only 8% educational posts. Your audience wants how-to content.",
-    impact: "Medium",
-    theme: "educational",
-    icon: BookOpen,
-    color: "border-l-blue-400",
-    badgeClass: "badge-blue",
-  },
-  {
-    id: "opp-5",
-    title: "Behind-the-scenes content is underutilized",
-    evidence:
-      "Only 6% of competitor posts show real team/job site content — builds trust 2× faster.",
-    impact: "Medium",
-    theme: "behind-scenes",
-    icon: Eye,
-    color: "border-l-rose-400",
-    badgeClass: "badge-rose",
-  },
-];
-
-const TRENDING_TOPICS = [
-  { keyword: "emergency plumber San Diego", volume: 92, trend: "up" },
-  { keyword: "water heater replacement cost", volume: 88, trend: "up" },
-  { keyword: "frozen pipes winter repair", volume: 84, trend: "up" },
-  { keyword: "drain cleaning near me", volume: 79, trend: "stable" },
-  { keyword: "burst pipe emergency", volume: 76, trend: "up" },
-  { keyword: "plumbing inspection checklist", volume: 68, trend: "up" },
-  { keyword: "sewer line repair cost 2025", volume: 65, trend: "stable" },
-  { keyword: "tankless water heater install", volume: 61, trend: "up" },
-  { keyword: "bathroom remodel plumber", volume: 57, trend: "stable" },
-  { keyword: "low water pressure fix", volume: 52, trend: "down" },
-  { keyword: "water softener San Diego", volume: 48, trend: "up" },
-  { keyword: "24 hour plumber near me", volume: 44, trend: "stable" },
-];
+// Default fallback for any niche without a specific data set
+const DEFAULT_NICHE_DATA = NICHE_CONTENT.roofing;
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -478,8 +870,25 @@ export default function CompetitorIntelligencePage() {
     refreshCompetitorIntel,
     isLoadingCompetitor,
   } = useSocialMedia();
+  const { sessionData } = useDemoFlow();
 
-  const [selectedNiche, setSelectedNiche] = useState<NicheType>("plumbing");
+  // Derive the niche from demo session — fall back to roofing
+  const demoNicheRaw = sessionData.niche || "Roofing";
+  const selectedNiche = demoNicheRaw
+    .toLowerCase()
+    .replace(/\s+/g, "_") as NicheType;
+  const nicheLabel =
+    demoNicheRaw.charAt(0).toUpperCase() +
+    demoNicheRaw.slice(1).replace(/_/g, " ");
+
+  // All content is scoped strictly to the selected niche — no cross-niche data shown
+  const nicheData = NICHE_CONTENT[selectedNiche] ?? DEFAULT_NICHE_DATA;
+  const RICH_COMPETITOR_PROFILES = nicheData.competitors;
+  const WEEKLY_DIGEST = nicheData.weeklyDigest;
+  const CONTENT_THEME_DATA = nicheData.contentThemes;
+  const OUTPERFORMANCE_OPPORTUNITIES = nicheData.opportunities;
+  const TRENDING_TOPICS = nicheData.trendingTopics;
+
   const [refreshStep, setRefreshStep] = useState(-1);
   const [expandedCompetitor, setExpandedCompetitor] = useState<number | null>(
     1,
@@ -546,18 +955,9 @@ export default function CompetitorIntelligencePage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <select
-            value={selectedNiche}
-            onChange={(e) => setSelectedNiche(e.target.value as NicheType)}
-            className="location-selector rounded-lg px-3 py-2 text-sm h-9"
-            data-ocid="competitor_intelligence.niche_select"
-          >
-            {NICHE_OPTIONS.map((n) => (
-              <option key={n.value} value={n.value}>
-                {n.label}
-              </option>
-            ))}
-          </select>
+          <span className="px-3 py-1.5 rounded-lg text-sm font-medium bg-primary/15 border border-primary/30 text-primary">
+            {nicheLabel}
+          </span>
           <Button
             size="sm"
             onClick={() => void handleRefresh()}

@@ -1,605 +1,317 @@
-/**
- * DemoStep0Intake — FULL REWRITE
- *
- * Full-screen intake form — Act 0.
- * - Dark gradient bg (slate-950 → purple-950 → slate-950)
- * - BRF logo/wordmark at top
- * - Business Name + Your Name (required)
- * - 10 niche visual cards (icon + label)
- * - No email field — captured at trial CTA
- * - "Start My Demo" CTA — disabled until name + niche filled
- * - On submit: createSession + startDemo, advances to step 1
- * - 3 trust badges below
- * - Audio preload fires on submit (step 1 mount also preloads per spec,
- *   but we also kick it off here for extra lead time)
- */
-
-import { useCredentials } from "@/context/CredentialsContext";
-import { useDemoFlow } from "@/hooks/useDemoFlow";
-import {
-  NICHE_VOICE_SCRIPTS,
-  buildScriptLines,
-  preloadAllAudio,
-  preloadNicheScripts,
-  unlockAudioContext,
-} from "@/services/audioService";
-import type { DemoNicheId } from "@/types/demo";
-import { useSearch } from "@tanstack/react-router";
-import { ChevronRight, Loader2 } from "lucide-react";
-import { motion } from "motion/react";
+import { useActor } from "@/hooks/useActor";
+import { type SessionData, useDemoFlow } from "@/hooks/useDemoFlow";
 import { useEffect, useState } from "react";
 
-// ─── Niche options ────────────────────────────────────────────────────────────
-
-const NICHE_OPTIONS: {
-  value: DemoNicheId;
-  label: string;
-  icon: string;
-  color: string;
-}[] = [
-  {
-    value: "plumber",
-    label: "Plumbing",
-    icon: "🔧",
-    color: "oklch(0.55 0.16 240)",
-  },
-  {
-    value: "med-spa",
-    label: "Med Spa",
-    icon: "✨",
-    color: "oklch(0.62 0.2 340)",
-  },
-  { value: "hvac", label: "HVAC", icon: "❄️", color: "oklch(0.58 0.18 210)" },
-  {
-    value: "restoration",
-    label: "Restoration",
-    icon: "💧",
-    color: "oklch(0.55 0.18 220)",
-  },
-  {
-    value: "carpet-cleaning",
-    label: "Carpet Cleaning",
-    icon: "🧹",
-    color: "oklch(0.6 0.16 80)",
-  },
-  {
-    value: "roofing",
-    label: "Roofing",
-    icon: "🏠",
-    color: "oklch(0.58 0.14 60)",
-  },
-  {
-    value: "real-estate",
-    label: "Real Estate",
-    icon: "🏡",
-    color: "oklch(0.6 0.18 150)",
-  },
-  {
-    value: "mortgage",
-    label: "Mortgage",
-    icon: "🏦",
-    color: "oklch(0.58 0.2 290)",
-  },
-  {
-    value: "chiropractor",
-    label: "Chiropractic",
-    icon: "⚕️",
-    color: "oklch(0.6 0.18 180)",
-  },
-  { value: "dental", label: "Dental", icon: "🦷", color: "oklch(0.62 0.2 15)" },
+const NICHES = [
+  "Plumbing",
+  "HVAC",
+  "Roofing",
+  "Medical/Dental",
+  "Med Spa",
+  "Real Estate",
+  "Mortgage",
+  "Restoration",
+  "Landscaping",
+  "General Contractor",
 ];
 
-// ─── Trust badges ─────────────────────────────────────────────────────────────
-
-const TRUST_BADGES = [
-  { icon: "🏆", label: "10,000+ Local Businesses" },
-  { icon: "🤖", label: "AI-Powered Platform" },
-  { icon: "🔒", label: "No Credit Card Required" },
-];
-
-// ─── Component ────────────────────────────────────────────────────────────────
-
-const SESSION_KEY = "brf_demo_session";
-
-function readSession(): {
-  businessName?: string;
-  yourName?: string;
-  niche?: DemoNicheId;
-  city?: string;
-} {
-  try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {
-    /* ignore */
-  }
-  return {};
+interface Props {
+  onNext: () => void;
 }
 
-export default function DemoStep0Intake() {
-  const { startDemo, createSession } = useDemoFlow();
-  const { creds } = useCredentials();
-  const search = useSearch({ from: "/demo" }) as { niche?: string };
+export default function DemoStep0Intake({ onNext }: Props) {
+  const { setSessionData } = useDemoFlow();
+  const { actor } = useActor();
+  const [isLoading, setIsLoading] = useState(false);
 
-  // Pre-fill from session or URL param
-  const saved = readSession();
-  const urlNiche = search.niche as DemoNicheId | undefined;
-
-  const [businessName, setBusinessName] = useState(saved.businessName ?? "");
-  const [yourName, setYourName] = useState(saved.yourName ?? "");
-  const [niche, setNiche] = useState<DemoNicheId | "">(
-    saved.niche ?? urlNiche ?? "",
-  );
-  const [city, setCity] = useState(saved.city ?? "");
-  const [submitting, setSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{
-    businessName?: string;
-    city?: string;
-    niche?: string;
-  }>({});
-
-  // If session already has all required data, skip intake and go directly to step 1
-  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional mount-only effect
-  useEffect(() => {
-    if (
-      saved.businessName &&
-      saved.niche &&
-      saved.city &&
-      // Only skip if URL niche param is absent OR matches saved session niche
-      (!search.niche || search.niche === saved.niche)
-    ) {
-      // Restore session into demo flow context and advance
-      unlockAudioContext();
-      void preloadNicheScripts(
-        saved.niche,
-        saved.businessName,
-        creds?.elevenLabsKey ?? "",
-        creds?.openaiKey ?? "",
-      );
-      void createSession(saved.businessName, saved.niche);
-      startDemo({
-        businessName: saved.businessName,
-        niche: saved.niche,
-        city: saved.city ?? "",
-        phone: "",
-        firstName: saved.yourName,
-      });
+  // Read niche / skip context from URL and router state
+  const urlNiche =
+    typeof window !== "undefined"
+      ? (new URLSearchParams(window.location.search).get("niche") ?? "")
+      : "";
+  const routerState = (() => {
+    try {
+      return (window.history?.state?.usr ?? {}) as Record<
+        string,
+        string | boolean
+      >;
+    } catch {
+      return {} as Record<string, string | boolean>;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  })();
+  const skipNichePicker =
+    !!routerState.skipNichePicker ||
+    urlNiche.toLowerCase() === "roofing" ||
+    String(routerState.niche ?? "").toLowerCase() === "roofing";
+  const prefilledNiche = skipNichePicker
+    ? "Roofing"
+    : urlNiche || String(routerState.niche ?? "") || "";
+
+  const [form, setForm] = useState({
+    firstName: String(routerState.firstName ?? ""),
+    businessName: String(routerState.businessName ?? ""),
+    city: String(routerState.city ?? ""),
+    niche: prefilledNiche,
+    phone: String(routerState.phone ?? ""),
+    email: String(routerState.email ?? ""),
+    website: String(routerState.website ?? ""),
+  });
+
+  const set = (field: string, value: string) =>
+    setForm((f) => ({ ...f, [field]: value }));
 
   const canSubmit =
-    businessName.trim().length > 0 &&
-    yourName.trim().length > 0 &&
-    city.trim().length > 0 &&
-    niche !== "";
+    form.firstName.trim() !== "" &&
+    form.businessName.trim() !== "" &&
+    form.city.trim() !== "" &&
+    (skipNichePicker || form.niche !== "") &&
+    form.phone.trim() !== "" &&
+    form.email.includes("@") &&
+    form.website.trim() !== "";
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors: { businessName?: string; city?: string; niche?: string } =
-      {};
-    if (!businessName.trim())
-      newErrors.businessName = "Business name is required";
-    if (!city.trim())
-      newErrors.city = "City is required — we personalize your demo with it";
-    if (!niche) newErrors.niche = "Please select your industry";
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setSubmitting(true);
-    const biz = businessName.trim();
-    const selectedNiche = niche as DemoNicheId;
-    const selectedCity = city.trim();
-
-    // CRITICAL: unlockAudioContext() SYNCHRONOUSLY on user gesture
-    unlockAudioContext();
-
-    // Persist to sessionStorage so refresh doesn't lose intake
+  const submitForm = async () => {
+    setIsLoading(true);
+    let sessionId: string | null = null;
     try {
-      sessionStorage.setItem(
-        SESSION_KEY,
-        JSON.stringify({
-          businessName: biz,
-          yourName: yourName.trim(),
-          niche: selectedNiche,
-          city: selectedCity,
-        }),
-      );
-    } catch {
-      /* ignore */
+      if (actor) {
+        sessionId = await actor.createDemoSessionWithCity(
+          form.businessName,
+          form.niche || "Roofing",
+          form.city,
+        );
+      }
+    } catch (error) {
+      console.error("Demo intake error:", error);
     }
+    try {
+      if (actor && sessionId) {
+        await actor.activateTrial(
+          sessionId,
+          form.firstName,
+          form.businessName,
+          form.city,
+          form.niche || "Roofing",
+          form.phone,
+          form.email,
+          form.website || "",
+        );
+      }
+    } catch (error) {
+      console.error("activateTrial error:", error);
+    }
+    const data: SessionData = {
+      ...form,
+      niche: form.niche || "Roofing",
+      sessionId,
+    };
+    setSessionData(data);
+    setIsLoading(false);
+    onNext();
+  };
 
-    // Fire-and-forget audio preload
-    void preloadNicheScripts(
-      selectedNiche,
-      biz,
-      creds?.elevenLabsKey ?? "",
-      creds?.openaiKey ?? "",
-    );
+  // Auto-advance if all fields are pre-filled from roofing landing page
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only check
+  useEffect(() => {
+    if (
+      skipNichePicker &&
+      form.firstName.trim() !== "" &&
+      form.businessName.trim() !== "" &&
+      form.city.trim() !== "" &&
+      form.phone.trim() !== "" &&
+      form.email.includes("@")
+    ) {
+      void submitForm();
+    }
+  }, []);
 
-    // Legacy blob preload (secondary fallback path)
-    const nicheScript =
-      NICHE_VOICE_SCRIPTS[selectedNiche] ?? NICHE_VOICE_SCRIPTS.plumber;
-    const lines = buildScriptLines(nicheScript, biz);
-    void preloadAllAudio(lines, nicheScript.voiceId, {
-      elevenLabsKey: creds?.elevenLabsKey ?? "",
-      openaiKey: creds?.openaiKey ?? "",
-    });
-
-    // Create session + start demo
-    void createSession(biz, selectedNiche);
-
-    setTimeout(() => {
-      setSubmitting(false);
-      startDemo({
-        businessName: biz,
-        niche: selectedNiche,
-        city: selectedCity,
-        phone: "",
-        firstName: yourName.trim(),
-      });
-    }, 600);
+  const handleSubmit = async () => {
+    if (!canSubmit) return;
+    await submitForm();
   };
 
   return (
-    <div
-      className="min-h-screen w-full flex flex-col items-center justify-start px-4 py-8 relative overflow-y-auto"
-      style={{
-        background:
-          "linear-gradient(160deg, oklch(0.06 0.012 280) 0%, oklch(0.09 0.018 292) 45%, oklch(0.06 0.01 268) 100%)",
-      }}
-      data-ocid="demo.intake.section"
-    >
-      {/* Ambient glow */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(ellipse 80% 45% at 50% -5%, oklch(0.42 0.18 290 / 22%) 0%, transparent 65%)",
-        }}
-      />
-
-      {/* BRF Logo / Wordmark */}
-      <motion.div
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative z-10 flex items-center gap-3 mb-8 mt-2"
-        data-ocid="demo.intake.logo"
-      >
-        <div
-          className="w-10 h-10 rounded-xl flex items-center justify-center text-xs font-black text-white"
-          style={{
-            background:
-              "linear-gradient(135deg, oklch(0.58 0.22 290), oklch(0.50 0.24 300))",
-            boxShadow: "0 0 20px oklch(0.58 0.22 290 / 40%)",
-          }}
-        >
-          BRF
-        </div>
-        <span
-          className="text-sm font-bold tracking-wide"
-          style={{ color: "oklch(0.72 0.1 290)" }}
-        >
-          BOOKED · RANKED · FUNDABLE
-        </span>
-      </motion.div>
-
-      {/* Headline */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.08 }}
-        className="relative z-10 text-center mb-8 max-w-lg"
-      >
-        <h1
-          className="font-black leading-tight mb-3"
-          style={{ fontSize: "clamp(1.75rem, 5vw, 2.8rem)" }}
-        >
-          <span className="text-white">See What AI Does</span>
-          <br />
-          <span
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.78 0.18 290) 0%, oklch(0.72 0.18 175) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            For Your Business
-          </span>
-        </h1>
-        <p
-          className="text-sm sm:text-base leading-relaxed max-w-sm mx-auto"
-          style={{ color: "oklch(0.62 0.02 280)" }}
-        >
-          Enter your business below — everything in this demo will be
-          personalized for you
-        </p>
-      </motion.div>
-
-      {/* Form card */}
-      <motion.form
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.18 }}
-        onSubmit={handleSubmit}
-        className="relative z-10 w-full max-w-md rounded-2xl p-6 sm:p-8 space-y-5"
-        style={{
-          background: "oklch(0.11 0.014 282)",
-          border: "1px solid oklch(1 0 0 / 9%)",
-          boxShadow: "0 24px 80px oklch(0 0 0 / 50%)",
-        }}
-        data-ocid="demo.intake.form"
-        noValidate
-      >
-        {/* Business Name */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="demo-biz"
-            className="block text-xs font-bold uppercase tracking-widest"
-            style={{ color: "oklch(0.62 0.02 280)" }}
-          >
-            Business Name{" "}
-            <span style={{ color: "oklch(0.65 0.22 25)" }}>*</span>
-          </label>
-          <input
-            id="demo-biz"
-            data-ocid="demo.intake.business_name.input"
-            type="text"
-            required
-            autoComplete="organization"
-            placeholder="e.g. Metro Plumbing Pros"
-            value={businessName}
-            onChange={(e) => {
-              setBusinessName(e.target.value);
-              if (errors.businessName)
-                setErrors((p) => ({ ...p, businessName: undefined }));
-            }}
-            className="w-full rounded-xl px-4 py-3 text-sm font-medium text-white placeholder:text-white/25 outline-none transition-all"
-            style={{
-              background: "oklch(1 0 0 / 5%)",
-              border: errors.businessName
-                ? "1px solid oklch(0.58 0.22 25 / 70%)"
-                : "1px solid oklch(1 0 0 / 12%)",
-            }}
-          />
-          {errors.businessName && (
-            <p
-              className="text-xs"
-              style={{ color: "oklch(0.65 0.22 25)" }}
-              data-ocid="demo.intake.business_name.field_error"
-            >
-              {errors.businessName}
-            </p>
-          )}
+    <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4 py-12">
+      <div className="w-full max-w-lg">
+        <div className="text-center mb-8">
+          <div className="inline-block px-3 py-1 rounded-full bg-purple-900/40 border border-purple-700/40 text-purple-300 text-xs font-semibold uppercase tracking-widest mb-4">
+            Free 7-Day Demo
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">
+            See BRF Work for Your Business
+          </h1>
+          <p className="text-gray-400 text-sm">
+            Personalized in 60 seconds. No credit card needed.
+          </p>
         </div>
 
-        {/* Your Name */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="demo-name"
-            className="block text-xs font-bold uppercase tracking-widest"
-            style={{ color: "oklch(0.62 0.02 280)" }}
-          >
-            Your Name <span style={{ color: "oklch(0.65 0.22 25)" }}>*</span>
-          </label>
-          <input
-            id="demo-name"
-            data-ocid="demo.intake.your_name.input"
-            type="text"
-            required
-            autoComplete="given-name"
-            placeholder="e.g. Mike"
-            value={yourName}
-            onChange={(e) => setYourName(e.target.value)}
-            className="w-full rounded-xl px-4 py-3 text-sm font-medium text-white placeholder:text-white/25 outline-none transition-all"
-            style={{
-              background: "oklch(1 0 0 / 5%)",
-              border: "1px solid oklch(1 0 0 / 12%)",
-            }}
-          />
-        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="demo-firstName"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                First Name
+              </label>
+              <input
+                id="demo-firstName"
+                data-ocid="demo.first_name.input"
+                type="text"
+                placeholder="John"
+                value={form.firstName}
+                onChange={(e) => set("firstName", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="demo-businessName"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                Business Name
+              </label>
+              <input
+                id="demo-businessName"
+                data-ocid="demo.business_name.input"
+                type="text"
+                placeholder="Smith Plumbing"
+                value={form.businessName}
+                onChange={(e) => set("businessName", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+          </div>
 
-        {/* City */}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="demo-city"
-            className="block text-xs font-bold uppercase tracking-widest"
-            style={{ color: "oklch(0.62 0.02 280)" }}
-          >
-            City / Market{" "}
-            <span style={{ color: "oklch(0.65 0.22 25)" }}>*</span>
-          </label>
-          <input
-            id="demo-city"
-            data-ocid="demo.intake.city.input"
-            type="text"
-            required
-            autoComplete="address-level2"
-            placeholder="e.g. Dallas, TX"
-            value={city}
-            onChange={(e) => {
-              setCity(e.target.value);
-              if (errors.city) setErrors((p) => ({ ...p, city: undefined }));
-            }}
-            className="w-full rounded-xl px-4 py-3 text-sm font-medium text-white placeholder:text-white/25 outline-none transition-all"
-            style={{
-              background: "oklch(1 0 0 / 5%)",
-              border: errors.city
-                ? "1px solid oklch(0.58 0.22 25 / 70%)"
-                : "1px solid oklch(1 0 0 / 12%)",
-            }}
-          />
-          {errors.city && (
-            <p
-              className="text-xs"
-              style={{ color: "oklch(0.65 0.22 25)" }}
-              data-ocid="demo.intake.city.field_error"
-            >
-              {errors.city}
-            </p>
-          )}
-        </div>
-
-        {/* Niche selector */}
-        <fieldset className="space-y-2">
-          <legend
-            className="block text-xs font-bold uppercase tracking-widest"
-            style={{ color: "oklch(0.62 0.02 280)" }}
-          >
-            Your Industry{" "}
-            <span style={{ color: "oklch(0.65 0.22 25)" }}>*</span>
-          </legend>
-          <div
-            className="grid grid-cols-2 gap-2"
-            data-ocid="demo.intake.niche.select"
-          >
-            {NICHE_OPTIONS.map((opt) => {
-              const selected = niche === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  aria-pressed={selected}
-                  data-ocid={`demo.intake.niche.${opt.value}`}
-                  onClick={() => {
-                    setNiche(opt.value);
-                    if (errors.niche)
-                      setErrors((p) => ({ ...p, niche: undefined }));
-                  }}
-                  className="flex items-center gap-2.5 px-3 py-3 rounded-xl text-xs font-semibold border transition-all text-left active:scale-95"
-                  style={
-                    selected
-                      ? {
-                          background: "oklch(0.58 0.22 290 / 18%)",
-                          borderColor: "oklch(0.58 0.22 290 / 55%)",
-                          color: "oklch(0.86 0.16 290)",
-                          boxShadow: "0 0 12px oklch(0.58 0.22 290 / 15%)",
-                        }
-                      : {
-                          background: "oklch(1 0 0 / 4%)",
-                          borderColor: "oklch(1 0 0 / 9%)",
-                          color: "oklch(0.62 0.02 280)",
-                        }
-                  }
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="demo-city"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                City
+              </label>
+              <input
+                id="demo-city"
+                data-ocid="demo.city.input"
+                type="text"
+                placeholder="Los Angeles"
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
+            </div>
+            {skipNichePicker ? (
+              <div>
+                <p className="block text-xs text-gray-400 mb-1 font-medium">
+                  Business Type
+                </p>
+                <div
+                  data-ocid="demo.niche.locked_badge"
+                  className="w-full bg-gray-900 border border-emerald-700/50 rounded-xl px-4 py-3 text-emerald-300 text-sm flex items-center gap-2"
                 >
-                  <span className="text-base leading-none shrink-0">
-                    {opt.icon}
-                  </span>
-                  <span className="truncate leading-tight">{opt.label}</span>
-                </button>
-              );
-            })}
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+                  Roofing Company
+                </div>
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="demo-niche"
+                  className="block text-xs text-gray-400 mb-1 font-medium"
+                >
+                  Business Type
+                </label>
+                <select
+                  id="demo-niche"
+                  data-ocid="demo.niche.select"
+                  value={form.niche}
+                  onChange={(e) => set("niche", e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                >
+                  <option value="" className="bg-gray-900">
+                    Select type...
+                  </option>
+                  {NICHES.map((n) => (
+                    <option key={n} value={n} className="bg-gray-900">
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
-          {errors.niche && (
-            <p
-              className="text-xs"
-              style={{ color: "oklch(0.65 0.22 25)" }}
-              data-ocid="demo.intake.niche.field_error"
+
+          <div>
+            <label
+              htmlFor="demo-phone"
+              className="block text-xs text-gray-400 mb-1 font-medium"
             >
-              {errors.niche}
-            </p>
-          )}
-        </fieldset>
-
-        {/* Submit */}
-        <button
-          type="submit"
-          data-ocid="demo.intake.submit_button"
-          disabled={submitting || !canSubmit}
-          className="w-full flex items-center justify-center gap-2 py-4 rounded-xl font-bold text-sm text-white transition-all active:scale-[0.98]"
-          style={{
-            background: canSubmit
-              ? "linear-gradient(135deg, oklch(0.62 0.18 155), oklch(0.52 0.16 160))"
-              : "oklch(1 0 0 / 10%)",
-            boxShadow: canSubmit
-              ? "0 8px 28px oklch(0.62 0.18 155 / 38%)"
-              : "none",
-            color: canSubmit ? "white" : "oklch(0.45 0.02 280)",
-            cursor: canSubmit ? "pointer" : "not-allowed",
-          }}
-          aria-disabled={!canSubmit}
-        >
-          {submitting ? (
-            <>
-              <Loader2 size={16} className="animate-spin" />
-              Building your demo…
-            </>
-          ) : (
-            <>
-              Start My Demo
-              <ChevronRight size={16} />
-            </>
-          )}
-        </button>
-
-        <p
-          className="text-center text-xs"
-          style={{ color: "oklch(0.42 0.02 280)" }}
-        >
-          Personalized in seconds · No credit card
-        </p>
-      </motion.form>
-
-      {/* Trust badges */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.5 }}
-        className="relative z-10 mt-6 flex flex-wrap justify-center gap-3"
-        aria-label="Trust indicators"
-      >
-        {TRUST_BADGES.map((badge) => (
-          <div
-            key={badge.label}
-            className="flex items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold"
-            style={{
-              background: "oklch(0.14 0.014 280)",
-              border: "1px solid oklch(1 0 0 / 8%)",
-              color: "oklch(0.68 0.04 280)",
-            }}
-          >
-            <span>{badge.icon}</span>
-            {badge.label}
-          </div>
-        ))}
-      </motion.div>
-
-      {/* Live activity ticker */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="relative z-10 mt-5 flex flex-wrap justify-center gap-2"
-      >
-        {[
-          "Plumbing · Dallas",
-          "Med Spa · Miami",
-          "HVAC · Phoenix",
-          "Dental · Austin",
-        ].map((t) => (
-          <div
-            key={t}
-            className="flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px]"
-            style={{
-              background: "oklch(0.12 0.012 280)",
-              border: "1px solid oklch(1 0 0 / 6%)",
-              color: "oklch(0.55 0.02 280)",
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full animate-pulse"
-              style={{ background: "oklch(0.62 0.18 155)" }}
+              Phone Number
+            </label>
+            <input
+              id="demo-phone"
+              data-ocid="demo.phone.input"
+              type="tel"
+              placeholder="(555) 123-4567"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
             />
-            {t} just activated
           </div>
-        ))}
-      </motion.div>
+
+          <div>
+            <label
+              htmlFor="demo-email"
+              className="block text-xs text-gray-400 mb-1 font-medium"
+            >
+              Email Address
+            </label>
+            <input
+              id="demo-email"
+              data-ocid="demo.email.input"
+              type="email"
+              placeholder="john@smithplumbing.com"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor="demo-website"
+              className="block text-xs text-gray-400 mb-1 font-medium"
+            >
+              Website (or social media page)
+            </label>
+            <input
+              id="demo-website"
+              data-ocid="demo.website.input"
+              type="text"
+              placeholder="smithplumbing.com"
+              value={form.website}
+              onChange={(e) => set("website", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+            />
+          </div>
+
+          <button
+            data-ocid="demo.start_demo.submit_button"
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit || isLoading}
+            className="w-full py-4 px-8 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25 mt-2"
+          >
+            {isLoading
+              ? "Setting up your demo..."
+              : "Start My Free Demo \u2192"}
+          </button>
+
+          <p className="text-center text-xs text-gray-500">
+            No credit card. No commitment. Cancel anytime.
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

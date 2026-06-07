@@ -42,6 +42,7 @@ export default function ActTransitionCard({
           border: "1px solid oklch(0.58 0.22 290 / 35%)",
           color: "oklch(0.78 0.16 290)",
         }}
+        data-ocid="demo.act_transition.label"
       >
         Coming up: {actLabel}
       </div>

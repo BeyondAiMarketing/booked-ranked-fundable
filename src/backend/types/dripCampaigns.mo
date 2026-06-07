@@ -43,6 +43,13 @@ module {
     status         : Text;
     errorMessage   : ?Text;
     retryCount     : Nat;
+    // ---- Email tracking fields ----
+    openedAt       : ?Int;
+    clickedAt      : ?Int;
+    openCount      : Nat;
+    clickCount     : Nat;
+    /// Unique token used for open-pixel and click-redirect tracking
+    trackingToken  : Text;
   };
 
   /// Per-lead bounce tracking record for a drip queue.

@@ -405,7 +405,9 @@ function AILeadFinderTab() {
 
   const hasNoKeys = !creds?.claudeKey?.trim() && !creds?.openaiKey?.trim();
   const hasNoDataSource =
-    !creds?.serpApiKey?.trim() && !creds?.searxngUrl?.trim();
+    !creds?.serpApiKey?.trim() &&
+    !creds?.serpApiDevKey?.trim() &&
+    !creds?.searxngUrl?.trim();
 
   async function handleQuickCheck() {
     setQuickCheckState("checking");
@@ -547,7 +549,7 @@ function AILeadFinderTab() {
         claudeKey: creds?.claudeKey ?? undefined,
         openaiKey: creds?.openaiKey ?? undefined,
         searxngUrl: creds?.searxngUrl ?? undefined,
-        serpApiKey: creds?.serpApiKey ?? undefined,
+        serpApiKey: creds?.serpApiDevKey || creds?.serpApiKey || undefined,
         onProgress: (stage, pct) => {
           if (pct <= 50) {
             setClaudeProgress((p) => ({
@@ -742,7 +744,7 @@ function AILeadFinderTab() {
                 className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-900/40 border border-amber-700/50 text-amber-300 hover:bg-amber-900/60 transition-colors mt-1"
                 data-ocid="ai-lead-finder.load-demo-button"
               >
-                Load Demo Data instead
+                Load Sample Demo Data
               </button>
             </div>
           </div>
@@ -963,16 +965,25 @@ function AILeadFinderTab() {
         <div className="space-y-4" data-ocid="ai-lead-finder.results-section">
           {/* Fallback notice when real data sources were unavailable */}
           {results.usingFallback && (
-            <div className="flex items-start gap-2 bg-amber-900/20 border border-amber-700/40 rounded-lg p-3">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-              <p className="text-amber-300 text-xs leading-relaxed">
-                Demo leads shown — SerpApi and SearXNG are not configured. Add
-                your SerpAPI key or SearXNG URL in{" "}
-                <a href="/go-live" className="underline hover:text-amber-200">
-                  Go Live
-                </a>{" "}
-                to fetch real business data.
-              </p>
+            <div className="flex items-start gap-3 bg-yellow-500/15 border-2 border-yellow-500/50 rounded-xl p-4">
+              <AlertTriangle className="w-5 h-5 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-yellow-300 text-sm font-semibold leading-snug">
+                  ⚠️ Showing sample demo data — not real business leads.
+                </p>
+                <p className="text-yellow-400/80 text-xs mt-1 leading-relaxed">
+                  Use the{" "}
+                  <strong className="text-yellow-300">Search tab above</strong>{" "}
+                  to find real leads. Add your SerpApi key or SearXNG URL in{" "}
+                  <a
+                    href="/go-live"
+                    className="underline hover:text-yellow-200"
+                  >
+                    Go Live
+                  </a>{" "}
+                  to unlock live business data.
+                </p>
+              </div>
             </div>
           )}
           {/* Summary banner */}

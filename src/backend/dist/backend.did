@@ -118,6 +118,18 @@ type WebsiteAgentScore =
    trustAuthority: nat;
    trustSignals: nat;
  };
+type WebhookEvent = 
+ record {
+   errorMsg: opt text;
+   eventType: text;
+   payload: text;
+   provider: text;
+   receivedAt: int;
+   status: variant {
+             failed;
+             ok;
+           };
+ };
 type WarmSequenceEmailSchedule = 
  record {
    body: text;
@@ -165,13 +177,6 @@ type VoiceAgentConfig =
    twilioNumber: text;
    vapiAgentId: text;
  };
-type VerificationStatus = 
- variant {
-   Invalid;
-   Pending;
-   Unverified;
-   Verified;
- };
 type VapiProvisioningStatus = 
  record {
    assistantId: opt text;
@@ -193,6 +198,7 @@ type VapiCallLog =
    endedAt: opt int;
    id: text;
    recordedAt: int;
+   recordingUrl: opt text;
    status: text;
    tenantId: text;
    transcript: text;
@@ -217,12 +223,73 @@ type UserProfile =
    role: text;
    tenantId: TenantId;
  };
-type TrialStatus = 
+type TriggerRuleUpdate = 
+ record {
+   action: opt text;
+   actionType: opt text;
+   condition: opt text;
+   conditionType: opt text;
+   isEnabled: opt bool;
+   name: opt text;
+ };
+type TriggerRuleInput = 
+ record {
+   action: text;
+   actionType: text;
+   condition: text;
+   conditionType: text;
+   createdAt: int;
+   isEnabled: bool;
+   name: text;
+   ruleId: text;
+ };
+type TriggerRule = 
+ record {
+   action: text;
+   actionType: text;
+   condition: text;
+   conditionType: text;
+   createdAt: int;
+   isEnabled: bool;
+   name: text;
+   ruleId: text;
+ };
+type TrialStatus__1 = 
  variant {
    Active;
    Converted;
    Expired;
    NotStarted;
+ };
+type TrialStatus = 
+ variant {
+   Active;
+   Converted;
+   Expired;
+ };
+type TrialProvisionRequest = 
+ record {
+   businessName: text;
+   city: text;
+   email: text;
+   leadId: text;
+   niche: text;
+   phone: opt text;
+   website: opt text;
+ };
+type TrialAccount = 
+ record {
+   businessName: text;
+   city: text;
+   email: text;
+   expiresAt: int;
+   id: text;
+   leadId: text;
+   niche: text;
+   phone: opt text;
+   provisionedAt: int;
+   status: TrialStatus;
+   website: opt text;
  };
 type TransformationOutput = 
  record {
@@ -235,6 +302,13 @@ type TransformationInput =
    context: blob;
    response: http_request_result;
  };
+type ToolkitToggle = 
+ record {
+   appliedAt: int;
+   enabled: bool;
+   tierId: text;
+   toolkitName: text;
+ };
 type ToolDefinition = 
  record {
    category: text;
@@ -246,6 +320,22 @@ type ToolDefinition =
    requiresApproval: bool;
    schema: text;
    tenantScoped: bool;
+ };
+type ToolActionResponse = 
+ record {
+   errorMessage: opt text;
+   result: text;
+   success: bool;
+ };
+type ToolActionRequest = 
+ record {
+   accountId: text;
+   action: text;
+   params: vec record {
+                 text;
+                 text;
+               };
+   toolId: text;
  };
 type Time = int;
 type TenantId = text;
@@ -261,6 +351,14 @@ type SubscriberImportResult =
    errors: vec text;
    imported: nat;
    skipped: nat;
+ };
+type SourceQualityData = 
+ record {
+   avg_quality_score: float64;
+   paid_converted: nat;
+   source: text;
+   total_leads: nat;
+   trials_converted: nat;
  };
 type SocialROIMetrics = 
  record {
@@ -701,6 +799,16 @@ type RunStatus =
    queued;
    running;
  };
+type RoofingLead = 
+ record {
+   businessType: text;
+   city: text;
+   companyName: text;
+   email: text;
+   phone: opt text;
+   state: text;
+   website: opt text;
+ };
 type RobotsCheckResult = 
  record {
    allowed: bool;
@@ -829,6 +937,23 @@ type ReplyInboxItem =
    replyBody: text;
    status: text;
  };
+type ReplyClassification = 
+ variant {
+   HotLead;
+   Neutral;
+   Objection;
+   PositiveSignal;
+   Unsubscribe;
+ };
+type ReplyAnalysis = 
+ record {
+   analyzedAt: int;
+   classification: ReplyClassification;
+   leadId: text;
+   replyId: text;
+   suggestedResponse: text;
+   summary: text;
+ };
 type ReadinessScore = 
  record {
    autoBrowserConfigured: bool;
@@ -881,6 +1006,22 @@ type PlatformFormatting =
    hashtags: vec text;
    mediaUrl: opt text;
  };
+type PipelineLead = 
+ record {
+   activityLog: vec PipelineActivityEntry;
+   autoTriggerCancelled: bool;
+   autoTriggerFiredAt: opt int;
+   autoTriggerScheduledAt: opt int;
+   businessName: text;
+   id: text;
+   laneMoveTimestamp: int;
+   laneStatus: text;
+   leadId: text;
+   niche: text;
+   ownerEmail: text;
+   source: text;
+   tenantId: text;
+ };
 type PipelineFunnelStats = 
  record {
    auditCompleted: nat;
@@ -891,6 +1032,12 @@ type PipelineFunnelStats =
    leadsSourced: nat;
    niche: text;
    warmSequenceActive: nat;
+ };
+type PipelineActivityEntry = 
+ record {
+   action: text;
+   details: text;
+   timestamp: int;
  };
 type PaymentMethod = 
  record {
@@ -990,6 +1137,27 @@ type PaidAdsAdCopy =
    testResult: text;
    "variant": text;
  };
+type OutreachSequence = 
+ record {
+   emails: vec text;
+   framework: text;
+   generatedAt: int;
+   id: text;
+   leadId: text;
+   niche: text;
+   smsMessages: vec text;
+ };
+type OutreachQueuedAction = 
+ record {
+   actionType: text;
+   autoFireAt: int;
+   emailBody: opt text;
+   emailSubject: opt text;
+   id: text;
+   leadId: text;
+   scheduledAt: int;
+   status: text;
+ };
 type OutreachEvent = 
  record {
    eventType: text;
@@ -1012,6 +1180,49 @@ type OutputFormat =
    both;
    html;
    "text";
+ };
+type OperatorStats = 
+ record {
+   api_health_summary: text;
+   leads_today: nat;
+   outreach_sent_today: nat;
+   trials_this_week: nat;
+ };
+type OperatorReportData = 
+ record {
+   generated_at: Time;
+   report_type: text;
+   sections: vec record {
+                   text;
+                   text;
+                 };
+ };
+type OperatorCommandResult = 
+ record {
+   affected_count: nat;
+   affected_niche: text;
+   intent: text;
+   recommended_actions: vec text;
+   requires_confirmation: bool;
+ };
+type OperatorChatMessage = 
+ record {
+   commandType: opt text;
+   content: text;
+   createdAt: Time;
+   id: text;
+   role: text;
+ };
+type OAuthInitResponse = 
+ record {
+   authUrl: text;
+   state: text;
+ };
+type OAuthInitRequest = 
+ record {
+   accountId: text;
+   redirectUri: text;
+   toolId: text;
  };
 type NotificationRecord = 
  record {
@@ -1036,6 +1247,13 @@ type NicheScript =
    lines: vec ScriptLine;
    nicheId: text;
    voiceName: text;
+ };
+type NicheConversionData = 
+ record {
+   demos_started: nat;
+   niche: text;
+   paid_customers: nat;
+   trials_activated: nat;
  };
 type NewsletterSubscriber = 
  record {
@@ -1089,6 +1307,12 @@ type NewsletterCampaign =
    tags: vec text;
    tenantId: text;
  };
+type MessageRole = 
+ variant {
+   Assistant;
+   System;
+   User;
+ };
 type MemoryMode = 
  variant {
    conversation_only;
@@ -1096,10 +1320,37 @@ type MemoryMode =
    with_notes;
    with_summary;
  };
+type MasterAgentSession = 
+ record {
+   lastActiveAt: int;
+   messages: vec MasterAgentMessage;
+   platformContext: opt text;
+   sessionId: text;
+   startedAt: int;
+ };
+type MasterAgentMessage = 
+ record {
+   content: text;
+   role: MessageRole;
+   timestamp: int;
+ };
+type MasterAgentContextSnapshot = 
+ record {
+   activeTrials: nat;
+   recentActivity: vec text;
+   timestamp: int;
+   totalAccounts: nat;
+   totalCampaigns: nat;
+   totalLeads: nat;
+ };
 type MaskedCredentials = 
  record {
+   abacusApiKey: text;
    autoBrowserUrl: text;
    claudeKey: text;
+   composioApiKey: text;
+   composioWebhookSecret: text;
+   dograhApiKey: text;
    elevenLabsKey: text;
    elevenLabsVoiceId: text;
    emailSmtpHost: text;
@@ -1108,6 +1359,7 @@ type MaskedCredentials =
    emailSmtpUser: text;
    facebookAppId: text;
    facebookAppSecret: text;
+   geminiApiKey: text;
    googleClientId: text;
    googleClientSecret: text;
    hunterApiKey: text;
@@ -1116,19 +1368,27 @@ type MaskedCredentials =
    listmonkUser: text;
    litellmKey: text;
    litellmUrl: text;
+   n8nInstanceUrl: text;
    neverBounceKey: text;
+   nvidiaApiKey: text;
+   nvidiaNimApiKey: text;
    ollamaUrl: text;
+   openRouterApiKey: text;
    openaiKey: text;
    perplexityApiKey: text;
    searxngUrl: text;
+   sendgridInboundParseDomain: text;
    sendgridKey: text;
+   serpApiDevKey: text;
    serpApiKey: text;
    stripeKey: text;
    stripeWebhookSecret: text;
+   tinyFishKey: text;
    twilioAuth: text;
    twilioNumber: text;
    twilioSid: text;
    vapiKey: text;
+   vapiWebhookSecret: text;
    yelpApiKey: text;
  };
 type MarketingFramework = 
@@ -1163,14 +1423,31 @@ type LeadExtractionResult =
    leads: vec ScrapedLead;
    sourceUrl: text;
  };
-type LeadEnrichment = 
+type LeadCampaignStatus = 
  record {
-   canReceiveOutreach: bool;
-   emailVerificationStatus: VerificationStatus;
-   emailVerifiedAt: opt int;
-   leadId: text;
-   phoneVerificationStatus: VerificationStatus;
-   phoneVerifiedAt: opt int;
+   businessType: text;
+   city: text;
+   companyName: text;
+   currentStep: nat;
+   enrolledAt: int;
+   lastOpenedAt: opt int;
+   lastSentAt: opt int;
+   leadEmail: text;
+   phone: opt text;
+   state: text;
+   status: CampaignLeadStatus;
+   website: opt text;
+ };
+type LeadCampaignDetails = 
+ record {
+   auditScore: opt nat;
+   currentEmailDay: nat;
+   deadZones: opt nat;
+   lastSentAt: opt int;
+   missingServices: opt text;
+   templateVersionUsed: opt nat;
+   topCompetitor: opt text;
+   usedFallback: opt bool;
  };
 type LeadAuditResult = 
  record {
@@ -1188,6 +1465,9 @@ type LeadAuditResult =
    jobId: text;
    kitPageSlug: opt text;
    niche: text;
+   outreachPriority: text;
+   overallScore: nat;
+   painPointAngles: vec text;
    pushedAt: opt int;
    pushedToCrm: bool;
    seoMetrics: text;
@@ -1231,6 +1511,23 @@ type LeadAttributionRecord =
    leadId: text;
    tenantId: text;
  };
+type LeadAIScore = 
+ record {
+   fitReason: text;
+   leadId: text;
+   score: nat;
+   scoredAt: int;
+   signals: vec text;
+ };
+type LeadAIEnrichment = 
+ record {
+   companyIntel: text;
+   decisionMakerInfo: text;
+   enrichedAt: int;
+   leadId: text;
+   model: text;
+   webPresence: text;
+ };
 type Lead = 
  record {
    agentSubscriptions: vec text;
@@ -1253,7 +1550,10 @@ type LLMLeadSearchResult =
    leads: vec GeneratedLead;
    openAICount: nat;
    searchedAt: int;
+   serpApiCount: nat;
    serpApiUsed: bool;
+   tinyFishCount: nat;
+   totalFound: nat;
  };
 type Invoice = 
  record {
@@ -1266,10 +1566,31 @@ type Invoice =
    status: text;
    tenantId: TenantId;
  };
+type IntegrationTestResult = 
+ record {
+   connected: bool;
+   latencyMs: opt nat;
+   message: text;
+   provider: text;
+   testedAt: int;
+ };
+type IntegrationHealthSummary = 
+ record {
+   critical: vec IntegrationTestResult;
+   failedWebhookCounts: vec record {
+                              text;
+                              nat;
+                            };
+   secondary: vec IntegrationTestResult;
+ };
 type IntegrationCredentials = 
  record {
+   abacusApiKey: text;
    autoBrowserUrl: text;
    claudeKey: text;
+   composioApiKey: text;
+   composioWebhookSecret: text;
+   dograhApiKey: text;
    elevenLabsKey: text;
    elevenLabsVoiceId: text;
    emailSmtpHost: text;
@@ -1278,6 +1599,7 @@ type IntegrationCredentials =
    emailSmtpUser: text;
    facebookAppId: text;
    facebookAppSecret: text;
+   geminiApiKey: text;
    googleClientId: text;
    googleClientSecret: text;
    hunterApiKey: text;
@@ -1286,20 +1608,42 @@ type IntegrationCredentials =
    listmonkUser: text;
    litellmKey: text;
    litellmUrl: text;
+   n8nApiKey: vec nat8;
+   n8nInstanceUrl: text;
    neverBounceKey: text;
+   nvidiaApiKey: vec nat8;
+   nvidiaNimApiKey: text;
    ollamaUrl: text;
+   openRouterApiKey: text;
    openaiKey: text;
    perplexityApiKey: text;
    searxngUrl: text;
+   sendgridInboundParseDomain: text;
    sendgridKey: text;
+   serpApiDevKey: text;
    serpApiKey: text;
    stripeKey: text;
    stripeWebhookSecret: text;
+   tinyFishKey: text;
    twilioAuth: text;
    twilioNumber: text;
    twilioSid: text;
    vapiKey: text;
+   vapiWebhookSecret: text;
    yelpApiKey: text;
+ };
+type InboundReply = 
+ record {
+   actionStatus: text;
+   bodyText: text;
+   claudePainPoints: text;
+   claudeSentiment: text;
+   claudeSuggestedAction: text;
+   id: text;
+   leadId: text;
+   prospectEmail: text;
+   receivedAt: int;
+   subjectLine: text;
  };
 type HumanOversightAssignment = 
  record {
@@ -1320,6 +1664,45 @@ type HealthScoreComponent =
    status: text;
    weight: nat;
    weightedScore: nat;
+ };
+type HealthMetrics = 
+ record {
+   apiStatus: bool;
+   demosRunning: nat;
+   leadsToday: nat;
+   outreachSent: nat;
+   trialsActive: nat;
+ };
+type GridPoint = 
+ record {
+   competitorAtTop: text;
+   direction: text;
+   lat: float64;
+   lng: float64;
+   rankPosition: nat;
+   searched: bool;
+ };
+type GridAuditSnapshot = 
+ record {
+   result: GridAuditResult;
+   snapshotAt: int;
+ };
+type GridAuditResult = 
+ record {
+   businessName: text;
+   city: text;
+   coverageZoneSummary: text;
+   gridPoints: vec GridPoint;
+   leadEmail: text;
+   scannedAt: int;
+   state: text;
+ };
+type GenerationStatus = 
+ variant {
+   Complete;
+   Failed;
+   Generating;
+   Pending;
  };
 type GeneratedLead = 
  record {
@@ -1342,11 +1725,50 @@ type GapItem =
    description: text;
    severity: text;
  };
+type FunnelTimeline = 
+ record {
+   events: vec FunnelEvent;
+   leadId: text;
+ };
+type FunnelStepType = 
+ variant {
+   DemoCompleted;
+   DemoStarted;
+   DemoStep1;
+   DemoStep2;
+   DemoStep3;
+   DemoStep4;
+   EmailClicked;
+   EmailOpened;
+   EmailSent;
+   TrialActivated;
+ };
 type FunnelStage = 
  variant {
    bofu;
    mofu;
    tofu;
+ };
+type FunnelRecord = 
+ record {
+   campaignId: text;
+   clickedAt: opt int;
+   demoCompletedAt: opt int;
+   demoStartedAt: opt int;
+   emailSentAt: opt int;
+   enrolledAt: int;
+   funnelStep: text;
+   leadId: text;
+   niche: text;
+   openedAt: opt int;
+   trialProvisionedAt: opt int;
+ };
+type FunnelEvent = 
+ record {
+   leadId: text;
+   metadata: opt text;
+   step: FunnelStepType;
+   timestamp: int;
  };
 type FundabilityScore = 
  record {
@@ -1367,6 +1789,34 @@ type FreeAuditLead =
    overallScore: nat;
    phone: text;
    websiteUrl: text;
+ };
+type FeatureToggleLog = 
+ record {
+   featureName: text;
+   id: text;
+   modifiedAt: int;
+   modifiedBy: text;
+   newValue: bool;
+   previousValue: bool;
+   tier: text;
+ };
+type FeatureToggle = 
+ record {
+   agencyEnabled: bool;
+   basicEnabled: bool;
+   featureName: text;
+   lastModifiedBy: text;
+   lastModifiedTime: int;
+   proEnabled: bool;
+ };
+type FeatureFlags = 
+ record {
+   analytics: bool;
+   creditBuilder: bool;
+   crm: bool;
+   reputation: bool;
+   social: bool;
+   voiceAgent: bool;
  };
 type ExtendedLeadInput = 
  record {
@@ -1450,6 +1900,12 @@ type Estimate =
    total: float64;
    updatedAt: int;
  };
+type EnrollmentResult = 
+ record {
+   enrolledCount: nat;
+   errors: vec text;
+   skippedCount: nat;
+ };
 type EngagementApprovalStatus = 
  variant {
    approved;
@@ -1474,6 +1930,16 @@ type EmojiUsage =
    low;
    moderate;
    none;
+ };
+type EmailTemplate = 
+ record {
+   body: text;
+   day: nat;
+   fallbackBody: text;
+   fallbackSubject: text;
+   id: nat;
+   subject: text;
+   updatedAt: int;
  };
 type EmailSequenceStatus = 
  variant {
@@ -1566,8 +2032,12 @@ type DripQueueThrottleConfig =
  };
 type DripQueueEmailLog = 
  record {
+   clickCount: nat;
+   clickedAt: opt int;
    errorMessage: opt text;
    id: text;
+   openCount: nat;
+   openedAt: opt int;
    queueId: text;
    recipientEmail: text;
    recipientName: text;
@@ -1575,6 +2045,7 @@ type DripQueueEmailLog =
    sentAt: opt int;
    status: text;
    tenantId: text;
+   trackingToken: text;
  };
 type DripQueue = 
  record {
@@ -1625,6 +2096,41 @@ type DomainSetupState =
    registrar: opt text;
    siteImportStatus: text;
    updatedAt: int;
+ };
+type DograhTestResult = 
+ record {
+   agentCount: nat;
+   connected: bool;
+   message: text;
+ };
+type DograhCreateAgentRequest = 
+ record {
+   description: text;
+   name: text;
+   niche: text;
+   nlCommand: text;
+ };
+type DograhConfig = 
+ record {
+   apiKey: text;
+   baseUrl: text;
+   isEnabled: bool;
+ };
+type DograhCommandResult = 
+ record {
+   agentId: opt text;
+   message: text;
+   nodesCreated: nat;
+   success: bool;
+ };
+type DograhAgent = 
+ record {
+   description: text;
+   id: text;
+   lastModified: int;
+   name: text;
+   nodeCount: nat;
+   status: text;
  };
 type DnsCheckResult = 
  record {
@@ -1714,12 +2220,56 @@ type ConversationEntry =
    role: text;
    timestamp: int;
  };
+type ContentType = 
+ variant {
+   AdCopy;
+   Blog;
+   Image;
+   Video;
+ };
+type ContentTierToggle = 
+ record {
+   contentCreationEnabled: bool;
+   tier: text;
+ };
+type ContentGenerationResult = 
+ record {
+   accountId: text;
+   contentType: ContentType;
+   errorMsg: opt text;
+   generatedAt: int;
+   id: text;
+   mediaUrl: opt text;
+   niche: text;
+   output: text;
+   prompt: text;
+   status: GenerationStatus;
+ };
+type ContentGenerationRequest = 
+ record {
+   accountId: text;
+   additionalContext: opt text;
+   contentType: ContentType;
+   niche: text;
+   prompt: text;
+ };
 type ConnectionTestResult = 
  record {
    connected: bool;
+   lastTestError: opt text;
+   lastTestedAt: opt int;
    message: text;
    quotaInfo: opt text;
    statusCode: nat;
+ };
+type ComposioTool = 
+ record {
+   accountId: text;
+   category: text;
+   connected: bool;
+   description: text;
+   id: text;
+   name: text;
  };
 type ComplianceConfig = 
  record {
@@ -1783,6 +2333,18 @@ type CommentIntent =
    question;
    spam;
  };
+type CommandLogEntry = 
+ record {
+   agentAction: AgentActionKind;
+   commandText: text;
+   confirmationPreview: text;
+   executedAt: opt int;
+   executionResult: opt text;
+   id: text;
+   sessionId: text;
+   timestamp: int;
+   userId: text;
+ };
 type ClientReport = 
  record {
    aiNarrative: text;
@@ -1844,6 +2406,15 @@ type CampaignStatus =
    sending;
    sent;
  };
+type CampaignStats = 
+ record {
+   clickRate: float64;
+   emailsSentAllTime: nat;
+   emailsSentToday: nat;
+   emailsSentWeek: nat;
+   openRate: float64;
+   totalEnrolled: nat;
+ };
 type CampaignMetrics = 
  record {
    clicked: nat;
@@ -1851,6 +2422,13 @@ type CampaignMetrics =
    opened: nat;
    sent: nat;
    unsubscribed: nat;
+ };
+type CampaignLeadStatus = 
+ variant {
+   active;
+   completed;
+   paused;
+   unsubscribed;
  };
 type CampaignInstance = 
  record {
@@ -1860,6 +2438,12 @@ type CampaignInstance =
    status: text;
    templateId: text;
    tenantId: TenantId;
+ };
+type BulkToggleRequest = 
+ record {
+   enabled: bool;
+   tierId: text;
+   toolkitNames: vec text;
  };
 type BulkSendJob = 
  record {
@@ -2005,7 +2589,7 @@ type BrandKitProspect =
    trialDay: nat;
    trialExpiresAt: opt int;
    trialStartedAt: opt int;
-   trialStatus: TrialStatus;
+   trialStatus: TrialStatus__1;
    utmCampaign: opt text;
    utmSource: opt text;
    vapiAssistantId: opt text;
@@ -2235,6 +2819,14 @@ type ApprovalItem =
    tenantId: text;
    threadId: text;
  };
+type ApiPingRecord = 
+ record {
+   errorMessage: opt text;
+   lastPingTime: int;
+   latencyMs: nat;
+   serviceId: text;
+   status: text;
+ };
 type AlertType = 
  variant {
    buying_signal;
@@ -2333,6 +2925,25 @@ type AgentSubscription =
    status: text;
    tenantId: TenantId;
    updatedAt: Time;
+ };
+type AgentStatus = 
+ record {
+   agentId: text;
+   agentName: text;
+   config: text;
+   isEnabled: bool;
+   lastError: opt text;
+   lastRunAt: opt int;
+   nextScheduledAt: opt int;
+   status: text;
+ };
+type AgentSessionState = 
+ record {
+   isActive: bool;
+   lastSeenAt: int;
+   sessionId: text;
+   startedAt: int;
+   userId: text;
  };
 type AgentServiceRequest = 
  record {
@@ -2449,6 +3060,26 @@ type AgentMemory =
    tenantId: text;
    threadId: text;
  };
+type AgentLogEntryInput = 
+ record {
+   action: text;
+   actionType: text;
+   agentId: text;
+   isSuccess: bool;
+   logId: text;
+   result: text;
+   timestamp: int;
+ };
+type AgentLogEntry = 
+ record {
+   action: text;
+   actionType: text;
+   agentId: text;
+   isSuccess: bool;
+   logId: text;
+   result: text;
+   timestamp: int;
+ };
 type AgentDeliverable = 
  record {
    attachments: vec text;
@@ -2463,6 +3094,13 @@ type AgentDeliverable =
    summary: text;
    tenantId: TenantId;
    title: text;
+ };
+type AgentCommandResult = 
+ record {
+   actionId: text;
+   error: opt text;
+   preview: text;
+   requiresConfirmation: bool;
  };
 type AgentArtifactRecord = 
  record {
@@ -2493,6 +3131,14 @@ type AgentArtifact =
    title: text;
    updatedAt: int;
  };
+type AgentActionKind = 
+ variant {
+   EditSequence;
+   FireBulkSend;
+   ModifyStep;
+   QueryLeads;
+   Unknown;
+ };
 type AgencySettings = 
  record {
    googleApiKey: text;
@@ -2514,6 +3160,74 @@ type AdapterType =
    ollama_local;
    openai_compatible;
  };
+type ActivityFeedItemInput = 
+ record {
+   description: text;
+   entityId: opt text;
+   entityType: opt text;
+   eventType: text;
+   id: text;
+   timestamp: int;
+   title: text;
+ };
+type ActivityFeedItem = 
+ record {
+   description: text;
+   entityId: opt text;
+   entityType: opt text;
+   eventType: text;
+   id: text;
+   timestamp: int;
+   title: text;
+ };
+type AccountBriefUpdate = 
+ record {
+   doNotRespondList: opt vec text;
+   flagKeywords: opt vec text;
+   ignoreList: opt vec text;
+   offerSummary: opt text;
+   priorityContacts: opt vec text;
+   respondTo: opt vec text;
+   tone: opt text;
+ };
+type AccountBrief = 
+ record {
+   accountId: text;
+   doNotRespondList: vec text;
+   flagKeywords: vec text;
+   ignoreList: vec text;
+   offerSummary: text;
+   priorityContacts: vec text;
+   respondTo: vec text;
+   tone: text;
+   updatedAt: int;
+   updatedBy: text;
+ };
+type AbacusRouteResponse = 
+ record {
+   response: text;
+   routingReason: text;
+   selectedModel: text;
+   tokensUsed: nat;
+ };
+type AbacusRouteRequest = 
+ record {
+   maxTokens: opt nat;
+   prompt: text;
+   taskType: text;
+   temperature: opt float64;
+ };
+type AbacusConfig = 
+ record {
+   apiKey: text;
+   callsToday: nat;
+   fallbackModels: vec text;
+   lastPingStatus: text;
+   lastTestedAt: opt int;
+   preferredModel: text;
+   routingEnabled: bool;
+   totalRoutedCalls: nat;
+ };
 service : {
   _initializeAccessControl: () -> ();
   activateBrandKitTrial: (slug: text, actionType: text) ->
@@ -2521,22 +3235,33 @@ service : {
       err: text;
       ok: BrandKitProspect;
     });
-  activateTrial: (sessionId: text, email: text, firstName: opt text, city:
-   opt text, niche: opt text, phone: opt text) ->
+  activateTrial: (sessionId: text, firstName: text, businessName: text, city:
+   text, niche: text, phone: text, email: text, website: text) ->
    (variant {
       err: text;
-      ok: DemoSession;
+      ok:
+       record {
+         emailWarning: opt text;
+         loginUrl: text;
+         trialAccountId: text;
+       };
     });
   activateTrialForDemo: (sessionId: text, email: text) ->
    (variant {
       err: text;
       ok: record {trialEndsAt: int;};
     });
+  addActivityFeedItem: (item: ActivityFeedItemInput) -> ();
+  addAgentLog: (entry: AgentLogEntryInput) -> ();
   addAttributionTouch: (id: text, touch: AttributionTouch) -> (bool);
+  addConversationMessage: (tenantId: text, sessionId: text, role: text,
+   content: text) -> ();
   addDemoFunnelEntry: (entry: DemoFunnelEntry) -> ();
+  addInboundReply: (reply: InboundReply) -> ();
   addLeadFromSocialComment: (tenantId: text, commentId: text, _leadData:
    text) -> ();
   addPaidAdsScore: (score: PaidAdsScore) -> ();
+  addPipelineLead: (lead: PipelineLead) -> ();
   addScanPhoto: (modelId: text, tenantId: text, storageUrl: text) -> (text);
   addSeoGeoScore: (score: SeoGeoScore) -> ();
   addSeoGeoVisibilitySnapshot: (snapshot: SeoGeoVisibilitySnapshot) -> ();
@@ -2545,8 +3270,11 @@ service : {
                              err: text;
                              ok: SMSMessage;
                            });
+  addTriggerRule: (rule: TriggerRuleInput) -> (TriggerRule);
   addWebsiteAgentScore: (score: WebsiteAgentScore) -> ();
   advanceWarmupDay: () -> ();
+  analyzeReply: (replyId: text, leadId: text, replyText: text, niche:
+   text) -> (ReplyAnalysis);
   appendAuditLog: (entry: AuditLogEntry) -> ();
   approveAndPushToCrm: (jobId: text, tenantId: text) -> (bool);
   approveBrowserAudit: (jobId: text, tenantId: text, actorName: text) ->
@@ -2555,6 +3283,7 @@ service : {
       ok;
     });
   approveEngagement: (tenantId: text, approvalId: text) -> ();
+  approveQueuedAction: (actionId: text) -> ();
   approveReplyDraft: (inboxItemId: text) -> (bool);
   archiveSmsThread: (threadId: text) -> (variant {
                                            err: text;
@@ -2563,26 +3292,61 @@ service : {
   archiveThread: (id: text) -> (bool);
   assignCallerUserRole: (user: principal, role: UserRole) -> ();
   assignSegmentToQueue: (queueId: text, leadEmails: vec text) -> (bool);
+  autoAuditLeads: (tenantId: text, leads_in: vec GeneratedLead) ->
+   (variant {
+      err: text;
+      ok: nat;
+    });
+  autoEnrollOnInit: () -> ();
   batchScrape: (req: BatchScrapeRequest, tenantId: text) ->
    (BatchScrapeResult);
   buildComplianceFooter: (leadId: text) -> (text) query;
+  bulkApplyToggleToTier: (req: BulkToggleRequest) ->
+   (variant {
+      err: text;
+      ok: nat;
+    });
+  bulkEnrollRoofingLeads: () -> (variant {
+                                   err: text;
+                                   ok: nat;
+                                 });
   bulkImportLeads: (tenantId: text, leads: vec ExtendedLeadInput) ->
    (BulkImportResult);
+  bulkSetFeatureToggles: (tier: text, updates: vec record {
+                                                     text;
+                                                     bool;
+                                                   }, modifiedBy: text) ->
+   (bool);
+  callOpenRouterForTask: (task: text, prompt: text, context: text) -> (text);
+  cancelAutoTrigger: (leadId: text) -> ();
+  cancelQueuedAction: (actionId: text) -> ();
   checkDnsRecords: (domain: text) -> (DnsCheckResult);
   checkRobotsTxt: (url: text) -> (RobotsCheckResult);
   checkSocialPresence: (businessName: text) -> (SocialPresence);
   checkSocialPresencePublic: (businessName: text) -> (SocialPresence);
+  clearComposioWebhookSecret: () -> (variant {
+                                       err: text;
+                                       ok;
+                                     });
   clearMemory: (threadId: text) -> (bool);
   clearNicheAudioCache: (nicheId: text) -> ();
   clearScrapeHistory: (tenantId: text) -> ();
+  commitWorkflowBatch: (batchId: text) -> (bool);
   completeDemo: (sessionId: text, prospectEmail: text) ->
    (variant {
       err: text;
       ok: AuditReport;
     });
+  completeDemoAndProvisionTrial: (leadId: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
   completeRun: (runId: text, outputText: text, artifactIds: vec text) ->
    (bool);
   createAgentArtifact: (artifact: AgentArtifactRecord) -> (bool);
+  createAgentFromCommand: (req: DograhCreateAgentRequest) ->
+   (DograhCommandResult);
   createAgentRun: (run: AgentRunRecord) -> (bool);
   createAgentThread: (thread: AgentThreadRecord) -> (bool);
   createApprovalItem: (runId: text, threadId: text, tenantId: text, action:
@@ -2673,6 +3437,12 @@ service : {
   deleteChatWidgetConfig: (tenantId: TenantId) -> ();
   deleteCompetitorAlert: (id: text) -> ();
   deleteCompetitorProfile: (id: text) -> ();
+  deleteCredential: (tenantId: text, fieldName: text) ->
+   (record {
+      message: text;
+      ok: bool;
+    });
+  deleteGeneratedContent: (id: text) -> ();
   deleteLead: (tenantId: TenantId, leadId: text) -> ();
   deleteLeadAttribution: (id: text) -> ();
   deleteLocationProfile: (id: text) -> ();
@@ -2683,18 +3453,101 @@ service : {
   deleteScanModel: (modelId: text, tenantId: text) -> ();
   deleteSocialPost: (tenantId: text, postId: text) -> ();
   deleteTemplate: (id: text) -> (bool);
+  deleteTriggerRule: (ruleId: text) -> ();
   deleteVoiceAgentConfig: (tenantId: TenantId) -> ();
+  deleteWorkflowDef: (workflowId: text) -> (bool);
+  deployAgent: (agentId: text) -> (record {
+                                     message: text;
+                                     success: bool;
+                                   });
   dismissCompetitorAlert: (id: text) -> (bool);
   dismissSocialListeningAlert: (tenantId: text, alertId: text) -> ();
+  dograhTransform: (input: TransformationInput) ->
+   (TransformationOutput) query;
+  editAgentFromCommand: (agentId: text, nlCommand: text) ->
+   (DograhCommandResult);
   enqueueLeadSequence: (leadId: text, email: text, name: text, niche: 
    text, tier: text) -> (nat);
   enqueueNewsletterSends: (tenantId: text, campaignId: text, emails:
    vec text) -> (nat);
+  enrichLead: (leadId: text, companyName: text, niche: text, city: text) ->
+   (LeadAIEnrichment);
+  enrollAllRoofingLeads: (campaignId: text, dailyLimit: nat) ->
+   (variant {
+      err: text;
+      ok: EnrollmentResult;
+    });
+  enrollLeadInFunnel: (leadId: text, campaignId: text, niche: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  enrollRoofingLead: (lead: RoofingLead) -> (variant {
+                                               err: text;
+                                               ok;
+                                             });
+  enrollRoofingLeadsIntoCampaign: () ->
+   (record {
+      enrolled: nat;
+      skipped: nat;
+    });
+  executeAgentAction: (actionId: text) ->
+   (record {
+      error: opt text;
+      logId: text;
+      ok: bool;
+    });
+  executeOperatorCommand: (command: text) -> (OperatorCommandResult) query;
+  executeToolAction: (req: ToolActionRequest) ->
+   (variant {
+      err: text;
+      ok: ToolActionResponse;
+    });
   extractLeads: (html: text, sourceUrl: text) -> (LeadExtractionResult);
   failRun: (runId: text, errorMessage: text) -> (bool);
   flagEngagement: (tenantId: text, approvalId: text, reason: text) -> ();
   flushSmsQueue: () -> (nat);
+  generateContent: (req: ContentGenerationRequest) -> (text);
+  generateOutreachSequence: (leadId: text, companyName: text, niche: 
+   text, city: text, framework: text) -> (OutreachSequence);
+  generateTailoredEmailCopy: (businessName: text, city: text, niche: 
+   text, emailIndex: nat, framework: text) -> (variant {
+                                                 err: text;
+                                                 ok: text;
+                                               });
+  generateTailoredEmailForLead: (leadId: text, templateBody: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
   generateUnsubscribeToken: (leadId: text) -> (text) query;
+  getAIUsageLogs: (tenantId: text) ->
+   (vec
+     record {
+       id: text;
+       inputTokens: nat;
+       loggedAt: int;
+       provider: text;
+       success: bool;
+     }) query;
+  getAbacusApiKeyStatus: (tenantId: text) ->
+   (record {
+      configured: bool;
+      maskedKey: text;
+    });
+  getAbacusStats: () -> (variant {
+                           err: text;
+                           ok: AbacusConfig;
+                         });
+  getAccountBrief: (accountId: text) ->
+   (variant {
+      err: text;
+      ok: AccountBrief;
+    });
+  getAccountToolkit: (accountId: text) -> (variant {
+                                             err: text;
+                                             ok: vec text;
+                                           });
   getActiveAdapter: (tenantId: text) -> (opt ProviderAdapterConfig) query;
   getActiveChatWidgetConfigs: () -> (vec ChatWidgetConfig) query;
   getActiveNewsletterSubscribers: (tenantId: text) ->
@@ -2702,14 +3555,23 @@ service : {
   getAgencySettings: () -> (opt AgencySettings) query;
   getAgentDeliverablesByTenant: (tenantId: TenantId) ->
    (vec AgentDeliverable) query;
+  getAgentLogs: (agentId: text, limit: nat) -> (vec AgentLogEntry) query;
   getAgentMemoryByThread: (threadId: text) -> (vec AgentMemoryRecord) query;
   getAgentPerformanceSnapshotsByTenant: (tenantId: TenantId) ->
    (vec AgentPerformanceSnapshot) query;
   getAgentProducts: () -> (vec AgentProduct) query;
+  getAgentQuota: () ->
+   (record {
+      dailyCount: nat;
+      dailyLimit: nat;
+      remaining: nat;
+    }) query;
   getAgentRunsByTenant: (tenantId: text) -> (vec AgentRunRecord) query;
   getAgentRunsByThread: (threadId: text) -> (vec AgentRunRecord) query;
   getAgentServiceRequestsByTenant: (tenantId: TenantId) ->
    (vec AgentServiceRequest) query;
+  getAgentSession: () -> (opt AgentSessionState) query;
+  getAgentStatuses: () -> (vec AgentStatus) query;
   getAgentSubscriptionsByTenant: (tenantId: TenantId) ->
    (vec AgentSubscription) query;
   getAgentTasksByTenant: (tenantId: TenantId) -> (vec AgentTask) query;
@@ -2717,11 +3579,27 @@ service : {
    (vec AgentTemplateStorageRecord) query;
   getAgentThread: (id: text) -> (opt AgentThreadRecord) query;
   getAgentThreadsByTenant: (tenantId: text) -> (vec AgentThreadRecord) query;
+  getAllAgentLogs: (limit: nat) -> (vec AgentLogEntry) query;
   getAllAgentServiceRequests: () -> (vec AgentServiceRequest) query;
   getAllAgentSubscriptions: () -> (vec AgentSubscription) query;
   getAllAgentTasks: () -> (vec AgentTask) query;
   getAllBrandKitProspects: () -> (vec BrandKitProspect) query;
   getAllClientHealthScores: () -> (vec ClientHealthScore) query;
+  getAllComposioTools: () -> (variant {
+                                err: text;
+                                ok: vec ComposioTool;
+                              });
+  getAllEnrolledLeads: () -> (vec LeadCampaignStatus) query;
+  getAllFunnelEvents: () ->
+   (variant {
+      err: text;
+      ok: vec record {
+                text;
+                FunnelTimeline;
+              };
+    }) query;
+  getAllGeneratedContent: () -> (vec ContentGenerationResult) query;
+  getAllLeadCampaignDetails: () -> (vec LeadCampaignDetails) query;
   getAllNewsletterSubscribers: (tenantId: text) ->
    (vec NewsletterSubscriber) query;
   getAllNicheScripts: () -> (vec NicheScript) query;
@@ -2730,6 +3608,15 @@ service : {
   getAllSeoGeoRequests: () -> (vec SeoGeoRequest) query;
   getAllSeoGeoSubscriptions: () -> (vec SeoGeoSubscription) query;
   getAllTenants: () -> (vec text) query;
+  getAllToolkitToggles: () -> (variant {
+                                 err: text;
+                                 ok: vec ToolkitToggle;
+                               });
+  getAllTrialAccounts: () ->
+   (variant {
+      err: text;
+      ok: vec TrialAccount;
+    }) query;
   getAllWebsiteAgentSubscriptions: () -> (vec WebsiteAgentSubscription) query;
   getAllWhiteLabelConfigs: () -> (vec WhiteLabelConfig) query;
   getApprovalRecordsByTenant: (tenantId: text) ->
@@ -2745,6 +3632,12 @@ service : {
   getAudioCacheKeys: () -> (vec text) query;
   getAuditLog: () -> (vec AuditLogEntry) query;
   getAuditScore: (tenantId: TenantId) -> (opt AuditScore) query;
+  getAutomationConfigs: (tenantId: text) ->
+   (vec record {
+          isEnabled: bool;
+          requiresApproval: bool;
+          trigger: text;
+        }) query;
   getAutopilotEmailConfig: () -> (AutopilotConfig) query;
   getBatchAuditJobs: (tenantId: text) -> (vec BatchAuditJob) query;
   getBillingRecordsByTenant: (tenantId: TenantId) ->
@@ -2797,11 +3690,13 @@ service : {
   getCallerUserRole: () -> (UserRole) query;
   getCampaignInstancesByTenant: (tenantId: TenantId) ->
    (vec CampaignInstance) query;
+  getCampaignStats: () -> (CampaignStats) query;
   getCampaignTemplates: () -> (vec CampaignTemplate) query;
   getChatWidgetConfig: (tenantId: TenantId) -> (opt ChatWidgetConfig) query;
   getClientHealthScore: (tenantId: text) -> (opt ClientHealthScore) query;
   getClientReportById: (reportId: text) -> (opt ClientReport) query;
   getClientReports: (tenantId: text) -> (vec ClientReport) query;
+  getCommandHistory: (offset: nat, limit: nat) -> (vec CommandLogEntry) query;
   getCompetitorAlertsByTenant: (tenantId: text) ->
    (vec CompetitorAlert) query;
   getCompetitorIntelReport: (tenantId: text) ->
@@ -2810,7 +3705,34 @@ service : {
   getCompetitorProfilesByTenant: (tenantId: text) ->
    (vec CompetitorProfile) query;
   getComplianceConfig: () -> (ComplianceConfig) query;
+  getComposioApiKeyStatus: (tenantId: text) ->
+   (record {
+      configured: bool;
+      maskedKey: text;
+    });
+  getComposioToolkitStatus: (accountId: text) ->
+   (record {
+      accountId: text;
+      tools: vec text;
+      usingDefault: bool;
+    });
+  getComposioWebhookSecretStatus: () -> (record {configured: bool;}) query;
   getConfiguredVoiceAgents: () -> (vec VoiceAgentConfig) query;
+  getConnectedTools: (accountId: text) ->
+   (variant {
+      err: text;
+      ok: vec ComposioTool;
+    });
+  getContentTierToggles: () -> (vec ContentTierToggle) query;
+  getConversationHistory: (tenantId: text, sessionId: text) ->
+   (vec
+     record {
+       citations: vec text;
+       content: text;
+       id: text;
+       role: text;
+       timestamp: int;
+     }) query;
   getCsvImportBatches: (tenantId: text) -> (vec CsvImportBatch) query;
   getDecryptedCredential: (tenantId: text, field: text) -> (opt text) query;
   getDeliverabilityEvents: () -> (vec DeliverabilityEvent) query;
@@ -2831,6 +3753,8 @@ service : {
   getDemoFunnelEntries: (tenantId: text) -> (vec DemoFunnelEntry) query;
   getDemoSession: (sessionId: text) -> (opt DemoSession) query;
   getDiscoveryConfig: () -> (DiscoveryConfig) query;
+  getDograhAgents: () -> (vec DograhAgent);
+  getDograhConfig: () -> (opt DograhConfig);
   getDomainSetupState: (clientId: text) ->
    (variant {
       err: text;
@@ -2853,15 +3777,65 @@ service : {
       total: nat;
     }) query;
   getEmailReplyRecords: () -> (vec EmailReplyRecord) query;
+  getEmailStats: (leadId: text) ->
+   (variant {
+      err: text;
+      ok: record {
+            clicked: nat;
+            opened: nat;
+            sent: nat;
+          };
+    }) query;
+  getEmailTemplates: () -> (vec EmailTemplate) query;
   getEngagementApprovals: (tenantId: text) -> (vec EngagementApproval) query;
   getEstimatesByTenant: (tenantId: text) -> (vec Estimate) query;
+  getExecutionLog: (tenantId: opt text) ->
+   (vec
+     record {
+       completedAt: opt int;
+       errorMessage: opt text;
+       id: text;
+       outputData: text;
+       startedAt: int;
+       status: text;
+       tenantId: text;
+       workflowId: text;
+     }) query;
   getExtendedLeadsByTenant: (tenantId: text) -> (vec ExtendedLead) query;
+  getFeatureToggleLogs: () -> (vec FeatureToggleLog) query;
+  getFeatureToggles: () -> (vec FeatureToggle) query;
   getFreeAuditLeads: () -> (vec FreeAuditLead) query;
   getFundabilityScore: (tenantId: TenantId) -> (opt FundabilityScore) query;
+  getFunnelRecord: (leadId: text) ->
+   (variant {
+      err: text;
+      ok: FunnelRecord;
+    }) query;
+  getFunnelTimeline: (leadId: text) ->
+   (variant {
+      err: text;
+      ok: FunnelTimeline;
+    }) query;
+  getGeminiKeyStatus: () -> (record {configured: bool;}) query;
+  getGeneratedContent: (accountId: text) ->
+   (vec ContentGenerationResult) query;
+  getGeneratedContentById: (id: text) -> (opt ContentGenerationResult) query;
+  getGridAudit: (email: text) -> (opt GridAuditResult) query;
+  getGridHistory: (email: text) -> (vec GridAuditSnapshot) query;
+  getHealthMetrics: () -> (HealthMetrics) query;
   getHumanOversightAssignmentsByTenant: (tenantId: TenantId) ->
    (vec HumanOversightAssignment) query;
+  getInboundReplies: (leadId: opt text) -> (vec InboundReply);
   getIntegrationCredentials: (tenantId: text) -> (MaskedCredentials) query;
+  getIntegrationHealth: () -> (IntegrationHealthSummary) query;
   getInvoicesByTenant: (tenantId: TenantId) -> (vec Invoice) query;
+  getKnowledgeDocuments: (collectionName: text, tenantId: text) ->
+   (vec record {
+          chunkCount: nat;
+          id: text;
+          title: text;
+          uploadedAt: int;
+        }) query;
   getLastDiscoveryJob: () -> (opt ScheduledDiscoveryJob) query;
   getLeadAttribution: (id: text) -> (opt LeadAttributionRecord) query;
   getLeadAttributionsByLead: (tenantId: text, leadId: text) ->
@@ -2873,8 +3847,21 @@ service : {
   getLeadAuditResult: (jobId: text) -> (opt LeadAuditResult) query;
   getLeadAuditResults: (tenantId: text) -> (vec LeadAuditResult) query;
   getLeadById: (tenantId: TenantId, leadId: text) -> (opt Lead) query;
-  getLeadEnrichment: (leadId: text) -> (opt LeadEnrichment) query;
+  getLeadCampaignDetails: (email: text) -> (opt LeadCampaignDetails) query;
+  getLeadEnrichment: (leadId: text) -> (opt LeadAIEnrichment) query;
+  getLeadEnrollmentStatus: (campaignId: text) ->
+   (variant {
+      err: text;
+      ok: record {
+            enrolled: nat;
+            pending: nat;
+            total: nat;
+          };
+    }) query;
+  getLeadQualityBySource: () -> (vec SourceQualityData) query;
+  getLeadScore: (leadId: text) -> (opt LeadAIScore) query;
   getLeadsByBatch: (batchId: text) -> (vec ExtendedLead) query;
+  getLeadsByNiche: (niche: text) -> (vec ExtendedLead) query;
   getLeadsBySegment: (tenantId: text, niche: opt text, tags: vec text,
    customFieldFilters: vec record {
                              text;
@@ -2885,6 +3872,14 @@ service : {
   getLocationProfilesByTenant: (tenantId: text) ->
    (vec LocationProfile) query;
   getMemory: (threadId: text) -> (opt AgentMemory) query;
+  getN8NConfig: () ->
+   (record {
+      activeWorkflowCount: nat;
+      instanceUrl: text;
+      isConnected: bool;
+      lastTestedAt: opt int;
+      totalExecutionsToday: nat;
+    }) query;
   getNewsletterAnalytics: (tenantId: text) -> (NewsletterCampaignStats) query;
   getNewsletterCampaignById: (tenantId: text, campaignId: text) ->
    (opt NewsletterCampaign) query;
@@ -2895,6 +3890,7 @@ service : {
    (vec NewsletterSendLog) query;
   getNewsletterSubscriber: (tenantId: text, email: text) ->
    (opt NewsletterSubscriber) query;
+  getNicheConversionFunnels: () -> (vec NicheConversionData) query;
   getNicheScript: (niche: text) -> (opt NicheScript) query;
   getNicheScriptForSession: (sessionId: text) -> (opt NicheScript) query;
   getNicheScriptLines: (nicheId: text) -> (opt vec text) query;
@@ -2903,6 +3899,21 @@ service : {
   getNicheVoiceId: (niche: text) -> (text) query;
   getNotificationsByTenant: (tenantId: TenantId) ->
    (vec NotificationRecord) query;
+  getOpenRouterStatus: () ->
+   (record {
+      contextWindow: nat;
+      costPerMillion: text;
+      defaultModel: text;
+      isConnected: bool;
+      lastPingTime: opt int;
+    });
+  getOpenRouterTaskOverrides: () -> (vec record {
+                                           text;
+                                           text;
+                                         });
+  getOperatorChatHistory: () -> (vec OperatorChatMessage) query;
+  getOperatorReportData: (reportType: text) -> (OperatorReportData) query;
+  getOperatorStats: () -> (OperatorStats) query;
   getOptedOutEmails: () -> (vec text) query;
   getOptedOutPhones: () -> (vec text) query;
   getOutreachEvents: (leadId: text) -> (vec OutreachEvent) query;
@@ -2914,6 +3925,7 @@ service : {
       totalLeads: nat;
       totalSentThisMonth: nat;
     }) query;
+  getOutreachSequencesForLead: (leadId: text) -> (vec OutreachSequence) query;
   getPaidAdsAdCopiesByTenant: (tenantId: TenantId) ->
    (vec PaidAdsAdCopy) query;
   getPaidAdsAlertsByTenant: (tenantId: TenantId) -> (vec PaidAdsAlert) query;
@@ -2930,8 +3942,21 @@ service : {
   getPendingApprovalRecords: (tenantId: text) ->
    (vec ApprovalItemRecord) query;
   getPendingApprovals: (tenantId: text) -> (vec ApprovalItem) query;
+  getPendingQueuedActions: () -> (vec OutreachQueuedAction);
+  getPingHistory: (serviceId: text) -> (vec ApiPingRecord) query;
+  getPingStatus: () -> (vec ApiPingRecord) query;
   getPipelineFunnelStats: (niche: text) -> (PipelineFunnelStats) query;
+  getPipelineLeads: () -> (vec PipelineLead);
   getProviderAdapters: (tenantId: text) -> (vec ProviderAdapterConfig) query;
+  getProviderConfigs: () ->
+   (vec
+     record {
+       id: text;
+       isActive: bool;
+       lastPingStatus: opt text;
+       modelName: text;
+       providerType: text;
+     }) query;
   getQueuePerformanceStats: (tenantId: text) ->
    (vec
      record {
@@ -2947,6 +3972,8 @@ service : {
   getQueueThrottleConfig: (queueId: text) ->
    (opt DripQueueThrottleConfig) query;
   getReadinessScore: (tenantId: text) -> (ReadinessScore) query;
+  getRecentActivity: (limit: nat) -> (vec ActivityFeedItem);
+  getReplyAnalysis: (replyId: text) -> (opt ReplyAnalysis) query;
   getReplyInboxItems: () -> (vec ReplyInboxItem) query;
   getReportSchedule: (tenantId: text) -> (opt ReportSchedule) query;
   getReviewById: (tenantId: TenantId, reviewId: text) -> (opt Review) query;
@@ -2958,6 +3985,7 @@ service : {
   getReviewSyncRecordsByTenant: (tenantId: text) ->
    (vec ReviewSyncRecord) query;
   getReviewsByTenantId: (tenantId: TenantId) -> (vec Review) query;
+  getRoofingCampaignStatus: (email: text) -> (opt LeadCampaignStatus) query;
   getRunsByTenant: (tenantId: text) -> (vec AgentRun) query;
   getRunsByThread: (threadId: text) -> (vec AgentRun) query;
   getScanModel: (modelId: text) -> (opt ScanModel) query;
@@ -3012,10 +4040,29 @@ service : {
   getThreadByAgentAndTenant: (agentType: text, tenantId: text) ->
    (opt AgentThread) query;
   getThreadsByTenant: (tenantId: text) -> (vec AgentThread) query;
+  getToolkitToggles: (tierId: text) ->
+   (variant {
+      err: text;
+      ok: vec ToolkitToggle;
+    });
   getTools: () -> (vec ToolDefinition) query;
   getToolsByCategory: (category: text) -> (vec ToolDefinition) query;
+  getTopPerformingNiche: () -> (opt NicheConversionData) query;
+  getTrialAccount: (id: text) ->
+   (variant {
+      err: text;
+      ok: TrialAccount;
+    }) query;
+  getTrialActivityScore: (trialId: text) -> (nat);
+  getTrialByLeadId: (leadId: text) ->
+   (variant {
+      err: text;
+      ok: TrialAccount;
+    }) query;
+  getTrialFeatureFlags: (trialAccountId: text) -> (opt FeatureFlags) query;
   getTrialNudgeSchedule: (slug: text) ->
    (vec WarmSequenceEmailSchedule) query;
+  getTriggerRules: () -> (vec TriggerRule) query;
   getUserProfile: (user: principal) -> (opt UserProfile) query;
   /// Returns stored Vapi call logs for a tenant.
   getVapiCallLogs: (tenantId: text) -> (vec VapiCallLog) query;
@@ -3034,12 +4081,28 @@ service : {
       configured: bool;
       provisioningStatus: text;
     }) query;
+  getVectorIndexStatus: () ->
+   (record {
+      collectionsCount: nat;
+      totalChunks: nat;
+      totalDocuments: nat;
+    }) query;
   getVoiceAgentConfig: (tenantId: TenantId) -> (opt VoiceAgentConfig) query;
   getWarmLeadHandoffs: () -> (vec WarmLeadHandoff) query;
   getWarmSequenceEvents: (enrollmentId: text) ->
    (vec WarmSequenceEmailEvent) query;
   getWarmSequenceSchedules: (enrollmentId: text) ->
    (vec WarmSequenceEmailSchedule) query;
+  getWebhookLog: (provider: text) -> (vec WebhookEvent) query;
+  getWebhookUrl: () -> (text) query;
+  getWebhookUrls: () ->
+   (record {
+      composio: text;
+      sendgrid: text;
+      stripe: text;
+      twilio: text;
+      vapi: text;
+    }) query;
   getWebsiteAgentScores: (tenantId: TenantId) ->
    (vec WebsiteAgentScore) query;
   getWebsiteAgentSubscription: (tenantId: TenantId) ->
@@ -3054,6 +4117,18 @@ service : {
   getWebsitePageQueueByTenant: (tenantId: TenantId) ->
    (vec WebsitePageQueueItem) query;
   getWhiteLabelConfig: (tenantId: TenantId) -> (opt WhiteLabelConfig) query;
+  getWorkflowDefs: () ->
+   (vec
+     record {
+       createdAt: int;
+       description: text;
+       id: text;
+       isActive: bool;
+       name: text;
+       pushedToAccounts: vec text;
+       scope: text;
+       tags: vec text;
+     }) query;
   handleNewsletterBounce: (tenantId: text, email: text, bounceType:
    BounceType, reason: text) -> (bool);
   handleNewsletterUnsubscribe: (tenantId: text, email: text, campaignId:
@@ -3099,14 +4174,52 @@ service : {
     });
   importNewsletterSubscribers: (tenantId: text, emails: vec text) ->
    (SubscriberImportResult);
+  importWorkflowBatch: (defsJson:
+   vec
+    record {
+      description: text;
+      id: text;
+      name: text;
+      scope: text;
+      tags: vec text;
+      workflowJson: text;
+    }) ->
+   (record {
+      batchId: text;
+      results:
+       vec
+        record {
+          errors: vec text;
+          id: text;
+          index: nat;
+          name: text;
+          valid: bool;
+        };
+    });
   incrementScanModelViews: (modelId: text) -> ();
   initDefaultTools: () -> ();
+  initiateOAuthFlow: (req: OAuthInitRequest) ->
+   (variant {
+      err: text;
+      ok: OAuthInitResponse;
+    });
   isCallerAdmin: () -> (bool) query;
+  isComposioRoutingEnabled: () -> (bool) query;
+  isContentEnabledForTier: (tier: text) -> (bool) query;
   isDemoSessionExpired: (sessionId: text) -> (bool) query;
   linkSocialLeadToCRM: (tenantId: text, socialLeadId: text, crmLeadId:
    text) -> ();
+  listLeadEnrichments: () -> (vec LeadAIEnrichment) query;
+  listLeadScores: () -> (vec LeadAIScore) query;
+  listOutreachSequences: () -> (vec OutreachSequence) query;
+  listReplyAnalyses: () -> (vec ReplyAnalysis) query;
   lockSocialContent: (sessionId: text) -> (bool);
   logDripEmailSent: (log: DripQueueEmailLog) -> ();
+  logFunnelStep: (leadId: text, step: text, metadata: opt text) ->
+   (variant {
+      err: text;
+      ok;
+    });
   logTrialInteraction: (kitPageSlug: text, interactionType: text) -> ();
   markBrandKitConverted: (slug: text) ->
    (variant {
@@ -3118,18 +4231,32 @@ service : {
                                          ok;
                                        });
   markNotificationRead: (notificationId: text) -> ();
+  markReplyActionComplete: (replyId: text) -> ();
+  markRoofingEmailOpened: (email: text) -> ();
   markSmsMessagesRead: (threadId: text) -> (variant {
                                               err: text;
                                               ok: bool;
                                             });
   markSocialCommentResponded: (tenantId: text, commentId: text) -> ();
+  masterAgentAppendMessage: (sessionId: text, role: MessageRole, content:
+   text) -> (text);
+  masterAgentDeleteSession: (sessionId: text) -> (bool);
+  masterAgentEndSession: (sessionId: text) -> (bool);
+  masterAgentGetActiveSession: () -> (opt text) query;
+  masterAgentGetContextSnapshot: () -> (MasterAgentContextSnapshot) query;
+  masterAgentGetMessages: (sessionId: text) -> (vec MasterAgentMessage) query;
+  masterAgentListSessions: () -> (vec MasterAgentSession) query;
+  masterAgentStartSession: (platformContext: opt text) -> (text);
   mergeBrowserScoresIntoAuditResult: (jobId: text, tenantId: text) ->
    (variant {
       err: text;
       ok;
     });
+  movePipelineLead: (leadId: text, newLane: text) -> ();
+  n8nTransform: (input: TransformationInput) -> (TransformationOutput) query;
   pauseAutopilotEmail: () -> ();
   pauseNewsletterCampaign: (tenantId: text, campaignId: text) -> (bool);
+  pauseRoofingCampaign: () -> (variant {ok;});
   pauseRunForApproval: (runId: text, reason: text) -> (text);
   pauseSubdomain: (subdomain: text) -> ();
   processBounceEvent: (email: text, bounceType: variant {
@@ -3143,6 +4270,7 @@ service : {
   processEmailReply: (leadId: text, replyBody: text) -> (text);
   processNewsletterMergeTags: (tenantId: text, email: text, htmlBody:
    text) -> (text) query;
+  processNextRoofingCampaignSend: () -> ();
   processSmsReply: (leadId: text, leadName: text, leadNiche: text,
    messageBody: text) -> (text);
   processSmsStop: (phoneNumber: text) -> ();
@@ -3156,6 +4284,11 @@ service : {
                err: text;
                ok: text;
              });
+  provisionTrialAccount: (req: TrialProvisionRequest) ->
+   (variant {
+      err: text;
+      ok: TrialAccount;
+    });
   /// Create a new Vapi assistant for a tenant and store the returned assistantId.
   /// Reads vapiKey from encrypted integration credentials.
   /// Super Admin can provision for any tenant; Agency Admin / Business Owner only their own.
@@ -3165,8 +4298,61 @@ service : {
       err: text;
       ok: text;
     });
+  pushRoofingTemplate: (targetScope: text) ->
+   (record {
+      accountsUpdated: nat;
+      message: text;
+      success: bool;
+    });
+  pushWorkflowPlatformWide: (workflowId: text) -> ();
+  pushWorkflowToAccounts: (workflowId: text, accountIds: vec text) -> ();
+  pushWorkflowToScope: (workflowId: text, scopeText: text) -> ();
+  queryRAG: (question: text, collectionName: text, tenantId: text) ->
+   (record {
+      chunks: vec record {
+                    chunkIndex: nat;
+                    content: text;
+                    id: text;
+                  };
+      citations: vec text;
+      insufficiencyMessage: opt text;
+      isInsufficient: bool;
+    });
   queueSmsForRule: (leadId: text, ruleId: text, ownerName: text, niche: 
    text, phone: text, demoLink: text) -> (text);
+  reEnrollLead: (email: text) -> (variant {
+                                    err: text;
+                                    ok;
+                                  });
+  receiveComposioWebhook: (body: text, signature: text, webhookId: text,
+   timestamp: text) ->
+   (record {
+      body: text;
+      eventType: text;
+      statusCode: nat;
+      success: bool;
+    });
+  receiveN8NWebhook: (payload: text, executionId: text) -> ();
+  receiveSendgridEvents: (body: text) ->
+   (record {
+      processed: nat;
+      success: bool;
+    });
+  receiveSendgridInbound: (params: vec record {
+                                         text;
+                                         text;
+                                       }) -> (text);
+  receiveStripeWebhook: (body: text, sigHeader: text) ->
+   (record {
+      eventType: text;
+      success: bool;
+    });
+  receiveTwilioWebhook: (path: text, params: vec record {
+                                                   text;
+                                                   text;
+                                                 }, signature: text) ->
+   (text);
+  receiveVapiWebhook: (body: text, vapiSecret: text) -> (text);
   recordBrandKitActivity: (slug: text, featureUsed: text) -> ();
   recordBrfCallAttemptResult: (id: text, status:
    variant {
@@ -3185,6 +4371,9 @@ service : {
   recordNewsletterBounce: (tenantId: text, email: text, bounceType:
    BounceType) -> (bool);
   recordOutreachEvent: (event: OutreachEvent) -> ();
+  recordPingResult: (serviceId: text, status: text, latencyMs: nat,
+   errorMessage: opt text) -> ();
+  recordTrialActivity: (trialId: text, eventType: text) -> (nat);
   recordWarmLeadHandoff: (handoff: WarmLeadHandoff) -> ();
   refreshCompetitorIntel: (report: CompetitorIntelReport) -> ();
   registerSubdomain: (subdomain: text) -> ();
@@ -3207,6 +4396,7 @@ service : {
   resetEmailSchedulerTimer: () -> ();
   resetNicheScript: (nicheId: text) -> ();
   resetSmsSchedulerTimer: () -> ();
+  resetToDefaults: () -> (bool);
   resolveApproval: (id: text, status: variant {
                                         approved;
                                         rejected;
@@ -3216,18 +4406,61 @@ service : {
   /// Respond to a review — sets the AI-drafted response and marks it responded.
   respondToReview: (tenantId: TenantId, reviewId: text, response: text) -> ();
   resumeAutopilotEmail: () -> ();
+  resumeRoofingCampaign: () -> (variant {ok;});
+  routeModelRequest: (req: AbacusRouteRequest) ->
+   (variant {
+      err: text;
+      ok: AbacusRouteResponse;
+    });
+  routeThroughComposio: (action: text, params: vec record {
+                                                     text;
+                                                     text;
+                                                   }, accountId: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  runAgentNode: (nodeType: text, inputData: text, tenantId: text) ->
+   (record {
+      id: text;
+      nodeType: text;
+      outputData: text;
+      runAt: int;
+    });
   runPageSpeedAudit: (url: text) -> (text);
   runPageSpeedAuditPublic: (url: text) -> (text);
+  saveAbacusApiKey: (apiKey: text) -> (variant {
+                                         err: text;
+                                         ok: text;
+                                       });
+  saveAccountBrief: (brief: AccountBrief) -> (variant {
+                                                err: text;
+                                                ok: text;
+                                              });
   saveAgentMemory: (memory: AgentMemoryRecord) -> (bool);
   saveAgentTemplate: (tmpl: AgentTemplateStorageRecord) -> (bool);
+  saveAutomationConfig: (_trigger: text, _isEnabled: bool, _requiresApproval:
+   bool, _tenantId: text) -> ();
   saveBrowserAuditResult: (result: BrowserAuditResult) -> ();
   saveCallerUserProfile: (profile: UserProfile) -> ();
+  saveComposioApiKey: (apiKey: text) -> (variant {
+                                           err: text;
+                                           ok: text;
+                                         });
+  saveComposioWebhookSecret: (secret: text) -> (variant {
+                                                  err: text;
+                                                  ok;
+                                                });
   saveDemoAudio: (key: text, base64Audio: text) -> ();
   saveDemoAuditReport: (report: DemoAuditReport) -> (variant {
                                                        err: text;
                                                        ok;
                                                      });
   saveDemoAuditScore: (sessionId: text, score: nat) -> (bool);
+  saveDograhApiKey: (apiKey: text) -> (record {
+                                         message: text;
+                                         success: bool;
+                                       });
   saveDomainSetupState: (clientId: text, state: DomainSetupState) ->
    (variant {
       err: text;
@@ -3247,6 +4480,10 @@ service : {
                                  ok;
                                });
   saveLeadAuditResult: (result: LeadAuditResult) -> ();
+  saveN8NConfig: (instanceUrl: text, apiKey: text) -> ();
+  saveOpenRouterApiKey: (key: text) -> ();
+  saveOperatorChatMessage: (role: text, content: text, commandType:
+   opt text) -> (text);
   /// Save Vapi API key and assistant ID for a tenant, then auto-provision any
   /// niches that are not yet configured if vapiKey is non-empty.
   saveVapiCredentials: (tenantId: text, vapiKey: text, vapiAssistantId:
@@ -3254,6 +4491,13 @@ service : {
                error: opt text;
                ok: bool;
              });
+  saveWebhookSecrets: (stripeSecret: text, vapiSecret: text, sgDomain:
+   text) -> (variant {
+               err: text;
+               ok;
+             });
+  saveWorkflowDef: (id: text, name: text, description: text, tags: vec text,
+   scope: text, workflowJson: text) -> ();
   scheduleBrfOutboundCall: (prospectSlug: text) ->
    (variant {
       err: text;
@@ -3264,6 +4508,7 @@ service : {
   scheduleTrialNudgeEmails: (slug: text) -> ();
   scheduleWarmSequenceEmail: (enrollmentId: text, touchIndex: nat,
    delayHours: nat, recipient: text, subject: text, body: text) -> (text);
+  scoreLead: (leadId: text, companyName: text, niche: text) -> (LeadAIScore);
   scrapeUrl: (req: ScrapeRequest, tenantId: text) -> (ScrapeResult);
   searchLeadsWithLLM: (niche: text, city: text, limit: nat,
    includeEnrichment: bool) -> (variant {
@@ -3291,13 +4536,25 @@ service : {
    (EmailSendResult);
   sendWarmSequenceEmail: (enrollmentId: text, touchIndex: nat, delayHours:
    nat, recipient: text, subject: text, body: text) -> (EmailSendResult);
+  setAccountToolkit: (accountId: text, tools: vec text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  setAgentEnabled: (agentId: text, enabled: bool) -> ();
   setBrandVoiceProfile: (tenantId: text, profile: BrandVoiceProfile) -> ();
   setCachedAudio: (key: text, base64Audio: text) -> ();
+  setComposioAsPrimaryMCP: (enabled: bool) -> (variant {ok: text;});
+  setContentTierToggle: (tier: text, enabled: bool) -> ();
+  setFeatureToggle: (featureName: text, tier: text, isEnabled: bool,
+   modifiedBy: text) -> (bool);
+  setGeminiApiKey: (key: text) -> ();
   setNewsletterCampaignStatus: (tenantId: text, campaignId: text, status:
    CampaignStatus) -> (bool);
   setNicheScriptLines: (nicheId: text, lines: vec text) -> ();
   setNicheVoiceAssignment: (nicheId: text, voiceId: text, voiceName: 
    text) -> ();
+  setOpenRouterTaskModel: (task: text, model: text) -> ();
   setProviderAdapter: (tenantId: text, adapterType: AdapterType, isEnabled:
    bool, apiKey: opt text, baseUrl: opt text, modelId: opt text) -> (
    text);
@@ -3310,17 +4567,34 @@ service : {
                                           }) -> ();
   setSocialCommentResponse: (tenantId: text, commentId: text, response:
    text) -> ();
+  setToolkitToggle: (toggle: ToolkitToggle) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
   shouldLockSocialContent: (sessionId: text) -> (bool) query;
   stageBulkLeadsFromSearch: (tenantId: text, jobId: text, leads_in:
    vec BulkLeadInput) -> (nat);
   stageScrapeLeads: (tenantId: text, scrapeId: nat) -> (nat);
   storeDeliverabilityEvent: (evt: DeliverabilityEvent) -> ();
+  submitAgentCommand: (commandText: text, sessionId: text) ->
+   (AgentCommandResult);
   /// Fetch call logs from Vapi and store new entries in canister state.
   /// Returns the count of newly stored logs.
   syncVapiCallLogs: (tenantId: text) -> (variant {
                                            err: text;
                                            ok: nat;
                                          });
+  testAbacusConnection: () -> (variant {
+                                 err: text;
+                                 ok: text;
+                               });
+  testAllConnections: () -> (IntegrationHealthSummary);
+  testComposioConnection: () -> (variant {
+                                   err: text;
+                                   ok: text;
+                                 });
+  testDograhConnection: () -> (DograhTestResult);
   /// Tests connectivity to the ElevenLabs API using the stored platform key.
   /// Makes an HTTP outcall to GET /v1/voices and returns the voice count on success.
   testElevenLabsConnection: () ->
@@ -3329,14 +4603,26 @@ service : {
       success: bool;
       voiceCount: nat;
     });
+  testEmailSend: () -> (record {
+                          message: text;
+                          success: bool;
+                          timestamp: int;
+                        });
   testIntegration: (tenantId: text, "service": text) ->
    (ConnectionTestResult);
+  testLeadFinderDiagnostic: () -> (text) query;
+  testN8NConnection: () -> (bool);
+  testNvidiaConnection: () -> (IntegrationTestResult);
+  testOpenRouterConnection: () -> (bool);
   testServiceConnection: (tenantId: text, "service": text) ->
    (ConnectionTestResult) query;
+  toggleTriggerRule: (ruleId: text, enabled: bool) -> ();
   trackComplaintRate: () -> (vec record {
                                    text;
                                    float64;
                                  }) query;
+  trackEmailClick: (token: text) -> ();
+  trackEmailOpen: (token: text) -> ();
   trackWarmSequenceEvent: (enrollmentId: text, touchIndex: nat, eventType:
    text) -> ();
   transform: (input: TransformationInput) -> (TransformationOutput) query;
@@ -3346,13 +4632,42 @@ service : {
       err: text;
       ok: text;
     });
+  triggerGridAudit: (email: text) ->
+   (variant {
+      err: text;
+      ok: GridAuditResult;
+    });
   triggerManualDiscovery: () -> (text);
   triggerOutreachEmailSequence: (slug: text) -> ();
+  triggerWorkflow: (workflowId: text, tenantId: text, triggeredBy: text,
+   customVars: vec record {
+                     text;
+                     text;
+                   }) ->
+   (record {
+      errorMessage: opt text;
+      id: text;
+      outputData: text;
+      startedAt: int;
+      status: text;
+      workflowId: text;
+    });
+  unsubscribeFromCampaign: (email: text) -> (variant {
+                                               err: text;
+                                               ok;
+                                             });
   unsubscribeNewsletterEmail: (tenantId: text, email: text) -> (bool);
+  updateAccountBrief: (accountId: text, update: AccountBriefUpdate) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
   updateAgencySettings: (settings: AgencySettings) -> ();
+  updateAgentConfig: (agentId: text, config: text) -> ();
   updateAgentRun: (id: text, status: text, output: text, completedAt:
    opt int, artifactIds: vec text, approvalStatus: text, errorMessage:
    opt text) -> (bool);
+  updateAgentStatus: (agentId: text, status: text, error: opt text) -> ();
   updateAgentThread: (id: text, status: text, messageCount: nat, lastMessage:
    text) -> (bool);
   updateArtifactRecordStatus: (id: text, status: text) -> (bool);
@@ -3368,6 +4683,8 @@ service : {
       ok: Booking;
     });
   updateComplianceConfig: (config: ComplianceConfig) -> ();
+  updateContentResult: (id: text, status: GenerationStatus, output: text,
+   mediaUrl: opt text, errorMsg: opt text) -> ();
   updateDemoFunnelEntry: (tenantId: text, entryId: text, entry:
    DemoFunnelEntry) -> ();
   updateDemoStep: (sessionId: text, step: nat) ->
@@ -3379,16 +4696,26 @@ service : {
   updateDripQueueStatus: (queueId: text, status: text) -> (bool);
   updateDualModelSearchJob: (jobId: text, update:
    DualModelSearchJobUpdate) -> (bool);
+  updateEmailTemplate: (id: nat, subject: text, body: text, fallbackSubject:
+   text, fallbackBody: text) -> (variant {
+                                   err: text;
+                                   ok;
+                                 });
   updateEstimateStatus: (estimateId: text, status: EstimateStatus,
    approvalNotes: text) -> (variant {
                               err: text;
                               ok: Estimate;
                             });
   updateFundabilityScore: (tenantId: TenantId, score: nat) -> ();
+  updateFunnelStep: (leadId: text, step: text) ->
+   (variant {
+      err: text;
+      ok: text;
+    });
+  updateHealthMetric: (metric: text, value: nat) -> ();
   updateLead: (tenantId: TenantId, leadId: text, lead: Lead) -> ();
   updateLeadAuditJobStatus: (jobId: text, status: text, stage: text) ->
    (bool);
-  updateLeadEnrichment: (enrichment: LeadEnrichment) -> ();
   updateMemory: (threadId: text, tenantId: text, conversationEntry:
    ConversationEntry, newSummary: opt text, agentNotes: opt text) -> (
    bool);
@@ -3424,12 +4751,20 @@ service : {
    vec text, memoryMode: MemoryMode, approvalRequired: bool) -> (bool);
   updateThreadSummary: (id: text, summary: text, agentNotes: opt text) ->
    (bool);
+  updateTrialFeatureFlags: (trialAccountId: text, features: FeatureFlags) ->
+   (variant {
+      err: text;
+      ok;
+    });
+  updateTriggerRule: (ruleId: text, updates: TriggerRuleUpdate) -> ();
   /// Update an existing Vapi assistant when client info changes.
   updateVapiAssistant: (tenantId: text, assistantId: text, updates:
    VapiAssistantUpdate) -> (variant {
                               err: text;
                               ok;
                             });
+  uploadDocument: (collectionName: text, title: text, content: text,
+   sourceType: text, tenantId: text) -> (text);
   upsertAgentDeliverable: (deliverable: AgentDeliverable) -> ();
   upsertAgentPerformanceSnapshot: (snapshot: AgentPerformanceSnapshot) -> ();
   upsertAgentProduct: (product: AgentProduct) -> ();

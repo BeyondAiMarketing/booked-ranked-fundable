@@ -11,6 +11,14 @@ import {
   TENANTS,
 } from "./demoData";
 
+interface MonthlyDataPoint {
+  leads: number;
+  reviews: number;
+  [key: string]: unknown;
+}
+
+const FALLBACK_MONTH: MonthlyDataPoint = { leads: 0, reviews: 0 };
+
 const NICHE_LABELS: Record<string, string> = {
   "tenant-oceanside": "restoration",
   "tenant-plumbing": "plumbing",
@@ -42,8 +50,11 @@ export function generateDemoReport(
   const fiveStarCount = tenantReviews.filter((r) => r.rating === 5).length;
 
   const auditScore = auditData?.total ?? 64;
-  const lastMonthData = MONTHLY_DATA[MONTHLY_DATA.length - 1];
-  const prevMonthData = MONTHLY_DATA[MONTHLY_DATA.length - 2];
+  const monthlyTyped = MONTHLY_DATA as unknown as MonthlyDataPoint[];
+  const lastMonthData: MonthlyDataPoint =
+    monthlyTyped[monthlyTyped.length - 1] ?? FALLBACK_MONTH;
+  const prevMonthData: MonthlyDataPoint =
+    monthlyTyped[monthlyTyped.length - 2] ?? FALLBACK_MONTH;
 
   const leadTrend =
     lastMonthData.leads > prevMonthData.leads
@@ -228,81 +239,6 @@ For next month, your growth priorities are: (1) increase monthly review volume t
   };
 }
 
-// Pre-generated demo reports going back 6-8 weeks
-const now = Date.now();
-const DAY = 86400000;
-const WEEK = 7 * DAY;
+export const DEMO_REPORTS: ClientReport[] = [];
 
-function makeReport(
-  tenantId: string,
-  reportType: "weekly" | "monthly",
-  periodLabel: string,
-  weeksAgo: number,
-  scoreDelta = 0,
-): ClientReport {
-  const base = generateDemoReport(tenantId, reportType, periodLabel);
-  return {
-    ...base,
-    id: `report-${tenantId}-${reportType}-${weeksAgo}`,
-    generatedAt: now - weeksAgo * WEEK,
-    deliveredAt: now - weeksAgo * WEEK + 300000,
-    overallScore: Math.min(100, Math.max(30, base.overallScore + scoreDelta)),
-  };
-}
-
-export const DEMO_REPORTS: ClientReport[] = [
-  // tenant-oceanside weekly reports
-  makeReport("tenant-oceanside", "weekly", "Week of Apr 14, 2026", 0, 0),
-  makeReport("tenant-oceanside", "weekly", "Week of Apr 7, 2026", 1, -3),
-  makeReport("tenant-oceanside", "weekly", "Week of Mar 31, 2026", 2, -5),
-  makeReport("tenant-oceanside", "monthly", "March 2026", 2, 2),
-  makeReport("tenant-oceanside", "monthly", "February 2026", 6, -4),
-
-  // tenant-plumbing reports
-  makeReport("tenant-plumbing", "weekly", "Week of Apr 14, 2026", 0, 0),
-  makeReport("tenant-plumbing", "weekly", "Week of Apr 7, 2026", 1, -2),
-  makeReport("tenant-plumbing", "monthly", "March 2026", 2, 5),
-
-  // tenant-medspa reports
-  makeReport("tenant-medspa", "weekly", "Week of Apr 14, 2026", 0, 0),
-  makeReport("tenant-medspa", "monthly", "March 2026", 2, 3),
-  makeReport("tenant-medspa", "monthly", "February 2026", 6, -2),
-
-  // tenant-demo reports
-  makeReport("tenant-demo", "weekly", "Week of Apr 14, 2026", 0, 0),
-  makeReport("tenant-demo", "weekly", "Week of Apr 7, 2026", 1, -4),
-];
-
-export const DEMO_REPORT_SCHEDULES: ReportSchedule[] = [
-  {
-    tenantId: "tenant-oceanside",
-    weeklyEnabled: true,
-    monthlyEnabled: true,
-    deliveryDayOfWeek: 1,
-    deliveryHour: 8,
-    lastGeneratedAt: now - WEEK,
-  },
-  {
-    tenantId: "tenant-plumbing",
-    weeklyEnabled: true,
-    monthlyEnabled: true,
-    deliveryDayOfWeek: 1,
-    deliveryHour: 8,
-    lastGeneratedAt: now - WEEK,
-  },
-  {
-    tenantId: "tenant-medspa",
-    weeklyEnabled: true,
-    monthlyEnabled: false,
-    deliveryDayOfWeek: 1,
-    deliveryHour: 9,
-    lastGeneratedAt: now - WEEK,
-  },
-  {
-    tenantId: "tenant-demo",
-    weeklyEnabled: true,
-    monthlyEnabled: true,
-    deliveryDayOfWeek: 1,
-    deliveryHour: 8,
-  },
-];
+export const DEMO_REPORT_SCHEDULES: ReportSchedule[] = [];

@@ -8,7 +8,7 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
-export const TrialStatus = IDL.Variant({
+export const TrialStatus__1 = IDL.Variant({
   'Active' : IDL.Null,
   'Converted' : IDL.Null,
   'Expired' : IDL.Null,
@@ -36,18 +36,26 @@ export const BrandKitProspect = IDL.Record({
   'outreachKitOpenedAt' : IDL.Opt(IDL.Int),
   'trialExpiresAt' : IDL.Opt(IDL.Int),
   'featuresUsed' : IDL.Vec(IDL.Text),
-  'trialStatus' : TrialStatus,
+  'trialStatus' : TrialStatus__1,
   'firstName' : IDL.Text,
 });
-export const DemoSession = IDL.Record({
-  'auditScore' : IDL.Nat,
-  'createdAt' : IDL.Int,
-  'step' : IDL.Nat,
-  'businessName' : IDL.Text,
-  'socialContentLockedAt' : IDL.Opt(IDL.Int),
-  'niche' : IDL.Text,
-  'sessionId' : IDL.Text,
-  'trialActivatedAt' : IDL.Opt(IDL.Int),
+export const ActivityFeedItemInput = IDL.Record({
+  'id' : IDL.Text,
+  'title' : IDL.Text,
+  'description' : IDL.Text,
+  'entityId' : IDL.Opt(IDL.Text),
+  'timestamp' : IDL.Int,
+  'entityType' : IDL.Opt(IDL.Text),
+  'eventType' : IDL.Text,
+});
+export const AgentLogEntryInput = IDL.Record({
+  'result' : IDL.Text,
+  'action' : IDL.Text,
+  'actionType' : IDL.Text,
+  'agentId' : IDL.Text,
+  'logId' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'isSuccess' : IDL.Bool,
 });
 export const AttributionTouch = IDL.Record({
   'utmParams' : IDL.Text,
@@ -73,6 +81,18 @@ export const DemoFunnelEntry = IDL.Record({
   'lastEngagedAt' : IDL.Int,
   'trialActivated' : IDL.Bool,
 });
+export const InboundReply = IDL.Record({
+  'id' : IDL.Text,
+  'claudeSuggestedAction' : IDL.Text,
+  'subjectLine' : IDL.Text,
+  'actionStatus' : IDL.Text,
+  'claudeSentiment' : IDL.Text,
+  'prospectEmail' : IDL.Text,
+  'receivedAt' : IDL.Int,
+  'claudePainPoints' : IDL.Text,
+  'leadId' : IDL.Text,
+  'bodyText' : IDL.Text,
+});
 export const Time = IDL.Int;
 export const TenantId = IDL.Text;
 export const PaidAdsScore = IDL.Record({
@@ -83,6 +103,26 @@ export const PaidAdsScore = IDL.Record({
   'tenantId' : TenantId,
   'budgetUtilization' : IDL.Nat,
   'roasEfficiency' : IDL.Nat,
+});
+export const PipelineActivityEntry = IDL.Record({
+  'action' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'details' : IDL.Text,
+});
+export const PipelineLead = IDL.Record({
+  'id' : IDL.Text,
+  'ownerEmail' : IDL.Text,
+  'autoTriggerScheduledAt' : IDL.Opt(IDL.Int),
+  'source' : IDL.Text,
+  'laneStatus' : IDL.Text,
+  'businessName' : IDL.Text,
+  'tenantId' : IDL.Text,
+  'activityLog' : IDL.Vec(PipelineActivityEntry),
+  'autoTriggerCancelled' : IDL.Bool,
+  'laneMoveTimestamp' : IDL.Int,
+  'leadId' : IDL.Text,
+  'niche' : IDL.Text,
+  'autoTriggerFiredAt' : IDL.Opt(IDL.Int),
 });
 export const SeoGeoScore = IDL.Record({
   'id' : IDL.Text,
@@ -118,6 +158,26 @@ export const SMSMessage = IDL.Record({
   'threadId' : IDL.Text,
   'readAt' : IDL.Opt(IDL.Int),
 });
+export const TriggerRuleInput = IDL.Record({
+  'action' : IDL.Text,
+  'ruleId' : IDL.Text,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'actionType' : IDL.Text,
+  'conditionType' : IDL.Text,
+  'isEnabled' : IDL.Bool,
+  'condition' : IDL.Text,
+});
+export const TriggerRule = IDL.Record({
+  'action' : IDL.Text,
+  'ruleId' : IDL.Text,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'actionType' : IDL.Text,
+  'conditionType' : IDL.Text,
+  'isEnabled' : IDL.Bool,
+  'condition' : IDL.Text,
+});
 export const WebsiteAgentScore = IDL.Record({
   'id' : IDL.Text,
   'technicalHealth' : IDL.Nat,
@@ -128,6 +188,21 @@ export const WebsiteAgentScore = IDL.Record({
   'trustAuthority' : IDL.Nat,
   'trustSignals' : IDL.Nat,
   'conversionReadiness' : IDL.Nat,
+});
+export const ReplyClassification = IDL.Variant({
+  'HotLead' : IDL.Null,
+  'Unsubscribe' : IDL.Null,
+  'Neutral' : IDL.Null,
+  'PositiveSignal' : IDL.Null,
+  'Objection' : IDL.Null,
+});
+export const ReplyAnalysis = IDL.Record({
+  'suggestedResponse' : IDL.Text,
+  'summary' : IDL.Text,
+  'leadId' : IDL.Text,
+  'analyzedAt' : IDL.Int,
+  'replyId' : IDL.Text,
+  'classification' : ReplyClassification,
 });
 export const AuditLogEntry = IDL.Record({
   'id' : IDL.Text,
@@ -142,6 +217,20 @@ export const UserRole = IDL.Variant({
   'admin' : IDL.Null,
   'user' : IDL.Null,
   'guest' : IDL.Null,
+});
+export const GeneratedLead = IDL.Record({
+  'ownerFirstName' : IDL.Text,
+  'source' : IDL.Text,
+  'temperature' : IDL.Text,
+  'city' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'website' : IDL.Text,
+  'score' : IDL.Nat,
+  'niche' : IDL.Text,
+  'address' : IDL.Text,
+  'enriched' : IDL.Bool,
+  'phone' : IDL.Text,
 });
 export const OutputFormat = IDL.Variant({
   'both' : IDL.Null,
@@ -203,6 +292,11 @@ export const BatchScrapeResult = IDL.Record({
   'ok' : IDL.Bool,
   'count' : IDL.Nat,
   'results' : IDL.Vec(BatchScrapeUrlResult),
+});
+export const BulkToggleRequest = IDL.Record({
+  'tierId' : IDL.Text,
+  'enabled' : IDL.Bool,
+  'toolkitNames' : IDL.Vec(IDL.Text),
 });
 export const ExtendedLeadInput = IDL.Record({
   'googleRanking' : IDL.Opt(IDL.Text),
@@ -274,6 +368,18 @@ export const AgentArtifactRecord = IDL.Record({
   'tenantId' : IDL.Text,
   'threadId' : IDL.Text,
   'runId' : IDL.Text,
+});
+export const DograhCreateAgentRequest = IDL.Record({
+  'nlCommand' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'niche' : IDL.Text,
+});
+export const DograhCommandResult = IDL.Record({
+  'nodesCreated' : IDL.Nat,
+  'agentId' : IDL.Opt(IDL.Text),
+  'message' : IDL.Text,
+  'success' : IDL.Bool,
 });
 export const AgentRunRecord = IDL.Record({
   'id' : IDL.Text,
@@ -692,10 +798,112 @@ export const MemoryMode = IDL.Variant({
   'conversation_only' : IDL.Null,
   'with_summary' : IDL.Null,
 });
+export const http_header = IDL.Record({
+  'value' : IDL.Text,
+  'name' : IDL.Text,
+});
+export const http_request_result = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const TransformationInput = IDL.Record({
+  'context' : IDL.Vec(IDL.Nat8),
+  'response' : http_request_result,
+});
+export const TransformationOutput = IDL.Record({
+  'status' : IDL.Nat,
+  'body' : IDL.Vec(IDL.Nat8),
+  'headers' : IDL.Vec(http_header),
+});
+export const LeadAIEnrichment = IDL.Record({
+  'model' : IDL.Text,
+  'leadId' : IDL.Text,
+  'companyIntel' : IDL.Text,
+  'decisionMakerInfo' : IDL.Text,
+  'enrichedAt' : IDL.Int,
+  'webPresence' : IDL.Text,
+});
+export const EnrollmentResult = IDL.Record({
+  'errors' : IDL.Vec(IDL.Text),
+  'skippedCount' : IDL.Nat,
+  'enrolledCount' : IDL.Nat,
+});
+export const RoofingLead = IDL.Record({
+  'city' : IDL.Text,
+  'businessType' : IDL.Text,
+  'email' : IDL.Text,
+  'website' : IDL.Opt(IDL.Text),
+  'state' : IDL.Text,
+  'companyName' : IDL.Text,
+  'phone' : IDL.Opt(IDL.Text),
+});
+export const OperatorCommandResult = IDL.Record({
+  'requires_confirmation' : IDL.Bool,
+  'intent' : IDL.Text,
+  'affected_count' : IDL.Nat,
+  'recommended_actions' : IDL.Vec(IDL.Text),
+  'affected_niche' : IDL.Text,
+});
+export const ToolActionRequest = IDL.Record({
+  'action' : IDL.Text,
+  'accountId' : IDL.Text,
+  'toolId' : IDL.Text,
+  'params' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+});
+export const ToolActionResponse = IDL.Record({
+  'result' : IDL.Text,
+  'errorMessage' : IDL.Opt(IDL.Text),
+  'success' : IDL.Bool,
+});
 export const LeadExtractionResult = IDL.Record({
   'count' : IDL.Nat,
   'sourceUrl' : IDL.Text,
   'leads' : IDL.Vec(ScrapedLead),
+});
+export const ContentType = IDL.Variant({
+  'Blog' : IDL.Null,
+  'Image' : IDL.Null,
+  'AdCopy' : IDL.Null,
+  'Video' : IDL.Null,
+});
+export const ContentGenerationRequest = IDL.Record({
+  'accountId' : IDL.Text,
+  'contentType' : ContentType,
+  'additionalContext' : IDL.Opt(IDL.Text),
+  'niche' : IDL.Text,
+  'prompt' : IDL.Text,
+});
+export const OutreachSequence = IDL.Record({
+  'id' : IDL.Text,
+  'generatedAt' : IDL.Int,
+  'framework' : IDL.Text,
+  'emails' : IDL.Vec(IDL.Text),
+  'smsMessages' : IDL.Vec(IDL.Text),
+  'leadId' : IDL.Text,
+  'niche' : IDL.Text,
+});
+export const AbacusConfig = IDL.Record({
+  'fallbackModels' : IDL.Vec(IDL.Text),
+  'routingEnabled' : IDL.Bool,
+  'totalRoutedCalls' : IDL.Nat,
+  'apiKey' : IDL.Text,
+  'callsToday' : IDL.Nat,
+  'lastPingStatus' : IDL.Text,
+  'lastTestedAt' : IDL.Opt(IDL.Int),
+  'preferredModel' : IDL.Text,
+});
+export const AccountBrief = IDL.Record({
+  'respondTo' : IDL.Vec(IDL.Text),
+  'accountId' : IDL.Text,
+  'ignoreList' : IDL.Vec(IDL.Text),
+  'tone' : IDL.Text,
+  'offerSummary' : IDL.Text,
+  'doNotRespondList' : IDL.Vec(IDL.Text),
+  'updatedAt' : IDL.Int,
+  'updatedBy' : IDL.Text,
+  'priorityContacts' : IDL.Vec(IDL.Text),
+  'flagKeywords' : IDL.Vec(IDL.Text),
 });
 export const AdapterType = IDL.Variant({
   'native' : IDL.Null,
@@ -769,6 +977,15 @@ export const AgentDeliverable = IDL.Record({
   'scoreImpact' : IDL.Opt(IDL.Nat),
   'attachments' : IDL.Vec(IDL.Text),
 });
+export const AgentLogEntry = IDL.Record({
+  'result' : IDL.Text,
+  'action' : IDL.Text,
+  'actionType' : IDL.Text,
+  'agentId' : IDL.Text,
+  'logId' : IDL.Text,
+  'timestamp' : IDL.Int,
+  'isSuccess' : IDL.Bool,
+});
 export const AgentMemoryRecord = IDL.Record({
   'id' : IDL.Text,
   'content' : IDL.Text,
@@ -820,6 +1037,23 @@ export const AgentServiceRequest = IDL.Record({
   'pageUrl' : IDL.Text,
   'priority' : IDL.Text,
   'attachments' : IDL.Vec(IDL.Text),
+});
+export const AgentSessionState = IDL.Record({
+  'startedAt' : IDL.Int,
+  'lastSeenAt' : IDL.Int,
+  'userId' : IDL.Text,
+  'isActive' : IDL.Bool,
+  'sessionId' : IDL.Text,
+});
+export const AgentStatus = IDL.Record({
+  'status' : IDL.Text,
+  'nextScheduledAt' : IDL.Opt(IDL.Int),
+  'lastRunAt' : IDL.Opt(IDL.Int),
+  'agentName' : IDL.Text,
+  'agentId' : IDL.Text,
+  'isEnabled' : IDL.Bool,
+  'lastError' : IDL.Opt(IDL.Text),
+  'config' : IDL.Text,
 });
 export const AgentSubscription = IDL.Record({
   'id' : IDL.Text,
@@ -884,6 +1118,84 @@ export const ClientHealthScore = IDL.Record({
   'websiteScore' : IDL.Nat,
   'agentScore' : IDL.Nat,
 });
+export const ComposioTool = IDL.Record({
+  'id' : IDL.Text,
+  'accountId' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'connected' : IDL.Bool,
+  'category' : IDL.Text,
+});
+export const CampaignLeadStatus = IDL.Variant({
+  'active' : IDL.Null,
+  'unsubscribed' : IDL.Null,
+  'completed' : IDL.Null,
+  'paused' : IDL.Null,
+});
+export const LeadCampaignStatus = IDL.Record({
+  'status' : CampaignLeadStatus,
+  'lastSentAt' : IDL.Opt(IDL.Int),
+  'city' : IDL.Text,
+  'leadEmail' : IDL.Text,
+  'lastOpenedAt' : IDL.Opt(IDL.Int),
+  'businessType' : IDL.Text,
+  'website' : IDL.Opt(IDL.Text),
+  'state' : IDL.Text,
+  'currentStep' : IDL.Nat,
+  'enrolledAt' : IDL.Int,
+  'companyName' : IDL.Text,
+  'phone' : IDL.Opt(IDL.Text),
+});
+export const FunnelStepType = IDL.Variant({
+  'EmailSent' : IDL.Null,
+  'TrialActivated' : IDL.Null,
+  'DemoCompleted' : IDL.Null,
+  'DemoStarted' : IDL.Null,
+  'DemoStep1' : IDL.Null,
+  'DemoStep2' : IDL.Null,
+  'DemoStep3' : IDL.Null,
+  'DemoStep4' : IDL.Null,
+  'EmailOpened' : IDL.Null,
+  'EmailClicked' : IDL.Null,
+});
+export const FunnelEvent = IDL.Record({
+  'metadata' : IDL.Opt(IDL.Text),
+  'step' : FunnelStepType,
+  'leadId' : IDL.Text,
+  'timestamp' : IDL.Int,
+});
+export const FunnelTimeline = IDL.Record({
+  'events' : IDL.Vec(FunnelEvent),
+  'leadId' : IDL.Text,
+});
+export const GenerationStatus = IDL.Variant({
+  'Failed' : IDL.Null,
+  'Generating' : IDL.Null,
+  'Complete' : IDL.Null,
+  'Pending' : IDL.Null,
+});
+export const ContentGenerationResult = IDL.Record({
+  'id' : IDL.Text,
+  'status' : GenerationStatus,
+  'output' : IDL.Text,
+  'accountId' : IDL.Text,
+  'contentType' : ContentType,
+  'generatedAt' : IDL.Int,
+  'mediaUrl' : IDL.Opt(IDL.Text),
+  'niche' : IDL.Text,
+  'prompt' : IDL.Text,
+  'errorMsg' : IDL.Opt(IDL.Text),
+});
+export const LeadCampaignDetails = IDL.Record({
+  'auditScore' : IDL.Opt(IDL.Nat),
+  'lastSentAt' : IDL.Opt(IDL.Int),
+  'usedFallback' : IDL.Opt(IDL.Bool),
+  'missingServices' : IDL.Opt(IDL.Text),
+  'topCompetitor' : IDL.Opt(IDL.Text),
+  'templateVersionUsed' : IDL.Opt(IDL.Nat),
+  'currentEmailDay' : IDL.Nat,
+  'deadZones' : IDL.Opt(IDL.Nat),
+});
 export const ScriptLine = IDL.Record({
   'pauseAfterMs' : IDL.Nat,
   'text' : IDL.Text,
@@ -941,6 +1253,30 @@ export const SeoGeoSubscription = IDL.Record({
   'price' : IDL.Nat,
   'assignedStrategist' : IDL.Text,
   'startDate' : Time,
+});
+export const ToolkitToggle = IDL.Record({
+  'appliedAt' : IDL.Int,
+  'tierId' : IDL.Text,
+  'enabled' : IDL.Bool,
+  'toolkitName' : IDL.Text,
+});
+export const TrialStatus = IDL.Variant({
+  'Active' : IDL.Null,
+  'Converted' : IDL.Null,
+  'Expired' : IDL.Null,
+});
+export const TrialAccount = IDL.Record({
+  'id' : IDL.Text,
+  'status' : TrialStatus,
+  'expiresAt' : IDL.Int,
+  'city' : IDL.Text,
+  'businessName' : IDL.Text,
+  'email' : IDL.Text,
+  'website' : IDL.Opt(IDL.Text),
+  'provisionedAt' : IDL.Int,
+  'leadId' : IDL.Text,
+  'niche' : IDL.Text,
+  'phone' : IDL.Opt(IDL.Text),
 });
 export const WebsiteAgentSubscription = IDL.Record({
   'id' : IDL.Text,
@@ -1186,6 +1522,14 @@ export const CampaignInstance = IDL.Record({
   'templateId' : IDL.Text,
   'tenantId' : TenantId,
 });
+export const CampaignStats = IDL.Record({
+  'emailsSentAllTime' : IDL.Nat,
+  'emailsSentWeek' : IDL.Nat,
+  'clickRate' : IDL.Float64,
+  'totalEnrolled' : IDL.Nat,
+  'emailsSentToday' : IDL.Nat,
+  'openRate' : IDL.Float64,
+});
 export const CampaignTemplate = IDL.Record({
   'id' : IDL.Text,
   'active' : IDL.Bool,
@@ -1199,6 +1543,24 @@ export const CampaignTemplate = IDL.Record({
   'niche' : IDL.Text,
   'campaignType' : IDL.Text,
   'triggers' : IDL.Vec(IDL.Text),
+});
+export const AgentActionKind = IDL.Variant({
+  'EditSequence' : IDL.Null,
+  'ModifyStep' : IDL.Null,
+  'FireBulkSend' : IDL.Null,
+  'Unknown' : IDL.Null,
+  'QueryLeads' : IDL.Null,
+});
+export const CommandLogEntry = IDL.Record({
+  'id' : IDL.Text,
+  'agentAction' : AgentActionKind,
+  'executedAt' : IDL.Opt(IDL.Int),
+  'userId' : IDL.Text,
+  'confirmationPreview' : IDL.Text,
+  'executionResult' : IDL.Opt(IDL.Text),
+  'timestamp' : IDL.Int,
+  'sessionId' : IDL.Text,
+  'commandText' : IDL.Text,
 });
 export const CompetitorAlert = IDL.Record({
   'id' : IDL.Text,
@@ -1262,6 +1624,10 @@ export const VoiceAgentConfig = IDL.Record({
   'twilioNumber' : IDL.Text,
   'services' : IDL.Vec(IDL.Text),
 });
+export const ContentTierToggle = IDL.Record({
+  'tier' : IDL.Text,
+  'contentCreationEnabled' : IDL.Bool,
+});
 export const CsvImportBatch = IDL.Record({
   'id' : IDL.Text,
   'status' : IDL.Text,
@@ -1297,6 +1663,16 @@ export const DemoAuditReport = IDL.Record({
   'score' : IDL.Nat,
   'niche' : IDL.Text,
 });
+export const DemoSession = IDL.Record({
+  'auditScore' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'step' : IDL.Nat,
+  'businessName' : IDL.Text,
+  'socialContentLockedAt' : IDL.Opt(IDL.Int),
+  'niche' : IDL.Text,
+  'sessionId' : IDL.Text,
+  'trialActivatedAt' : IDL.Opt(IDL.Int),
+});
 export const DiscoveryConfig = IDL.Record({
   'cities' : IDL.Vec(IDL.Text),
   'enabled' : IDL.Bool,
@@ -1304,6 +1680,19 @@ export const DiscoveryConfig = IDL.Record({
   'dailyCap' : IDL.Nat,
   'niche' : IDL.Text,
   'leadsPerCity' : IDL.Nat,
+});
+export const DograhAgent = IDL.Record({
+  'id' : IDL.Text,
+  'status' : IDL.Text,
+  'name' : IDL.Text,
+  'description' : IDL.Text,
+  'lastModified' : IDL.Int,
+  'nodeCount' : IDL.Nat,
+});
+export const DograhConfig = IDL.Record({
+  'baseUrl' : IDL.Text,
+  'isEnabled' : IDL.Bool,
+  'apiKey' : IDL.Text,
 });
 export const PropagationStatus = IDL.Record({
   'isLive' : IDL.Bool,
@@ -1326,13 +1715,18 @@ export const DomainSetupState = IDL.Record({
 export const DripQueueEmailLog = IDL.Record({
   'id' : IDL.Text,
   'status' : IDL.Text,
+  'clickedAt' : IDL.Opt(IDL.Int),
   'errorMessage' : IDL.Opt(IDL.Text),
+  'trackingToken' : IDL.Text,
   'sentAt' : IDL.Opt(IDL.Int),
   'tenantId' : IDL.Text,
   'retryCount' : IDL.Nat,
+  'clickCount' : IDL.Nat,
   'queueId' : IDL.Text,
+  'openCount' : IDL.Nat,
   'recipientName' : IDL.Text,
   'recipientEmail' : IDL.Text,
+  'openedAt' : IDL.Opt(IDL.Int),
 });
 export const DualModelSearchJob = IDL.Record({
   'id' : IDL.Text,
@@ -1399,6 +1793,15 @@ export const EmailReplyRecord = IDL.Record({
     'interested' : IDL.Null,
   }),
 });
+export const EmailTemplate = IDL.Record({
+  'id' : IDL.Nat,
+  'day' : IDL.Nat,
+  'fallbackBody' : IDL.Text,
+  'subject' : IDL.Text,
+  'body' : IDL.Text,
+  'updatedAt' : IDL.Int,
+  'fallbackSubject' : IDL.Text,
+});
 export const EngagementApprovalStatus = IDL.Variant({
   'pending' : IDL.Null,
   'approved' : IDL.Null,
@@ -1442,6 +1845,23 @@ export const ExtendedLead = IDL.Record({
   'agentSubscriptions' : IDL.Vec(IDL.Text),
   'localAds' : IDL.Opt(IDL.Text),
 });
+export const FeatureToggleLog = IDL.Record({
+  'id' : IDL.Text,
+  'modifiedAt' : IDL.Int,
+  'modifiedBy' : IDL.Text,
+  'tier' : IDL.Text,
+  'newValue' : IDL.Bool,
+  'previousValue' : IDL.Bool,
+  'featureName' : IDL.Text,
+});
+export const FeatureToggle = IDL.Record({
+  'proEnabled' : IDL.Bool,
+  'agencyEnabled' : IDL.Bool,
+  'basicEnabled' : IDL.Bool,
+  'lastModifiedBy' : IDL.Text,
+  'lastModifiedTime' : IDL.Int,
+  'featureName' : IDL.Text,
+});
 export const FreeAuditLead = IDL.Record({
   'id' : IDL.Text,
   'overallScore' : IDL.Nat,
@@ -1460,6 +1880,47 @@ export const FundabilityScore = IDL.Record({
   'eligibilityPhase' : IDL.Nat,
   'creditworthinessPhase' : IDL.Nat,
 });
+export const FunnelRecord = IDL.Record({
+  'demoCompletedAt' : IDL.Opt(IDL.Int),
+  'demoStartedAt' : IDL.Opt(IDL.Int),
+  'clickedAt' : IDL.Opt(IDL.Int),
+  'funnelStep' : IDL.Text,
+  'emailSentAt' : IDL.Opt(IDL.Int),
+  'campaignId' : IDL.Text,
+  'leadId' : IDL.Text,
+  'niche' : IDL.Text,
+  'enrolledAt' : IDL.Int,
+  'trialProvisionedAt' : IDL.Opt(IDL.Int),
+  'openedAt' : IDL.Opt(IDL.Int),
+});
+export const GridPoint = IDL.Record({
+  'lat' : IDL.Float64,
+  'lng' : IDL.Float64,
+  'direction' : IDL.Text,
+  'competitorAtTop' : IDL.Text,
+  'rankPosition' : IDL.Nat,
+  'searched' : IDL.Bool,
+});
+export const GridAuditResult = IDL.Record({
+  'gridPoints' : IDL.Vec(GridPoint),
+  'coverageZoneSummary' : IDL.Text,
+  'scannedAt' : IDL.Int,
+  'city' : IDL.Text,
+  'leadEmail' : IDL.Text,
+  'businessName' : IDL.Text,
+  'state' : IDL.Text,
+});
+export const GridAuditSnapshot = IDL.Record({
+  'result' : GridAuditResult,
+  'snapshotAt' : IDL.Int,
+});
+export const HealthMetrics = IDL.Record({
+  'trialsActive' : IDL.Nat,
+  'apiStatus' : IDL.Bool,
+  'demosRunning' : IDL.Nat,
+  'outreachSent' : IDL.Nat,
+  'leadsToday' : IDL.Nat,
+});
 export const HumanOversightAssignment = IDL.Record({
   'id' : IDL.Text,
   'status' : IDL.Text,
@@ -1472,11 +1933,19 @@ export const HumanOversightAssignment = IDL.Record({
 });
 export const MaskedCredentials = IDL.Record({
   'serpApiKey' : IDL.Text,
+  'geminiApiKey' : IDL.Text,
+  'serpApiDevKey' : IDL.Text,
   'claudeKey' : IDL.Text,
   'twilioSid' : IDL.Text,
+  'sendgridInboundParseDomain' : IDL.Text,
+  'dograhApiKey' : IDL.Text,
   'yelpApiKey' : IDL.Text,
+  'vapiWebhookSecret' : IDL.Text,
   'googleClientId' : IDL.Text,
+  'n8nInstanceUrl' : IDL.Text,
+  'abacusApiKey' : IDL.Text,
   'twilioAuth' : IDL.Text,
+  'composioApiKey' : IDL.Text,
   'searxngUrl' : IDL.Text,
   'neverBounceKey' : IDL.Text,
   'autoBrowserUrl' : IDL.Text,
@@ -1486,6 +1955,7 @@ export const MaskedCredentials = IDL.Record({
   'emailSmtpPass' : IDL.Text,
   'emailSmtpPort' : IDL.Text,
   'emailSmtpUser' : IDL.Text,
+  'openRouterApiKey' : IDL.Text,
   'elevenLabsVoiceId' : IDL.Text,
   'listmonkUrl' : IDL.Text,
   'litellmKey' : IDL.Text,
@@ -1496,13 +1966,29 @@ export const MaskedCredentials = IDL.Record({
   'listmonkPass' : IDL.Text,
   'listmonkUser' : IDL.Text,
   'sendgridKey' : IDL.Text,
+  'tinyFishKey' : IDL.Text,
   'googleClientSecret' : IDL.Text,
   'twilioNumber' : IDL.Text,
+  'nvidiaApiKey' : IDL.Text,
   'facebookAppSecret' : IDL.Text,
+  'composioWebhookSecret' : IDL.Text,
   'stripeKey' : IDL.Text,
   'ollamaUrl' : IDL.Text,
   'stripeWebhookSecret' : IDL.Text,
+  'nvidiaNimApiKey' : IDL.Text,
   'openaiKey' : IDL.Text,
+});
+export const IntegrationTestResult = IDL.Record({
+  'provider' : IDL.Text,
+  'testedAt' : IDL.Int,
+  'latencyMs' : IDL.Opt(IDL.Nat),
+  'message' : IDL.Text,
+  'connected' : IDL.Bool,
+});
+export const IntegrationHealthSummary = IDL.Record({
+  'failedWebhookCounts' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  'secondary' : IDL.Vec(IntegrationTestResult),
+  'critical' : IDL.Vec(IntegrationTestResult),
 });
 export const Invoice = IDL.Record({
   'id' : IDL.Text,
@@ -1544,6 +2030,8 @@ export const LeadAuditResult = IDL.Record({
   'growthScore' : IDL.Nat,
   'interactionType' : IDL.Opt(IDL.Text),
   'socialInstagram' : IDL.Opt(IDL.Text),
+  'outreachPriority' : IDL.Text,
+  'overallScore' : IDL.Nat,
   'pushedAt' : IDL.Opt(IDL.Int),
   'socialFacebook' : IDL.Opt(IDL.Text),
   'websiteUrl' : IDL.Text,
@@ -1569,20 +2057,21 @@ export const LeadAuditResult = IDL.Record({
   'trialActivatedAt' : IDL.Opt(IDL.Int),
   'engagementScore' : IDL.Nat,
   'firstTouchEmailSubject' : IDL.Text,
+  'painPointAngles' : IDL.Vec(IDL.Text),
 });
-export const VerificationStatus = IDL.Variant({
-  'Invalid' : IDL.Null,
-  'Unverified' : IDL.Null,
-  'Verified' : IDL.Null,
-  'Pending' : IDL.Null,
+export const SourceQualityData = IDL.Record({
+  'paid_converted' : IDL.Nat,
+  'source' : IDL.Text,
+  'trials_converted' : IDL.Nat,
+  'avg_quality_score' : IDL.Float64,
+  'total_leads' : IDL.Nat,
 });
-export const LeadEnrichment = IDL.Record({
-  'emailVerificationStatus' : VerificationStatus,
-  'emailVerifiedAt' : IDL.Opt(IDL.Int),
-  'canReceiveOutreach' : IDL.Bool,
-  'phoneVerifiedAt' : IDL.Opt(IDL.Int),
+export const LeadAIScore = IDL.Record({
+  'scoredAt' : IDL.Int,
+  'signals' : IDL.Vec(IDL.Text),
+  'score' : IDL.Nat,
+  'fitReason' : IDL.Text,
   'leadId' : IDL.Text,
-  'phoneVerificationStatus' : VerificationStatus,
 });
 export const LocationProfile = IDL.Record({
   'id' : IDL.Text,
@@ -1659,11 +2148,35 @@ export const NewsletterSendLog = IDL.Record({
   'email' : IDL.Text,
   'openedAt' : IDL.Opt(IDL.Int),
 });
+export const NicheConversionData = IDL.Record({
+  'paid_customers' : IDL.Nat,
+  'niche' : IDL.Text,
+  'demos_started' : IDL.Nat,
+  'trials_activated' : IDL.Nat,
+});
 export const NicheVoiceAssignment = IDL.Record({
   'voiceName' : IDL.Text,
   'nicheId' : IDL.Text,
   'assignedAt' : IDL.Int,
   'voiceId' : IDL.Text,
+});
+export const OperatorChatMessage = IDL.Record({
+  'id' : IDL.Text,
+  'content' : IDL.Text,
+  'createdAt' : Time,
+  'role' : IDL.Text,
+  'commandType' : IDL.Opt(IDL.Text),
+});
+export const OperatorReportData = IDL.Record({
+  'generated_at' : Time,
+  'report_type' : IDL.Text,
+  'sections' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+});
+export const OperatorStats = IDL.Record({
+  'leads_today' : IDL.Nat,
+  'api_health_summary' : IDL.Text,
+  'trials_this_week' : IDL.Nat,
+  'outreach_sent_today' : IDL.Nat,
 });
 export const OutreachEvent = IDL.Record({
   'id' : IDL.Text,
@@ -1749,6 +2262,23 @@ export const PaymentMethod = IDL.Record({
   'isDefault' : IDL.Bool,
   'cardLast4' : IDL.Text,
 });
+export const OutreachQueuedAction = IDL.Record({
+  'id' : IDL.Text,
+  'status' : IDL.Text,
+  'emailSubject' : IDL.Opt(IDL.Text),
+  'actionType' : IDL.Text,
+  'leadId' : IDL.Text,
+  'emailBody' : IDL.Opt(IDL.Text),
+  'autoFireAt' : IDL.Int,
+  'scheduledAt' : IDL.Int,
+});
+export const ApiPingRecord = IDL.Record({
+  'status' : IDL.Text,
+  'errorMessage' : IDL.Opt(IDL.Text),
+  'latencyMs' : IDL.Nat,
+  'serviceId' : IDL.Text,
+  'lastPingTime' : IDL.Int,
+});
 export const PipelineFunnelStats = IDL.Record({
   'leadsSourced' : IDL.Nat,
   'warmSequenceActive' : IDL.Nat,
@@ -1774,6 +2304,15 @@ export const ReadinessScore = IDL.Record({
   'breakdown' : IDL.Vec(ReadinessBreakdownItem),
   'score' : IDL.Nat,
   'autoBrowserConfigured' : IDL.Bool,
+});
+export const ActivityFeedItem = IDL.Record({
+  'id' : IDL.Text,
+  'title' : IDL.Text,
+  'description' : IDL.Text,
+  'entityId' : IDL.Opt(IDL.Text),
+  'timestamp' : IDL.Int,
+  'entityType' : IDL.Opt(IDL.Text),
+  'eventType' : IDL.Text,
 });
 export const ReplyInboxItem = IDL.Record({
   'id' : IDL.Text,
@@ -2035,6 +2574,14 @@ export const ToolDefinition = IDL.Record({
   'category' : IDL.Text,
   'requiresApproval' : IDL.Bool,
 });
+export const FeatureFlags = IDL.Record({
+  'crm' : IDL.Bool,
+  'social' : IDL.Bool,
+  'analytics' : IDL.Bool,
+  'reputation' : IDL.Bool,
+  'voiceAgent' : IDL.Bool,
+  'creditBuilder' : IDL.Bool,
+});
 export const WarmSequenceEmailSchedule = IDL.Record({
   'id' : IDL.Text,
   'status' : IDL.Text,
@@ -2054,6 +2601,7 @@ export const VapiCallLog = IDL.Record({
   'duration' : IDL.Nat,
   'callerPhone' : IDL.Text,
   'endedAt' : IDL.Opt(IDL.Int),
+  'recordingUrl' : IDL.Opt(IDL.Text),
   'recordedAt' : IDL.Int,
   'tenantId' : IDL.Text,
   'callId' : IDL.Text,
@@ -2091,6 +2639,14 @@ export const WarmSequenceEmailEvent = IDL.Record({
   'enrollmentId' : IDL.Text,
   'occurredAt' : IDL.Int,
   'touchIndex' : IDL.Nat,
+  'eventType' : IDL.Text,
+});
+export const WebhookEvent = IDL.Record({
+  'status' : IDL.Variant({ 'ok' : IDL.Null, 'failed' : IDL.Null }),
+  'provider' : IDL.Text,
+  'receivedAt' : IDL.Int,
+  'errorMsg' : IDL.Opt(IDL.Text),
+  'payload' : IDL.Text,
   'eventType' : IDL.Text,
 });
 export const WebsiteContentBrief = IDL.Record({
@@ -2163,13 +2719,76 @@ export const SubscriberImportResult = IDL.Record({
   'skipped' : IDL.Nat,
   'errors' : IDL.Vec(IDL.Text),
 });
+export const OAuthInitRequest = IDL.Record({
+  'accountId' : IDL.Text,
+  'redirectUri' : IDL.Text,
+  'toolId' : IDL.Text,
+});
+export const OAuthInitResponse = IDL.Record({
+  'state' : IDL.Text,
+  'authUrl' : IDL.Text,
+});
+export const MessageRole = IDL.Variant({
+  'System' : IDL.Null,
+  'User' : IDL.Null,
+  'Assistant' : IDL.Null,
+});
+export const MasterAgentContextSnapshot = IDL.Record({
+  'recentActivity' : IDL.Vec(IDL.Text),
+  'totalLeads' : IDL.Nat,
+  'timestamp' : IDL.Int,
+  'activeTrials' : IDL.Nat,
+  'totalCampaigns' : IDL.Nat,
+  'totalAccounts' : IDL.Nat,
+});
+export const MasterAgentMessage = IDL.Record({
+  'content' : IDL.Text,
+  'role' : MessageRole,
+  'timestamp' : IDL.Int,
+});
+export const MasterAgentSession = IDL.Record({
+  'startedAt' : IDL.Int,
+  'messages' : IDL.Vec(MasterAgentMessage),
+  'lastActiveAt' : IDL.Int,
+  'platformContext' : IDL.Opt(IDL.Text),
+  'sessionId' : IDL.Text,
+});
+export const TrialProvisionRequest = IDL.Record({
+  'city' : IDL.Text,
+  'businessName' : IDL.Text,
+  'email' : IDL.Text,
+  'website' : IDL.Opt(IDL.Text),
+  'leadId' : IDL.Text,
+  'niche' : IDL.Text,
+  'phone' : IDL.Opt(IDL.Text),
+});
+export const AbacusRouteRequest = IDL.Record({
+  'temperature' : IDL.Opt(IDL.Float64),
+  'taskType' : IDL.Text,
+  'prompt' : IDL.Text,
+  'maxTokens' : IDL.Opt(IDL.Nat),
+});
+export const AbacusRouteResponse = IDL.Record({
+  'selectedModel' : IDL.Text,
+  'tokensUsed' : IDL.Nat,
+  'routingReason' : IDL.Text,
+  'response' : IDL.Text,
+});
 export const IntegrationCredentials = IDL.Record({
   'serpApiKey' : IDL.Text,
+  'geminiApiKey' : IDL.Text,
+  'serpApiDevKey' : IDL.Text,
   'claudeKey' : IDL.Text,
   'twilioSid' : IDL.Text,
+  'sendgridInboundParseDomain' : IDL.Text,
+  'dograhApiKey' : IDL.Text,
   'yelpApiKey' : IDL.Text,
+  'vapiWebhookSecret' : IDL.Text,
   'googleClientId' : IDL.Text,
+  'n8nInstanceUrl' : IDL.Text,
+  'abacusApiKey' : IDL.Text,
   'twilioAuth' : IDL.Text,
+  'composioApiKey' : IDL.Text,
   'searxngUrl' : IDL.Text,
   'neverBounceKey' : IDL.Text,
   'autoBrowserUrl' : IDL.Text,
@@ -2179,6 +2798,7 @@ export const IntegrationCredentials = IDL.Record({
   'emailSmtpPass' : IDL.Text,
   'emailSmtpPort' : IDL.Text,
   'emailSmtpUser' : IDL.Text,
+  'openRouterApiKey' : IDL.Text,
   'elevenLabsVoiceId' : IDL.Text,
   'listmonkUrl' : IDL.Text,
   'litellmKey' : IDL.Text,
@@ -2189,36 +2809,30 @@ export const IntegrationCredentials = IDL.Record({
   'listmonkPass' : IDL.Text,
   'listmonkUser' : IDL.Text,
   'sendgridKey' : IDL.Text,
+  'n8nApiKey' : IDL.Vec(IDL.Nat8),
+  'tinyFishKey' : IDL.Text,
   'googleClientSecret' : IDL.Text,
   'twilioNumber' : IDL.Text,
+  'nvidiaApiKey' : IDL.Vec(IDL.Nat8),
   'facebookAppSecret' : IDL.Text,
+  'composioWebhookSecret' : IDL.Text,
   'stripeKey' : IDL.Text,
   'ollamaUrl' : IDL.Text,
   'stripeWebhookSecret' : IDL.Text,
+  'nvidiaNimApiKey' : IDL.Text,
   'openaiKey' : IDL.Text,
 });
-export const GeneratedLead = IDL.Record({
-  'ownerFirstName' : IDL.Text,
-  'source' : IDL.Text,
-  'temperature' : IDL.Text,
-  'city' : IDL.Text,
-  'name' : IDL.Text,
-  'description' : IDL.Text,
-  'website' : IDL.Text,
-  'score' : IDL.Nat,
-  'niche' : IDL.Text,
-  'address' : IDL.Text,
-  'enriched' : IDL.Bool,
-  'phone' : IDL.Text,
-});
 export const LLMLeadSearchResult = IDL.Record({
+  'totalFound' : IDL.Nat,
   'enrichedCount' : IDL.Nat,
+  'tinyFishCount' : IDL.Nat,
   'errors' : IDL.Vec(IDL.Text),
   'openAICount' : IDL.Nat,
   'leads' : IDL.Vec(GeneratedLead),
   'claudeCount' : IDL.Nat,
   'searchedAt' : IDL.Int,
   'serpApiUsed' : IDL.Bool,
+  'serpApiCount' : IDL.Nat,
 });
 export const EmailSendResult = IDL.Variant({
   'ok' : IDL.Text,
@@ -2236,29 +2850,33 @@ export const BulkLeadInput = IDL.Record({
   'researchSource' : IDL.Text,
   'avgRating' : IDL.Opt(IDL.Float64),
 });
+export const AgentCommandResult = IDL.Record({
+  'requiresConfirmation' : IDL.Bool,
+  'preview' : IDL.Text,
+  'error' : IDL.Opt(IDL.Text),
+  'actionId' : IDL.Text,
+});
+export const DograhTestResult = IDL.Record({
+  'agentCount' : IDL.Nat,
+  'message' : IDL.Text,
+  'connected' : IDL.Bool,
+});
 export const ConnectionTestResult = IDL.Record({
+  'lastTestError' : IDL.Opt(IDL.Text),
   'message' : IDL.Text,
   'connected' : IDL.Bool,
   'statusCode' : IDL.Nat,
   'quotaInfo' : IDL.Opt(IDL.Text),
+  'lastTestedAt' : IDL.Opt(IDL.Int),
 });
-export const http_header = IDL.Record({
-  'value' : IDL.Text,
-  'name' : IDL.Text,
-});
-export const http_request_result = IDL.Record({
-  'status' : IDL.Nat,
-  'body' : IDL.Vec(IDL.Nat8),
-  'headers' : IDL.Vec(http_header),
-});
-export const TransformationInput = IDL.Record({
-  'context' : IDL.Vec(IDL.Nat8),
-  'response' : http_request_result,
-});
-export const TransformationOutput = IDL.Record({
-  'status' : IDL.Nat,
-  'body' : IDL.Vec(IDL.Nat8),
-  'headers' : IDL.Vec(http_header),
+export const AccountBriefUpdate = IDL.Record({
+  'respondTo' : IDL.Opt(IDL.Vec(IDL.Text)),
+  'ignoreList' : IDL.Opt(IDL.Vec(IDL.Text)),
+  'tone' : IDL.Opt(IDL.Text),
+  'offerSummary' : IDL.Opt(IDL.Text),
+  'doNotRespondList' : IDL.Opt(IDL.Vec(IDL.Text)),
+  'priorityContacts' : IDL.Opt(IDL.Vec(IDL.Text)),
+  'flagKeywords' : IDL.Opt(IDL.Vec(IDL.Text)),
 });
 export const DualModelSearchJobUpdate = IDL.Record({
   'status' : IDL.Opt(
@@ -2275,6 +2893,14 @@ export const DualModelSearchJobUpdate = IDL.Record({
   'totalLeadsStaged' : IDL.Opt(IDL.Nat),
   'claudeLeadsFound' : IDL.Opt(IDL.Nat),
   'openaiLeadsFound' : IDL.Opt(IDL.Nat),
+});
+export const TriggerRuleUpdate = IDL.Record({
+  'action' : IDL.Opt(IDL.Text),
+  'name' : IDL.Opt(IDL.Text),
+  'actionType' : IDL.Opt(IDL.Text),
+  'conditionType' : IDL.Opt(IDL.Text),
+  'isEnabled' : IDL.Opt(IDL.Bool),
+  'condition' : IDL.Opt(IDL.Text),
 });
 export const VapiAssistantUpdate = IDL.Record({
   'businessName' : IDL.Opt(IDL.Text),
@@ -2295,12 +2921,23 @@ export const idlService = IDL.Service({
       [
         IDL.Text,
         IDL.Text,
-        IDL.Opt(IDL.Text),
-        IDL.Opt(IDL.Text),
-        IDL.Opt(IDL.Text),
-        IDL.Opt(IDL.Text),
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
+        IDL.Text,
       ],
-      [IDL.Variant({ 'ok' : DemoSession, 'err' : IDL.Text })],
+      [
+        IDL.Variant({
+          'ok' : IDL.Record({
+            'loginUrl' : IDL.Text,
+            'emailWarning' : IDL.Opt(IDL.Text),
+            'trialAccountId' : IDL.Text,
+          }),
+          'err' : IDL.Text,
+        }),
+      ],
       [],
     ),
   'activateTrialForDemo' : IDL.Func(
@@ -2313,14 +2950,23 @@ export const idlService = IDL.Service({
       ],
       [],
     ),
+  'addActivityFeedItem' : IDL.Func([ActivityFeedItemInput], [], []),
+  'addAgentLog' : IDL.Func([AgentLogEntryInput], [], []),
   'addAttributionTouch' : IDL.Func(
       [IDL.Text, AttributionTouch],
       [IDL.Bool],
       [],
     ),
+  'addConversationMessage' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [],
+      [],
+    ),
   'addDemoFunnelEntry' : IDL.Func([DemoFunnelEntry], [], []),
+  'addInboundReply' : IDL.Func([InboundReply], [], []),
   'addLeadFromSocialComment' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'addPaidAdsScore' : IDL.Func([PaidAdsScore], [], []),
+  'addPipelineLead' : IDL.Func([PipelineLead], [], []),
   'addScanPhoto' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
   'addSeoGeoScore' : IDL.Func([SeoGeoScore], [], []),
   'addSeoGeoVisibilitySnapshot' : IDL.Func([SeoGeoVisibilitySnapshot], [], []),
@@ -2329,8 +2975,14 @@ export const idlService = IDL.Service({
       [IDL.Variant({ 'ok' : SMSMessage, 'err' : IDL.Text })],
       [],
     ),
+  'addTriggerRule' : IDL.Func([TriggerRuleInput], [TriggerRule], []),
   'addWebsiteAgentScore' : IDL.Func([WebsiteAgentScore], [], []),
   'advanceWarmupDay' : IDL.Func([], [], []),
+  'analyzeReply' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [ReplyAnalysis],
+      [],
+    ),
   'appendAuditLog' : IDL.Func([AuditLogEntry], [], []),
   'approveAndPushToCrm' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   'approveBrowserAudit' : IDL.Func(
@@ -2339,6 +2991,7 @@ export const idlService = IDL.Service({
       [],
     ),
   'approveEngagement' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'approveQueuedAction' : IDL.Func([IDL.Text], [], []),
   'approveReplyDraft' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'archiveSmsThread' : IDL.Func(
       [IDL.Text],
@@ -2352,27 +3005,66 @@ export const idlService = IDL.Service({
       [IDL.Bool],
       [],
     ),
+  'autoAuditLeads' : IDL.Func(
+      [IDL.Text, IDL.Vec(GeneratedLead)],
+      [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+      [],
+    ),
+  'autoEnrollOnInit' : IDL.Func([], [], []),
   'batchScrape' : IDL.Func(
       [BatchScrapeRequest, IDL.Text],
       [BatchScrapeResult],
       [],
     ),
   'buildComplianceFooter' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
+  'bulkApplyToggleToTier' : IDL.Func(
+      [BulkToggleRequest],
+      [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+      [],
+    ),
+  'bulkEnrollRoofingLeads' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+      [],
+    ),
   'bulkImportLeads' : IDL.Func(
       [IDL.Text, IDL.Vec(ExtendedLeadInput)],
       [BulkImportResult],
       [],
     ),
+  'bulkSetFeatureToggles' : IDL.Func(
+      [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Bool)), IDL.Text],
+      [IDL.Bool],
+      [],
+    ),
+  'callOpenRouterForTask' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
+  'cancelAutoTrigger' : IDL.Func([IDL.Text], [], []),
+  'cancelQueuedAction' : IDL.Func([IDL.Text], [], []),
   'checkDnsRecords' : IDL.Func([IDL.Text], [DnsCheckResult], []),
   'checkRobotsTxt' : IDL.Func([IDL.Text], [RobotsCheckResult], []),
   'checkSocialPresence' : IDL.Func([IDL.Text], [SocialPresence], []),
   'checkSocialPresencePublic' : IDL.Func([IDL.Text], [SocialPresence], []),
+  'clearComposioWebhookSecret' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'clearMemory' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'clearNicheAudioCache' : IDL.Func([IDL.Text], [], []),
   'clearScrapeHistory' : IDL.Func([IDL.Text], [], []),
+  'commitWorkflowBatch' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'completeDemo' : IDL.Func(
       [IDL.Text, IDL.Text],
       [IDL.Variant({ 'ok' : AuditReport, 'err' : IDL.Text })],
+      [],
+    ),
+  'completeDemoAndProvisionTrial' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
       [],
     ),
   'completeRun' : IDL.Func(
@@ -2381,6 +3073,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'createAgentArtifact' : IDL.Func([AgentArtifactRecord], [IDL.Bool], []),
+  'createAgentFromCommand' : IDL.Func(
+      [DograhCreateAgentRequest],
+      [DograhCommandResult],
+      [],
+    ),
   'createAgentRun' : IDL.Func([AgentRunRecord], [IDL.Bool], []),
   'createAgentThread' : IDL.Func([AgentThreadRecord], [IDL.Bool], []),
   'createApprovalItem' : IDL.Func(
@@ -2558,6 +3255,12 @@ export const idlService = IDL.Service({
   'deleteChatWidgetConfig' : IDL.Func([TenantId], [], []),
   'deleteCompetitorAlert' : IDL.Func([IDL.Text], [], []),
   'deleteCompetitorProfile' : IDL.Func([IDL.Text], [], []),
+  'deleteCredential' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Record({ 'ok' : IDL.Bool, 'message' : IDL.Text })],
+      [],
+    ),
+  'deleteGeneratedContent' : IDL.Func([IDL.Text], [], []),
   'deleteLead' : IDL.Func([TenantId, IDL.Text], [], []),
   'deleteLeadAttribution' : IDL.Func([IDL.Text], [], []),
   'deleteLocationProfile' : IDL.Func([IDL.Text], [], []),
@@ -2568,9 +3271,26 @@ export const idlService = IDL.Service({
   'deleteScanModel' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'deleteSocialPost' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'deleteTemplate' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'deleteTriggerRule' : IDL.Func([IDL.Text], [], []),
   'deleteVoiceAgentConfig' : IDL.Func([TenantId], [], []),
+  'deleteWorkflowDef' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'deployAgent' : IDL.Func(
+      [IDL.Text],
+      [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
+      [],
+    ),
   'dismissCompetitorAlert' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'dismissSocialListeningAlert' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'dograhTransform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
+  'editAgentFromCommand' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [DograhCommandResult],
+      [],
+    ),
   'enqueueLeadSequence' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [IDL.Nat],
@@ -2581,11 +3301,108 @@ export const idlService = IDL.Service({
       [IDL.Nat],
       [],
     ),
+  'enrichLead' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [LeadAIEnrichment],
+      [],
+    ),
+  'enrollAllRoofingLeads' : IDL.Func(
+      [IDL.Text, IDL.Nat],
+      [IDL.Variant({ 'ok' : EnrollmentResult, 'err' : IDL.Text })],
+      [],
+    ),
+  'enrollLeadInFunnel' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'enrollRoofingLead' : IDL.Func(
+      [RoofingLead],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'enrollRoofingLeadsIntoCampaign' : IDL.Func(
+      [],
+      [IDL.Record({ 'enrolled' : IDL.Nat, 'skipped' : IDL.Nat })],
+      [],
+    ),
+  'executeAgentAction' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Record({
+          'ok' : IDL.Bool,
+          'error' : IDL.Opt(IDL.Text),
+          'logId' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
+  'executeOperatorCommand' : IDL.Func(
+      [IDL.Text],
+      [OperatorCommandResult],
+      ['query'],
+    ),
+  'executeToolAction' : IDL.Func(
+      [ToolActionRequest],
+      [IDL.Variant({ 'ok' : ToolActionResponse, 'err' : IDL.Text })],
+      [],
+    ),
   'extractLeads' : IDL.Func([IDL.Text, IDL.Text], [LeadExtractionResult], []),
   'failRun' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
   'flagEngagement' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'flushSmsQueue' : IDL.Func([], [IDL.Nat], []),
+  'generateContent' : IDL.Func([ContentGenerationRequest], [IDL.Text], []),
+  'generateOutreachSequence' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [OutreachSequence],
+      [],
+    ),
+  'generateTailoredEmailCopy' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'generateTailoredEmailForLead' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
   'generateUnsubscribeToken' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
+  'getAIUsageLogs' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'provider' : IDL.Text,
+            'inputTokens' : IDL.Nat,
+            'success' : IDL.Bool,
+            'loggedAt' : IDL.Int,
+          })
+        ),
+      ],
+      ['query'],
+    ),
+  'getAbacusApiKeyStatus' : IDL.Func(
+      [IDL.Text],
+      [IDL.Record({ 'maskedKey' : IDL.Text, 'configured' : IDL.Bool })],
+      [],
+    ),
+  'getAbacusStats' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : AbacusConfig, 'err' : IDL.Text })],
+      [],
+    ),
+  'getAccountBrief' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : AccountBrief, 'err' : IDL.Text })],
+      [],
+    ),
+  'getAccountToolkit' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text })],
+      [],
+    ),
   'getActiveAdapter' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(ProviderAdapterConfig)],
@@ -2607,6 +3424,11 @@ export const idlService = IDL.Service({
       [IDL.Vec(AgentDeliverable)],
       ['query'],
     ),
+  'getAgentLogs' : IDL.Func(
+      [IDL.Text, IDL.Nat],
+      [IDL.Vec(AgentLogEntry)],
+      ['query'],
+    ),
   'getAgentMemoryByThread' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(AgentMemoryRecord)],
@@ -2618,6 +3440,17 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getAgentProducts' : IDL.Func([], [IDL.Vec(AgentProduct)], ['query']),
+  'getAgentQuota' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'dailyCount' : IDL.Nat,
+          'dailyLimit' : IDL.Nat,
+          'remaining' : IDL.Nat,
+        }),
+      ],
+      ['query'],
+    ),
   'getAgentRunsByTenant' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(AgentRunRecord)],
@@ -2633,6 +3466,8 @@ export const idlService = IDL.Service({
       [IDL.Vec(AgentServiceRequest)],
       ['query'],
     ),
+  'getAgentSession' : IDL.Func([], [IDL.Opt(AgentSessionState)], ['query']),
+  'getAgentStatuses' : IDL.Func([], [IDL.Vec(AgentStatus)], ['query']),
   'getAgentSubscriptionsByTenant' : IDL.Func(
       [TenantId],
       [IDL.Vec(AgentSubscription)],
@@ -2658,6 +3493,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(AgentThreadRecord)],
       ['query'],
     ),
+  'getAllAgentLogs' : IDL.Func([IDL.Nat], [IDL.Vec(AgentLogEntry)], ['query']),
   'getAllAgentServiceRequests' : IDL.Func(
       [],
       [IDL.Vec(AgentServiceRequest)],
@@ -2679,6 +3515,36 @@ export const idlService = IDL.Service({
       [IDL.Vec(ClientHealthScore)],
       ['query'],
     ),
+  'getAllComposioTools' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Vec(ComposioTool), 'err' : IDL.Text })],
+      [],
+    ),
+  'getAllEnrolledLeads' : IDL.Func(
+      [],
+      [IDL.Vec(LeadCampaignStatus)],
+      ['query'],
+    ),
+  'getAllFunnelEvents' : IDL.Func(
+      [],
+      [
+        IDL.Variant({
+          'ok' : IDL.Vec(IDL.Tuple(IDL.Text, FunnelTimeline)),
+          'err' : IDL.Text,
+        }),
+      ],
+      ['query'],
+    ),
+  'getAllGeneratedContent' : IDL.Func(
+      [],
+      [IDL.Vec(ContentGenerationResult)],
+      ['query'],
+    ),
+  'getAllLeadCampaignDetails' : IDL.Func(
+      [],
+      [IDL.Vec(LeadCampaignDetails)],
+      ['query'],
+    ),
   'getAllNewsletterSubscribers' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(NewsletterSubscriber)],
@@ -2698,6 +3564,16 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getAllTenants' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+  'getAllToolkitToggles' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Vec(ToolkitToggle), 'err' : IDL.Text })],
+      [],
+    ),
+  'getAllTrialAccounts' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Vec(TrialAccount), 'err' : IDL.Text })],
+      ['query'],
+    ),
   'getAllWebsiteAgentSubscriptions' : IDL.Func(
       [],
       [IDL.Vec(WebsiteAgentSubscription)],
@@ -2742,6 +3618,19 @@ export const idlService = IDL.Service({
   'getAudioCacheKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getAuditLog' : IDL.Func([], [IDL.Vec(AuditLogEntry)], ['query']),
   'getAuditScore' : IDL.Func([TenantId], [IDL.Opt(AuditScore)], ['query']),
+  'getAutomationConfigs' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'trigger' : IDL.Text,
+            'isEnabled' : IDL.Bool,
+            'requiresApproval' : IDL.Bool,
+          })
+        ),
+      ],
+      ['query'],
+    ),
   'getAutopilotEmailConfig' : IDL.Func([], [AutopilotConfig], ['query']),
   'getBatchAuditJobs' : IDL.Func(
       [IDL.Text],
@@ -2845,6 +3734,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(CampaignInstance)],
       ['query'],
     ),
+  'getCampaignStats' : IDL.Func([], [CampaignStats], ['query']),
   'getCampaignTemplates' : IDL.Func([], [IDL.Vec(CampaignTemplate)], ['query']),
   'getChatWidgetConfig' : IDL.Func(
       [TenantId],
@@ -2862,6 +3752,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getClientReports' : IDL.Func([IDL.Text], [IDL.Vec(ClientReport)], ['query']),
+  'getCommandHistory' : IDL.Func(
+      [IDL.Nat, IDL.Nat],
+      [IDL.Vec(CommandLogEntry)],
+      ['query'],
+    ),
   'getCompetitorAlertsByTenant' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(CompetitorAlert)],
@@ -2883,9 +3778,55 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getComplianceConfig' : IDL.Func([], [ComplianceConfig], ['query']),
+  'getComposioApiKeyStatus' : IDL.Func(
+      [IDL.Text],
+      [IDL.Record({ 'maskedKey' : IDL.Text, 'configured' : IDL.Bool })],
+      [],
+    ),
+  'getComposioToolkitStatus' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Record({
+          'tools' : IDL.Vec(IDL.Text),
+          'accountId' : IDL.Text,
+          'usingDefault' : IDL.Bool,
+        }),
+      ],
+      [],
+    ),
+  'getComposioWebhookSecretStatus' : IDL.Func(
+      [],
+      [IDL.Record({ 'configured' : IDL.Bool })],
+      ['query'],
+    ),
   'getConfiguredVoiceAgents' : IDL.Func(
       [],
       [IDL.Vec(VoiceAgentConfig)],
+      ['query'],
+    ),
+  'getConnectedTools' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Vec(ComposioTool), 'err' : IDL.Text })],
+      [],
+    ),
+  'getContentTierToggles' : IDL.Func(
+      [],
+      [IDL.Vec(ContentTierToggle)],
+      ['query'],
+    ),
+  'getConversationHistory' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'content' : IDL.Text,
+            'role' : IDL.Text,
+            'timestamp' : IDL.Int,
+            'citations' : IDL.Vec(IDL.Text),
+          })
+        ),
+      ],
       ['query'],
     ),
   'getCsvImportBatches' : IDL.Func(
@@ -2922,6 +3863,8 @@ export const idlService = IDL.Service({
     ),
   'getDemoSession' : IDL.Func([IDL.Text], [IDL.Opt(DemoSession)], ['query']),
   'getDiscoveryConfig' : IDL.Func([], [DiscoveryConfig], ['query']),
+  'getDograhAgents' : IDL.Func([], [IDL.Vec(DograhAgent)], []),
+  'getDograhConfig' : IDL.Func([], [IDL.Opt(DograhConfig)], []),
   'getDomainSetupState' : IDL.Func(
       [IDL.Text],
       [IDL.Variant({ 'ok' : IDL.Opt(DomainSetupState), 'err' : IDL.Text })],
@@ -2962,34 +3905,121 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getEmailReplyRecords' : IDL.Func([], [IDL.Vec(EmailReplyRecord)], ['query']),
+  'getEmailStats' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Variant({
+          'ok' : IDL.Record({
+            'opened' : IDL.Nat,
+            'sent' : IDL.Nat,
+            'clicked' : IDL.Nat,
+          }),
+          'err' : IDL.Text,
+        }),
+      ],
+      ['query'],
+    ),
+  'getEmailTemplates' : IDL.Func([], [IDL.Vec(EmailTemplate)], ['query']),
   'getEngagementApprovals' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(EngagementApproval)],
       ['query'],
     ),
   'getEstimatesByTenant' : IDL.Func([IDL.Text], [IDL.Vec(Estimate)], ['query']),
+  'getExecutionLog' : IDL.Func(
+      [IDL.Opt(IDL.Text)],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'status' : IDL.Text,
+            'completedAt' : IDL.Opt(IDL.Int),
+            'startedAt' : IDL.Int,
+            'errorMessage' : IDL.Opt(IDL.Text),
+            'tenantId' : IDL.Text,
+            'outputData' : IDL.Text,
+            'workflowId' : IDL.Text,
+          })
+        ),
+      ],
+      ['query'],
+    ),
   'getExtendedLeadsByTenant' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(ExtendedLead)],
       ['query'],
     ),
+  'getFeatureToggleLogs' : IDL.Func([], [IDL.Vec(FeatureToggleLog)], ['query']),
+  'getFeatureToggles' : IDL.Func([], [IDL.Vec(FeatureToggle)], ['query']),
   'getFreeAuditLeads' : IDL.Func([], [IDL.Vec(FreeAuditLead)], ['query']),
   'getFundabilityScore' : IDL.Func(
       [TenantId],
       [IDL.Opt(FundabilityScore)],
       ['query'],
     ),
+  'getFunnelRecord' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : FunnelRecord, 'err' : IDL.Text })],
+      ['query'],
+    ),
+  'getFunnelTimeline' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : FunnelTimeline, 'err' : IDL.Text })],
+      ['query'],
+    ),
+  'getGeminiKeyStatus' : IDL.Func(
+      [],
+      [IDL.Record({ 'configured' : IDL.Bool })],
+      ['query'],
+    ),
+  'getGeneratedContent' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(ContentGenerationResult)],
+      ['query'],
+    ),
+  'getGeneratedContentById' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(ContentGenerationResult)],
+      ['query'],
+    ),
+  'getGridAudit' : IDL.Func([IDL.Text], [IDL.Opt(GridAuditResult)], ['query']),
+  'getGridHistory' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(GridAuditSnapshot)],
+      ['query'],
+    ),
+  'getHealthMetrics' : IDL.Func([], [HealthMetrics], ['query']),
   'getHumanOversightAssignmentsByTenant' : IDL.Func(
       [TenantId],
       [IDL.Vec(HumanOversightAssignment)],
       ['query'],
+    ),
+  'getInboundReplies' : IDL.Func(
+      [IDL.Opt(IDL.Text)],
+      [IDL.Vec(InboundReply)],
+      [],
     ),
   'getIntegrationCredentials' : IDL.Func(
       [IDL.Text],
       [MaskedCredentials],
       ['query'],
     ),
+  'getIntegrationHealth' : IDL.Func([], [IntegrationHealthSummary], ['query']),
   'getInvoicesByTenant' : IDL.Func([TenantId], [IDL.Vec(Invoice)], ['query']),
+  'getKnowledgeDocuments' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'title' : IDL.Text,
+            'chunkCount' : IDL.Nat,
+            'uploadedAt' : IDL.Int,
+          })
+        ),
+      ],
+      ['query'],
+    ),
   'getLastDiscoveryJob' : IDL.Func(
       [],
       [IDL.Opt(ScheduledDiscoveryJob)],
@@ -3023,12 +4053,38 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getLeadById' : IDL.Func([TenantId, IDL.Text], [IDL.Opt(Lead)], ['query']),
-  'getLeadEnrichment' : IDL.Func(
+  'getLeadCampaignDetails' : IDL.Func(
       [IDL.Text],
-      [IDL.Opt(LeadEnrichment)],
+      [IDL.Opt(LeadCampaignDetails)],
       ['query'],
     ),
+  'getLeadEnrichment' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(LeadAIEnrichment)],
+      ['query'],
+    ),
+  'getLeadEnrollmentStatus' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Variant({
+          'ok' : IDL.Record({
+            'total' : IDL.Nat,
+            'pending' : IDL.Nat,
+            'enrolled' : IDL.Nat,
+          }),
+          'err' : IDL.Text,
+        }),
+      ],
+      ['query'],
+    ),
+  'getLeadQualityBySource' : IDL.Func(
+      [],
+      [IDL.Vec(SourceQualityData)],
+      ['query'],
+    ),
+  'getLeadScore' : IDL.Func([IDL.Text], [IDL.Opt(LeadAIScore)], ['query']),
   'getLeadsByBatch' : IDL.Func([IDL.Text], [IDL.Vec(ExtendedLead)], ['query']),
+  'getLeadsByNiche' : IDL.Func([IDL.Text], [IDL.Vec(ExtendedLead)], ['query']),
   'getLeadsBySegment' : IDL.Func(
       [
         IDL.Text,
@@ -3051,6 +4107,19 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getMemory' : IDL.Func([IDL.Text], [IDL.Opt(AgentMemory)], ['query']),
+  'getN8NConfig' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'instanceUrl' : IDL.Text,
+          'activeWorkflowCount' : IDL.Nat,
+          'isConnected' : IDL.Bool,
+          'lastTestedAt' : IDL.Opt(IDL.Int),
+          'totalExecutionsToday' : IDL.Nat,
+        }),
+      ],
+      ['query'],
+    ),
   'getNewsletterAnalytics' : IDL.Func(
       [IDL.Text],
       [NewsletterCampaignStats],
@@ -3081,6 +4150,11 @@ export const idlService = IDL.Service({
       [IDL.Opt(NewsletterSubscriber)],
       ['query'],
     ),
+  'getNicheConversionFunnels' : IDL.Func(
+      [],
+      [IDL.Vec(NicheConversionData)],
+      ['query'],
+    ),
   'getNicheScript' : IDL.Func([IDL.Text], [IDL.Opt(NicheScript)], ['query']),
   'getNicheScriptForSession' : IDL.Func(
       [IDL.Text],
@@ -3103,6 +4177,35 @@ export const idlService = IDL.Service({
       [IDL.Vec(NotificationRecord)],
       ['query'],
     ),
+  'getOpenRouterStatus' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'costPerMillion' : IDL.Text,
+          'contextWindow' : IDL.Nat,
+          'isConnected' : IDL.Bool,
+          'defaultModel' : IDL.Text,
+          'lastPingTime' : IDL.Opt(IDL.Int),
+        }),
+      ],
+      [],
+    ),
+  'getOpenRouterTaskOverrides' : IDL.Func(
+      [],
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [],
+    ),
+  'getOperatorChatHistory' : IDL.Func(
+      [],
+      [IDL.Vec(OperatorChatMessage)],
+      ['query'],
+    ),
+  'getOperatorReportData' : IDL.Func(
+      [IDL.Text],
+      [OperatorReportData],
+      ['query'],
+    ),
+  'getOperatorStats' : IDL.Func([], [OperatorStats], ['query']),
   'getOptedOutEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getOptedOutPhones' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'getOutreachEvents' : IDL.Func(
@@ -3121,6 +4224,11 @@ export const idlService = IDL.Service({
           'avgResponseRate' : IDL.Float64,
         }),
       ],
+      ['query'],
+    ),
+  'getOutreachSequencesForLead' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(OutreachSequence)],
       ['query'],
     ),
   'getPaidAdsAdCopiesByTenant' : IDL.Func(
@@ -3169,14 +4277,33 @@ export const idlService = IDL.Service({
       [IDL.Vec(ApprovalItem)],
       ['query'],
     ),
+  'getPendingQueuedActions' : IDL.Func([], [IDL.Vec(OutreachQueuedAction)], []),
+  'getPingHistory' : IDL.Func([IDL.Text], [IDL.Vec(ApiPingRecord)], ['query']),
+  'getPingStatus' : IDL.Func([], [IDL.Vec(ApiPingRecord)], ['query']),
   'getPipelineFunnelStats' : IDL.Func(
       [IDL.Text],
       [PipelineFunnelStats],
       ['query'],
     ),
+  'getPipelineLeads' : IDL.Func([], [IDL.Vec(PipelineLead)], []),
   'getProviderAdapters' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(ProviderAdapterConfig)],
+      ['query'],
+    ),
+  'getProviderConfigs' : IDL.Func(
+      [],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'isActive' : IDL.Bool,
+            'modelName' : IDL.Text,
+            'lastPingStatus' : IDL.Opt(IDL.Text),
+            'providerType' : IDL.Text,
+          })
+        ),
+      ],
       ['query'],
     ),
   'getQueuePerformanceStats' : IDL.Func(
@@ -3203,6 +4330,12 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getReadinessScore' : IDL.Func([IDL.Text], [ReadinessScore], ['query']),
+  'getRecentActivity' : IDL.Func([IDL.Nat], [IDL.Vec(ActivityFeedItem)], []),
+  'getReplyAnalysis' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(ReplyAnalysis)],
+      ['query'],
+    ),
   'getReplyInboxItems' : IDL.Func([], [IDL.Vec(ReplyInboxItem)], ['query']),
   'getReportSchedule' : IDL.Func(
       [IDL.Text],
@@ -3235,6 +4368,11 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'getReviewsByTenantId' : IDL.Func([TenantId], [IDL.Vec(Review)], ['query']),
+  'getRoofingCampaignStatus' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(LeadCampaignStatus)],
+      ['query'],
+    ),
   'getRunsByTenant' : IDL.Func([IDL.Text], [IDL.Vec(AgentRun)], ['query']),
   'getRunsByThread' : IDL.Func([IDL.Text], [IDL.Vec(AgentRun)], ['query']),
   'getScanModel' : IDL.Func([IDL.Text], [IDL.Opt(ScanModel)], ['query']),
@@ -3372,10 +4510,36 @@ export const idlService = IDL.Service({
       [IDL.Vec(AgentThread)],
       ['query'],
     ),
+  'getToolkitToggles' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Vec(ToolkitToggle), 'err' : IDL.Text })],
+      [],
+    ),
   'getTools' : IDL.Func([], [IDL.Vec(ToolDefinition)], ['query']),
   'getToolsByCategory' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(ToolDefinition)],
+      ['query'],
+    ),
+  'getTopPerformingNiche' : IDL.Func(
+      [],
+      [IDL.Opt(NicheConversionData)],
+      ['query'],
+    ),
+  'getTrialAccount' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+      ['query'],
+    ),
+  'getTrialActivityScore' : IDL.Func([IDL.Text], [IDL.Nat], []),
+  'getTrialByLeadId' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+      ['query'],
+    ),
+  'getTrialFeatureFlags' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(FeatureFlags)],
       ['query'],
     ),
   'getTrialNudgeSchedule' : IDL.Func(
@@ -3383,6 +4547,7 @@ export const idlService = IDL.Service({
       [IDL.Vec(WarmSequenceEmailSchedule)],
       ['query'],
     ),
+  'getTriggerRules' : IDL.Func([], [IDL.Vec(TriggerRule)], ['query']),
   'getUserProfile' : IDL.Func(
       [IDL.Principal],
       [IDL.Opt(UserProfile)],
@@ -3406,6 +4571,17 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getVectorIndexStatus' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'collectionsCount' : IDL.Nat,
+          'totalChunks' : IDL.Nat,
+          'totalDocuments' : IDL.Nat,
+        }),
+      ],
+      ['query'],
+    ),
   'getVoiceAgentConfig' : IDL.Func(
       [TenantId],
       [IDL.Opt(VoiceAgentConfig)],
@@ -3420,6 +4596,21 @@ export const idlService = IDL.Service({
   'getWarmSequenceSchedules' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(WarmSequenceEmailSchedule)],
+      ['query'],
+    ),
+  'getWebhookLog' : IDL.Func([IDL.Text], [IDL.Vec(WebhookEvent)], ['query']),
+  'getWebhookUrl' : IDL.Func([], [IDL.Text], ['query']),
+  'getWebhookUrls' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'stripe' : IDL.Text,
+          'twilio' : IDL.Text,
+          'vapi' : IDL.Text,
+          'composio' : IDL.Text,
+          'sendgrid' : IDL.Text,
+        }),
+      ],
       ['query'],
     ),
   'getWebsiteAgentScores' : IDL.Func(
@@ -3460,6 +4651,24 @@ export const idlService = IDL.Service({
   'getWhiteLabelConfig' : IDL.Func(
       [TenantId],
       [IDL.Opt(WhiteLabelConfig)],
+      ['query'],
+    ),
+  'getWorkflowDefs' : IDL.Func(
+      [],
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'pushedToAccounts' : IDL.Vec(IDL.Text),
+            'name' : IDL.Text,
+            'createdAt' : IDL.Int,
+            'tags' : IDL.Vec(IDL.Text),
+            'description' : IDL.Text,
+            'isActive' : IDL.Bool,
+            'scope' : IDL.Text,
+          })
+        ),
+      ],
       ['query'],
     ),
   'handleNewsletterBounce' : IDL.Func(
@@ -3514,13 +4723,62 @@ export const idlService = IDL.Service({
       [SubscriberImportResult],
       [],
     ),
+  'importWorkflowBatch' : IDL.Func(
+      [
+        IDL.Vec(
+          IDL.Record({
+            'id' : IDL.Text,
+            'name' : IDL.Text,
+            'tags' : IDL.Vec(IDL.Text),
+            'description' : IDL.Text,
+            'scope' : IDL.Text,
+            'workflowJson' : IDL.Text,
+          })
+        ),
+      ],
+      [
+        IDL.Record({
+          'results' : IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'valid' : IDL.Bool,
+              'name' : IDL.Text,
+              'errors' : IDL.Vec(IDL.Text),
+              'index' : IDL.Nat,
+            })
+          ),
+          'batchId' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
   'incrementScanModelViews' : IDL.Func([IDL.Text], [], []),
   'initDefaultTools' : IDL.Func([], [], []),
+  'initiateOAuthFlow' : IDL.Func(
+      [OAuthInitRequest],
+      [IDL.Variant({ 'ok' : OAuthInitResponse, 'err' : IDL.Text })],
+      [],
+    ),
   'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+  'isComposioRoutingEnabled' : IDL.Func([], [IDL.Bool], ['query']),
+  'isContentEnabledForTier' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'isDemoSessionExpired' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'linkSocialLeadToCRM' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
+  'listLeadEnrichments' : IDL.Func([], [IDL.Vec(LeadAIEnrichment)], ['query']),
+  'listLeadScores' : IDL.Func([], [IDL.Vec(LeadAIScore)], ['query']),
+  'listOutreachSequences' : IDL.Func(
+      [],
+      [IDL.Vec(OutreachSequence)],
+      ['query'],
+    ),
+  'listReplyAnalyses' : IDL.Func([], [IDL.Vec(ReplyAnalysis)], ['query']),
   'lockSocialContent' : IDL.Func([IDL.Text], [IDL.Bool], []),
   'logDripEmailSent' : IDL.Func([DripQueueEmailLog], [], []),
+  'logFunnelStep' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'logTrialInteraction' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'markBrandKitConverted' : IDL.Func(
       [IDL.Text],
@@ -3533,19 +4791,52 @@ export const idlService = IDL.Service({
       [],
     ),
   'markNotificationRead' : IDL.Func([IDL.Text], [], []),
+  'markReplyActionComplete' : IDL.Func([IDL.Text], [], []),
+  'markRoofingEmailOpened' : IDL.Func([IDL.Text], [], []),
   'markSmsMessagesRead' : IDL.Func(
       [IDL.Text],
       [IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text })],
       [],
     ),
   'markSocialCommentResponded' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'masterAgentAppendMessage' : IDL.Func(
+      [IDL.Text, MessageRole, IDL.Text],
+      [IDL.Text],
+      [],
+    ),
+  'masterAgentDeleteSession' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'masterAgentEndSession' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'masterAgentGetActiveSession' : IDL.Func([], [IDL.Opt(IDL.Text)], ['query']),
+  'masterAgentGetContextSnapshot' : IDL.Func(
+      [],
+      [MasterAgentContextSnapshot],
+      ['query'],
+    ),
+  'masterAgentGetMessages' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(MasterAgentMessage)],
+      ['query'],
+    ),
+  'masterAgentListSessions' : IDL.Func(
+      [],
+      [IDL.Vec(MasterAgentSession)],
+      ['query'],
+    ),
+  'masterAgentStartSession' : IDL.Func([IDL.Opt(IDL.Text)], [IDL.Text], []),
   'mergeBrowserScoresIntoAuditResult' : IDL.Func(
       [IDL.Text, IDL.Text],
       [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
       [],
     ),
+  'movePipelineLead' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'n8nTransform' : IDL.Func(
+      [TransformationInput],
+      [TransformationOutput],
+      ['query'],
+    ),
   'pauseAutopilotEmail' : IDL.Func([], [], []),
   'pauseNewsletterCampaign' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'pauseRoofingCampaign' : IDL.Func([], [IDL.Variant({ 'ok' : IDL.Null })], []),
   'pauseRunForApproval' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'pauseSubdomain' : IDL.Func([IDL.Text], [], []),
   'processBounceEvent' : IDL.Func(
@@ -3567,6 +4858,7 @@ export const idlService = IDL.Service({
       [IDL.Text],
       ['query'],
     ),
+  'processNextRoofingCampaignSend' : IDL.Func([], [], []),
   'processSmsReply' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [IDL.Text],
@@ -3583,9 +4875,46 @@ export const idlService = IDL.Service({
       [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
       [],
     ),
+  'provisionTrialAccount' : IDL.Func(
+      [TrialProvisionRequest],
+      [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+      [],
+    ),
   'provisionVapiAssistant' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text)],
       [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'pushRoofingTemplate' : IDL.Func(
+      [IDL.Text],
+      [
+        IDL.Record({
+          'accountsUpdated' : IDL.Nat,
+          'message' : IDL.Text,
+          'success' : IDL.Bool,
+        }),
+      ],
+      [],
+    ),
+  'pushWorkflowPlatformWide' : IDL.Func([IDL.Text], [], []),
+  'pushWorkflowToAccounts' : IDL.Func([IDL.Text, IDL.Vec(IDL.Text)], [], []),
+  'pushWorkflowToScope' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'queryRAG' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [
+        IDL.Record({
+          'insufficiencyMessage' : IDL.Opt(IDL.Text),
+          'isInsufficient' : IDL.Bool,
+          'citations' : IDL.Vec(IDL.Text),
+          'chunks' : IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'content' : IDL.Text,
+              'chunkIndex' : IDL.Nat,
+            })
+          ),
+        }),
+      ],
       [],
     ),
   'queueSmsForRule' : IDL.Func(
@@ -3593,6 +4922,45 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'reEnrollLead' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'receiveComposioWebhook' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [
+        IDL.Record({
+          'body' : IDL.Text,
+          'statusCode' : IDL.Nat,
+          'success' : IDL.Bool,
+          'eventType' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
+  'receiveN8NWebhook' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'receiveSendgridEvents' : IDL.Func(
+      [IDL.Text],
+      [IDL.Record({ 'success' : IDL.Bool, 'processed' : IDL.Nat })],
+      [],
+    ),
+  'receiveSendgridInbound' : IDL.Func(
+      [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [IDL.Text],
+      [],
+    ),
+  'receiveStripeWebhook' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Record({ 'success' : IDL.Bool, 'eventType' : IDL.Text })],
+      [],
+    ),
+  'receiveTwilioWebhook' : IDL.Func(
+      [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)), IDL.Text],
+      [IDL.Text],
+      [],
+    ),
+  'receiveVapiWebhook' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
   'recordBrandKitActivity' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'recordBrfCallAttemptResult' : IDL.Func(
       [
@@ -3623,6 +4991,12 @@ export const idlService = IDL.Service({
       [],
     ),
   'recordOutreachEvent' : IDL.Func([OutreachEvent], [], []),
+  'recordPingResult' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+      [],
+      [],
+    ),
+  'recordTrialActivity' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
   'recordWarmLeadHandoff' : IDL.Func([WarmLeadHandoff], [], []),
   'refreshCompetitorIntel' : IDL.Func([CompetitorIntelReport], [], []),
   'registerSubdomain' : IDL.Func([IDL.Text], [], []),
@@ -3645,6 +5019,7 @@ export const idlService = IDL.Service({
   'resetEmailSchedulerTimer' : IDL.Func([], [], []),
   'resetNicheScript' : IDL.Func([IDL.Text], [], []),
   'resetSmsSchedulerTimer' : IDL.Func([], [], []),
+  'resetToDefaults' : IDL.Func([], [IDL.Bool], []),
   'resolveApproval' : IDL.Func(
       [
         IDL.Text,
@@ -3661,12 +5036,64 @@ export const idlService = IDL.Service({
     ),
   'respondToReview' : IDL.Func([TenantId, IDL.Text, IDL.Text], [], []),
   'resumeAutopilotEmail' : IDL.Func([], [], []),
+  'resumeRoofingCampaign' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Null })],
+      [],
+    ),
+  'routeModelRequest' : IDL.Func(
+      [AbacusRouteRequest],
+      [IDL.Variant({ 'ok' : AbacusRouteResponse, 'err' : IDL.Text })],
+      [],
+    ),
+  'routeThroughComposio' : IDL.Func(
+      [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)), IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'runAgentNode' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [
+        IDL.Record({
+          'id' : IDL.Text,
+          'outputData' : IDL.Text,
+          'runAt' : IDL.Int,
+          'nodeType' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
   'runPageSpeedAudit' : IDL.Func([IDL.Text], [IDL.Text], []),
   'runPageSpeedAuditPublic' : IDL.Func([IDL.Text], [IDL.Text], []),
+  'saveAbacusApiKey' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'saveAccountBrief' : IDL.Func(
+      [AccountBrief],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
   'saveAgentMemory' : IDL.Func([AgentMemoryRecord], [IDL.Bool], []),
   'saveAgentTemplate' : IDL.Func([AgentTemplateStorageRecord], [IDL.Bool], []),
+  'saveAutomationConfig' : IDL.Func(
+      [IDL.Text, IDL.Bool, IDL.Bool, IDL.Text],
+      [],
+      [],
+    ),
   'saveBrowserAuditResult' : IDL.Func([BrowserAuditResult], [], []),
   'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+  'saveComposioApiKey' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'saveComposioWebhookSecret' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'saveDemoAudio' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'saveDemoAuditReport' : IDL.Func(
       [DemoAuditReport],
@@ -3674,6 +5101,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'saveDemoAuditScore' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+  'saveDograhApiKey' : IDL.Func(
+      [IDL.Text],
+      [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
+      [],
+    ),
   'saveDomainSetupState' : IDL.Func(
       [IDL.Text, DomainSetupState],
       [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
@@ -3695,9 +5127,26 @@ export const idlService = IDL.Service({
       [],
     ),
   'saveLeadAuditResult' : IDL.Func([LeadAuditResult], [], []),
+  'saveN8NConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'saveOpenRouterApiKey' : IDL.Func([IDL.Text], [], []),
+  'saveOperatorChatMessage' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [IDL.Text],
+      [],
+    ),
   'saveVapiCredentials' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text],
       [IDL.Record({ 'ok' : IDL.Bool, 'error' : IDL.Opt(IDL.Text) })],
+      [],
+    ),
+  'saveWebhookSecrets' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'saveWorkflowDef' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text, IDL.Text],
+      [],
       [],
     ),
   'scheduleBrfOutboundCall' : IDL.Func(
@@ -3716,6 +5165,7 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'scoreLead' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [LeadAIScore], []),
   'scrapeUrl' : IDL.Func([ScrapeRequest, IDL.Text], [ScrapeResult], []),
   'searchLeadsWithLLM' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
@@ -3759,8 +5209,26 @@ export const idlService = IDL.Service({
       [EmailSendResult],
       [],
     ),
+  'setAccountToolkit' : IDL.Func(
+      [IDL.Text, IDL.Vec(IDL.Text)],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'setAgentEnabled' : IDL.Func([IDL.Text, IDL.Bool], [], []),
   'setBrandVoiceProfile' : IDL.Func([IDL.Text, BrandVoiceProfile], [], []),
   'setCachedAudio' : IDL.Func([IDL.Text, IDL.Text], [], []),
+  'setComposioAsPrimaryMCP' : IDL.Func(
+      [IDL.Bool],
+      [IDL.Variant({ 'ok' : IDL.Text })],
+      [],
+    ),
+  'setContentTierToggle' : IDL.Func([IDL.Text, IDL.Bool], [], []),
+  'setFeatureToggle' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Bool, IDL.Text],
+      [IDL.Bool],
+      [],
+    ),
+  'setGeminiApiKey' : IDL.Func([IDL.Text], [], []),
   'setNewsletterCampaignStatus' : IDL.Func(
       [IDL.Text, IDL.Text, CampaignStatus],
       [IDL.Bool],
@@ -3768,6 +5236,7 @@ export const idlService = IDL.Service({
     ),
   'setNicheScriptLines' : IDL.Func([IDL.Text, IDL.Vec(IDL.Text)], [], []),
   'setNicheVoiceAssignment' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
+  'setOpenRouterTaskModel' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'setProviderAdapter' : IDL.Func(
       [
         IDL.Text,
@@ -3792,6 +5261,11 @@ export const idlService = IDL.Service({
       [],
     ),
   'setSocialCommentResponse' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
+  'setToolkitToggle' : IDL.Func(
+      [ToolkitToggle],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
   'shouldLockSocialContent' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'stageBulkLeadsFromSearch' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Vec(BulkLeadInput)],
@@ -3800,11 +5274,28 @@ export const idlService = IDL.Service({
     ),
   'stageScrapeLeads' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Nat], []),
   'storeDeliverabilityEvent' : IDL.Func([DeliverabilityEvent], [], []),
+  'submitAgentCommand' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [AgentCommandResult],
+      [],
+    ),
   'syncVapiCallLogs' : IDL.Func(
       [IDL.Text],
       [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
       [],
     ),
+  'testAbacusConnection' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'testAllConnections' : IDL.Func([], [IntegrationHealthSummary], []),
+  'testComposioConnection' : IDL.Func(
+      [],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'testDograhConnection' : IDL.Func([], [DograhTestResult], []),
   'testElevenLabsConnection' : IDL.Func(
       [],
       [
@@ -3816,21 +5307,39 @@ export const idlService = IDL.Service({
       ],
       [],
     ),
+  'testEmailSend' : IDL.Func(
+      [],
+      [
+        IDL.Record({
+          'message' : IDL.Text,
+          'timestamp' : IDL.Int,
+          'success' : IDL.Bool,
+        }),
+      ],
+      [],
+    ),
   'testIntegration' : IDL.Func(
       [IDL.Text, IDL.Text],
       [ConnectionTestResult],
       [],
     ),
+  'testLeadFinderDiagnostic' : IDL.Func([], [IDL.Text], ['query']),
+  'testN8NConnection' : IDL.Func([], [IDL.Bool], []),
+  'testNvidiaConnection' : IDL.Func([], [IntegrationTestResult], []),
+  'testOpenRouterConnection' : IDL.Func([], [IDL.Bool], []),
   'testServiceConnection' : IDL.Func(
       [IDL.Text, IDL.Text],
       [ConnectionTestResult],
       ['query'],
     ),
+  'toggleTriggerRule' : IDL.Func([IDL.Text, IDL.Bool], [], []),
   'trackComplaintRate' : IDL.Func(
       [],
       [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Float64))],
       ['query'],
     ),
+  'trackEmailClick' : IDL.Func([IDL.Text], [], []),
+  'trackEmailOpen' : IDL.Func([IDL.Text], [], []),
   'trackWarmSequenceEvent' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [], []),
   'transform' : IDL.Func(
       [TransformationInput],
@@ -3842,10 +5351,40 @@ export const idlService = IDL.Service({
       [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
       [],
     ),
+  'triggerGridAudit' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : GridAuditResult, 'err' : IDL.Text })],
+      [],
+    ),
   'triggerManualDiscovery' : IDL.Func([], [IDL.Text], []),
   'triggerOutreachEmailSequence' : IDL.Func([IDL.Text], [], []),
+  'triggerWorkflow' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [
+        IDL.Record({
+          'id' : IDL.Text,
+          'status' : IDL.Text,
+          'startedAt' : IDL.Int,
+          'errorMessage' : IDL.Opt(IDL.Text),
+          'outputData' : IDL.Text,
+          'workflowId' : IDL.Text,
+        }),
+      ],
+      [],
+    ),
+  'unsubscribeFromCampaign' : IDL.Func(
+      [IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'unsubscribeNewsletterEmail' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'updateAccountBrief' : IDL.Func(
+      [IDL.Text, AccountBriefUpdate],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
   'updateAgencySettings' : IDL.Func([AgencySettings], [], []),
+  'updateAgentConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'updateAgentRun' : IDL.Func(
       [
         IDL.Text,
@@ -3857,6 +5396,11 @@ export const idlService = IDL.Service({
         IDL.Opt(IDL.Text),
       ],
       [IDL.Bool],
+      [],
+    ),
+  'updateAgentStatus' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+      [],
       [],
     ),
   'updateAgentThread' : IDL.Func(
@@ -3879,6 +5423,17 @@ export const idlService = IDL.Service({
       [],
     ),
   'updateComplianceConfig' : IDL.Func([ComplianceConfig], [], []),
+  'updateContentResult' : IDL.Func(
+      [
+        IDL.Text,
+        GenerationStatus,
+        IDL.Text,
+        IDL.Opt(IDL.Text),
+        IDL.Opt(IDL.Text),
+      ],
+      [],
+      [],
+    ),
   'updateDemoFunnelEntry' : IDL.Func(
       [IDL.Text, IDL.Text, DemoFunnelEntry],
       [],
@@ -3896,19 +5451,29 @@ export const idlService = IDL.Service({
       [IDL.Bool],
       [],
     ),
+  'updateEmailTemplate' : IDL.Func(
+      [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
   'updateEstimateStatus' : IDL.Func(
       [IDL.Text, EstimateStatus, IDL.Text],
       [IDL.Variant({ 'ok' : Estimate, 'err' : IDL.Text })],
       [],
     ),
   'updateFundabilityScore' : IDL.Func([TenantId, IDL.Nat], [], []),
+  'updateFunnelStep' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+      [],
+    ),
+  'updateHealthMetric' : IDL.Func([IDL.Text, IDL.Nat], [], []),
   'updateLead' : IDL.Func([TenantId, IDL.Text, Lead], [], []),
   'updateLeadAuditJobStatus' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text],
       [IDL.Bool],
       [],
     ),
-  'updateLeadEnrichment' : IDL.Func([LeadEnrichment], [], []),
   'updateMemory' : IDL.Func(
       [
         IDL.Text,
@@ -3971,9 +5536,20 @@ export const idlService = IDL.Service({
       [IDL.Bool],
       [],
     ),
+  'updateTrialFeatureFlags' : IDL.Func(
+      [IDL.Text, FeatureFlags],
+      [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'updateTriggerRule' : IDL.Func([IDL.Text, TriggerRuleUpdate], [], []),
   'updateVapiAssistant' : IDL.Func(
       [IDL.Text, IDL.Text, VapiAssistantUpdate],
       [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+      [],
+    ),
+  'uploadDocument' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Text],
       [],
     ),
   'upsertAgentDeliverable' : IDL.Func([AgentDeliverable], [], []),
@@ -4068,7 +5644,7 @@ export const idlService = IDL.Service({
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
-  const TrialStatus = IDL.Variant({
+  const TrialStatus__1 = IDL.Variant({
     'Active' : IDL.Null,
     'Converted' : IDL.Null,
     'Expired' : IDL.Null,
@@ -4096,18 +5672,26 @@ export const idlFactory = ({ IDL }) => {
     'outreachKitOpenedAt' : IDL.Opt(IDL.Int),
     'trialExpiresAt' : IDL.Opt(IDL.Int),
     'featuresUsed' : IDL.Vec(IDL.Text),
-    'trialStatus' : TrialStatus,
+    'trialStatus' : TrialStatus__1,
     'firstName' : IDL.Text,
   });
-  const DemoSession = IDL.Record({
-    'auditScore' : IDL.Nat,
-    'createdAt' : IDL.Int,
-    'step' : IDL.Nat,
-    'businessName' : IDL.Text,
-    'socialContentLockedAt' : IDL.Opt(IDL.Int),
-    'niche' : IDL.Text,
-    'sessionId' : IDL.Text,
-    'trialActivatedAt' : IDL.Opt(IDL.Int),
+  const ActivityFeedItemInput = IDL.Record({
+    'id' : IDL.Text,
+    'title' : IDL.Text,
+    'description' : IDL.Text,
+    'entityId' : IDL.Opt(IDL.Text),
+    'timestamp' : IDL.Int,
+    'entityType' : IDL.Opt(IDL.Text),
+    'eventType' : IDL.Text,
+  });
+  const AgentLogEntryInput = IDL.Record({
+    'result' : IDL.Text,
+    'action' : IDL.Text,
+    'actionType' : IDL.Text,
+    'agentId' : IDL.Text,
+    'logId' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'isSuccess' : IDL.Bool,
   });
   const AttributionTouch = IDL.Record({
     'utmParams' : IDL.Text,
@@ -4133,6 +5717,18 @@ export const idlFactory = ({ IDL }) => {
     'lastEngagedAt' : IDL.Int,
     'trialActivated' : IDL.Bool,
   });
+  const InboundReply = IDL.Record({
+    'id' : IDL.Text,
+    'claudeSuggestedAction' : IDL.Text,
+    'subjectLine' : IDL.Text,
+    'actionStatus' : IDL.Text,
+    'claudeSentiment' : IDL.Text,
+    'prospectEmail' : IDL.Text,
+    'receivedAt' : IDL.Int,
+    'claudePainPoints' : IDL.Text,
+    'leadId' : IDL.Text,
+    'bodyText' : IDL.Text,
+  });
   const Time = IDL.Int;
   const TenantId = IDL.Text;
   const PaidAdsScore = IDL.Record({
@@ -4143,6 +5739,26 @@ export const idlFactory = ({ IDL }) => {
     'tenantId' : TenantId,
     'budgetUtilization' : IDL.Nat,
     'roasEfficiency' : IDL.Nat,
+  });
+  const PipelineActivityEntry = IDL.Record({
+    'action' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'details' : IDL.Text,
+  });
+  const PipelineLead = IDL.Record({
+    'id' : IDL.Text,
+    'ownerEmail' : IDL.Text,
+    'autoTriggerScheduledAt' : IDL.Opt(IDL.Int),
+    'source' : IDL.Text,
+    'laneStatus' : IDL.Text,
+    'businessName' : IDL.Text,
+    'tenantId' : IDL.Text,
+    'activityLog' : IDL.Vec(PipelineActivityEntry),
+    'autoTriggerCancelled' : IDL.Bool,
+    'laneMoveTimestamp' : IDL.Int,
+    'leadId' : IDL.Text,
+    'niche' : IDL.Text,
+    'autoTriggerFiredAt' : IDL.Opt(IDL.Int),
   });
   const SeoGeoScore = IDL.Record({
     'id' : IDL.Text,
@@ -4178,6 +5794,26 @@ export const idlFactory = ({ IDL }) => {
     'threadId' : IDL.Text,
     'readAt' : IDL.Opt(IDL.Int),
   });
+  const TriggerRuleInput = IDL.Record({
+    'action' : IDL.Text,
+    'ruleId' : IDL.Text,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'actionType' : IDL.Text,
+    'conditionType' : IDL.Text,
+    'isEnabled' : IDL.Bool,
+    'condition' : IDL.Text,
+  });
+  const TriggerRule = IDL.Record({
+    'action' : IDL.Text,
+    'ruleId' : IDL.Text,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'actionType' : IDL.Text,
+    'conditionType' : IDL.Text,
+    'isEnabled' : IDL.Bool,
+    'condition' : IDL.Text,
+  });
   const WebsiteAgentScore = IDL.Record({
     'id' : IDL.Text,
     'technicalHealth' : IDL.Nat,
@@ -4188,6 +5824,21 @@ export const idlFactory = ({ IDL }) => {
     'trustAuthority' : IDL.Nat,
     'trustSignals' : IDL.Nat,
     'conversionReadiness' : IDL.Nat,
+  });
+  const ReplyClassification = IDL.Variant({
+    'HotLead' : IDL.Null,
+    'Unsubscribe' : IDL.Null,
+    'Neutral' : IDL.Null,
+    'PositiveSignal' : IDL.Null,
+    'Objection' : IDL.Null,
+  });
+  const ReplyAnalysis = IDL.Record({
+    'suggestedResponse' : IDL.Text,
+    'summary' : IDL.Text,
+    'leadId' : IDL.Text,
+    'analyzedAt' : IDL.Int,
+    'replyId' : IDL.Text,
+    'classification' : ReplyClassification,
   });
   const AuditLogEntry = IDL.Record({
     'id' : IDL.Text,
@@ -4202,6 +5853,20 @@ export const idlFactory = ({ IDL }) => {
     'admin' : IDL.Null,
     'user' : IDL.Null,
     'guest' : IDL.Null,
+  });
+  const GeneratedLead = IDL.Record({
+    'ownerFirstName' : IDL.Text,
+    'source' : IDL.Text,
+    'temperature' : IDL.Text,
+    'city' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'website' : IDL.Text,
+    'score' : IDL.Nat,
+    'niche' : IDL.Text,
+    'address' : IDL.Text,
+    'enriched' : IDL.Bool,
+    'phone' : IDL.Text,
   });
   const OutputFormat = IDL.Variant({
     'both' : IDL.Null,
@@ -4260,6 +5925,11 @@ export const idlFactory = ({ IDL }) => {
     'ok' : IDL.Bool,
     'count' : IDL.Nat,
     'results' : IDL.Vec(BatchScrapeUrlResult),
+  });
+  const BulkToggleRequest = IDL.Record({
+    'tierId' : IDL.Text,
+    'enabled' : IDL.Bool,
+    'toolkitNames' : IDL.Vec(IDL.Text),
   });
   const ExtendedLeadInput = IDL.Record({
     'googleRanking' : IDL.Opt(IDL.Text),
@@ -4331,6 +6001,18 @@ export const idlFactory = ({ IDL }) => {
     'tenantId' : IDL.Text,
     'threadId' : IDL.Text,
     'runId' : IDL.Text,
+  });
+  const DograhCreateAgentRequest = IDL.Record({
+    'nlCommand' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'niche' : IDL.Text,
+  });
+  const DograhCommandResult = IDL.Record({
+    'nodesCreated' : IDL.Nat,
+    'agentId' : IDL.Opt(IDL.Text),
+    'message' : IDL.Text,
+    'success' : IDL.Bool,
   });
   const AgentRunRecord = IDL.Record({
     'id' : IDL.Text,
@@ -4749,10 +6431,109 @@ export const idlFactory = ({ IDL }) => {
     'conversation_only' : IDL.Null,
     'with_summary' : IDL.Null,
   });
+  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const http_request_result = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const TransformationInput = IDL.Record({
+    'context' : IDL.Vec(IDL.Nat8),
+    'response' : http_request_result,
+  });
+  const TransformationOutput = IDL.Record({
+    'status' : IDL.Nat,
+    'body' : IDL.Vec(IDL.Nat8),
+    'headers' : IDL.Vec(http_header),
+  });
+  const LeadAIEnrichment = IDL.Record({
+    'model' : IDL.Text,
+    'leadId' : IDL.Text,
+    'companyIntel' : IDL.Text,
+    'decisionMakerInfo' : IDL.Text,
+    'enrichedAt' : IDL.Int,
+    'webPresence' : IDL.Text,
+  });
+  const EnrollmentResult = IDL.Record({
+    'errors' : IDL.Vec(IDL.Text),
+    'skippedCount' : IDL.Nat,
+    'enrolledCount' : IDL.Nat,
+  });
+  const RoofingLead = IDL.Record({
+    'city' : IDL.Text,
+    'businessType' : IDL.Text,
+    'email' : IDL.Text,
+    'website' : IDL.Opt(IDL.Text),
+    'state' : IDL.Text,
+    'companyName' : IDL.Text,
+    'phone' : IDL.Opt(IDL.Text),
+  });
+  const OperatorCommandResult = IDL.Record({
+    'requires_confirmation' : IDL.Bool,
+    'intent' : IDL.Text,
+    'affected_count' : IDL.Nat,
+    'recommended_actions' : IDL.Vec(IDL.Text),
+    'affected_niche' : IDL.Text,
+  });
+  const ToolActionRequest = IDL.Record({
+    'action' : IDL.Text,
+    'accountId' : IDL.Text,
+    'toolId' : IDL.Text,
+    'params' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+  });
+  const ToolActionResponse = IDL.Record({
+    'result' : IDL.Text,
+    'errorMessage' : IDL.Opt(IDL.Text),
+    'success' : IDL.Bool,
+  });
   const LeadExtractionResult = IDL.Record({
     'count' : IDL.Nat,
     'sourceUrl' : IDL.Text,
     'leads' : IDL.Vec(ScrapedLead),
+  });
+  const ContentType = IDL.Variant({
+    'Blog' : IDL.Null,
+    'Image' : IDL.Null,
+    'AdCopy' : IDL.Null,
+    'Video' : IDL.Null,
+  });
+  const ContentGenerationRequest = IDL.Record({
+    'accountId' : IDL.Text,
+    'contentType' : ContentType,
+    'additionalContext' : IDL.Opt(IDL.Text),
+    'niche' : IDL.Text,
+    'prompt' : IDL.Text,
+  });
+  const OutreachSequence = IDL.Record({
+    'id' : IDL.Text,
+    'generatedAt' : IDL.Int,
+    'framework' : IDL.Text,
+    'emails' : IDL.Vec(IDL.Text),
+    'smsMessages' : IDL.Vec(IDL.Text),
+    'leadId' : IDL.Text,
+    'niche' : IDL.Text,
+  });
+  const AbacusConfig = IDL.Record({
+    'fallbackModels' : IDL.Vec(IDL.Text),
+    'routingEnabled' : IDL.Bool,
+    'totalRoutedCalls' : IDL.Nat,
+    'apiKey' : IDL.Text,
+    'callsToday' : IDL.Nat,
+    'lastPingStatus' : IDL.Text,
+    'lastTestedAt' : IDL.Opt(IDL.Int),
+    'preferredModel' : IDL.Text,
+  });
+  const AccountBrief = IDL.Record({
+    'respondTo' : IDL.Vec(IDL.Text),
+    'accountId' : IDL.Text,
+    'ignoreList' : IDL.Vec(IDL.Text),
+    'tone' : IDL.Text,
+    'offerSummary' : IDL.Text,
+    'doNotRespondList' : IDL.Vec(IDL.Text),
+    'updatedAt' : IDL.Int,
+    'updatedBy' : IDL.Text,
+    'priorityContacts' : IDL.Vec(IDL.Text),
+    'flagKeywords' : IDL.Vec(IDL.Text),
   });
   const AdapterType = IDL.Variant({
     'native' : IDL.Null,
@@ -4826,6 +6607,15 @@ export const idlFactory = ({ IDL }) => {
     'scoreImpact' : IDL.Opt(IDL.Nat),
     'attachments' : IDL.Vec(IDL.Text),
   });
+  const AgentLogEntry = IDL.Record({
+    'result' : IDL.Text,
+    'action' : IDL.Text,
+    'actionType' : IDL.Text,
+    'agentId' : IDL.Text,
+    'logId' : IDL.Text,
+    'timestamp' : IDL.Int,
+    'isSuccess' : IDL.Bool,
+  });
   const AgentMemoryRecord = IDL.Record({
     'id' : IDL.Text,
     'content' : IDL.Text,
@@ -4877,6 +6667,23 @@ export const idlFactory = ({ IDL }) => {
     'pageUrl' : IDL.Text,
     'priority' : IDL.Text,
     'attachments' : IDL.Vec(IDL.Text),
+  });
+  const AgentSessionState = IDL.Record({
+    'startedAt' : IDL.Int,
+    'lastSeenAt' : IDL.Int,
+    'userId' : IDL.Text,
+    'isActive' : IDL.Bool,
+    'sessionId' : IDL.Text,
+  });
+  const AgentStatus = IDL.Record({
+    'status' : IDL.Text,
+    'nextScheduledAt' : IDL.Opt(IDL.Int),
+    'lastRunAt' : IDL.Opt(IDL.Int),
+    'agentName' : IDL.Text,
+    'agentId' : IDL.Text,
+    'isEnabled' : IDL.Bool,
+    'lastError' : IDL.Opt(IDL.Text),
+    'config' : IDL.Text,
   });
   const AgentSubscription = IDL.Record({
     'id' : IDL.Text,
@@ -4941,6 +6748,84 @@ export const idlFactory = ({ IDL }) => {
     'websiteScore' : IDL.Nat,
     'agentScore' : IDL.Nat,
   });
+  const ComposioTool = IDL.Record({
+    'id' : IDL.Text,
+    'accountId' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'connected' : IDL.Bool,
+    'category' : IDL.Text,
+  });
+  const CampaignLeadStatus = IDL.Variant({
+    'active' : IDL.Null,
+    'unsubscribed' : IDL.Null,
+    'completed' : IDL.Null,
+    'paused' : IDL.Null,
+  });
+  const LeadCampaignStatus = IDL.Record({
+    'status' : CampaignLeadStatus,
+    'lastSentAt' : IDL.Opt(IDL.Int),
+    'city' : IDL.Text,
+    'leadEmail' : IDL.Text,
+    'lastOpenedAt' : IDL.Opt(IDL.Int),
+    'businessType' : IDL.Text,
+    'website' : IDL.Opt(IDL.Text),
+    'state' : IDL.Text,
+    'currentStep' : IDL.Nat,
+    'enrolledAt' : IDL.Int,
+    'companyName' : IDL.Text,
+    'phone' : IDL.Opt(IDL.Text),
+  });
+  const FunnelStepType = IDL.Variant({
+    'EmailSent' : IDL.Null,
+    'TrialActivated' : IDL.Null,
+    'DemoCompleted' : IDL.Null,
+    'DemoStarted' : IDL.Null,
+    'DemoStep1' : IDL.Null,
+    'DemoStep2' : IDL.Null,
+    'DemoStep3' : IDL.Null,
+    'DemoStep4' : IDL.Null,
+    'EmailOpened' : IDL.Null,
+    'EmailClicked' : IDL.Null,
+  });
+  const FunnelEvent = IDL.Record({
+    'metadata' : IDL.Opt(IDL.Text),
+    'step' : FunnelStepType,
+    'leadId' : IDL.Text,
+    'timestamp' : IDL.Int,
+  });
+  const FunnelTimeline = IDL.Record({
+    'events' : IDL.Vec(FunnelEvent),
+    'leadId' : IDL.Text,
+  });
+  const GenerationStatus = IDL.Variant({
+    'Failed' : IDL.Null,
+    'Generating' : IDL.Null,
+    'Complete' : IDL.Null,
+    'Pending' : IDL.Null,
+  });
+  const ContentGenerationResult = IDL.Record({
+    'id' : IDL.Text,
+    'status' : GenerationStatus,
+    'output' : IDL.Text,
+    'accountId' : IDL.Text,
+    'contentType' : ContentType,
+    'generatedAt' : IDL.Int,
+    'mediaUrl' : IDL.Opt(IDL.Text),
+    'niche' : IDL.Text,
+    'prompt' : IDL.Text,
+    'errorMsg' : IDL.Opt(IDL.Text),
+  });
+  const LeadCampaignDetails = IDL.Record({
+    'auditScore' : IDL.Opt(IDL.Nat),
+    'lastSentAt' : IDL.Opt(IDL.Int),
+    'usedFallback' : IDL.Opt(IDL.Bool),
+    'missingServices' : IDL.Opt(IDL.Text),
+    'topCompetitor' : IDL.Opt(IDL.Text),
+    'templateVersionUsed' : IDL.Opt(IDL.Nat),
+    'currentEmailDay' : IDL.Nat,
+    'deadZones' : IDL.Opt(IDL.Nat),
+  });
   const ScriptLine = IDL.Record({
     'pauseAfterMs' : IDL.Nat,
     'text' : IDL.Text,
@@ -4998,6 +6883,30 @@ export const idlFactory = ({ IDL }) => {
     'price' : IDL.Nat,
     'assignedStrategist' : IDL.Text,
     'startDate' : Time,
+  });
+  const ToolkitToggle = IDL.Record({
+    'appliedAt' : IDL.Int,
+    'tierId' : IDL.Text,
+    'enabled' : IDL.Bool,
+    'toolkitName' : IDL.Text,
+  });
+  const TrialStatus = IDL.Variant({
+    'Active' : IDL.Null,
+    'Converted' : IDL.Null,
+    'Expired' : IDL.Null,
+  });
+  const TrialAccount = IDL.Record({
+    'id' : IDL.Text,
+    'status' : TrialStatus,
+    'expiresAt' : IDL.Int,
+    'city' : IDL.Text,
+    'businessName' : IDL.Text,
+    'email' : IDL.Text,
+    'website' : IDL.Opt(IDL.Text),
+    'provisionedAt' : IDL.Int,
+    'leadId' : IDL.Text,
+    'niche' : IDL.Text,
+    'phone' : IDL.Opt(IDL.Text),
   });
   const WebsiteAgentSubscription = IDL.Record({
     'id' : IDL.Text,
@@ -5243,6 +7152,14 @@ export const idlFactory = ({ IDL }) => {
     'templateId' : IDL.Text,
     'tenantId' : TenantId,
   });
+  const CampaignStats = IDL.Record({
+    'emailsSentAllTime' : IDL.Nat,
+    'emailsSentWeek' : IDL.Nat,
+    'clickRate' : IDL.Float64,
+    'totalEnrolled' : IDL.Nat,
+    'emailsSentToday' : IDL.Nat,
+    'openRate' : IDL.Float64,
+  });
   const CampaignTemplate = IDL.Record({
     'id' : IDL.Text,
     'active' : IDL.Bool,
@@ -5256,6 +7173,24 @@ export const idlFactory = ({ IDL }) => {
     'niche' : IDL.Text,
     'campaignType' : IDL.Text,
     'triggers' : IDL.Vec(IDL.Text),
+  });
+  const AgentActionKind = IDL.Variant({
+    'EditSequence' : IDL.Null,
+    'ModifyStep' : IDL.Null,
+    'FireBulkSend' : IDL.Null,
+    'Unknown' : IDL.Null,
+    'QueryLeads' : IDL.Null,
+  });
+  const CommandLogEntry = IDL.Record({
+    'id' : IDL.Text,
+    'agentAction' : AgentActionKind,
+    'executedAt' : IDL.Opt(IDL.Int),
+    'userId' : IDL.Text,
+    'confirmationPreview' : IDL.Text,
+    'executionResult' : IDL.Opt(IDL.Text),
+    'timestamp' : IDL.Int,
+    'sessionId' : IDL.Text,
+    'commandText' : IDL.Text,
   });
   const CompetitorAlert = IDL.Record({
     'id' : IDL.Text,
@@ -5319,6 +7254,10 @@ export const idlFactory = ({ IDL }) => {
     'twilioNumber' : IDL.Text,
     'services' : IDL.Vec(IDL.Text),
   });
+  const ContentTierToggle = IDL.Record({
+    'tier' : IDL.Text,
+    'contentCreationEnabled' : IDL.Bool,
+  });
   const CsvImportBatch = IDL.Record({
     'id' : IDL.Text,
     'status' : IDL.Text,
@@ -5354,6 +7293,16 @@ export const idlFactory = ({ IDL }) => {
     'score' : IDL.Nat,
     'niche' : IDL.Text,
   });
+  const DemoSession = IDL.Record({
+    'auditScore' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'step' : IDL.Nat,
+    'businessName' : IDL.Text,
+    'socialContentLockedAt' : IDL.Opt(IDL.Int),
+    'niche' : IDL.Text,
+    'sessionId' : IDL.Text,
+    'trialActivatedAt' : IDL.Opt(IDL.Int),
+  });
   const DiscoveryConfig = IDL.Record({
     'cities' : IDL.Vec(IDL.Text),
     'enabled' : IDL.Bool,
@@ -5361,6 +7310,19 @@ export const idlFactory = ({ IDL }) => {
     'dailyCap' : IDL.Nat,
     'niche' : IDL.Text,
     'leadsPerCity' : IDL.Nat,
+  });
+  const DograhAgent = IDL.Record({
+    'id' : IDL.Text,
+    'status' : IDL.Text,
+    'name' : IDL.Text,
+    'description' : IDL.Text,
+    'lastModified' : IDL.Int,
+    'nodeCount' : IDL.Nat,
+  });
+  const DograhConfig = IDL.Record({
+    'baseUrl' : IDL.Text,
+    'isEnabled' : IDL.Bool,
+    'apiKey' : IDL.Text,
   });
   const PropagationStatus = IDL.Record({
     'isLive' : IDL.Bool,
@@ -5383,13 +7345,18 @@ export const idlFactory = ({ IDL }) => {
   const DripQueueEmailLog = IDL.Record({
     'id' : IDL.Text,
     'status' : IDL.Text,
+    'clickedAt' : IDL.Opt(IDL.Int),
     'errorMessage' : IDL.Opt(IDL.Text),
+    'trackingToken' : IDL.Text,
     'sentAt' : IDL.Opt(IDL.Int),
     'tenantId' : IDL.Text,
     'retryCount' : IDL.Nat,
+    'clickCount' : IDL.Nat,
     'queueId' : IDL.Text,
+    'openCount' : IDL.Nat,
     'recipientName' : IDL.Text,
     'recipientEmail' : IDL.Text,
+    'openedAt' : IDL.Opt(IDL.Int),
   });
   const DualModelSearchJob = IDL.Record({
     'id' : IDL.Text,
@@ -5456,6 +7423,15 @@ export const idlFactory = ({ IDL }) => {
       'interested' : IDL.Null,
     }),
   });
+  const EmailTemplate = IDL.Record({
+    'id' : IDL.Nat,
+    'day' : IDL.Nat,
+    'fallbackBody' : IDL.Text,
+    'subject' : IDL.Text,
+    'body' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'fallbackSubject' : IDL.Text,
+  });
   const EngagementApprovalStatus = IDL.Variant({
     'pending' : IDL.Null,
     'approved' : IDL.Null,
@@ -5499,6 +7475,23 @@ export const idlFactory = ({ IDL }) => {
     'agentSubscriptions' : IDL.Vec(IDL.Text),
     'localAds' : IDL.Opt(IDL.Text),
   });
+  const FeatureToggleLog = IDL.Record({
+    'id' : IDL.Text,
+    'modifiedAt' : IDL.Int,
+    'modifiedBy' : IDL.Text,
+    'tier' : IDL.Text,
+    'newValue' : IDL.Bool,
+    'previousValue' : IDL.Bool,
+    'featureName' : IDL.Text,
+  });
+  const FeatureToggle = IDL.Record({
+    'proEnabled' : IDL.Bool,
+    'agencyEnabled' : IDL.Bool,
+    'basicEnabled' : IDL.Bool,
+    'lastModifiedBy' : IDL.Text,
+    'lastModifiedTime' : IDL.Int,
+    'featureName' : IDL.Text,
+  });
   const FreeAuditLead = IDL.Record({
     'id' : IDL.Text,
     'overallScore' : IDL.Nat,
@@ -5517,6 +7510,47 @@ export const idlFactory = ({ IDL }) => {
     'eligibilityPhase' : IDL.Nat,
     'creditworthinessPhase' : IDL.Nat,
   });
+  const FunnelRecord = IDL.Record({
+    'demoCompletedAt' : IDL.Opt(IDL.Int),
+    'demoStartedAt' : IDL.Opt(IDL.Int),
+    'clickedAt' : IDL.Opt(IDL.Int),
+    'funnelStep' : IDL.Text,
+    'emailSentAt' : IDL.Opt(IDL.Int),
+    'campaignId' : IDL.Text,
+    'leadId' : IDL.Text,
+    'niche' : IDL.Text,
+    'enrolledAt' : IDL.Int,
+    'trialProvisionedAt' : IDL.Opt(IDL.Int),
+    'openedAt' : IDL.Opt(IDL.Int),
+  });
+  const GridPoint = IDL.Record({
+    'lat' : IDL.Float64,
+    'lng' : IDL.Float64,
+    'direction' : IDL.Text,
+    'competitorAtTop' : IDL.Text,
+    'rankPosition' : IDL.Nat,
+    'searched' : IDL.Bool,
+  });
+  const GridAuditResult = IDL.Record({
+    'gridPoints' : IDL.Vec(GridPoint),
+    'coverageZoneSummary' : IDL.Text,
+    'scannedAt' : IDL.Int,
+    'city' : IDL.Text,
+    'leadEmail' : IDL.Text,
+    'businessName' : IDL.Text,
+    'state' : IDL.Text,
+  });
+  const GridAuditSnapshot = IDL.Record({
+    'result' : GridAuditResult,
+    'snapshotAt' : IDL.Int,
+  });
+  const HealthMetrics = IDL.Record({
+    'trialsActive' : IDL.Nat,
+    'apiStatus' : IDL.Bool,
+    'demosRunning' : IDL.Nat,
+    'outreachSent' : IDL.Nat,
+    'leadsToday' : IDL.Nat,
+  });
   const HumanOversightAssignment = IDL.Record({
     'id' : IDL.Text,
     'status' : IDL.Text,
@@ -5529,11 +7563,19 @@ export const idlFactory = ({ IDL }) => {
   });
   const MaskedCredentials = IDL.Record({
     'serpApiKey' : IDL.Text,
+    'geminiApiKey' : IDL.Text,
+    'serpApiDevKey' : IDL.Text,
     'claudeKey' : IDL.Text,
     'twilioSid' : IDL.Text,
+    'sendgridInboundParseDomain' : IDL.Text,
+    'dograhApiKey' : IDL.Text,
     'yelpApiKey' : IDL.Text,
+    'vapiWebhookSecret' : IDL.Text,
     'googleClientId' : IDL.Text,
+    'n8nInstanceUrl' : IDL.Text,
+    'abacusApiKey' : IDL.Text,
     'twilioAuth' : IDL.Text,
+    'composioApiKey' : IDL.Text,
     'searxngUrl' : IDL.Text,
     'neverBounceKey' : IDL.Text,
     'autoBrowserUrl' : IDL.Text,
@@ -5543,6 +7585,7 @@ export const idlFactory = ({ IDL }) => {
     'emailSmtpPass' : IDL.Text,
     'emailSmtpPort' : IDL.Text,
     'emailSmtpUser' : IDL.Text,
+    'openRouterApiKey' : IDL.Text,
     'elevenLabsVoiceId' : IDL.Text,
     'listmonkUrl' : IDL.Text,
     'litellmKey' : IDL.Text,
@@ -5553,13 +7596,29 @@ export const idlFactory = ({ IDL }) => {
     'listmonkPass' : IDL.Text,
     'listmonkUser' : IDL.Text,
     'sendgridKey' : IDL.Text,
+    'tinyFishKey' : IDL.Text,
     'googleClientSecret' : IDL.Text,
     'twilioNumber' : IDL.Text,
+    'nvidiaApiKey' : IDL.Text,
     'facebookAppSecret' : IDL.Text,
+    'composioWebhookSecret' : IDL.Text,
     'stripeKey' : IDL.Text,
     'ollamaUrl' : IDL.Text,
     'stripeWebhookSecret' : IDL.Text,
+    'nvidiaNimApiKey' : IDL.Text,
     'openaiKey' : IDL.Text,
+  });
+  const IntegrationTestResult = IDL.Record({
+    'provider' : IDL.Text,
+    'testedAt' : IDL.Int,
+    'latencyMs' : IDL.Opt(IDL.Nat),
+    'message' : IDL.Text,
+    'connected' : IDL.Bool,
+  });
+  const IntegrationHealthSummary = IDL.Record({
+    'failedWebhookCounts' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+    'secondary' : IDL.Vec(IntegrationTestResult),
+    'critical' : IDL.Vec(IntegrationTestResult),
   });
   const Invoice = IDL.Record({
     'id' : IDL.Text,
@@ -5601,6 +7660,8 @@ export const idlFactory = ({ IDL }) => {
     'growthScore' : IDL.Nat,
     'interactionType' : IDL.Opt(IDL.Text),
     'socialInstagram' : IDL.Opt(IDL.Text),
+    'outreachPriority' : IDL.Text,
+    'overallScore' : IDL.Nat,
     'pushedAt' : IDL.Opt(IDL.Int),
     'socialFacebook' : IDL.Opt(IDL.Text),
     'websiteUrl' : IDL.Text,
@@ -5626,20 +7687,21 @@ export const idlFactory = ({ IDL }) => {
     'trialActivatedAt' : IDL.Opt(IDL.Int),
     'engagementScore' : IDL.Nat,
     'firstTouchEmailSubject' : IDL.Text,
+    'painPointAngles' : IDL.Vec(IDL.Text),
   });
-  const VerificationStatus = IDL.Variant({
-    'Invalid' : IDL.Null,
-    'Unverified' : IDL.Null,
-    'Verified' : IDL.Null,
-    'Pending' : IDL.Null,
+  const SourceQualityData = IDL.Record({
+    'paid_converted' : IDL.Nat,
+    'source' : IDL.Text,
+    'trials_converted' : IDL.Nat,
+    'avg_quality_score' : IDL.Float64,
+    'total_leads' : IDL.Nat,
   });
-  const LeadEnrichment = IDL.Record({
-    'emailVerificationStatus' : VerificationStatus,
-    'emailVerifiedAt' : IDL.Opt(IDL.Int),
-    'canReceiveOutreach' : IDL.Bool,
-    'phoneVerifiedAt' : IDL.Opt(IDL.Int),
+  const LeadAIScore = IDL.Record({
+    'scoredAt' : IDL.Int,
+    'signals' : IDL.Vec(IDL.Text),
+    'score' : IDL.Nat,
+    'fitReason' : IDL.Text,
     'leadId' : IDL.Text,
-    'phoneVerificationStatus' : VerificationStatus,
   });
   const LocationProfile = IDL.Record({
     'id' : IDL.Text,
@@ -5716,11 +7778,35 @@ export const idlFactory = ({ IDL }) => {
     'email' : IDL.Text,
     'openedAt' : IDL.Opt(IDL.Int),
   });
+  const NicheConversionData = IDL.Record({
+    'paid_customers' : IDL.Nat,
+    'niche' : IDL.Text,
+    'demos_started' : IDL.Nat,
+    'trials_activated' : IDL.Nat,
+  });
   const NicheVoiceAssignment = IDL.Record({
     'voiceName' : IDL.Text,
     'nicheId' : IDL.Text,
     'assignedAt' : IDL.Int,
     'voiceId' : IDL.Text,
+  });
+  const OperatorChatMessage = IDL.Record({
+    'id' : IDL.Text,
+    'content' : IDL.Text,
+    'createdAt' : Time,
+    'role' : IDL.Text,
+    'commandType' : IDL.Opt(IDL.Text),
+  });
+  const OperatorReportData = IDL.Record({
+    'generated_at' : Time,
+    'report_type' : IDL.Text,
+    'sections' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)),
+  });
+  const OperatorStats = IDL.Record({
+    'leads_today' : IDL.Nat,
+    'api_health_summary' : IDL.Text,
+    'trials_this_week' : IDL.Nat,
+    'outreach_sent_today' : IDL.Nat,
   });
   const OutreachEvent = IDL.Record({
     'id' : IDL.Text,
@@ -5806,6 +7892,23 @@ export const idlFactory = ({ IDL }) => {
     'isDefault' : IDL.Bool,
     'cardLast4' : IDL.Text,
   });
+  const OutreachQueuedAction = IDL.Record({
+    'id' : IDL.Text,
+    'status' : IDL.Text,
+    'emailSubject' : IDL.Opt(IDL.Text),
+    'actionType' : IDL.Text,
+    'leadId' : IDL.Text,
+    'emailBody' : IDL.Opt(IDL.Text),
+    'autoFireAt' : IDL.Int,
+    'scheduledAt' : IDL.Int,
+  });
+  const ApiPingRecord = IDL.Record({
+    'status' : IDL.Text,
+    'errorMessage' : IDL.Opt(IDL.Text),
+    'latencyMs' : IDL.Nat,
+    'serviceId' : IDL.Text,
+    'lastPingTime' : IDL.Int,
+  });
   const PipelineFunnelStats = IDL.Record({
     'leadsSourced' : IDL.Nat,
     'warmSequenceActive' : IDL.Nat,
@@ -5831,6 +7934,15 @@ export const idlFactory = ({ IDL }) => {
     'breakdown' : IDL.Vec(ReadinessBreakdownItem),
     'score' : IDL.Nat,
     'autoBrowserConfigured' : IDL.Bool,
+  });
+  const ActivityFeedItem = IDL.Record({
+    'id' : IDL.Text,
+    'title' : IDL.Text,
+    'description' : IDL.Text,
+    'entityId' : IDL.Opt(IDL.Text),
+    'timestamp' : IDL.Int,
+    'entityType' : IDL.Opt(IDL.Text),
+    'eventType' : IDL.Text,
   });
   const ReplyInboxItem = IDL.Record({
     'id' : IDL.Text,
@@ -6092,6 +8204,14 @@ export const idlFactory = ({ IDL }) => {
     'category' : IDL.Text,
     'requiresApproval' : IDL.Bool,
   });
+  const FeatureFlags = IDL.Record({
+    'crm' : IDL.Bool,
+    'social' : IDL.Bool,
+    'analytics' : IDL.Bool,
+    'reputation' : IDL.Bool,
+    'voiceAgent' : IDL.Bool,
+    'creditBuilder' : IDL.Bool,
+  });
   const WarmSequenceEmailSchedule = IDL.Record({
     'id' : IDL.Text,
     'status' : IDL.Text,
@@ -6111,6 +8231,7 @@ export const idlFactory = ({ IDL }) => {
     'duration' : IDL.Nat,
     'callerPhone' : IDL.Text,
     'endedAt' : IDL.Opt(IDL.Int),
+    'recordingUrl' : IDL.Opt(IDL.Text),
     'recordedAt' : IDL.Int,
     'tenantId' : IDL.Text,
     'callId' : IDL.Text,
@@ -6148,6 +8269,14 @@ export const idlFactory = ({ IDL }) => {
     'enrollmentId' : IDL.Text,
     'occurredAt' : IDL.Int,
     'touchIndex' : IDL.Nat,
+    'eventType' : IDL.Text,
+  });
+  const WebhookEvent = IDL.Record({
+    'status' : IDL.Variant({ 'ok' : IDL.Null, 'failed' : IDL.Null }),
+    'provider' : IDL.Text,
+    'receivedAt' : IDL.Int,
+    'errorMsg' : IDL.Opt(IDL.Text),
+    'payload' : IDL.Text,
     'eventType' : IDL.Text,
   });
   const WebsiteContentBrief = IDL.Record({
@@ -6220,13 +8349,76 @@ export const idlFactory = ({ IDL }) => {
     'skipped' : IDL.Nat,
     'errors' : IDL.Vec(IDL.Text),
   });
+  const OAuthInitRequest = IDL.Record({
+    'accountId' : IDL.Text,
+    'redirectUri' : IDL.Text,
+    'toolId' : IDL.Text,
+  });
+  const OAuthInitResponse = IDL.Record({
+    'state' : IDL.Text,
+    'authUrl' : IDL.Text,
+  });
+  const MessageRole = IDL.Variant({
+    'System' : IDL.Null,
+    'User' : IDL.Null,
+    'Assistant' : IDL.Null,
+  });
+  const MasterAgentContextSnapshot = IDL.Record({
+    'recentActivity' : IDL.Vec(IDL.Text),
+    'totalLeads' : IDL.Nat,
+    'timestamp' : IDL.Int,
+    'activeTrials' : IDL.Nat,
+    'totalCampaigns' : IDL.Nat,
+    'totalAccounts' : IDL.Nat,
+  });
+  const MasterAgentMessage = IDL.Record({
+    'content' : IDL.Text,
+    'role' : MessageRole,
+    'timestamp' : IDL.Int,
+  });
+  const MasterAgentSession = IDL.Record({
+    'startedAt' : IDL.Int,
+    'messages' : IDL.Vec(MasterAgentMessage),
+    'lastActiveAt' : IDL.Int,
+    'platformContext' : IDL.Opt(IDL.Text),
+    'sessionId' : IDL.Text,
+  });
+  const TrialProvisionRequest = IDL.Record({
+    'city' : IDL.Text,
+    'businessName' : IDL.Text,
+    'email' : IDL.Text,
+    'website' : IDL.Opt(IDL.Text),
+    'leadId' : IDL.Text,
+    'niche' : IDL.Text,
+    'phone' : IDL.Opt(IDL.Text),
+  });
+  const AbacusRouteRequest = IDL.Record({
+    'temperature' : IDL.Opt(IDL.Float64),
+    'taskType' : IDL.Text,
+    'prompt' : IDL.Text,
+    'maxTokens' : IDL.Opt(IDL.Nat),
+  });
+  const AbacusRouteResponse = IDL.Record({
+    'selectedModel' : IDL.Text,
+    'tokensUsed' : IDL.Nat,
+    'routingReason' : IDL.Text,
+    'response' : IDL.Text,
+  });
   const IntegrationCredentials = IDL.Record({
     'serpApiKey' : IDL.Text,
+    'geminiApiKey' : IDL.Text,
+    'serpApiDevKey' : IDL.Text,
     'claudeKey' : IDL.Text,
     'twilioSid' : IDL.Text,
+    'sendgridInboundParseDomain' : IDL.Text,
+    'dograhApiKey' : IDL.Text,
     'yelpApiKey' : IDL.Text,
+    'vapiWebhookSecret' : IDL.Text,
     'googleClientId' : IDL.Text,
+    'n8nInstanceUrl' : IDL.Text,
+    'abacusApiKey' : IDL.Text,
     'twilioAuth' : IDL.Text,
+    'composioApiKey' : IDL.Text,
     'searxngUrl' : IDL.Text,
     'neverBounceKey' : IDL.Text,
     'autoBrowserUrl' : IDL.Text,
@@ -6236,6 +8428,7 @@ export const idlFactory = ({ IDL }) => {
     'emailSmtpPass' : IDL.Text,
     'emailSmtpPort' : IDL.Text,
     'emailSmtpUser' : IDL.Text,
+    'openRouterApiKey' : IDL.Text,
     'elevenLabsVoiceId' : IDL.Text,
     'listmonkUrl' : IDL.Text,
     'litellmKey' : IDL.Text,
@@ -6246,36 +8439,30 @@ export const idlFactory = ({ IDL }) => {
     'listmonkPass' : IDL.Text,
     'listmonkUser' : IDL.Text,
     'sendgridKey' : IDL.Text,
+    'n8nApiKey' : IDL.Vec(IDL.Nat8),
+    'tinyFishKey' : IDL.Text,
     'googleClientSecret' : IDL.Text,
     'twilioNumber' : IDL.Text,
+    'nvidiaApiKey' : IDL.Vec(IDL.Nat8),
     'facebookAppSecret' : IDL.Text,
+    'composioWebhookSecret' : IDL.Text,
     'stripeKey' : IDL.Text,
     'ollamaUrl' : IDL.Text,
     'stripeWebhookSecret' : IDL.Text,
+    'nvidiaNimApiKey' : IDL.Text,
     'openaiKey' : IDL.Text,
   });
-  const GeneratedLead = IDL.Record({
-    'ownerFirstName' : IDL.Text,
-    'source' : IDL.Text,
-    'temperature' : IDL.Text,
-    'city' : IDL.Text,
-    'name' : IDL.Text,
-    'description' : IDL.Text,
-    'website' : IDL.Text,
-    'score' : IDL.Nat,
-    'niche' : IDL.Text,
-    'address' : IDL.Text,
-    'enriched' : IDL.Bool,
-    'phone' : IDL.Text,
-  });
   const LLMLeadSearchResult = IDL.Record({
+    'totalFound' : IDL.Nat,
     'enrichedCount' : IDL.Nat,
+    'tinyFishCount' : IDL.Nat,
     'errors' : IDL.Vec(IDL.Text),
     'openAICount' : IDL.Nat,
     'leads' : IDL.Vec(GeneratedLead),
     'claudeCount' : IDL.Nat,
     'searchedAt' : IDL.Int,
     'serpApiUsed' : IDL.Bool,
+    'serpApiCount' : IDL.Nat,
   });
   const EmailSendResult = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
   const BulkLeadInput = IDL.Record({
@@ -6290,26 +8477,33 @@ export const idlFactory = ({ IDL }) => {
     'researchSource' : IDL.Text,
     'avgRating' : IDL.Opt(IDL.Float64),
   });
+  const AgentCommandResult = IDL.Record({
+    'requiresConfirmation' : IDL.Bool,
+    'preview' : IDL.Text,
+    'error' : IDL.Opt(IDL.Text),
+    'actionId' : IDL.Text,
+  });
+  const DograhTestResult = IDL.Record({
+    'agentCount' : IDL.Nat,
+    'message' : IDL.Text,
+    'connected' : IDL.Bool,
+  });
   const ConnectionTestResult = IDL.Record({
+    'lastTestError' : IDL.Opt(IDL.Text),
     'message' : IDL.Text,
     'connected' : IDL.Bool,
     'statusCode' : IDL.Nat,
     'quotaInfo' : IDL.Opt(IDL.Text),
+    'lastTestedAt' : IDL.Opt(IDL.Int),
   });
-  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
-  const http_request_result = IDL.Record({
-    'status' : IDL.Nat,
-    'body' : IDL.Vec(IDL.Nat8),
-    'headers' : IDL.Vec(http_header),
-  });
-  const TransformationInput = IDL.Record({
-    'context' : IDL.Vec(IDL.Nat8),
-    'response' : http_request_result,
-  });
-  const TransformationOutput = IDL.Record({
-    'status' : IDL.Nat,
-    'body' : IDL.Vec(IDL.Nat8),
-    'headers' : IDL.Vec(http_header),
+  const AccountBriefUpdate = IDL.Record({
+    'respondTo' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'ignoreList' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'tone' : IDL.Opt(IDL.Text),
+    'offerSummary' : IDL.Opt(IDL.Text),
+    'doNotRespondList' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'priorityContacts' : IDL.Opt(IDL.Vec(IDL.Text)),
+    'flagKeywords' : IDL.Opt(IDL.Vec(IDL.Text)),
   });
   const DualModelSearchJobUpdate = IDL.Record({
     'status' : IDL.Opt(
@@ -6326,6 +8520,14 @@ export const idlFactory = ({ IDL }) => {
     'totalLeadsStaged' : IDL.Opt(IDL.Nat),
     'claudeLeadsFound' : IDL.Opt(IDL.Nat),
     'openaiLeadsFound' : IDL.Opt(IDL.Nat),
+  });
+  const TriggerRuleUpdate = IDL.Record({
+    'action' : IDL.Opt(IDL.Text),
+    'name' : IDL.Opt(IDL.Text),
+    'actionType' : IDL.Opt(IDL.Text),
+    'conditionType' : IDL.Opt(IDL.Text),
+    'isEnabled' : IDL.Opt(IDL.Bool),
+    'condition' : IDL.Opt(IDL.Text),
   });
   const VapiAssistantUpdate = IDL.Record({
     'businessName' : IDL.Opt(IDL.Text),
@@ -6346,12 +8548,23 @@ export const idlFactory = ({ IDL }) => {
         [
           IDL.Text,
           IDL.Text,
-          IDL.Opt(IDL.Text),
-          IDL.Opt(IDL.Text),
-          IDL.Opt(IDL.Text),
-          IDL.Opt(IDL.Text),
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
+          IDL.Text,
         ],
-        [IDL.Variant({ 'ok' : DemoSession, 'err' : IDL.Text })],
+        [
+          IDL.Variant({
+            'ok' : IDL.Record({
+              'loginUrl' : IDL.Text,
+              'emailWarning' : IDL.Opt(IDL.Text),
+              'trialAccountId' : IDL.Text,
+            }),
+            'err' : IDL.Text,
+          }),
+        ],
         [],
       ),
     'activateTrialForDemo' : IDL.Func(
@@ -6364,18 +8577,27 @@ export const idlFactory = ({ IDL }) => {
         ],
         [],
       ),
+    'addActivityFeedItem' : IDL.Func([ActivityFeedItemInput], [], []),
+    'addAgentLog' : IDL.Func([AgentLogEntryInput], [], []),
     'addAttributionTouch' : IDL.Func(
         [IDL.Text, AttributionTouch],
         [IDL.Bool],
         [],
       ),
+    'addConversationMessage' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [],
+        [],
+      ),
     'addDemoFunnelEntry' : IDL.Func([DemoFunnelEntry], [], []),
+    'addInboundReply' : IDL.Func([InboundReply], [], []),
     'addLeadFromSocialComment' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text],
         [],
         [],
       ),
     'addPaidAdsScore' : IDL.Func([PaidAdsScore], [], []),
+    'addPipelineLead' : IDL.Func([PipelineLead], [], []),
     'addScanPhoto' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [IDL.Text], []),
     'addSeoGeoScore' : IDL.Func([SeoGeoScore], [], []),
     'addSeoGeoVisibilitySnapshot' : IDL.Func(
@@ -6388,8 +8610,14 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'ok' : SMSMessage, 'err' : IDL.Text })],
         [],
       ),
+    'addTriggerRule' : IDL.Func([TriggerRuleInput], [TriggerRule], []),
     'addWebsiteAgentScore' : IDL.Func([WebsiteAgentScore], [], []),
     'advanceWarmupDay' : IDL.Func([], [], []),
+    'analyzeReply' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [ReplyAnalysis],
+        [],
+      ),
     'appendAuditLog' : IDL.Func([AuditLogEntry], [], []),
     'approveAndPushToCrm' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'approveBrowserAudit' : IDL.Func(
@@ -6398,6 +8626,7 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'approveEngagement' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'approveQueuedAction' : IDL.Func([IDL.Text], [], []),
     'approveReplyDraft' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'archiveSmsThread' : IDL.Func(
         [IDL.Text],
@@ -6411,27 +8640,66 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         [],
       ),
+    'autoAuditLeads' : IDL.Func(
+        [IDL.Text, IDL.Vec(GeneratedLead)],
+        [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+        [],
+      ),
+    'autoEnrollOnInit' : IDL.Func([], [], []),
     'batchScrape' : IDL.Func(
         [BatchScrapeRequest, IDL.Text],
         [BatchScrapeResult],
         [],
       ),
     'buildComplianceFooter' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
+    'bulkApplyToggleToTier' : IDL.Func(
+        [BulkToggleRequest],
+        [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+        [],
+      ),
+    'bulkEnrollRoofingLeads' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
+        [],
+      ),
     'bulkImportLeads' : IDL.Func(
         [IDL.Text, IDL.Vec(ExtendedLeadInput)],
         [BulkImportResult],
         [],
       ),
+    'bulkSetFeatureToggles' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Bool)), IDL.Text],
+        [IDL.Bool],
+        [],
+      ),
+    'callOpenRouterForTask' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'cancelAutoTrigger' : IDL.Func([IDL.Text], [], []),
+    'cancelQueuedAction' : IDL.Func([IDL.Text], [], []),
     'checkDnsRecords' : IDL.Func([IDL.Text], [DnsCheckResult], []),
     'checkRobotsTxt' : IDL.Func([IDL.Text], [RobotsCheckResult], []),
     'checkSocialPresence' : IDL.Func([IDL.Text], [SocialPresence], []),
     'checkSocialPresencePublic' : IDL.Func([IDL.Text], [SocialPresence], []),
+    'clearComposioWebhookSecret' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'clearMemory' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'clearNicheAudioCache' : IDL.Func([IDL.Text], [], []),
     'clearScrapeHistory' : IDL.Func([IDL.Text], [], []),
+    'commitWorkflowBatch' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'completeDemo' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Variant({ 'ok' : AuditReport, 'err' : IDL.Text })],
+        [],
+      ),
+    'completeDemoAndProvisionTrial' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
         [],
       ),
     'completeRun' : IDL.Func(
@@ -6440,6 +8708,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'createAgentArtifact' : IDL.Func([AgentArtifactRecord], [IDL.Bool], []),
+    'createAgentFromCommand' : IDL.Func(
+        [DograhCreateAgentRequest],
+        [DograhCommandResult],
+        [],
+      ),
     'createAgentRun' : IDL.Func([AgentRunRecord], [IDL.Bool], []),
     'createAgentThread' : IDL.Func([AgentThreadRecord], [IDL.Bool], []),
     'createApprovalItem' : IDL.Func(
@@ -6621,6 +8894,12 @@ export const idlFactory = ({ IDL }) => {
     'deleteChatWidgetConfig' : IDL.Func([TenantId], [], []),
     'deleteCompetitorAlert' : IDL.Func([IDL.Text], [], []),
     'deleteCompetitorProfile' : IDL.Func([IDL.Text], [], []),
+    'deleteCredential' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Record({ 'ok' : IDL.Bool, 'message' : IDL.Text })],
+        [],
+      ),
+    'deleteGeneratedContent' : IDL.Func([IDL.Text], [], []),
     'deleteLead' : IDL.Func([TenantId, IDL.Text], [], []),
     'deleteLeadAttribution' : IDL.Func([IDL.Text], [], []),
     'deleteLocationProfile' : IDL.Func([IDL.Text], [], []),
@@ -6635,9 +8914,26 @@ export const idlFactory = ({ IDL }) => {
     'deleteScanModel' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'deleteSocialPost' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'deleteTemplate' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'deleteTriggerRule' : IDL.Func([IDL.Text], [], []),
     'deleteVoiceAgentConfig' : IDL.Func([TenantId], [], []),
+    'deleteWorkflowDef' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'deployAgent' : IDL.Func(
+        [IDL.Text],
+        [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
+        [],
+      ),
     'dismissCompetitorAlert' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'dismissSocialListeningAlert' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'dograhTransform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
+    'editAgentFromCommand' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [DograhCommandResult],
+        [],
+      ),
     'enqueueLeadSequence' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Nat],
@@ -6648,11 +8944,108 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Nat],
         [],
       ),
+    'enrichLead' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [LeadAIEnrichment],
+        [],
+      ),
+    'enrollAllRoofingLeads' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [IDL.Variant({ 'ok' : EnrollmentResult, 'err' : IDL.Text })],
+        [],
+      ),
+    'enrollLeadInFunnel' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'enrollRoofingLead' : IDL.Func(
+        [RoofingLead],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'enrollRoofingLeadsIntoCampaign' : IDL.Func(
+        [],
+        [IDL.Record({ 'enrolled' : IDL.Nat, 'skipped' : IDL.Nat })],
+        [],
+      ),
+    'executeAgentAction' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Record({
+            'ok' : IDL.Bool,
+            'error' : IDL.Opt(IDL.Text),
+            'logId' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
+    'executeOperatorCommand' : IDL.Func(
+        [IDL.Text],
+        [OperatorCommandResult],
+        ['query'],
+      ),
+    'executeToolAction' : IDL.Func(
+        [ToolActionRequest],
+        [IDL.Variant({ 'ok' : ToolActionResponse, 'err' : IDL.Text })],
+        [],
+      ),
     'extractLeads' : IDL.Func([IDL.Text, IDL.Text], [LeadExtractionResult], []),
     'failRun' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
     'flagEngagement' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'flushSmsQueue' : IDL.Func([], [IDL.Nat], []),
+    'generateContent' : IDL.Func([ContentGenerationRequest], [IDL.Text], []),
+    'generateOutreachSequence' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [OutreachSequence],
+        [],
+      ),
+    'generateTailoredEmailCopy' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'generateTailoredEmailForLead' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
     'generateUnsubscribeToken' : IDL.Func([IDL.Text], [IDL.Text], ['query']),
+    'getAIUsageLogs' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'provider' : IDL.Text,
+              'inputTokens' : IDL.Nat,
+              'success' : IDL.Bool,
+              'loggedAt' : IDL.Int,
+            })
+          ),
+        ],
+        ['query'],
+      ),
+    'getAbacusApiKeyStatus' : IDL.Func(
+        [IDL.Text],
+        [IDL.Record({ 'maskedKey' : IDL.Text, 'configured' : IDL.Bool })],
+        [],
+      ),
+    'getAbacusStats' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : AbacusConfig, 'err' : IDL.Text })],
+        [],
+      ),
+    'getAccountBrief' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : AccountBrief, 'err' : IDL.Text })],
+        [],
+      ),
+    'getAccountToolkit' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Vec(IDL.Text), 'err' : IDL.Text })],
+        [],
+      ),
     'getActiveAdapter' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(ProviderAdapterConfig)],
@@ -6674,6 +9067,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AgentDeliverable)],
         ['query'],
       ),
+    'getAgentLogs' : IDL.Func(
+        [IDL.Text, IDL.Nat],
+        [IDL.Vec(AgentLogEntry)],
+        ['query'],
+      ),
     'getAgentMemoryByThread' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(AgentMemoryRecord)],
@@ -6685,6 +9083,17 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAgentProducts' : IDL.Func([], [IDL.Vec(AgentProduct)], ['query']),
+    'getAgentQuota' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'dailyCount' : IDL.Nat,
+            'dailyLimit' : IDL.Nat,
+            'remaining' : IDL.Nat,
+          }),
+        ],
+        ['query'],
+      ),
     'getAgentRunsByTenant' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(AgentRunRecord)],
@@ -6700,6 +9109,8 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AgentServiceRequest)],
         ['query'],
       ),
+    'getAgentSession' : IDL.Func([], [IDL.Opt(AgentSessionState)], ['query']),
+    'getAgentStatuses' : IDL.Func([], [IDL.Vec(AgentStatus)], ['query']),
     'getAgentSubscriptionsByTenant' : IDL.Func(
         [TenantId],
         [IDL.Vec(AgentSubscription)],
@@ -6725,6 +9136,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AgentThreadRecord)],
         ['query'],
       ),
+    'getAllAgentLogs' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(AgentLogEntry)],
+        ['query'],
+      ),
     'getAllAgentServiceRequests' : IDL.Func(
         [],
         [IDL.Vec(AgentServiceRequest)],
@@ -6746,6 +9162,36 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ClientHealthScore)],
         ['query'],
       ),
+    'getAllComposioTools' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Vec(ComposioTool), 'err' : IDL.Text })],
+        [],
+      ),
+    'getAllEnrolledLeads' : IDL.Func(
+        [],
+        [IDL.Vec(LeadCampaignStatus)],
+        ['query'],
+      ),
+    'getAllFunnelEvents' : IDL.Func(
+        [],
+        [
+          IDL.Variant({
+            'ok' : IDL.Vec(IDL.Tuple(IDL.Text, FunnelTimeline)),
+            'err' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
+    'getAllGeneratedContent' : IDL.Func(
+        [],
+        [IDL.Vec(ContentGenerationResult)],
+        ['query'],
+      ),
+    'getAllLeadCampaignDetails' : IDL.Func(
+        [],
+        [IDL.Vec(LeadCampaignDetails)],
+        ['query'],
+      ),
     'getAllNewsletterSubscribers' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(NewsletterSubscriber)],
@@ -6765,6 +9211,16 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getAllTenants' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
+    'getAllToolkitToggles' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Vec(ToolkitToggle), 'err' : IDL.Text })],
+        [],
+      ),
+    'getAllTrialAccounts' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Vec(TrialAccount), 'err' : IDL.Text })],
+        ['query'],
+      ),
     'getAllWebsiteAgentSubscriptions' : IDL.Func(
         [],
         [IDL.Vec(WebsiteAgentSubscription)],
@@ -6809,6 +9265,19 @@ export const idlFactory = ({ IDL }) => {
     'getAudioCacheKeys' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getAuditLog' : IDL.Func([], [IDL.Vec(AuditLogEntry)], ['query']),
     'getAuditScore' : IDL.Func([TenantId], [IDL.Opt(AuditScore)], ['query']),
+    'getAutomationConfigs' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'trigger' : IDL.Text,
+              'isEnabled' : IDL.Bool,
+              'requiresApproval' : IDL.Bool,
+            })
+          ),
+        ],
+        ['query'],
+      ),
     'getAutopilotEmailConfig' : IDL.Func([], [AutopilotConfig], ['query']),
     'getBatchAuditJobs' : IDL.Func(
         [IDL.Text],
@@ -6912,6 +9381,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(CampaignInstance)],
         ['query'],
       ),
+    'getCampaignStats' : IDL.Func([], [CampaignStats], ['query']),
     'getCampaignTemplates' : IDL.Func(
         [],
         [IDL.Vec(CampaignTemplate)],
@@ -6937,6 +9407,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ClientReport)],
         ['query'],
       ),
+    'getCommandHistory' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Vec(CommandLogEntry)],
+        ['query'],
+      ),
     'getCompetitorAlertsByTenant' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(CompetitorAlert)],
@@ -6958,9 +9433,55 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getComplianceConfig' : IDL.Func([], [ComplianceConfig], ['query']),
+    'getComposioApiKeyStatus' : IDL.Func(
+        [IDL.Text],
+        [IDL.Record({ 'maskedKey' : IDL.Text, 'configured' : IDL.Bool })],
+        [],
+      ),
+    'getComposioToolkitStatus' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Record({
+            'tools' : IDL.Vec(IDL.Text),
+            'accountId' : IDL.Text,
+            'usingDefault' : IDL.Bool,
+          }),
+        ],
+        [],
+      ),
+    'getComposioWebhookSecretStatus' : IDL.Func(
+        [],
+        [IDL.Record({ 'configured' : IDL.Bool })],
+        ['query'],
+      ),
     'getConfiguredVoiceAgents' : IDL.Func(
         [],
         [IDL.Vec(VoiceAgentConfig)],
+        ['query'],
+      ),
+    'getConnectedTools' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Vec(ComposioTool), 'err' : IDL.Text })],
+        [],
+      ),
+    'getContentTierToggles' : IDL.Func(
+        [],
+        [IDL.Vec(ContentTierToggle)],
+        ['query'],
+      ),
+    'getConversationHistory' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'content' : IDL.Text,
+              'role' : IDL.Text,
+              'timestamp' : IDL.Int,
+              'citations' : IDL.Vec(IDL.Text),
+            })
+          ),
+        ],
         ['query'],
       ),
     'getCsvImportBatches' : IDL.Func(
@@ -6997,6 +9518,8 @@ export const idlFactory = ({ IDL }) => {
       ),
     'getDemoSession' : IDL.Func([IDL.Text], [IDL.Opt(DemoSession)], ['query']),
     'getDiscoveryConfig' : IDL.Func([], [DiscoveryConfig], ['query']),
+    'getDograhAgents' : IDL.Func([], [IDL.Vec(DograhAgent)], []),
+    'getDograhConfig' : IDL.Func([], [IDL.Opt(DograhConfig)], []),
     'getDomainSetupState' : IDL.Func(
         [IDL.Text],
         [IDL.Variant({ 'ok' : IDL.Opt(DomainSetupState), 'err' : IDL.Text })],
@@ -7041,6 +9564,21 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(EmailReplyRecord)],
         ['query'],
       ),
+    'getEmailStats' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Variant({
+            'ok' : IDL.Record({
+              'opened' : IDL.Nat,
+              'sent' : IDL.Nat,
+              'clicked' : IDL.Nat,
+            }),
+            'err' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
+    'getEmailTemplates' : IDL.Func([], [IDL.Vec(EmailTemplate)], ['query']),
     'getEngagementApprovals' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(EngagementApproval)],
@@ -7051,28 +9589,112 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(Estimate)],
         ['query'],
       ),
+    'getExecutionLog' : IDL.Func(
+        [IDL.Opt(IDL.Text)],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'status' : IDL.Text,
+              'completedAt' : IDL.Opt(IDL.Int),
+              'startedAt' : IDL.Int,
+              'errorMessage' : IDL.Opt(IDL.Text),
+              'tenantId' : IDL.Text,
+              'outputData' : IDL.Text,
+              'workflowId' : IDL.Text,
+            })
+          ),
+        ],
+        ['query'],
+      ),
     'getExtendedLeadsByTenant' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(ExtendedLead)],
         ['query'],
       ),
+    'getFeatureToggleLogs' : IDL.Func(
+        [],
+        [IDL.Vec(FeatureToggleLog)],
+        ['query'],
+      ),
+    'getFeatureToggles' : IDL.Func([], [IDL.Vec(FeatureToggle)], ['query']),
     'getFreeAuditLeads' : IDL.Func([], [IDL.Vec(FreeAuditLead)], ['query']),
     'getFundabilityScore' : IDL.Func(
         [TenantId],
         [IDL.Opt(FundabilityScore)],
         ['query'],
       ),
+    'getFunnelRecord' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : FunnelRecord, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'getFunnelTimeline' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : FunnelTimeline, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'getGeminiKeyStatus' : IDL.Func(
+        [],
+        [IDL.Record({ 'configured' : IDL.Bool })],
+        ['query'],
+      ),
+    'getGeneratedContent' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ContentGenerationResult)],
+        ['query'],
+      ),
+    'getGeneratedContentById' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(ContentGenerationResult)],
+        ['query'],
+      ),
+    'getGridAudit' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(GridAuditResult)],
+        ['query'],
+      ),
+    'getGridHistory' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(GridAuditSnapshot)],
+        ['query'],
+      ),
+    'getHealthMetrics' : IDL.Func([], [HealthMetrics], ['query']),
     'getHumanOversightAssignmentsByTenant' : IDL.Func(
         [TenantId],
         [IDL.Vec(HumanOversightAssignment)],
         ['query'],
+      ),
+    'getInboundReplies' : IDL.Func(
+        [IDL.Opt(IDL.Text)],
+        [IDL.Vec(InboundReply)],
+        [],
       ),
     'getIntegrationCredentials' : IDL.Func(
         [IDL.Text],
         [MaskedCredentials],
         ['query'],
       ),
+    'getIntegrationHealth' : IDL.Func(
+        [],
+        [IntegrationHealthSummary],
+        ['query'],
+      ),
     'getInvoicesByTenant' : IDL.Func([TenantId], [IDL.Vec(Invoice)], ['query']),
+    'getKnowledgeDocuments' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'title' : IDL.Text,
+              'chunkCount' : IDL.Nat,
+              'uploadedAt' : IDL.Int,
+            })
+          ),
+        ],
+        ['query'],
+      ),
     'getLastDiscoveryJob' : IDL.Func(
         [],
         [IDL.Opt(ScheduledDiscoveryJob)],
@@ -7114,12 +9736,42 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getLeadById' : IDL.Func([TenantId, IDL.Text], [IDL.Opt(Lead)], ['query']),
-    'getLeadEnrichment' : IDL.Func(
+    'getLeadCampaignDetails' : IDL.Func(
         [IDL.Text],
-        [IDL.Opt(LeadEnrichment)],
+        [IDL.Opt(LeadCampaignDetails)],
         ['query'],
       ),
+    'getLeadEnrichment' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(LeadAIEnrichment)],
+        ['query'],
+      ),
+    'getLeadEnrollmentStatus' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Variant({
+            'ok' : IDL.Record({
+              'total' : IDL.Nat,
+              'pending' : IDL.Nat,
+              'enrolled' : IDL.Nat,
+            }),
+            'err' : IDL.Text,
+          }),
+        ],
+        ['query'],
+      ),
+    'getLeadQualityBySource' : IDL.Func(
+        [],
+        [IDL.Vec(SourceQualityData)],
+        ['query'],
+      ),
+    'getLeadScore' : IDL.Func([IDL.Text], [IDL.Opt(LeadAIScore)], ['query']),
     'getLeadsByBatch' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ExtendedLead)],
+        ['query'],
+      ),
+    'getLeadsByNiche' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(ExtendedLead)],
         ['query'],
@@ -7146,6 +9798,19 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getMemory' : IDL.Func([IDL.Text], [IDL.Opt(AgentMemory)], ['query']),
+    'getN8NConfig' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'instanceUrl' : IDL.Text,
+            'activeWorkflowCount' : IDL.Nat,
+            'isConnected' : IDL.Bool,
+            'lastTestedAt' : IDL.Opt(IDL.Int),
+            'totalExecutionsToday' : IDL.Nat,
+          }),
+        ],
+        ['query'],
+      ),
     'getNewsletterAnalytics' : IDL.Func(
         [IDL.Text],
         [NewsletterCampaignStats],
@@ -7176,6 +9841,11 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(NewsletterSubscriber)],
         ['query'],
       ),
+    'getNicheConversionFunnels' : IDL.Func(
+        [],
+        [IDL.Vec(NicheConversionData)],
+        ['query'],
+      ),
     'getNicheScript' : IDL.Func([IDL.Text], [IDL.Opt(NicheScript)], ['query']),
     'getNicheScriptForSession' : IDL.Func(
         [IDL.Text],
@@ -7198,6 +9868,35 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(NotificationRecord)],
         ['query'],
       ),
+    'getOpenRouterStatus' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'costPerMillion' : IDL.Text,
+            'contextWindow' : IDL.Nat,
+            'isConnected' : IDL.Bool,
+            'defaultModel' : IDL.Text,
+            'lastPingTime' : IDL.Opt(IDL.Int),
+          }),
+        ],
+        [],
+      ),
+    'getOpenRouterTaskOverrides' : IDL.Func(
+        [],
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [],
+      ),
+    'getOperatorChatHistory' : IDL.Func(
+        [],
+        [IDL.Vec(OperatorChatMessage)],
+        ['query'],
+      ),
+    'getOperatorReportData' : IDL.Func(
+        [IDL.Text],
+        [OperatorReportData],
+        ['query'],
+      ),
+    'getOperatorStats' : IDL.Func([], [OperatorStats], ['query']),
     'getOptedOutEmails' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getOptedOutPhones' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'getOutreachEvents' : IDL.Func(
@@ -7216,6 +9915,11 @@ export const idlFactory = ({ IDL }) => {
             'avgResponseRate' : IDL.Float64,
           }),
         ],
+        ['query'],
+      ),
+    'getOutreachSequencesForLead' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(OutreachSequence)],
         ['query'],
       ),
     'getPaidAdsAdCopiesByTenant' : IDL.Func(
@@ -7268,14 +9972,41 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(ApprovalItem)],
         ['query'],
       ),
+    'getPendingQueuedActions' : IDL.Func(
+        [],
+        [IDL.Vec(OutreachQueuedAction)],
+        [],
+      ),
+    'getPingHistory' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(ApiPingRecord)],
+        ['query'],
+      ),
+    'getPingStatus' : IDL.Func([], [IDL.Vec(ApiPingRecord)], ['query']),
     'getPipelineFunnelStats' : IDL.Func(
         [IDL.Text],
         [PipelineFunnelStats],
         ['query'],
       ),
+    'getPipelineLeads' : IDL.Func([], [IDL.Vec(PipelineLead)], []),
     'getProviderAdapters' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(ProviderAdapterConfig)],
+        ['query'],
+      ),
+    'getProviderConfigs' : IDL.Func(
+        [],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'isActive' : IDL.Bool,
+              'modelName' : IDL.Text,
+              'lastPingStatus' : IDL.Opt(IDL.Text),
+              'providerType' : IDL.Text,
+            })
+          ),
+        ],
         ['query'],
       ),
     'getQueuePerformanceStats' : IDL.Func(
@@ -7302,6 +10033,12 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getReadinessScore' : IDL.Func([IDL.Text], [ReadinessScore], ['query']),
+    'getRecentActivity' : IDL.Func([IDL.Nat], [IDL.Vec(ActivityFeedItem)], []),
+    'getReplyAnalysis' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(ReplyAnalysis)],
+        ['query'],
+      ),
     'getReplyInboxItems' : IDL.Func([], [IDL.Vec(ReplyInboxItem)], ['query']),
     'getReportSchedule' : IDL.Func(
         [IDL.Text],
@@ -7334,6 +10071,11 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'getReviewsByTenantId' : IDL.Func([TenantId], [IDL.Vec(Review)], ['query']),
+    'getRoofingCampaignStatus' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(LeadCampaignStatus)],
+        ['query'],
+      ),
     'getRunsByTenant' : IDL.Func([IDL.Text], [IDL.Vec(AgentRun)], ['query']),
     'getRunsByThread' : IDL.Func([IDL.Text], [IDL.Vec(AgentRun)], ['query']),
     'getScanModel' : IDL.Func([IDL.Text], [IDL.Opt(ScanModel)], ['query']),
@@ -7475,10 +10217,36 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(AgentThread)],
         ['query'],
       ),
+    'getToolkitToggles' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Vec(ToolkitToggle), 'err' : IDL.Text })],
+        [],
+      ),
     'getTools' : IDL.Func([], [IDL.Vec(ToolDefinition)], ['query']),
     'getToolsByCategory' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(ToolDefinition)],
+        ['query'],
+      ),
+    'getTopPerformingNiche' : IDL.Func(
+        [],
+        [IDL.Opt(NicheConversionData)],
+        ['query'],
+      ),
+    'getTrialAccount' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'getTrialActivityScore' : IDL.Func([IDL.Text], [IDL.Nat], []),
+    'getTrialByLeadId' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+        ['query'],
+      ),
+    'getTrialFeatureFlags' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(FeatureFlags)],
         ['query'],
       ),
     'getTrialNudgeSchedule' : IDL.Func(
@@ -7486,6 +10254,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Vec(WarmSequenceEmailSchedule)],
         ['query'],
       ),
+    'getTriggerRules' : IDL.Func([], [IDL.Vec(TriggerRule)], ['query']),
     'getUserProfile' : IDL.Func(
         [IDL.Principal],
         [IDL.Opt(UserProfile)],
@@ -7513,6 +10282,17 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getVectorIndexStatus' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'collectionsCount' : IDL.Nat,
+            'totalChunks' : IDL.Nat,
+            'totalDocuments' : IDL.Nat,
+          }),
+        ],
+        ['query'],
+      ),
     'getVoiceAgentConfig' : IDL.Func(
         [TenantId],
         [IDL.Opt(VoiceAgentConfig)],
@@ -7527,6 +10307,21 @@ export const idlFactory = ({ IDL }) => {
     'getWarmSequenceSchedules' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(WarmSequenceEmailSchedule)],
+        ['query'],
+      ),
+    'getWebhookLog' : IDL.Func([IDL.Text], [IDL.Vec(WebhookEvent)], ['query']),
+    'getWebhookUrl' : IDL.Func([], [IDL.Text], ['query']),
+    'getWebhookUrls' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'stripe' : IDL.Text,
+            'twilio' : IDL.Text,
+            'vapi' : IDL.Text,
+            'composio' : IDL.Text,
+            'sendgrid' : IDL.Text,
+          }),
+        ],
         ['query'],
       ),
     'getWebsiteAgentScores' : IDL.Func(
@@ -7567,6 +10362,24 @@ export const idlFactory = ({ IDL }) => {
     'getWhiteLabelConfig' : IDL.Func(
         [TenantId],
         [IDL.Opt(WhiteLabelConfig)],
+        ['query'],
+      ),
+    'getWorkflowDefs' : IDL.Func(
+        [],
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'pushedToAccounts' : IDL.Vec(IDL.Text),
+              'name' : IDL.Text,
+              'createdAt' : IDL.Int,
+              'tags' : IDL.Vec(IDL.Text),
+              'description' : IDL.Text,
+              'isActive' : IDL.Bool,
+              'scope' : IDL.Text,
+            })
+          ),
+        ],
         ['query'],
       ),
     'handleNewsletterBounce' : IDL.Func(
@@ -7621,13 +10434,66 @@ export const idlFactory = ({ IDL }) => {
         [SubscriberImportResult],
         [],
       ),
+    'importWorkflowBatch' : IDL.Func(
+        [
+          IDL.Vec(
+            IDL.Record({
+              'id' : IDL.Text,
+              'name' : IDL.Text,
+              'tags' : IDL.Vec(IDL.Text),
+              'description' : IDL.Text,
+              'scope' : IDL.Text,
+              'workflowJson' : IDL.Text,
+            })
+          ),
+        ],
+        [
+          IDL.Record({
+            'results' : IDL.Vec(
+              IDL.Record({
+                'id' : IDL.Text,
+                'valid' : IDL.Bool,
+                'name' : IDL.Text,
+                'errors' : IDL.Vec(IDL.Text),
+                'index' : IDL.Nat,
+              })
+            ),
+            'batchId' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
     'incrementScanModelViews' : IDL.Func([IDL.Text], [], []),
     'initDefaultTools' : IDL.Func([], [], []),
+    'initiateOAuthFlow' : IDL.Func(
+        [OAuthInitRequest],
+        [IDL.Variant({ 'ok' : OAuthInitResponse, 'err' : IDL.Text })],
+        [],
+      ),
     'isCallerAdmin' : IDL.Func([], [IDL.Bool], ['query']),
+    'isComposioRoutingEnabled' : IDL.Func([], [IDL.Bool], ['query']),
+    'isContentEnabledForTier' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'isDemoSessionExpired' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'linkSocialLeadToCRM' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
+    'listLeadEnrichments' : IDL.Func(
+        [],
+        [IDL.Vec(LeadAIEnrichment)],
+        ['query'],
+      ),
+    'listLeadScores' : IDL.Func([], [IDL.Vec(LeadAIScore)], ['query']),
+    'listOutreachSequences' : IDL.Func(
+        [],
+        [IDL.Vec(OutreachSequence)],
+        ['query'],
+      ),
+    'listReplyAnalyses' : IDL.Func([], [IDL.Vec(ReplyAnalysis)], ['query']),
     'lockSocialContent' : IDL.Func([IDL.Text], [IDL.Bool], []),
     'logDripEmailSent' : IDL.Func([DripQueueEmailLog], [], []),
+    'logFunnelStep' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'logTrialInteraction' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'markBrandKitConverted' : IDL.Func(
         [IDL.Text],
@@ -7640,19 +10506,60 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'markNotificationRead' : IDL.Func([IDL.Text], [], []),
+    'markReplyActionComplete' : IDL.Func([IDL.Text], [], []),
+    'markRoofingEmailOpened' : IDL.Func([IDL.Text], [], []),
     'markSmsMessagesRead' : IDL.Func(
         [IDL.Text],
         [IDL.Variant({ 'ok' : IDL.Bool, 'err' : IDL.Text })],
         [],
       ),
     'markSocialCommentResponded' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'masterAgentAppendMessage' : IDL.Func(
+        [IDL.Text, MessageRole, IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'masterAgentDeleteSession' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'masterAgentEndSession' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'masterAgentGetActiveSession' : IDL.Func(
+        [],
+        [IDL.Opt(IDL.Text)],
+        ['query'],
+      ),
+    'masterAgentGetContextSnapshot' : IDL.Func(
+        [],
+        [MasterAgentContextSnapshot],
+        ['query'],
+      ),
+    'masterAgentGetMessages' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(MasterAgentMessage)],
+        ['query'],
+      ),
+    'masterAgentListSessions' : IDL.Func(
+        [],
+        [IDL.Vec(MasterAgentSession)],
+        ['query'],
+      ),
+    'masterAgentStartSession' : IDL.Func([IDL.Opt(IDL.Text)], [IDL.Text], []),
     'mergeBrowserScoresIntoAuditResult' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
         [],
       ),
+    'movePipelineLead' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'n8nTransform' : IDL.Func(
+        [TransformationInput],
+        [TransformationOutput],
+        ['query'],
+      ),
     'pauseAutopilotEmail' : IDL.Func([], [], []),
     'pauseNewsletterCampaign' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'pauseRoofingCampaign' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Null })],
+        [],
+      ),
     'pauseRunForApproval' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'pauseSubdomain' : IDL.Func([IDL.Text], [], []),
     'processBounceEvent' : IDL.Func(
@@ -7674,6 +10581,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         ['query'],
       ),
+    'processNextRoofingCampaignSend' : IDL.Func([], [], []),
     'processSmsReply' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Text],
@@ -7690,9 +10598,46 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
         [],
       ),
+    'provisionTrialAccount' : IDL.Func(
+        [TrialProvisionRequest],
+        [IDL.Variant({ 'ok' : TrialAccount, 'err' : IDL.Text })],
+        [],
+      ),
     'provisionVapiAssistant' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text)],
         [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'pushRoofingTemplate' : IDL.Func(
+        [IDL.Text],
+        [
+          IDL.Record({
+            'accountsUpdated' : IDL.Nat,
+            'message' : IDL.Text,
+            'success' : IDL.Bool,
+          }),
+        ],
+        [],
+      ),
+    'pushWorkflowPlatformWide' : IDL.Func([IDL.Text], [], []),
+    'pushWorkflowToAccounts' : IDL.Func([IDL.Text, IDL.Vec(IDL.Text)], [], []),
+    'pushWorkflowToScope' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'queryRAG' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [
+          IDL.Record({
+            'insufficiencyMessage' : IDL.Opt(IDL.Text),
+            'isInsufficient' : IDL.Bool,
+            'citations' : IDL.Vec(IDL.Text),
+            'chunks' : IDL.Vec(
+              IDL.Record({
+                'id' : IDL.Text,
+                'content' : IDL.Text,
+                'chunkIndex' : IDL.Nat,
+              })
+            ),
+          }),
+        ],
         [],
       ),
     'queueSmsForRule' : IDL.Func(
@@ -7700,6 +10645,45 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'reEnrollLead' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'receiveComposioWebhook' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [
+          IDL.Record({
+            'body' : IDL.Text,
+            'statusCode' : IDL.Nat,
+            'success' : IDL.Bool,
+            'eventType' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
+    'receiveN8NWebhook' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'receiveSendgridEvents' : IDL.Func(
+        [IDL.Text],
+        [IDL.Record({ 'success' : IDL.Bool, 'processed' : IDL.Nat })],
+        [],
+      ),
+    'receiveSendgridInbound' : IDL.Func(
+        [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [IDL.Text],
+        [],
+      ),
+    'receiveStripeWebhook' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Record({ 'success' : IDL.Bool, 'eventType' : IDL.Text })],
+        [],
+      ),
+    'receiveTwilioWebhook' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)), IDL.Text],
+        [IDL.Text],
+        [],
+      ),
+    'receiveVapiWebhook' : IDL.Func([IDL.Text, IDL.Text], [IDL.Text], []),
     'recordBrandKitActivity' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'recordBrfCallAttemptResult' : IDL.Func(
         [
@@ -7730,6 +10714,12 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'recordOutreachEvent' : IDL.Func([OutreachEvent], [], []),
+    'recordPingResult' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Opt(IDL.Text)],
+        [],
+        [],
+      ),
+    'recordTrialActivity' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
     'recordWarmLeadHandoff' : IDL.Func([WarmLeadHandoff], [], []),
     'refreshCompetitorIntel' : IDL.Func([CompetitorIntelReport], [], []),
     'registerSubdomain' : IDL.Func([IDL.Text], [], []),
@@ -7752,6 +10742,7 @@ export const idlFactory = ({ IDL }) => {
     'resetEmailSchedulerTimer' : IDL.Func([], [], []),
     'resetNicheScript' : IDL.Func([IDL.Text], [], []),
     'resetSmsSchedulerTimer' : IDL.Func([], [], []),
+    'resetToDefaults' : IDL.Func([], [IDL.Bool], []),
     'resolveApproval' : IDL.Func(
         [
           IDL.Text,
@@ -7768,16 +10759,68 @@ export const idlFactory = ({ IDL }) => {
       ),
     'respondToReview' : IDL.Func([TenantId, IDL.Text, IDL.Text], [], []),
     'resumeAutopilotEmail' : IDL.Func([], [], []),
+    'resumeRoofingCampaign' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Null })],
+        [],
+      ),
+    'routeModelRequest' : IDL.Func(
+        [AbacusRouteRequest],
+        [IDL.Variant({ 'ok' : AbacusRouteResponse, 'err' : IDL.Text })],
+        [],
+      ),
+    'routeThroughComposio' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text)), IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'runAgentNode' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [
+          IDL.Record({
+            'id' : IDL.Text,
+            'outputData' : IDL.Text,
+            'runAt' : IDL.Int,
+            'nodeType' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
     'runPageSpeedAudit' : IDL.Func([IDL.Text], [IDL.Text], []),
     'runPageSpeedAuditPublic' : IDL.Func([IDL.Text], [IDL.Text], []),
+    'saveAbacusApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'saveAccountBrief' : IDL.Func(
+        [AccountBrief],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
     'saveAgentMemory' : IDL.Func([AgentMemoryRecord], [IDL.Bool], []),
     'saveAgentTemplate' : IDL.Func(
         [AgentTemplateStorageRecord],
         [IDL.Bool],
         [],
       ),
+    'saveAutomationConfig' : IDL.Func(
+        [IDL.Text, IDL.Bool, IDL.Bool, IDL.Text],
+        [],
+        [],
+      ),
     'saveBrowserAuditResult' : IDL.Func([BrowserAuditResult], [], []),
     'saveCallerUserProfile' : IDL.Func([UserProfile], [], []),
+    'saveComposioApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'saveComposioWebhookSecret' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'saveDemoAudio' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'saveDemoAuditReport' : IDL.Func(
         [DemoAuditReport],
@@ -7785,6 +10828,11 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'saveDemoAuditScore' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Bool], []),
+    'saveDograhApiKey' : IDL.Func(
+        [IDL.Text],
+        [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
+        [],
+      ),
     'saveDomainSetupState' : IDL.Func(
         [IDL.Text, DomainSetupState],
         [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
@@ -7806,9 +10854,26 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'saveLeadAuditResult' : IDL.Func([LeadAuditResult], [], []),
+    'saveN8NConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'saveOpenRouterApiKey' : IDL.Func([IDL.Text], [], []),
+    'saveOperatorChatMessage' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [IDL.Text],
+        [],
+      ),
     'saveVapiCredentials' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text],
         [IDL.Record({ 'ok' : IDL.Bool, 'error' : IDL.Opt(IDL.Text) })],
+        [],
+      ),
+    'saveWebhookSecrets' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'saveWorkflowDef' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Text), IDL.Text, IDL.Text],
+        [],
         [],
       ),
     'scheduleBrfOutboundCall' : IDL.Func(
@@ -7827,6 +10892,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'scoreLead' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [LeadAIScore], []),
     'scrapeUrl' : IDL.Func([ScrapeRequest, IDL.Text], [ScrapeResult], []),
     'searchLeadsWithLLM' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat, IDL.Bool],
@@ -7870,8 +10936,26 @@ export const idlFactory = ({ IDL }) => {
         [EmailSendResult],
         [],
       ),
+    'setAccountToolkit' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Text)],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'setAgentEnabled' : IDL.Func([IDL.Text, IDL.Bool], [], []),
     'setBrandVoiceProfile' : IDL.Func([IDL.Text, BrandVoiceProfile], [], []),
     'setCachedAudio' : IDL.Func([IDL.Text, IDL.Text], [], []),
+    'setComposioAsPrimaryMCP' : IDL.Func(
+        [IDL.Bool],
+        [IDL.Variant({ 'ok' : IDL.Text })],
+        [],
+      ),
+    'setContentTierToggle' : IDL.Func([IDL.Text, IDL.Bool], [], []),
+    'setFeatureToggle' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Bool, IDL.Text],
+        [IDL.Bool],
+        [],
+      ),
+    'setGeminiApiKey' : IDL.Func([IDL.Text], [], []),
     'setNewsletterCampaignStatus' : IDL.Func(
         [IDL.Text, IDL.Text, CampaignStatus],
         [IDL.Bool],
@@ -7883,6 +10967,7 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'setOpenRouterTaskModel' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'setProviderAdapter' : IDL.Func(
         [
           IDL.Text,
@@ -7911,6 +10996,11 @@ export const idlFactory = ({ IDL }) => {
         [],
         [],
       ),
+    'setToolkitToggle' : IDL.Func(
+        [ToolkitToggle],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
     'shouldLockSocialContent' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'stageBulkLeadsFromSearch' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Vec(BulkLeadInput)],
@@ -7919,11 +11009,28 @@ export const idlFactory = ({ IDL }) => {
       ),
     'stageScrapeLeads' : IDL.Func([IDL.Text, IDL.Nat], [IDL.Nat], []),
     'storeDeliverabilityEvent' : IDL.Func([DeliverabilityEvent], [], []),
+    'submitAgentCommand' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [AgentCommandResult],
+        [],
+      ),
     'syncVapiCallLogs' : IDL.Func(
         [IDL.Text],
         [IDL.Variant({ 'ok' : IDL.Nat, 'err' : IDL.Text })],
         [],
       ),
+    'testAbacusConnection' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'testAllConnections' : IDL.Func([], [IntegrationHealthSummary], []),
+    'testComposioConnection' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'testDograhConnection' : IDL.Func([], [DograhTestResult], []),
     'testElevenLabsConnection' : IDL.Func(
         [],
         [
@@ -7935,21 +11042,39 @@ export const idlFactory = ({ IDL }) => {
         ],
         [],
       ),
+    'testEmailSend' : IDL.Func(
+        [],
+        [
+          IDL.Record({
+            'message' : IDL.Text,
+            'timestamp' : IDL.Int,
+            'success' : IDL.Bool,
+          }),
+        ],
+        [],
+      ),
     'testIntegration' : IDL.Func(
         [IDL.Text, IDL.Text],
         [ConnectionTestResult],
         [],
       ),
+    'testLeadFinderDiagnostic' : IDL.Func([], [IDL.Text], ['query']),
+    'testN8NConnection' : IDL.Func([], [IDL.Bool], []),
+    'testNvidiaConnection' : IDL.Func([], [IntegrationTestResult], []),
+    'testOpenRouterConnection' : IDL.Func([], [IDL.Bool], []),
     'testServiceConnection' : IDL.Func(
         [IDL.Text, IDL.Text],
         [ConnectionTestResult],
         ['query'],
       ),
+    'toggleTriggerRule' : IDL.Func([IDL.Text, IDL.Bool], [], []),
     'trackComplaintRate' : IDL.Func(
         [],
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Float64))],
         ['query'],
       ),
+    'trackEmailClick' : IDL.Func([IDL.Text], [], []),
+    'trackEmailOpen' : IDL.Func([IDL.Text], [], []),
     'trackWarmSequenceEvent' : IDL.Func([IDL.Text, IDL.Nat, IDL.Text], [], []),
     'transform' : IDL.Func(
         [TransformationInput],
@@ -7961,14 +11086,44 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
         [],
       ),
+    'triggerGridAudit' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : GridAuditResult, 'err' : IDL.Text })],
+        [],
+      ),
     'triggerManualDiscovery' : IDL.Func([], [IDL.Text], []),
     'triggerOutreachEmailSequence' : IDL.Func([IDL.Text], [], []),
+    'triggerWorkflow' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [
+          IDL.Record({
+            'id' : IDL.Text,
+            'status' : IDL.Text,
+            'startedAt' : IDL.Int,
+            'errorMessage' : IDL.Opt(IDL.Text),
+            'outputData' : IDL.Text,
+            'workflowId' : IDL.Text,
+          }),
+        ],
+        [],
+      ),
+    'unsubscribeFromCampaign' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'unsubscribeNewsletterEmail' : IDL.Func(
         [IDL.Text, IDL.Text],
         [IDL.Bool],
         [],
       ),
+    'updateAccountBrief' : IDL.Func(
+        [IDL.Text, AccountBriefUpdate],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
     'updateAgencySettings' : IDL.Func([AgencySettings], [], []),
+    'updateAgentConfig' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'updateAgentRun' : IDL.Func(
         [
           IDL.Text,
@@ -7980,6 +11135,11 @@ export const idlFactory = ({ IDL }) => {
           IDL.Opt(IDL.Text),
         ],
         [IDL.Bool],
+        [],
+      ),
+    'updateAgentStatus' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Opt(IDL.Text)],
+        [],
         [],
       ),
     'updateAgentThread' : IDL.Func(
@@ -8010,6 +11170,17 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'updateComplianceConfig' : IDL.Func([ComplianceConfig], [], []),
+    'updateContentResult' : IDL.Func(
+        [
+          IDL.Text,
+          GenerationStatus,
+          IDL.Text,
+          IDL.Opt(IDL.Text),
+          IDL.Opt(IDL.Text),
+        ],
+        [],
+        [],
+      ),
     'updateDemoFunnelEntry' : IDL.Func(
         [IDL.Text, IDL.Text, DemoFunnelEntry],
         [],
@@ -8027,19 +11198,29 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         [],
       ),
+    'updateEmailTemplate' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
     'updateEstimateStatus' : IDL.Func(
         [IDL.Text, EstimateStatus, IDL.Text],
         [IDL.Variant({ 'ok' : Estimate, 'err' : IDL.Text })],
         [],
       ),
     'updateFundabilityScore' : IDL.Func([TenantId, IDL.Nat], [], []),
+    'updateFunnelStep' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text })],
+        [],
+      ),
+    'updateHealthMetric' : IDL.Func([IDL.Text, IDL.Nat], [], []),
     'updateLead' : IDL.Func([TenantId, IDL.Text, Lead], [], []),
     'updateLeadAuditJobStatus' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text],
         [IDL.Bool],
         [],
       ),
-    'updateLeadEnrichment' : IDL.Func([LeadEnrichment], [], []),
     'updateMemory' : IDL.Func(
         [
           IDL.Text,
@@ -8106,9 +11287,20 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Bool],
         [],
       ),
+    'updateTrialFeatureFlags' : IDL.Func(
+        [IDL.Text, FeatureFlags],
+        [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'updateTriggerRule' : IDL.Func([IDL.Text, TriggerRuleUpdate], [], []),
     'updateVapiAssistant' : IDL.Func(
         [IDL.Text, IDL.Text, VapiAssistantUpdate],
         [IDL.Variant({ 'ok' : IDL.Null, 'err' : IDL.Text })],
+        [],
+      ),
+    'uploadDocument' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Text],
         [],
       ),
     'upsertAgentDeliverable' : IDL.Func([AgentDeliverable], [], []),

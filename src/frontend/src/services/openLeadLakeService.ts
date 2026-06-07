@@ -2,10 +2,6 @@
 // Implements connectors, a normalization engine, and import job management.
 // All connectors include graceful fallback to demo data when APIs are unavailable.
 
-import {
-  DEMO_NORMALIZED_LEADS,
-  DEMO_RAW_RECORDS,
-} from "../data/openLeadLakeData";
 import type {
   ImportStatus,
   NormalizationStatus,
@@ -104,11 +100,9 @@ export class OpenStreetMapConnector {
 
       const data = (await res.json()) as NominatimResult[];
       return data.map((place) => osmResultToRawRecord(place, uid()));
-    } catch {
-      // Fallback: return demo records tagged as openstreetmap
-      return DEMO_RAW_RECORDS.filter((r) => r.sourceType === "openstreetmap")
-        .slice(0, 5)
-        .map((r) => ({ ...r, id: uid(), importedAt: nowIso() }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`OpenStreetMap search failed: ${msg}`);
     }
   }
 }
@@ -219,11 +213,9 @@ export class OpenCorporatesConnector {
       return (data.results?.companies ?? []).map(({ company }) =>
         ocCompanyToRawRecord(company, uid()),
       );
-    } catch {
-      // Graceful degradation — return demo records from this source
-      return DEMO_RAW_RECORDS.filter((r) => r.sourceType === "opencorporates")
-        .slice(0, 3)
-        .map((r) => ({ ...r, id: uid(), importedAt: nowIso() }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      throw new Error(`OpenCorporates search failed: ${msg}`);
     }
   }
 }
@@ -847,7 +839,7 @@ export class ImportJobManager {
   async runJob(
     job: SourceImportJob,
     rawRecords: RawLeadRecord[],
-    existingLeads: NormalizedLead[] = DEMO_NORMALIZED_LEADS,
+    existingLeads: NormalizedLead[] = [],
     suppressionList: SuppressionRecord[] = [],
   ): Promise<ImportJobResult> {
     const updatedJob: SourceImportJob = {

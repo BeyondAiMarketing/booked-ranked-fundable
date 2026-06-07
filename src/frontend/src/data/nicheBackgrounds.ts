@@ -20,13 +20,13 @@ export const nicheBackgrounds: Record<string, NicheBackground> = {
       {
         sectionName: "pain",
         imageUrl:
-          "https://images.unsplash.com/photo-1605152276897-4f618f831968?w=1200&q=70",
-        overlayOpacity: 0.82,
+          "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80",
+        overlayOpacity: 0.65,
       },
       {
         sectionName: "app-preview",
         imageUrl:
-          "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=70",
+          "https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1200&q=80",
         overlayOpacity: 0.87,
       },
     ],

@@ -13,6 +13,7 @@ import {
   Loader2,
   Mail,
   MailX,
+  MessageSquare,
   Pause,
   Play,
   Plus,
@@ -24,11 +25,17 @@ import {
   SquareX,
   Target,
   Users,
+  Wifi,
+  WifiOff,
   X,
   Zap,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import LeadAIBadge from "../components/LeadAIBadge";
+import OutreachAgentChat from "../components/OutreachAgentChat";
+import { useApp } from "../context/AppContext";
+import { useCredentials } from "../context/CredentialsContext";
 import { DEMO_INGESTION_STATS } from "../data/openLeadLakeData";
 import {
   DEMO_COPY_SETTINGS,
@@ -51,6 +58,7 @@ import {
   type ScoreTier,
   computeLeadScores,
 } from "../lib/outreachScoringEngine";
+import { routeMasterAgentCall } from "../services/openSourceAdapters";
 import type { SourceType } from "../types/openLeadLake";
 import type {
   LeadStagingStatus,
@@ -1168,6 +1176,30 @@ function CopyPreviewCard({
   copy,
   onClose,
 }: { copy: GeneratedOutreachCopy; onClose: () => void }) {
+  const [displayedText, setDisplayedText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (!copy.email_initial) return;
+    // Clear any running interval
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setDisplayedText("");
+    setIsStreaming(true);
+    let idx = 0;
+    intervalRef.current = setInterval(() => {
+      idx += 1;
+      setDisplayedText(copy.email_initial.slice(0, idx));
+      if (idx >= copy.email_initial.length) {
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        setIsStreaming(false);
+      }
+    }, 30);
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [copy.email_initial]);
+
   return (
     <div className="mt-3 bg-slate-800/60 border border-indigo-500/30 rounded-xl p-4 space-y-3">
       <div className="flex items-center justify-between">
@@ -1192,7 +1224,10 @@ function CopyPreviewCard({
       <div>
         <p className="text-slate-400 text-xs mb-1">Email Preview</p>
         <p className="text-slate-300 text-xs leading-relaxed whitespace-pre-line line-clamp-4">
-          {copy.email_initial.split("\n").slice(0, 5).join("\n")}
+          {displayedText
+            ? displayedText.split("\n").slice(0, 5).join("\n")
+            : copy.email_initial.split("\n").slice(0, 5).join("\n")}
+          {isStreaming ? <span className="animate-pulse">&#9611;</span> : null}
         </p>
       </div>
       <div className="flex items-center gap-2 flex-wrap pt-1">
@@ -1393,6 +1428,7 @@ function QualifiedLeadsTab() {
                   <span className="text-slate-100 font-semibold text-sm">
                     {lead?.businessName ?? sc.leadStagingId}
                   </span>
+                  <LeadAIBadge leadId={sc.id || sc.leadStagingId} />
                   <ScoreTierBadge tier={tier} />
                   <span
                     className={`text-lg font-bold font-mono ${scoreColor(sc.outreachPriorityScore)}`}
@@ -3084,7 +3120,10 @@ export default function OutreachAgentPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="px-6 py-6">{renderTab()}</div>
+      <div className="px-6 py-6">
+        <OutreachAgentChat creds={useCredentials().creds} />
+        {renderTab()}
+      </div>
     </div>
   );
 }

@@ -241,7 +241,7 @@ module {
     while (i < n) {
       if (chars[i] == '@' and i > 0 and i + 1 < n) {
         // scan backward for local part
-        var j = i - 1;
+        var j : Nat = i - 1;
         while (j > 0 and isEmailLocalChar(chars[j])) { j -= 1 };
         if (not isEmailLocalChar(chars[j])) j += 1;
         if (j < i) {

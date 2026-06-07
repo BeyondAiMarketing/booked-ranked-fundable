@@ -125,7 +125,20 @@ module {
       perplexityApiKey    = maskField(c.perplexityApiKey);
       autoBrowserUrl      = maskField(c.autoBrowserUrl);
       serpApiKey          = maskField(c.serpApiKey);
+      serpApiDevKey       = maskField(c.serpApiDevKey);
+      tinyFishKey         = maskField(c.tinyFishKey);
       sendgridKey         = maskField(c.sendgridKey);
+      nvidiaApiKey        = if (c.nvidiaApiKey.size() > 0) "configured" else "";
+      n8nInstanceUrl      = c.n8nInstanceUrl;
+      abacusApiKey        = maskField(c.abacusApiKey);
+      composioApiKey      = maskField(c.composioApiKey);
+      dograhApiKey        = maskField(c.dograhApiKey);
+      openRouterApiKey    = maskField(c.openRouterApiKey);
+      nvidiaNimApiKey     = maskField(c.nvidiaNimApiKey);
+      geminiApiKey        = maskField(c.geminiApiKey);
+      vapiWebhookSecret   = maskField(c.vapiWebhookSecret);
+      sendgridInboundParseDomain = maskField(c.sendgridInboundParseDomain);
+      composioWebhookSecret = maskField(c.composioWebhookSecret);
     }
   };
 
@@ -145,8 +158,8 @@ module {
     let smtpOk = c.emailSmtpHost != "";
     let tier2 : Nat = if (stripeOk and googleOk and smtpOk) 35 else 0;
 
-    // Tier 3 (25 pts): at least one of Yelp / Facebook / Hunter / NeverBounce / Perplexity / SerpApi
-    let enrichOk = c.yelpApiKey != "" or c.facebookAppId != "" or c.hunterApiKey != "" or c.neverBounceKey != "" or c.perplexityApiKey != "" or c.serpApiKey != "";
+    // Tier 3 (25 pts): at least one of Yelp / Facebook / Hunter / NeverBounce / Perplexity / SerpApi / SerpApi.dev
+    let enrichOk = c.yelpApiKey != "" or c.facebookAppId != "" or c.hunterApiKey != "" or c.neverBounceKey != "" or c.perplexityApiKey != "" or c.serpApiKey != "" or c.serpApiDevKey != "";
     let tier3 : Nat = if (enrichOk) 25 else 0;
 
     // Bonus (+5 pts): auto-browser configured
@@ -169,34 +182,253 @@ module {
   };
 
   // ---------------------------------------------------------------------------
-  // Mock connection test
+  // Per-provider connection request builders
+  //
+  // These return the URL, headers, and optional POST body needed to test each
+  // provider.  Actual HTTP outcalls are performed in the mixin layer where the
+  // `transform` query function is available.
   // ---------------------------------------------------------------------------
 
-  public func mockConnectionTest(service : Text, c : T.IntegrationCredentials) : T.ConnectionTestResult {
-    let (connected, message) = switch (service) {
-      case ("openai")     { if (c.openaiKey != "")    (true,  "OpenAI key is configured")        else (false, "OpenAI key not set")         };
-      case ("claude")     { if (c.claudeKey != "")    (true,  "Anthropic key is configured")     else (false, "Anthropic key not set")      };
-      case ("litellm")    { if (c.litellmUrl != "")   (true,  "LiteLLM endpoint is configured")  else (false, "LiteLLM URL not set")        };
-      case ("ollama")     { if (c.ollamaUrl != "")    (true,  "Ollama endpoint is configured")   else (false, "Ollama URL not set")         };
-      case ("twilio")     { if (c.twilioSid != "")    (true,  "Twilio credentials are set")      else (false, "Twilio SID not set")         };
-      case ("vapi")       { if (c.vapiKey != "")      (true,  "Vapi.ai key is configured")       else (false, "Vapi key not set")           };
-      case ("stripe")     { if (c.stripeKey != "")    (true,  "Stripe key is configured")        else (false, "Stripe key not set")         };
-      case ("google")     { if (c.googleClientId != "") (true,"Google credentials are set")      else (false, "Google Client ID not set")   };
-      case ("yelp")       { if (c.yelpApiKey != "")   (true,  "Yelp API key is configured")      else (false, "Yelp key not set")           };
-      case ("facebook")   { if (c.facebookAppId != "") (true, "Facebook credentials are set")    else (false, "Facebook App ID not set")    };
-      case ("smtp")       { if (c.emailSmtpHost != "") (true, "SMTP host is configured")         else (false, "SMTP host not set")          };
-      case ("hunter")     { if (c.hunterApiKey != "") (true,  "Hunter.io key is configured")     else (false, "Hunter key not set")         };
-      case ("neverbounce"){ if (c.neverBounceKey != "") (true,"NeverBounce key is configured")   else (false, "NeverBounce key not set")    };
-      case ("listmonk")   { if (c.listmonkUrl != "")  (true,  "Listmonk URL is configured")      else (false, "Listmonk URL not set")        };
-      case ("searxng")    { if (c.searxngUrl != "")   (true,  "SearXNG URL is configured")       else (false, "SearXNG URL not set")         };
-      case ("elevenlabs") { if (c.elevenLabsKey != "") (true, "ElevenLabs key is configured")    else (false, "ElevenLabs key not set")       };
-      case ("perplexity") { if (c.perplexityApiKey != "") (true, "Perplexity key is configured") else (false, "Perplexity key not set")       };
-      case ("auto_browser") { if (c.autoBrowserUrl != "") (true, "Auto-Browser URL is configured") else (false, "Auto-Browser URL not set") };
-      case ("serpapi")    { if (c.serpApiKey != "")   (true,  "SerpApi key is configured")       else (false, "SerpApi key not set")         };
-      case ("sendgrid")   { if (c.sendgridKey != "")  (true,  "SendGrid key is configured")      else (false, "SendGrid key not set")        };
-      case (_)            { (false, "Unknown service: " # service) };
+  public type ProviderTestRequest = {
+    url     : Text;
+    method  : Text; // "GET" | "POST"
+    headers : [(Text, Text)];
+    body    : ?Text;
+  };
+
+  /// Build the test request for OpenRouter (POST chat completions).
+  public func openRouterTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://openrouter.ai/api/v1/chat/completions";
+      method = "POST";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("Content-Type",  "application/json"),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = ?("{\'model\':\'openai/gpt-3.5-turbo\',\'messages\':[{\'role\':\'user\',\'content\':\'ping\'}],\'max_tokens\':\'1\'}"
+               |> swapQuotes(_));
+    }
+  };
+
+  /// Build the test request for OpenAI (POST chat completions).
+  public func openAiTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.openai.com/v1/chat/completions";
+      method = "POST";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("Content-Type",  "application/json"),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = ?("{\'model\':\'gpt-3.5-turbo\',\'messages\':[{\'role\':\'user\',\'content\':\'ping\'}],\'max_tokens\':\'1\'}"
+               |> swapQuotes(_));
+    }
+  };
+
+  /// Build the test request for Gemini (POST generateContent).
+  public func geminiTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" # key;
+      method = "POST";
+      headers = [
+        ("Content-Type", "application/json"),
+        ("User-Agent",   "BRF-IntegrationTest/1.0"),
+      ];
+      body = ?("{\"contents\":[{\"parts\":[{\"text\":\"ping\"}]}]}");
+    }
+  };
+
+  /// Build the test request for NVIDIA NIM (GET models list).
+  public func nvidiaTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://integrate.api.nvidia.com/v1/models";
+      method = "GET";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for TinyFish (GET search — X-API-Key header required).
+  public func tinyFishTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      // TinyFish uses X-API-Key header, not Authorization: Bearer
+      url    = "https://api.tinyfish.ai/search?q=test";
+      method = "GET";
+      headers = [
+        ("X-API-Key",  key),
+        ("User-Agent", "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for SerpApi (GET account).
+  public func serpApiTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://serpapi.com/account?api_key=" # key;
+      method = "GET";
+      headers = [("User-Agent", "BRF-IntegrationTest/1.0")];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Twilio (GET account details).
+  public func twilioTestRequest(sid : Text, auth : Text) : ?ProviderTestRequest {
+    if (sid == "" or auth == "") return null;
+    let encoded = base64Encode(sid # ":" # auth);
+    ?{
+      url    = "https://api.twilio.com/2010-04-01/Accounts/" # sid # ".json";
+      method = "GET";
+      headers = [
+        ("Authorization", "Basic " # encoded),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for SendGrid (GET user email).
+  public func sendGridTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.sendgrid.com/v3/user/email";
+      method = "GET";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Vapi (GET assistants).
+  public func vapiTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.vapi.ai/assistant";
+      method = "GET";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for ElevenLabs (GET voices).
+  public func elevenLabsTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.elevenlabs.io/v1/voices";
+      method = "GET";
+      headers = [
+        ("xi-api-key", key),
+        ("User-Agent", "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Stripe (GET account).
+  public func stripeTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.stripe.com/v1/account";
+      method = "GET";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Composio (GET integrations).
+  public func composioTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://backend.composio.dev/api/v1/integrations";
+      method = "GET";
+      headers = [
+        ("x-api-key",  key),
+        ("User-Agent", "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Dograh (GET status).
+  public func dograhTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.dograh.com/v1/status";
+      method = "GET";
+      headers = [
+        ("Authorization", "Bearer " # key),
+        ("User-Agent",    "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  /// Build the test request for Abacus.AI (GET listModels).
+  public func abacusTestRequest(key : Text) : ?ProviderTestRequest {
+    if (key == "") return null;
+    ?{
+      url    = "https://api.abacus.ai/api/v1/listModels";
+      method = "GET";
+      headers = [
+        ("apiKey",     key),
+        ("User-Agent", "BRF-IntegrationTest/1.0"),
+      ];
+      body = null;
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Private helpers for request builders
+  // ---------------------------------------------------------------------------
+
+  /// Swap single-quote placeholders back to double-quotes (for JSON bodies
+  /// that can't use escape sequences in Motoko string literals cleanly).
+  func swapQuotes(s : Text) : Text {
+    var result = "";
+    for (c in s.chars()) {
+      if (c == '\'') { result := result # "\"" }
+      else { result := result # Text.fromChar(c) };
     };
-    { connected; message; statusCode = 0; quotaInfo = null }
+    result
+  };
+
+  /// Minimal Base64 encoder for ASCII strings (used for Twilio Basic auth).
+  func base64Encode(input : Text) : Text {
+    let chars : [Char] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/".toArray();
+    let bytes : [Nat8] = input.encodeUtf8().toArray();
+    let len = bytes.size();
+    var out = "";
+    var i = 0;
+    while (i < len) {
+      let b0 : Nat = bytes[i].toNat();
+      let b1 : Nat = if (i + 1 < len) bytes[i + 1].toNat() else 0;
+      let b2 : Nat = if (i + 2 < len) bytes[i + 2].toNat() else 0;
+      let combined : Nat = b0 * 65536 + b1 * 256 + b2;
+      out := out # Text.fromChar(chars[(combined / 262144) % 64]);
+      out := out # Text.fromChar(chars[(combined / 4096)   % 64]);
+      out := out # (if (i + 1 < len) Text.fromChar(chars[(combined / 64) % 64]) else "=");
+      out := out # (if (i + 2 < len) Text.fromChar(chars[combined % 64])        else "=");
+      i += 3;
+    };
+    out
   };
 
   // ---------------------------------------------------------------------------
@@ -236,6 +468,7 @@ module {
       case ("perplexityApiKey")    c.perplexityApiKey;
       case ("autoBrowserUrl")      c.autoBrowserUrl;
       case ("serpApiKey")          c.serpApiKey;
+      case ("serpApiDevKey")       c.serpApiDevKey;
       case ("sendgridKey")         c.sendgridKey;
       case (_)                     { return null };
     };
@@ -279,7 +512,21 @@ module {
       perplexityApiKey    = obfuscate(c.perplexityApiKey,    salt);
       autoBrowserUrl      = obfuscate(c.autoBrowserUrl,      salt);
       serpApiKey          = obfuscate(c.serpApiKey,          salt);
+      serpApiDevKey       = obfuscate(c.serpApiDevKey,       salt);
+      tinyFishKey         = obfuscate(c.tinyFishKey,         salt);
       sendgridKey         = obfuscate(c.sendgridKey,         salt);
+      nvidiaApiKey        = c.nvidiaApiKey;
+      n8nApiKey           = c.n8nApiKey;
+      n8nInstanceUrl      = c.n8nInstanceUrl;
+      abacusApiKey        = obfuscate(c.abacusApiKey,        salt);
+      composioApiKey      = obfuscate(c.composioApiKey,      salt);
+      dograhApiKey        = obfuscate(c.dograhApiKey,        salt);
+      openRouterApiKey    = obfuscate(c.openRouterApiKey,    salt);
+      nvidiaNimApiKey     = obfuscate(c.nvidiaNimApiKey,     salt);
+      geminiApiKey        = obfuscate(c.geminiApiKey,         salt);
+      vapiWebhookSecret   = obfuscate(c.vapiWebhookSecret,   salt);
+      sendgridInboundParseDomain = obfuscate(c.sendgridInboundParseDomain, salt);
+      composioWebhookSecret = obfuscate(c.composioWebhookSecret, salt);
     }
   };
 
@@ -320,13 +567,88 @@ module {
       perplexityApiKey    = deobfuscate(c.perplexityApiKey,    salt);
       autoBrowserUrl      = deobfuscate(c.autoBrowserUrl,      salt);
       serpApiKey          = deobfuscate(c.serpApiKey,          salt);
+      serpApiDevKey       = deobfuscate(c.serpApiDevKey,       salt);
+      tinyFishKey         = deobfuscate(c.tinyFishKey,         salt);
       sendgridKey         = deobfuscate(c.sendgridKey,         salt);
+      nvidiaApiKey        = c.nvidiaApiKey;
+      n8nApiKey           = c.n8nApiKey;
+      n8nInstanceUrl      = c.n8nInstanceUrl;
+      abacusApiKey        = deobfuscate(c.abacusApiKey,        salt);
+      composioApiKey      = deobfuscate(c.composioApiKey,      salt);
+      dograhApiKey        = deobfuscate(c.dograhApiKey,        salt);
+      openRouterApiKey    = deobfuscate(c.openRouterApiKey,    salt);
+      nvidiaNimApiKey     = deobfuscate(c.nvidiaNimApiKey,     salt);
+      geminiApiKey        = deobfuscate(c.geminiApiKey,         salt);
+      vapiWebhookSecret   = deobfuscate(c.vapiWebhookSecret,   salt);
+      sendgridInboundParseDomain = deobfuscate(c.sendgridInboundParseDomain, salt);
+      composioWebhookSecret = deobfuscate(c.composioWebhookSecret, salt);
     }
   };
 
   // ---------------------------------------------------------------------------
   // Private helpers
   // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // Empty credentials — used by mixins when integrationCreds["platform"] has
+  // not been written yet.  All Text fields are "" and all [Nat8] fields are [].
+  // ---------------------------------------------------------------------------
+
+  public func emptyCredentials() : T.IntegrationCredentials {
+    {
+      openaiKey           = "";
+      claudeKey           = "";
+      litellmUrl          = "";
+      litellmKey          = "";
+      ollamaUrl           = "";
+      twilioSid           = "";
+      twilioAuth          = "";
+      twilioNumber        = "";
+      vapiKey             = "";
+      stripeKey           = "";
+      stripeWebhookSecret = "";
+      googleClientId      = "";
+      googleClientSecret  = "";
+      yelpApiKey          = "";
+      facebookAppId       = "";
+      facebookAppSecret   = "";
+      emailSmtpHost       = "";
+      emailSmtpPort       = "";
+      emailSmtpUser       = "";
+      emailSmtpPass       = "";
+      hunterApiKey        = "";
+      neverBounceKey      = "";
+      listmonkUrl         = "";
+      listmonkUser        = "";
+      listmonkPass        = "";
+      searxngUrl          = "";
+      elevenLabsKey       = "";
+      elevenLabsVoiceId   = "";
+      perplexityApiKey    = "";
+      autoBrowserUrl      = "";
+      serpApiKey          = "";
+      serpApiDevKey       = "";
+      tinyFishKey         = "";
+      sendgridKey         = "";
+      nvidiaApiKey        = [];
+      n8nApiKey           = [];
+      n8nInstanceUrl      = "";
+      abacusApiKey        = "";
+      composioApiKey      = "";
+      dograhApiKey        = "";
+      openRouterApiKey    = "";
+      nvidiaNimApiKey     = "";
+      geminiApiKey        = "";
+      vapiWebhookSecret   = "";
+      sendgridInboundParseDomain = "";
+      composioWebhookSecret = "";
+    }
+  };
+
+  /// Public Base64 encoder for Twilio Basic auth (exported for mixin use).
+  public func base64ForTwilio(sid : Text, auth : Text) : Text {
+    base64Encode(sid # ":" # auth)
+  };
 
   func nibble(n : Nat) : Text {
     let chars = ["0","1","2","3","4","5","6","7","8","9","a","b","c","d","e","f"];

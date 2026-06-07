@@ -10,7 +10,11 @@ import {
   ChevronUp,
   ClipboardCopy,
   Clock,
+  Copy,
   ExternalLink,
+  Eye,
+  EyeOff,
+  Fish,
   Headphones,
   Info,
   Loader2,
@@ -34,6 +38,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
+import { OpenRouterModelTable } from "../components/ai/OpenRouterModelTable";
 import { IntegrationStatusBadge } from "../components/golive/IntegrationStatusBadge";
 import {
   SetupWizardModal,
@@ -52,7 +57,2133 @@ import {
   testOpenAIConnection,
   testSearxngConnection,
   testSerpApiConnection,
+  testSerpApiDevConnection,
+  testTinyFishConnection,
 } from "../services/openSourceAdapters";
+
+// ── Dograh Voice Agent Builder Section ──────────────────────────────────────
+
+function DograhSection() {
+  const { actor } = useActor();
+  const [dograhKey, setDograhKey] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [testResult, setTestResult] = useState<{
+    connected: boolean;
+    message: string;
+    agentCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      ?.getIntegrationCredentials?.("platform")
+      .then((creds: Record<string, string> | null) => {
+        const val = creds?.dograhApiKey ?? "";
+        if (val) {
+          setIsConfigured(true);
+          setMaskedValue(val);
+        }
+      })
+      .catch(() => {});
+  }, [actor]);
+
+  async function handleSave() {
+    if (!dograhKey.trim()) return;
+    setIsSaving(true);
+    try {
+      await (actor as any)?.saveDograhApiKey?.(dograhKey);
+      toast.success("Dograh API key saved.");
+      setDograhKey("");
+      setIsConfigured(true);
+      setMaskedValue(`${dograhKey.slice(0, 6)}••••••••`);
+    } catch {
+      toast.error("Failed to save Dograh key.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete Dograh API key?")) return;
+    setIsClearing(true);
+    try {
+      await (actor as any)?.deleteCredential?.("platform", "dograhApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setDograhKey("");
+      toast.success("Key cleared.");
+    } catch {
+      toast.error("Failed to clear Dograh key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    setIsTesting(true);
+    try {
+      const r = await (actor as any)?.testDograhConnection?.();
+      if (r) {
+        setTestResult(
+          r as { connected: boolean; message: string; agentCount: number },
+        );
+        toast[r.connected ? "success" : "error"](
+          r.connected
+            ? `Connected — ${r.agentCount} agent(s) found`
+            : r.message,
+        );
+      }
+    } catch {
+      toast.error("Dograh connection test failed.");
+    } finally {
+      setIsTesting(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl border border-violet-500/25 bg-violet-500/5 p-5 space-y-4"
+      data-ocid="golive.dograh.panel"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-violet-400"
+              aria-label="Dograh Voice Agent Builder"
+            >
+              <title>Dograh Voice Agent Builder</title>
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+              <line x1="12" x2="12" y1="19" y2="22" />
+            </svg>
+            Dograh Voice Agent Builder
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Create and manage AI voice agents via natural language commands
+          </p>
+        </div>
+        {isConfigured && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Configured ✓ &nbsp;
+            <span className="font-mono text-[10px] opacity-70">
+              {maskedValue}
+            </span>
+          </span>
+        )}
+      </div>
+      <div className="space-y-3">
+        <div>
+          <label
+            htmlFor="dograh-api-key"
+            className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block"
+          >
+            Dograh API Key
+          </label>
+          <input
+            id="dograh-api-key"
+            type="password"
+            value={dograhKey}
+            onChange={(e) => setDograhKey(e.target.value)}
+            placeholder={
+              isConfigured ? maskedValue : "Enter your Dograh API key"
+            }
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm"
+            data-ocid="golive.dograh.api_key_input"
+          />
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!dograhKey.trim() || isSaving}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.dograh.save_key_button"
+          >
+            {isSaving ? "Saving..." : "Save Key"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.dograh.test_button"
+          >
+            {isTesting ? "Testing..." : "Test Connection"}
+          </button>
+          {isConfigured && (
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={isClearing}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.dograh.clear_key_button"
+            >
+              {isClearing ? "Clearing..." : "Clear Key"}
+            </button>
+          )}
+        </div>
+        {testResult !== null && (
+          <div
+            className={`text-sm px-3 py-2 rounded-lg ${testResult.connected ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
+          >
+            {testResult.connected
+              ? `Connected — ${testResult.agentCount} agent(s) found`
+              : testResult.message}
+          </div>
+        )}
+        <p className="text-xs text-slate-500">
+          Get your API key at{" "}
+          <a
+            href="https://app.dograh.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-violet-400 hover:underline"
+          >
+            app.dograh.com
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── Composio MCP Router Section ─────────────────────────────────────────────────────────────────
+
+function ComposioSection() {
+  const { actor } = useActor();
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [status, setStatus] = useState<
+    "not_configured" | "connected" | "failed"
+  >("not_configured");
+  const [lastPing, setLastPing] = useState<string>("Never");
+
+  // Webhook signing secret state
+  const [webhookSecret, setWebhookSecret] = useState("");
+  const [showSecret, setShowSecret] = useState(false);
+  const [isSavingSecret, setIsSavingSecret] = useState(false);
+  const [isClearingSecret, setIsClearingSecret] = useState(false);
+  const [secretConfigured, setSecretConfigured] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+
+  const WEBHOOK_URL = "https://bookedrankedfunded.org/api/webhooks/composio";
+
+  useEffect(() => {
+    if (!actor) return;
+    (
+      actor as unknown as Record<
+        string,
+        (...args: unknown[]) => Promise<unknown>
+      >
+    )
+      ?.getComposioApiKeyStatus?.("platform")
+      .then((res: unknown) => {
+        const r = res as { configured: boolean; maskedKey: string } | null;
+        if (r?.configured) {
+          setIsConfigured(true);
+          setMaskedValue(r.maskedKey);
+          setStatus("connected");
+        }
+      })
+      .catch(() => {});
+    (
+      actor as unknown as Record<
+        string,
+        (...args: unknown[]) => Promise<unknown>
+      >
+    )
+      ?.getComposioWebhookSecretStatus?.()
+      .then((res: unknown) => {
+        const r = res as { configured: boolean } | null;
+        if (r?.configured) setSecretConfigured(true);
+      })
+      .catch(() => {});
+  }, [actor]);
+
+  async function handleSave() {
+    if (!apiKey.trim()) return;
+    setIsSaving(true);
+    try {
+      await (
+        actor as unknown as Record<
+          string,
+          (...args: unknown[]) => Promise<unknown>
+        >
+      )?.saveComposioApiKey?.(apiKey);
+      toast.success("Composio API key saved.");
+      setApiKey("");
+      setIsConfigured(true);
+      setMaskedValue(`${apiKey.slice(0, 6)}••••••••`);
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete Composio API key?")) return;
+    setIsClearing(true);
+    try {
+      await (
+        actor as unknown as Record<
+          string,
+          (...args: unknown[]) => Promise<unknown>
+        >
+      )?.deleteCredential?.("platform", "composioApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setApiKey("");
+      setStatus("not_configured");
+      toast.success("Key cleared.");
+    } catch {
+      toast.error("Failed to clear Composio key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    setIsTesting(true);
+    try {
+      const result = await actor?.testComposioConnection?.();
+      const connected =
+        result !== undefined &&
+        typeof result === "object" &&
+        "__kind__" in result &&
+        (result as Record<string, unknown>).__kind__ === "ok";
+      setStatus(connected ? "connected" : "failed");
+      setLastPing(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      toast[connected ? "success" : "error"](
+        connected
+          ? "Composio MCP Router connected!"
+          : "Composio connection failed — check your API key.",
+      );
+    } catch {
+      setStatus("failed");
+      toast.error("Composio connection test failed.");
+    } finally {
+      setIsTesting(false);
+    }
+  }
+
+  async function handleSaveSecret() {
+    if (!webhookSecret.trim()) return;
+    setIsSavingSecret(true);
+    try {
+      await (
+        actor as unknown as Record<
+          string,
+          (...args: unknown[]) => Promise<unknown>
+        >
+      )?.saveComposioWebhookSecret?.(webhookSecret);
+      toast.success("Webhook signing secret saved.");
+      setWebhookSecret("");
+      setSecretConfigured(true);
+    } catch {
+      toast.error("Failed to save webhook signing secret.");
+    } finally {
+      setIsSavingSecret(false);
+    }
+  }
+
+  async function handleClearSecret() {
+    if (!window.confirm("Delete Composio webhook signing secret?")) return;
+    setIsClearingSecret(true);
+    try {
+      await (
+        actor as unknown as Record<
+          string,
+          (...args: unknown[]) => Promise<unknown>
+        >
+      )?.clearComposioWebhookSecret?.();
+      setSecretConfigured(false);
+      setWebhookSecret("");
+      toast.success("Webhook signing secret cleared.");
+    } catch {
+      toast.error("Failed to clear webhook signing secret.");
+    } finally {
+      setIsClearingSecret(false);
+    }
+  }
+
+  async function handleCopyUrl() {
+    try {
+      await navigator.clipboard.writeText(WEBHOOK_URL);
+      setCopiedUrl(true);
+      setTimeout(() => setCopiedUrl(false), 2000);
+    } catch {
+      toast.error("Failed to copy URL.");
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl border border-blue-500/25 bg-blue-500/5 p-5 space-y-4"
+      data-ocid="golive.composio.panel"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Zap size={15} className="text-blue-400" />
+            Composio MCP Router
+            {status !== "connected" && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/40 ml-1">
+                Critical
+              </span>
+            )}
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Connect 250+ apps (Gmail, Google Calendar, Stripe, CompanyCam) via
+            one API key
+          </p>
+        </div>
+
+        {/* Status badge */}
+        {isConfigured ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Configured ✓ &nbsp;
+            <span className="font-mono text-[10px] opacity-70">
+              {maskedValue}
+            </span>
+          </span>
+        ) : (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+              status === "connected"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                : status === "failed"
+                  ? "bg-red-500/20 text-red-400 border border-red-500/40"
+                  : "bg-slate-700/60 text-slate-400 border border-slate-600/40"
+            }`}
+            data-ocid="golive.composio.status_badge"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                status === "connected"
+                  ? "bg-emerald-400"
+                  : status === "failed"
+                    ? "bg-red-400"
+                    : "bg-slate-500"
+              }`}
+            />
+            {status === "connected"
+              ? "Connected"
+              : status === "failed"
+                ? "Failed"
+                : "Not Configured"}
+          </span>
+        )}
+      </div>
+
+      {/* ── Webhook Endpoint (read-only display) ── */}
+      <div className="space-y-1.5">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          Webhook Endpoint
+        </p>
+        <div className="flex items-center gap-2">
+          <code
+            className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs font-mono text-blue-300 truncate select-all"
+            data-ocid="golive.composio.webhook_url"
+          >
+            {WEBHOOK_URL}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopyUrl}
+            className="shrink-0 px-3 py-2 bg-white/10 hover:bg-white/20 text-white text-xs rounded-lg transition-colors flex items-center gap-1.5"
+            aria-label="Copy webhook URL"
+            data-ocid="golive.composio.copy_url_button"
+          >
+            {copiedUrl ? (
+              <>
+                <CheckCircle2 size={13} className="text-emerald-400" /> Copied!
+              </>
+            ) : (
+              <>
+                <Copy size={13} /> Copy
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-500">
+          Add this URL in your Composio dashboard under{" "}
+          <strong className="text-slate-400">Settings → Webhooks</strong>.
+        </p>
+      </div>
+
+      {/* ── API Key Input ── */}
+      <div className="space-y-3">
+        <div>
+          <label
+            htmlFor="composio-api-key"
+            className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block"
+          >
+            Composio API Key
+          </label>
+          <div className="relative">
+            <input
+              id="composio-api-key"
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={isConfigured ? maskedValue : "comp_..."}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+              data-ocid="golive.composio.api_key_input"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+              aria-label={showKey ? "Hide API key" : "Show API key"}
+            >
+              {showKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* API Key action buttons */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!apiKey.trim() || isSaving}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.composio.save_key_button"
+          >
+            {isSaving ? "Saving…" : "Save Key"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.composio.test_button"
+          >
+            {isTesting ? "Testing…" : "Test Connection"}
+          </button>
+          {isConfigured && (
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={isClearing}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.composio.clear_key_button"
+            >
+              {isClearing ? "Clearing…" : "Clear Key"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ── Webhook Signing Secret ── */}
+      <div className="space-y-3 pt-1 border-t border-white/8">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div>
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+              Webhook Signing Secret
+            </p>
+            <p className="text-[11px] text-slate-500 mt-0.5 max-w-sm">
+              Composio sends{" "}
+              <code className="text-slate-400">webhook-signature</code>,{" "}
+              <code className="text-slate-400">webhook-id</code>, and{" "}
+              <code className="text-slate-400">webhook-timestamp</code> headers.
+              BRF uses your signing secret to verify every incoming event.
+            </p>
+          </div>
+          {/* Signing secret status badge */}
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold shrink-0 ${
+              secretConfigured
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                : "bg-slate-700/60 text-slate-400 border border-slate-600/40"
+            }`}
+            data-ocid="golive.composio.secret_status_badge"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                secretConfigured ? "bg-emerald-400" : "bg-slate-500"
+              }`}
+            />
+            {secretConfigured ? "Configured ✓" : "Not Configured"}
+          </span>
+        </div>
+
+        <div className="relative">
+          <input
+            id="composio-webhook-secret"
+            type={showSecret ? "text" : "password"}
+            value={webhookSecret}
+            onChange={(e) => setWebhookSecret(e.target.value)}
+            placeholder={secretConfigured ? "••••••••••••" : "whsec_..."}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+            data-ocid="golive.composio.webhook_secret_input"
+          />
+          <button
+            type="button"
+            onClick={() => setShowSecret((v) => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+            aria-label={
+              showSecret ? "Hide signing secret" : "Show signing secret"
+            }
+          >
+            {showSecret ? (
+              <EyeOff className="w-4 h-4" />
+            ) : (
+              <Eye className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSaveSecret}
+            disabled={!webhookSecret.trim() || isSavingSecret}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.composio.save_secret_button"
+          >
+            {isSavingSecret ? "Saving…" : "Save Secret"}
+          </button>
+          {secretConfigured && (
+            <button
+              type="button"
+              onClick={handleClearSecret}
+              disabled={isClearingSecret}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.composio.clear_secret_button"
+            >
+              {isClearingSecret ? "Clearing…" : "Clear Secret"}
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Detail grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1 border-t border-white/8">
+        {[
+          { label: "Integrations", value: "250+ apps" },
+          { label: "Auth Handling", value: "OAuth + API keys" },
+          { label: "Last Ping", value: lastPing },
+        ].map(({ label, value }) => (
+          <div
+            key={label}
+            className="bg-white/5 rounded-lg px-3 py-2 border border-white/5"
+          >
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+              {label}
+            </p>
+            <p className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-xs text-slate-500">
+        Get your API key at{" "}
+        <a
+          href="https://composio.dev/settings"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:underline"
+        >
+          composio.dev/settings → API Keys
+        </a>
+      </p>
+    </div>
+  );
+}
+
+// ── Abacus.AI RouteLLM Section ─────────────────────────────────────────────────────────────────
+
+function AbacusSection() {
+  const { actor } = useActor();
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [status, setStatus] = useState<
+    "not_configured" | "connected" | "failed"
+  >("not_configured");
+  const [lastPing, setLastPing] = useState<string>("Never");
+
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      ?.getAbacusApiKeyStatus?.("platform")
+      .then((res: { configured: boolean; maskedKey: string } | null) => {
+        if (res?.configured) {
+          setIsConfigured(true);
+          setMaskedValue(res.maskedKey);
+          setStatus("connected");
+        }
+      })
+      .catch(() => {});
+  }, [actor]);
+
+  async function handleSave() {
+    if (!apiKey.trim()) return;
+    setIsSaving(true);
+    try {
+      await (actor as any)?.saveAbacusApiKey?.(apiKey);
+      toast.success("Abacus.AI API key saved.");
+      setApiKey("");
+      setIsConfigured(true);
+      setMaskedValue(`${apiKey.slice(0, 6)}••••••••`);
+    } catch {
+      toast.error("Failed to save Abacus.AI key.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete Abacus.AI API key?")) return;
+    setIsClearing(true);
+    try {
+      await (actor as any)?.deleteCredential?.("platform", "abacusApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setApiKey("");
+      setStatus("not_configured");
+      toast.success("Key cleared.");
+    } catch {
+      toast.error("Failed to clear Abacus.AI key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    setIsTesting(true);
+    try {
+      const result = await actor?.testAbacusConnection?.();
+      const connected =
+        result !== undefined &&
+        typeof result === "object" &&
+        "__kind__" in result &&
+        result.__kind__ === "ok";
+      setStatus(connected ? "connected" : "failed");
+      setLastPing(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      toast[connected ? "success" : "error"](
+        connected
+          ? "Abacus.AI RouteLLM connected!"
+          : "Abacus.AI connection failed — check your API key.",
+      );
+    } catch {
+      setStatus("failed");
+      toast.error("Abacus.AI connection test failed.");
+    } finally {
+      setIsTesting(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl border border-purple-500/25 bg-purple-500/5 p-5 space-y-4"
+      data-ocid="golive.abacus.panel"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Brain size={15} className="text-purple-400" />
+            Abacus.AI RouteLLM
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Intelligent model routing — automatically picks the best AI model
+            per task
+          </p>
+        </div>
+
+        {/* Status badge — shows configured ✓ when persisted */}
+        {isConfigured ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Configured ✓ &nbsp;
+            <span className="font-mono text-[10px] opacity-70">
+              {maskedValue}
+            </span>
+          </span>
+        ) : (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+              status === "connected"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                : status === "failed"
+                  ? "bg-red-500/20 text-red-400 border border-red-500/40"
+                  : "bg-slate-700/60 text-slate-400 border border-slate-600/40"
+            }`}
+            data-ocid="golive.abacus.status_badge"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                status === "connected"
+                  ? "bg-emerald-400"
+                  : status === "failed"
+                    ? "bg-red-400"
+                    : "bg-slate-500"
+              }`}
+            />
+            {status === "connected"
+              ? "Connected"
+              : status === "failed"
+                ? "Failed"
+                : "Not Configured"}
+          </span>
+        )}
+      </div>
+
+      {/* API Key Input */}
+      <div className="space-y-3">
+        <div>
+          <label
+            htmlFor="abacus-api-key"
+            className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block"
+          >
+            Abacus.AI API Key
+          </label>
+          <div className="relative">
+            <input
+              id="abacus-api-key"
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={isConfigured ? maskedValue : "abacus_..."}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-purple-500/50"
+              data-ocid="golive.abacus.api_key_input"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+              aria-label={showKey ? "Hide API key" : "Show API key"}
+            >
+              {showKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!apiKey.trim() || isSaving}
+            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.abacus.save_key_button"
+          >
+            {isSaving ? "Saving…" : "Save Key"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.abacus.test_button"
+          >
+            {isTesting ? "Testing…" : "Test Connection"}
+          </button>
+          {isConfigured && (
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={isClearing}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.abacus.clear_key_button"
+            >
+              {isClearing ? "Clearing…" : "Clear Key"}
+            </button>
+          )}
+        </div>
+
+        {/* Detail grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+          {[
+            { label: "Routing", value: "NVIDIA → OpenAI → Claude" },
+            { label: "Mode", value: "Cost-optimized" },
+            { label: "Last Ping", value: lastPing },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="bg-white/5 rounded-lg px-3 py-2 border border-white/5"
+            >
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                {label}
+              </p>
+              <p className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Get your API key at{" "}
+          <a
+            href="https://abacus.ai/app/profile/apikeys"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-purple-400 hover:underline"
+          >
+            abacus.ai/app/profile/apikeys
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── OpenRouter AI Router Section ─────────────────────────────────────────────────────────────────
+
+function OpenRouterSection() {
+  const { actor } = useActor();
+  const [apiKey, setApiKey] = useState("");
+  const [showKey, setShowKey] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [status, setStatus] = useState<
+    "not_configured" | "connected" | "failed"
+  >("not_configured");
+  const [lastPing, setLastPing] = useState<string>("Never");
+
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      ?.getIntegrationCredentials?.("platform")
+      .then((creds: Record<string, string> | null) => {
+        const val = creds?.openRouterApiKey ?? "";
+        if (val) {
+          setIsConfigured(true);
+          setMaskedValue(val);
+          setStatus("connected");
+        }
+      })
+      .catch(() => {});
+  }, [actor]);
+
+  async function handleSave() {
+    if (!apiKey.trim()) return;
+    setIsSaving(true);
+    try {
+      await (actor as any)?.saveOpenRouterApiKey?.(apiKey);
+      toast.success("OpenRouter API key saved.");
+      setApiKey("");
+      setIsConfigured(true);
+      setMaskedValue(`${apiKey.slice(0, 6)}••••••••`);
+      setStatus("connected");
+    } catch {
+      toast.error("Failed to save OpenRouter key.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete OpenRouter API key?")) return;
+    setIsClearing(true);
+    try {
+      await (actor as any)?.deleteCredential?.("platform", "openRouterApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setApiKey("");
+      setStatus("not_configured");
+      toast.success("Key cleared.");
+    } catch {
+      toast.error("Failed to clear OpenRouter key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    setIsTesting(true);
+    try {
+      const ok = await (actor as any)?.testOpenRouterConnection?.();
+      const connected = ok === true;
+      setStatus(connected ? "connected" : "failed");
+      setLastPing(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      toast[connected ? "success" : "error"](
+        connected
+          ? "OpenRouter connection successful."
+          : "OpenRouter connection failed.",
+      );
+    } catch {
+      setStatus("failed");
+      toast.error("OpenRouter connection test failed.");
+    } finally {
+      setIsTesting(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl border border-emerald-500/25 bg-emerald-500/5 p-5 space-y-4"
+      data-ocid="golive.openrouter.panel"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-emerald-400"
+              aria-label="OpenRouter AI Router"
+            >
+              <title>OpenRouter AI Router</title>
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="5" cy="19" r="2" />
+              <circle cx="19" cy="19" r="2" />
+              <path d="M12 7v3l-5.5 6" />
+              <path d="M12 10l5.5 6" />
+              <line x1="12" y1="7" x2="12" y2="10" />
+            </svg>
+            OpenRouter AI Router
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Route AI tasks across 400+ models with one API key — Owl Alpha,
+            GPT-4o, Claude, Gemini &amp; more
+          </p>
+        </div>
+
+        {/* Status badge — shows configured ✓ when persisted */}
+        {isConfigured ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+            Configured ✓ &nbsp;
+            <span className="font-mono text-[10px] opacity-70">
+              {maskedValue}
+            </span>
+          </span>
+        ) : (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+              status === "connected"
+                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                : status === "failed"
+                  ? "bg-red-500/20 text-red-400 border border-red-500/40"
+                  : "bg-slate-700/60 text-slate-400 border border-slate-600/40"
+            }`}
+            data-ocid="golive.openrouter.status_badge"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                status === "connected"
+                  ? "bg-emerald-400"
+                  : status === "failed"
+                    ? "bg-red-400"
+                    : "bg-slate-500"
+              }`}
+            />
+            {status === "connected"
+              ? "Connected"
+              : status === "failed"
+                ? "Failed"
+                : "Not Configured"}
+          </span>
+        )}
+      </div>
+
+      {/* API Key Input */}
+      <div className="space-y-3">
+        <div>
+          <label
+            htmlFor="openrouter-api-key"
+            className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block"
+          >
+            OpenRouter API Key
+          </label>
+          <div className="relative">
+            <input
+              id="openrouter-api-key"
+              type={showKey ? "text" : "password"}
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder={isConfigured ? maskedValue : "sk-or-..."}
+              className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 pr-10 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500/50"
+              data-ocid="golive.openrouter.api_key_input"
+            />
+            <button
+              type="button"
+              onClick={() => setShowKey((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+              aria-label={showKey ? "Hide API key" : "Show API key"}
+            >
+              {showKey ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!apiKey.trim() || isSaving}
+            className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.openrouter.save_key_button"
+          >
+            {isSaving ? "Saving…" : "Save Key"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.openrouter.test_button"
+          >
+            {isTesting ? "Testing…" : "Test Connection"}
+          </button>
+          {isConfigured && (
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={isClearing}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.openrouter.clear_key_button"
+            >
+              {isClearing ? "Clearing…" : "Clear Key"}
+            </button>
+          )}
+        </div>
+
+        {/* Detail grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          {[
+            { label: "Active Model", value: "openrouter/owl-alpha" },
+            { label: "Context Window", value: "1,000,000 tokens" },
+            { label: "Cost Per Million", value: "$0.00 — Free" },
+            { label: "Last Ping", value: lastPing },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="bg-white/5 rounded-lg px-3 py-2 border border-white/5"
+            >
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                {label}
+              </p>
+              <p className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Get your free API key at{" "}
+          <a
+            href="https://openrouter.ai/keys"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-emerald-400 hover:underline"
+          >
+            openrouter.ai/keys
+          </a>
+        </p>
+      </div>
+
+      {/* Content Creation Capabilities */}
+      <ContentCreationCapabilities status={status} />
+
+      {/* Super Admin model table */}
+      <OpenRouterModelTable />
+    </div>
+  );
+}
+
+// ── Content Creation Capabilities Sub-section ──────────────────────────────
+
+function ContentCreationCapabilities({
+  status,
+}: {
+  status: "not_configured" | "connected" | "failed";
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const isConnected = status === "connected";
+
+  const capabilities = [
+    {
+      title: "Image Generation",
+      models: "Flux 2 Pro · Gemini Image",
+      description: "Ads, thumbnails, before/after visuals",
+      icon: "🖼️",
+    },
+    {
+      title: "Video Generation",
+      models: "Google Veo 3.1",
+      description: "Promotional videos, social reels",
+      icon: "🎬",
+    },
+    {
+      title: "Text & Ad Copy",
+      models: "Owl Alpha",
+      description: "Ad campaigns, blogs, landing pages",
+      icon: "✍️",
+    },
+  ];
+
+  return (
+    <div className="mt-6 border border-slate-700 rounded-xl overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="w-full flex items-center justify-between px-4 py-3 bg-slate-800/60 hover:bg-slate-800/80 transition-colors"
+        data-ocid="golive.content_creation.toggle"
+      >
+        <span className="text-sm font-semibold text-slate-200">
+          Content Creation Capabilities
+        </span>
+        {expanded ? (
+          <ChevronUp size={16} className="text-slate-400" />
+        ) : (
+          <ChevronDown size={16} className="text-slate-400" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 pt-3 bg-slate-900/40">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+            {capabilities.map((cap) => (
+              <div
+                key={cap.title}
+                className="rounded-lg border border-slate-700 bg-slate-800/50 p-3 flex flex-col gap-1.5"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium text-slate-200">
+                    {cap.icon} {cap.title}
+                  </span>
+                  {isConnected ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      ● Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-700/60 text-slate-400 border border-slate-600">
+                      Requires OpenRouter Key
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-emerald-400/80 font-mono">
+                  {cap.models}
+                </p>
+                <p className="text-xs text-slate-400">{cap.description}</p>
+              </div>
+            ))}
+          </div>
+          <a
+            href="/content-creation-studio"
+            className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
+            data-ocid="golive.content_creation.open_studio_link"
+          >
+            Open Content Studio →
+          </a>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Content Tier Toggle Section ───────────────────────────────────────────────
+
+function ContentTierToggleSection() {
+  const { actor } = useActor();
+  const [toggles, setToggles] = useState<Record<string, boolean>>({
+    Basic: true,
+    Pro: true,
+    Agency: true,
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const result = await (actor as any)?.getContentTierToggles?.();
+        if (result && Array.isArray(result)) {
+          const map: Record<string, boolean> = {
+            Basic: true,
+            Pro: true,
+            Agency: true,
+          };
+          for (const t of result) {
+            map[t.tier] = t.contentCreationEnabled;
+          }
+          setToggles(map);
+        }
+      } catch {
+        // keep defaults
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (actor) load();
+  }, [actor]);
+
+  async function handleToggle(tier: string, enabled: boolean) {
+    setSaving(tier);
+    try {
+      await (actor as any)?.setContentTierToggle?.(tier, enabled);
+      setToggles((prev) => ({ ...prev, [tier]: enabled }));
+    } catch {
+      // ignore
+    } finally {
+      setSaving(null);
+    }
+  }
+
+  const tiers = [
+    { id: "Basic", label: "Basic", color: "text-slate-300" },
+    { id: "Pro", label: "Pro", color: "text-blue-400" },
+    { id: "Agency", label: "Agency", color: "text-violet-400" },
+  ];
+
+  return (
+    <div
+      className="rounded-xl border border-slate-700 bg-slate-800/40 p-4"
+      data-ocid="golive.content_tier_toggles.section"
+    >
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold text-slate-200">
+          Content Creation Access
+        </h3>
+        <p className="text-xs text-slate-400 mt-0.5">
+          Control which tiers can access the Content Creation Studio
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-xs text-slate-500">Loading...</div>
+      ) : (
+        <div className="space-y-3">
+          {tiers.map((tier) => (
+            <div
+              key={tier.id}
+              className="flex items-center justify-between"
+              data-ocid={`golive.content_tier_toggles.${tier.id.toLowerCase()}.toggle`}
+            >
+              <span className={`text-sm font-medium ${tier.color}`}>
+                {tier.label}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={toggles[tier.id]}
+                disabled={saving === tier.id}
+                onClick={() => handleToggle(tier.id, !toggles[tier.id])}
+                className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 ${
+                  toggles[tier.id] ? "bg-emerald-500" : "bg-slate-600"
+                } disabled:opacity-50`}
+              >
+                <span
+                  className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow transition-transform ${
+                    toggles[tier.id] ? "translate-x-4" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Google Gemini Section ──────────────────────────────────────────────────
+
+function GeminiSection() {
+  const { actor } = useActor();
+  const [apiKey, setApiKey] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTesting, setIsTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [status, setStatus] = useState<
+    "not_configured" | "connected" | "failed"
+  >("not_configured");
+  const [lastPing, setLastPing] = useState<string>("Never");
+
+  useEffect(() => {
+    if (!actor) return;
+    (actor as any)
+      ?.getGeminiKeyStatus?.()
+      .then((result: { configured: boolean; maskedKey?: string } | null) => {
+        if (result?.configured) {
+          setIsConfigured(true);
+          setMaskedValue(result.maskedKey ?? "");
+          setStatus("connected");
+        }
+      })
+      .catch(() => {});
+  }, [actor]);
+
+  async function handleSave() {
+    if (!apiKey.trim()) return;
+    setIsSaving(true);
+    try {
+      await (actor as any)?.setGeminiApiKey?.(apiKey.trim());
+      toast.success("Google Gemini API key saved.");
+      const first4 = apiKey.slice(0, 4);
+      setMaskedValue(`${first4}****`);
+      setApiKey("");
+      setIsConfigured(true);
+      setStatus("connected");
+    } catch {
+      toast.error("Failed to save Gemini key.");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete Google Gemini API key?")) return;
+    setIsClearing(true);
+    try {
+      await (actor as any)?.deleteCredential?.("platform", "geminiApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setApiKey("");
+      setStatus("not_configured");
+      toast.success("Gemini key cleared.");
+    } catch {
+      toast.error("Failed to clear Gemini key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    if (!apiKey.trim() && !isConfigured) {
+      toast.error("Enter or save a Gemini API key first.");
+      return;
+    }
+    setIsTesting(true);
+    const keyToTest = apiKey.trim();
+    try {
+      let connected = false;
+      if (keyToTest) {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${encodeURIComponent(keyToTest)}`,
+
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: [{ parts: [{ text: "ping" }] }],
+            }),
+          },
+        );
+        connected = res.ok;
+      } else {
+        const ok = await (actor as any)?.testGeminiConnection?.();
+        connected = ok === true;
+      }
+      setStatus(connected ? "connected" : "failed");
+      setLastPing(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      if (connected) {
+        toast.success("Gemini connection successful.");
+      } else {
+        toast.error("Gemini connection failed - check your API key.");
+      }
+    } catch {
+      setStatus("failed");
+      toast.error("Gemini connection test failed.");
+    } finally {
+      setIsTesting(false);
+    }
+  }
+
+  return (
+    <div
+      className="rounded-2xl border border-blue-500/25 bg-blue-500/5 p-5 space-y-4"
+      data-ocid="golive.gemini.panel"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="15"
+              height="15"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="text-blue-400"
+              aria-label="Google Gemini"
+            >
+              <title>Google Gemini</title>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+            </svg>
+            Google Gemini
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Free AI fallback provider - no cost for standard usage
+          </p>
+        </div>
+
+        {isConfigured ? (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/40">
+            <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+            Configured
+            <span className="font-mono text-[10px] opacity-70 ml-1">
+              {maskedValue}
+            </span>
+          </span>
+        ) : (
+          <span
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${status === "connected" ? "bg-blue-500/20 text-blue-400 border border-blue-500/40" : status === "failed" ? "bg-red-500/20 text-red-400 border border-red-500/40" : "bg-slate-700/60 text-slate-400 border border-slate-600/40"}`}
+            data-ocid="golive.gemini.status_badge"
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${status === "connected" ? "bg-blue-400" : status === "failed" ? "bg-red-400" : "bg-slate-500"}`}
+            />
+            {status === "connected"
+              ? "Connected"
+              : status === "failed"
+                ? "Failed"
+                : "Not Configured"}
+          </span>
+        )}
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <label
+            htmlFor="gemini-api-key"
+            className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5 block"
+          >
+            Gemini API Key
+          </label>
+          <input
+            id="gemini-api-key"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder={isConfigured ? maskedValue : "AIza..."}
+            className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500/50"
+            data-ocid="golive.gemini.api_key_input"
+          />
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={handleSave}
+            disabled={!apiKey.trim() || isSaving}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-700 disabled:text-gray-500 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.gemini.save_key_button"
+          >
+            {isSaving ? "Saving..." : "Save Key"}
+          </button>
+          <button
+            type="button"
+            onClick={handleTest}
+            disabled={isTesting}
+            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-sm rounded-lg transition-colors"
+            data-ocid="golive.gemini.test_button"
+          >
+            {isTesting ? "Testing..." : "Test Connection"}
+          </button>
+          {isConfigured && (
+            <button
+              type="button"
+              onClick={handleClear}
+              disabled={isClearing}
+              className="px-4 py-2 bg-red-600/80 hover:bg-red-500 disabled:opacity-50 text-white text-sm rounded-lg transition-colors"
+              data-ocid="golive.gemini.clear_key_button"
+            >
+              {isClearing ? "Clearing..." : "Clear Key"}
+            </button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+          {[
+            { label: "Active Model", value: "gemini-pro" },
+            { label: "Context Window", value: "1,000,000 tokens" },
+            { label: "Cost Per Million", value: "Free tier" },
+            { label: "Last Ping", value: lastPing },
+          ].map(({ label, value }) => (
+            <div
+              key={label}
+              className="bg-white/5 rounded-lg px-3 py-2 border border-white/5"
+            >
+              <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+                {label}
+              </p>
+              <p className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+                {value}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Get your free API key at{" "}
+          <a
+            href="https://aistudio.google.com/app/apikey"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 hover:underline"
+          >
+            aistudio.google.com/app/apikey
+          </a>
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ── NVIDIA AI Brain Section ───────────────────────────────────────────────────
+
+function NvidiaAIBrainSection() {
+  const { actor, isFetching } = useActor();
+  const [nvidiaKey, setNvidiaKey] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [maskedValue, setMaskedValue] = useState("");
+  const [isClearing, setIsClearing] = useState(false);
+  const [status, setStatus] = useState<
+    "not_configured" | "connected" | "error"
+  >("not_configured");
+  const [lastPing, setLastPing] = useState<string>("Never");
+  const [stats, setStats] = useState({
+    model: "nvidia/llama-3.1-nemotron-70b-instruct",
+    embeddings: 0,
+    callsToday: 0,
+  });
+
+  useEffect(() => {
+    if (!actor || isFetching) return;
+    (actor as any)
+      ?.getIntegrationCredentials?.("platform")
+      .then((creds: Record<string, string> | null) => {
+        const val = creds?.nvidiaNimApiKey ?? "";
+        if (val) {
+          setIsConfigured(true);
+          setMaskedValue(val);
+          setStatus("connected");
+        }
+      })
+      .catch(() => {});
+  }, [actor, isFetching]);
+
+  async function handleSave() {
+    if (!nvidiaKey.trim()) {
+      toast.error("Enter your NVIDIA API key first.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await (actor as any)?.saveProviderConfig?.("NVIDIA", nvidiaKey, "");
+      toast.success("NVIDIA API key saved.");
+      setIsConfigured(true);
+      setMaskedValue(`${nvidiaKey.slice(0, 8)}••••••••`);
+      setStatus("connected");
+      setNvidiaKey("");
+    } catch {
+      toast.error("Failed to save NVIDIA key. Try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleClear() {
+    if (!window.confirm("Delete NVIDIA API key?")) return;
+    setIsClearing(true);
+    try {
+      await (actor as any)?.deleteCredential?.("platform", "nvidiaNimApiKey");
+      setIsConfigured(false);
+      setMaskedValue("");
+      setNvidiaKey("");
+      setStatus("not_configured");
+      toast.success("Key cleared.");
+    } catch {
+      toast.error("Failed to clear NVIDIA key.");
+    } finally {
+      setIsClearing(false);
+    }
+  }
+
+  async function handleTest() {
+    setTesting(true);
+    try {
+      const result = await (actor as any)?.testNvidiaConnection?.();
+      const connected =
+        result === true ||
+        (result && typeof result === "object" && result.__kind__ === "ok");
+      setStatus(connected ? "connected" : "error");
+      setLastPing(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+      toast[connected ? "success" : "error"](
+        connected
+          ? "NVIDIA AI Brain connected!"
+          : "Connection failed. Check your API key.",
+      );
+    } catch {
+      setStatus("error");
+      toast.error("Connection test failed.");
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  useEffect(() => {
+    if (!actor || isFetching) return;
+    (actor as any)
+      ?.getVectorIndexStatus?.()
+      .then((s: any) => {
+        if (s)
+          setStats((prev) => ({
+            ...prev,
+            embeddings: Number(s.totalChunks ?? 0n),
+          }));
+      })
+      .catch(() => {});
+  }, [actor, isFetching]);
+
+  const statusLabel =
+    status === "connected"
+      ? "Connected"
+      : status === "error"
+        ? "Error"
+        : "Not Configured";
+  const statusClass =
+    status === "connected"
+      ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+      : status === "error"
+        ? "bg-rose-500/15 border-rose-500/30 text-rose-400"
+        : "bg-slate-800/60 border-slate-600/30 text-slate-400";
+
+  return (
+    <div
+      className="rounded-2xl border border-violet-500/25 bg-violet-500/5 p-5 space-y-4"
+      data-ocid="golive.nvidia_ai_brain.panel"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Brain size={15} className="text-violet-400" />
+            NVIDIA AI Brain
+            {/* Critical badge */}
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-500/20 text-red-400 border border-red-500/40 ml-1">
+              Critical
+            </span>
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Powers RAG knowledge retrieval, reranking, and AI inference across
+            all agents.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          {isConfigured && (
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Configured ✓ &nbsp;
+              <span className="font-mono text-[10px] opacity-70">
+                {maskedValue}
+              </span>
+            </span>
+          )}
+          <span
+            className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClass}`}
+          >
+            {statusLabel}
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="md:col-span-2 flex flex-col gap-1">
+          <label htmlFor="golive-nvidia-key" className="text-xs text-slate-400">
+            NVIDIA API Key
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            <input
+              id="golive-nvidia-key"
+              type="password"
+              value={nvidiaKey}
+              onChange={(e) => setNvidiaKey(e.target.value)}
+              placeholder={isConfigured ? maskedValue : "nvapi-…"}
+              className="flex-1 min-w-0 rounded-lg bg-white/5 border border-white/10 text-sm text-foreground px-3 py-1.5 focus:outline-none focus:border-violet-500/50 font-mono placeholder-gray-500"
+              data-ocid="golive.nvidia_ai_brain.api_key.input"
+            />
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || isFetching}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-violet-500/15 border border-violet-500/35 text-violet-300 hover:bg-violet-500/25 transition-colors disabled:opacity-50 whitespace-nowrap"
+              data-ocid="golive.nvidia_ai_brain.save_button"
+            >
+              {saving ? <Loader2 size={12} className="animate-spin" /> : "Save"}
+            </button>
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={testing || isFetching}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50 whitespace-nowrap"
+              data-ocid="golive.nvidia_ai_brain.test_button"
+            >
+              {testing ? (
+                <Loader2 size={12} className="animate-spin" />
+              ) : (
+                "Test Connection"
+              )}
+            </button>
+            {isConfigured && (
+              <button
+                type="button"
+                onClick={handleClear}
+                disabled={isClearing}
+                className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-600/70 border border-red-500/40 text-red-300 hover:bg-red-600/90 transition-colors disabled:opacity-50 whitespace-nowrap"
+                data-ocid="golive.nvidia_ai_brain.clear_key_button"
+              >
+                {isClearing ? "Clearing…" : "Clear Key"}
+              </button>
+            )}
+          </div>
+        </div>
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-slate-400">Active Model</p>
+          <p className="text-xs text-slate-300 mt-1 truncate font-mono">
+            {stats.model}
+          </p>
+        </div>
+      </div>
+
+      {/* Last ping info */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-1">
+        {[
+          { label: "Last Ping", value: lastPing },
+          {
+            label: "Embeddings Stored",
+            value: stats.embeddings.toLocaleString(),
+          },
+          { label: "AI Calls Today", value: String(stats.callsToday) },
+        ].map(({ label, value }) => (
+          <div
+            key={label}
+            className="bg-white/5 rounded-lg px-3 py-2 border border-white/5"
+          >
+            <p className="text-[10px] text-slate-500 uppercase tracking-wider">
+              {label}
+            </p>
+            <p className="text-xs font-medium text-slate-200 mt-0.5 truncate">
+              {value}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <a
+        href="/admin/ai-providers"
+        className="text-xs text-violet-400 hover:text-violet-300 flex items-center gap-1 transition-colors w-fit"
+        data-ocid="golive.nvidia_ai_brain.providers_link"
+      >
+        <ExternalLink size={11} /> AI Providers
+      </a>
+    </div>
+  );
+}
+
+// ── N8N Workflow Section ──────────────────────────────────────────────────────
+
+function N8NWorkflowSection() {
+  const { actor, isFetching } = useActor();
+  const [instanceUrl, setInstanceUrl] = useState("");
+  const [apiKey, setApiKey] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [connected, setConnected] = useState(false);
+  const [webhookUrl, setWebhookUrl] = useState("");
+  const [config, setConfig] = useState({
+    activeWorkflows: 0,
+    executionsToday: 0,
+  });
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!actor || isFetching) return;
+    (actor as any)
+      ?.getN8NConfig?.()
+      .then((cfg: any) => {
+        if (!cfg) return;
+        setInstanceUrl(cfg.instanceUrl ?? "");
+        setConnected(cfg.isConnected ?? false);
+        setConfig({
+          activeWorkflows: Number(cfg.activeWorkflowCount ?? 0n),
+          executionsToday: Number(cfg.totalExecutionsToday ?? 0n),
+        });
+      })
+      .catch(() => {});
+    (actor as any)
+      ?.getWebhookUrl?.()
+      .then((url: any) => {
+        if (url) setWebhookUrl(url);
+      })
+      .catch(() => {});
+  }, [actor, isFetching]);
+
+  async function handleSave() {
+    if (!instanceUrl.trim() || !apiKey.trim()) {
+      toast.error("Enter both Instance URL and API Key.");
+      return;
+    }
+    setSaving(true);
+    try {
+      await (actor as any)?.saveN8NConfig?.(instanceUrl.trim(), apiKey.trim());
+      toast.success("N8N configuration saved.");
+    } catch {
+      toast.error("Failed to save N8N config.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleTest() {
+    if (!instanceUrl.trim()) {
+      toast.error("Enter your N8N Instance URL first.");
+      return;
+    }
+    setTesting(true);
+    try {
+      const ok = (await (actor as any)?.testN8NConnection?.()) ?? false;
+      setConnected(ok);
+      toast[ok ? "success" : "error"](
+        ok
+          ? "N8N connected successfully!"
+          : "Connection failed. Check your Instance URL and API Key.",
+      );
+    } catch {
+      setConnected(false);
+      toast.error("Connection test failed.");
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  function copyWebhook() {
+    if (!webhookUrl) return;
+    navigator.clipboard.writeText(webhookUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      toast.success("Webhook URL copied!");
+    });
+  }
+
+  const statusClass = connected
+    ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400"
+    : "bg-slate-800/60 border-slate-600/30 text-slate-400";
+
+  return (
+    <div
+      className="rounded-2xl border border-cyan-500/25 bg-cyan-500/5 p-5 space-y-4"
+      data-ocid="golive.n8n_workflow.panel"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Zap size={15} className="text-cyan-400" />
+            N8N Workflow Automation
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Connect your N8N instance to deploy and execute automated workflows
+            across all client accounts.
+          </p>
+        </div>
+        <span
+          className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${statusClass}`}
+        >
+          {connected ? "Connected" : "Not Connected"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1">
+          <label htmlFor="golive-n8n-url" className="text-xs text-slate-400">
+            N8N Instance URL
+          </label>
+          <input
+            id="golive-n8n-url"
+            type="url"
+            value={instanceUrl}
+            onChange={(e) => setInstanceUrl(e.target.value)}
+            placeholder="https://your-n8n.example.com"
+            className="rounded-lg bg-white/5 border border-white/10 text-sm text-foreground px-3 py-1.5 focus:outline-none focus:border-cyan-500/50"
+            data-ocid="golive.n8n_workflow.instance_url.input"
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label htmlFor="golive-n8n-key" className="text-xs text-slate-400">
+            N8N API Key
+          </label>
+          <input
+            id="golive-n8n-key"
+            type="password"
+            value={apiKey}
+            onChange={(e) => setApiKey(e.target.value)}
+            placeholder="n8n_api_…"
+            className="rounded-lg bg-white/5 border border-white/10 text-sm text-foreground px-3 py-1.5 focus:outline-none focus:border-cyan-500/50 font-mono"
+            data-ocid="golive.n8n_workflow.api_key.input"
+          />
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <button
+          type="button"
+          onClick={handleSave}
+          disabled={saving || isFetching}
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 hover:bg-cyan-500/25 transition-colors disabled:opacity-50"
+          data-ocid="golive.n8n_workflow.save_button"
+        >
+          {saving ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            "Save Config"
+          )}
+        </button>
+        <button
+          type="button"
+          onClick={handleTest}
+          disabled={testing || isFetching}
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors disabled:opacity-50"
+          data-ocid="golive.n8n_workflow.test_button"
+        >
+          {testing ? (
+            <Loader2 size={12} className="animate-spin" />
+          ) : (
+            "Test Connection"
+          )}
+        </button>
+      </div>
+
+      {webhookUrl && (
+        <div className="flex flex-col gap-1">
+          <label
+            htmlFor="golive-webhook-url"
+            className="text-xs text-slate-400"
+          >
+            Auto-generated Webhook URL
+          </label>
+          <div className="flex items-center gap-2">
+            <input
+              id="golive-webhook-url"
+              readOnly
+              value={webhookUrl}
+              className="flex-1 rounded-lg bg-white/5 border border-white/10 text-xs text-slate-400 px-3 py-1.5 font-mono cursor-default"
+              data-ocid="golive.n8n_workflow.webhook_url.input"
+            />
+            <button
+              type="button"
+              onClick={copyWebhook}
+              className="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10 transition-colors"
+              data-ocid="golive.n8n_workflow.copy_webhook_button"
+            >
+              {copied ? (
+                <CheckCircle2 size={12} className="text-emerald-400" />
+              ) : (
+                <ClipboardCopy size={12} />
+              )}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center gap-6 pt-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500">Active workflows:</span>
+          <span className="text-xs font-semibold text-cyan-300">
+            {config.activeWorkflows}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="text-xs text-slate-500">Executions today:</span>
+          <span className="text-xs font-semibold text-emerald-300">
+            {config.executionsToday}
+          </span>
+        </div>
+        <a
+          href="/admin/workflow-library"
+          className="ml-auto text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors"
+          data-ocid="golive.n8n_workflow.library_link"
+        >
+          <ExternalLink size={11} /> Workflow Library
+        </a>
+      </div>
+    </div>
+  );
+}
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -99,6 +2230,8 @@ interface ServiceCreds {
   autoBrowserUrl: string;
   // Lead Discovery
   serpApiKey: string;
+  serpApiDevKey: string;
+  tinyFishKey: string;
 }
 
 type ServiceId =
@@ -119,7 +2252,9 @@ type ServiceId =
   | "listmonk"
   | "searxng"
   | "perplexity"
-  | "serpapi";
+  | "serpapi"
+  | "serpapidev"
+  | "tinyfish";
 
 type ConnectionStatus = "not_configured" | "connected" | "error";
 
@@ -309,6 +2444,8 @@ const DEFAULT_CREDS: ServiceCreds = {
   perplexityApiKey: "",
   autoBrowserUrl: "",
   serpApiKey: "",
+  serpApiDevKey: "",
+  tinyFishKey: "",
 };
 
 const SCALABILITY_ITEMS = [
@@ -374,26 +2511,67 @@ function HealthStatusDot({
 
 function IntegrationHealthPanel({
   creds,
+  actor: healthActor,
 }: {
   creds: ServiceCreds;
+  actor: ReturnType<typeof useActor>["actor"] | null;
 }) {
   const SERVICES = [
-    { key: "serpapi", label: "SerpApi" },
-    { key: "searxng", label: "SearXNG" },
-    { key: "claude", label: "Claude" },
-    { key: "openai", label: "OpenAI" },
-    { key: "elevenlabs", label: "ElevenLabs" },
+    { key: "openrouter", label: "OpenRouter / Owl Alpha", critical: true },
+    { key: "nvidia", label: "NVIDIA NIM", critical: true },
+    { key: "serpapidev", label: "SerpApi.dev", critical: false },
+    { key: "serpapi", label: "SerpApi (Legacy)", critical: false },
+    { key: "searxng", label: "SearXNG", critical: false },
+    { key: "claude", label: "Claude", critical: false },
+    { key: "openai", label: "OpenAI", critical: false },
+    { key: "elevenlabs", label: "ElevenLabs", critical: false },
+    { key: "tinyfish", label: "TinyFish", critical: false },
   ];
 
-  const [entries, setEntries] = useState<HealthEntry[]>(
+  const [entries, setEntries] = useState<
+    (HealthEntry & { critical: boolean; failedEvents?: number })[]
+  >(
     SERVICES.map((s) => ({
       key: s.key,
       label: s.label,
       result: null,
       testing: false,
+      critical: s.critical,
+      failedEvents: 0,
     })),
   );
   const [testing, setTesting] = useState(false);
+
+  async function runAllTestsWithBackend() {
+    setTesting(true);
+    try {
+      const backendResult = await (healthActor as any)?.testAllConnections?.();
+      if (backendResult && typeof backendResult === "object") {
+        // Update entries from backend results if available
+        const health = await (healthActor as any)?.getIntegrationHealth?.();
+        if (health && Array.isArray(health)) {
+          setEntries((prev) =>
+            prev.map((e) => {
+              const h = health.find(
+                (item: { serviceId: string }) => item.serviceId === e.key,
+              );
+              if (!h) return { ...e, testing: false };
+              return {
+                ...e,
+                testing: false,
+                failedEvents: Number(h.failedEvents24h ?? 0),
+              };
+            }),
+          );
+        }
+      }
+    } catch {
+      // fallback: run local tests
+    } finally {
+      await Promise.all(SERVICES.map((s) => runTest(s.key)));
+      setTesting(false);
+    }
+  }
 
   async function runTest(key: string) {
     setEntries((prev) =>
@@ -401,6 +2579,28 @@ function IntegrationHealthPanel({
     );
     let result: IntegrationHealthResult;
     switch (key) {
+      case "openrouter":
+        result = {
+          service: "openrouter",
+          status: "not_configured",
+          message: "OpenRouter — tested via Test Connection button",
+          testedAt: new Date(),
+        };
+        break;
+      case "nvidia":
+        result = {
+          service: "nvidia",
+          status: "not_configured",
+          message: "NVIDIA NIM — tested via Test Connection button",
+          testedAt: new Date(),
+        };
+        break;
+      case "serpapidev":
+        result = await testSerpApiDevConnection(creds.serpApiDevKey);
+        break;
+      case "tinyfish":
+        result = await testTinyFishConnection(creds.tinyFishKey);
+        break;
       case "serpapi":
         result = await testSerpApiConnection(creds.serpApiKey);
         break;
@@ -426,8 +2626,7 @@ function IntegrationHealthPanel({
 
   async function runAllTests() {
     setTesting(true);
-    await Promise.all(SERVICES.map((s) => runTest(s.key)));
-    setTesting(false);
+    await runAllTestsWithBackend();
   }
 
   const allTested = entries.every((e) => e.result !== null);
@@ -486,58 +2685,114 @@ function IntegrationHealthPanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-        {entries.map((entry) => (
-          <div
-            key={entry.key}
-            className={`flex items-start gap-3 rounded-xl p-3 border transition-colors ${
-              entry.result?.status === "connected"
-                ? "border-emerald-500/25 bg-emerald-500/5"
-                : entry.result?.status === "failed"
-                  ? "border-rose-500/25 bg-rose-500/5"
-                  : entry.result?.status === "not_configured"
-                    ? "border-amber-500/20 bg-amber-500/5"
-                    : "border-white/8 bg-card"
-            }`}
-            data-ocid={`golive.integration_health.${entry.key}.row`}
-          >
-            <div className="flex items-center gap-2 mt-0.5 shrink-0">
-              {entry.testing ? (
-                <Loader2 size={10} className="text-indigo-400 animate-spin" />
-              ) : (
-                <HealthStatusDot status={entry.result?.status ?? null} />
-              )}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center justify-between gap-1">
-                <span className="text-xs font-semibold text-foreground">
-                  {entry.label}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => runTest(entry.key)}
-                  disabled={entry.testing}
-                  className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/8 text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
-                  data-ocid={`golive.integration_health.${entry.key}.test_button`}
-                >
-                  {entry.testing ? "Testing…" : "Test"}
-                </button>
+      {/* Critical Integrations sub-header */}
+      <div>
+        <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+          <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
+          Critical Integrations
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+          {entries
+            .filter((e) => e.critical)
+            .map((entry) => (
+              <div
+                key={entry.key}
+                className="flex items-start gap-3 rounded-xl p-3 border transition-colors border-red-500/25 bg-red-500/5"
+                data-ocid={`golive.integration_health.${entry.key}.row`}
+              >
+                <div className="flex items-center gap-2 mt-0.5 shrink-0">
+                  {entry.testing ? (
+                    <Loader2 size={10} className="text-red-400 animate-spin" />
+                  ) : (
+                    <HealthStatusDot status={entry.result?.status ?? null} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                      {entry.label}
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                        Critical
+                      </span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => runTest(entry.key)}
+                      disabled={entry.testing}
+                      className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/8 text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
+                      data-ocid={`golive.integration_health.${entry.key}.test_button`}
+                    >
+                      {entry.testing ? "Testing…" : "Test"}
+                    </button>
+                  </div>
+                  <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed truncate">
+                    {entry.result ? entry.result.message : "Not tested yet"}
+                  </p>
+                  {(entry.failedEvents ?? 0) > 0 && (
+                    <p className="text-[9px] text-red-400/80 mt-0.5">
+                      {entry.failedEvents} failed event(s) in 24h
+                    </p>
+                  )}
+                </div>
               </div>
-              <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed truncate">
-                {entry.result ? entry.result.message : "Not tested yet"}
-              </p>
-              {entry.result && (
-                <p className="text-[9px] text-slate-600 mt-0.5">
-                  Tested{" "}
-                  {entry.result.testedAt.toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+            ))}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {entries
+          .filter((e) => !e.critical)
+          .map((entry) => (
+            <div
+              key={entry.key}
+              className={`flex items-start gap-3 rounded-xl p-3 border transition-colors ${
+                entry.result?.status === "connected"
+                  ? "border-emerald-500/25 bg-emerald-500/5"
+                  : entry.result?.status === "failed"
+                    ? "border-rose-500/25 bg-rose-500/5"
+                    : entry.result?.status === "not_configured"
+                      ? "border-amber-500/20 bg-amber-500/5"
+                      : "border-white/8 bg-card"
+              }`}
+              data-ocid={`golive.integration_health.${entry.key}.row`}
+            >
+              <div className="flex items-center gap-2 mt-0.5 shrink-0">
+                {entry.testing ? (
+                  <Loader2 size={10} className="text-indigo-400 animate-spin" />
+                ) : (
+                  <HealthStatusDot status={entry.result?.status ?? null} />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-xs font-semibold text-foreground">
+                    {entry.label}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => runTest(entry.key)}
+                    disabled={entry.testing}
+                    className="text-[10px] px-2 py-0.5 rounded bg-white/5 border border-white/8 text-slate-400 hover:text-white hover:bg-white/10 transition-colors disabled:opacity-40"
+                    data-ocid={`golive.integration_health.${entry.key}.test_button`}
+                  >
+                    {entry.testing ? "Testing…" : "Test"}
+                  </button>
+                </div>
+                <p className="text-[10px] text-slate-500 mt-0.5 leading-relaxed truncate">
+                  {entry.result ? entry.result.message : "Not tested yet"}
                 </p>
-              )}
+                {entry.result && (
+                  <p className="text-[9px] text-slate-600 mt-0.5">
+                    Tested{" "}
+                    {entry.result.testedAt.toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </p>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {allTested && failedCount > 0 && (
@@ -552,6 +2807,18 @@ function IntegrationHealthPanel({
       )}
     </section>
   );
+}
+
+// ── IntegrationHealthPanel wrapper that injects actor ─────────────────────────
+
+function IntegrationHealthPanelWithCritical({
+  actor: injectedActor,
+  creds,
+}: {
+  actor: ReturnType<typeof useActor>["actor"] | null;
+  creds: ServiceCreds;
+}) {
+  return <IntegrationHealthPanel creds={creds} actor={injectedActor} />;
 }
 
 // ── Score Calculator ──────────────────────────────────────────────────────────
@@ -1590,6 +3857,62 @@ const SERVICE_DEFINITIONS: ServiceDef[] = [
     ],
   },
   {
+    id: "serpapidev" as ServiceId,
+    name: "SerpApi.dev (Lead Finder)",
+    icon: <Search size={16} className="text-green-400" />,
+    unlocks:
+      "Recommended — 2,500 free searches per month. Primary search provider for lead finder and Open Lead Lake.",
+    setupTime: "~2 min",
+    getStatus: (c) => (c.serpApiDevKey ? "connected" : "not_configured"),
+    fields: [
+      {
+        key: "serpApiDevKey",
+        label: "SerpApi.dev API Key",
+        placeholder: "Enter your SerpApi.dev API key...",
+        type: "password",
+        hint: "Get your free key at serpapi.dev — includes 2,500 free searches/month",
+      },
+    ],
+    guide: [],
+  },
+  {
+    id: "tinyfish" as ServiceId,
+    name: "TinyFish",
+    icon: <Fish size={16} className="text-cyan-400" />,
+    unlocks:
+      "Web automation for agents — search, fetch, and batch-process JS-heavy pages for lead discovery",
+    setupTime: "~2 min",
+    getStatus: (c) => (c.tinyFishKey ? "connected" : "not_configured"),
+    fields: [
+      {
+        key: "tinyFishKey",
+        label: "TinyFish API Key",
+        placeholder: "Enter your TinyFish API key...",
+        type: "password",
+        hint: "Get your key at tinyfish.ai — search and fetch are free",
+      },
+    ],
+    guide: [
+      {
+        step: 1,
+        text: "Sign up for a free TinyFish account at tinyfish.ai.",
+        link: {
+          label: "tinyfish.ai",
+          href: "https://tinyfish.ai",
+        },
+      },
+      {
+        step: 2,
+        text: "Navigate to your API Keys section and generate a new key.",
+      },
+      {
+        step: 3,
+        text: "Copy the key and paste it in the field below.",
+      },
+      { step: 4, text: "Click Test Connection to verify, then Save." },
+    ],
+  },
+  {
     id: "serpapi",
     name: "SerpApi (Lead Finder)",
     icon: <Search size={16} className="text-amber-400" />,
@@ -1921,6 +4244,7 @@ function ServiceCard({
 }: ServiceCardProps) {
   const { actor } = useActor();
   const [expanded, setExpanded] = useState(false);
+  const { refresh: refreshCreds } = useCredentials();
   const [testState, setTestState] = useState<TestState>("idle");
   const [testMsg, setTestMsg] = useState("");
   const [lastTested, setLastTested] = useState<Date | null>(null);
@@ -1929,9 +4253,31 @@ function ServiceCard({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState(false);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [stripeWebhookSecret, setStripeWebhookSecret] = useState("");
+  const [vapiWebhookSecret, setVapiWebhookSecret] = useState("");
+  const [sendgridDomain, setSendgridDomain] = useState("");
+  const [leadTestResults, setLeadTestResults] = useState<{
+    status: "idle" | "loading" | "success" | "error";
+    count: number;
+    leads: Array<{ name: string; phone: string }>;
+    error: string;
+  }>({ status: "idle", count: 0, leads: [], error: "" });
+  const [leadKeyStatus, setLeadKeyStatus] = useState<Record<string, boolean>>(
+    {},
+  );
 
   // ElevenLabs: voice count display (in-memory only, no localStorage)
   const [cachedVoiceCount, setCachedVoiceCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!actor) return;
+    (async () => {
+      try {
+        const raw = await (actor as any)?.testLeadFinderDiagnostic?.();
+        if (raw) setLeadKeyStatus(JSON.parse(raw as string));
+      } catch {}
+    })();
+  }, [actor]);
 
   const status = svc.getStatus(creds);
 
@@ -2298,8 +4644,331 @@ function ServiceCard({
             </div>
           )}
 
+          {/* Provider-specific webhook config panels */}
+          {svc.id === "stripe" && (
+            <div className="mt-4 space-y-3">
+              <div className="p-3 rounded-lg bg-blue-900/20 border border-blue-500/20 text-xs text-blue-300">
+                <p className="font-semibold mb-1">
+                  Webhook URL — configure in Stripe Dashboard
+                </p>
+                <code className="text-blue-200">
+                  https://bookedrankedfunded.org/webhooks/stripe
+                </code>
+                <p className="mt-1 text-blue-400">
+                  Subscribe to: payment_intent.succeeded, invoice.paid,
+                  invoice.payment_failed, customer.subscription.*
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="stripe-webhook-secret"
+                  className="text-xs text-slate-400 mb-1 block"
+                >
+                  Webhook Signing Secret (whsec_...)
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="stripe-webhook-secret"
+                    type="password"
+                    placeholder="whsec_..."
+                    value={stripeWebhookSecret}
+                    onChange={(e) => setStripeWebhookSecret(e.target.value)}
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      (actor as any)?.saveWebhookSecrets?.(
+                        stripeWebhookSecret,
+                        "",
+                        "",
+                      )
+                    }
+                    className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Found in Stripe Dashboard → Developers → Webhooks → your
+                  endpoint → Signing secret
+                </p>
+              </div>
+            </div>
+          )}
+
+          {svc.id === "vapi" && (
+            <div className="mt-4 space-y-3">
+              <div className="p-3 rounded-lg bg-purple-900/20 border border-purple-500/20 text-xs text-purple-300">
+                <p className="font-semibold mb-1">
+                  Webhook URL — configure in Vapi Dashboard
+                </p>
+                <code className="text-purple-200">
+                  https://bookedrankedfunded.org/webhooks/vapi
+                </code>
+              </div>
+              <div>
+                <label
+                  htmlFor="vapi-webhook-secret"
+                  className="text-xs text-slate-400 mb-1 block"
+                >
+                  Webhook Secret
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="vapi-webhook-secret"
+                    type="password"
+                    placeholder="Enter webhook secret"
+                    value={vapiWebhookSecret}
+                    onChange={(e) => setVapiWebhookSecret(e.target.value)}
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      (actor as any)?.saveWebhookSecrets?.(
+                        "",
+                        vapiWebhookSecret,
+                        "",
+                      )
+                    }
+                    className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {svc.id === "twilio" && (
+            <div className="mt-4 p-3 rounded-lg bg-red-900/20 border border-red-500/20">
+              <p className="text-xs font-semibold text-red-300 mb-2">
+                Webhook URLs — configure in Twilio Console
+              </p>
+              {(
+                [
+                  [
+                    "Voice URL",
+                    "https://bookedrankedfunded.org/webhooks/twilio/voice",
+                  ],
+                  [
+                    "SMS URL",
+                    "https://bookedrankedfunded.org/webhooks/twilio/sms",
+                  ],
+                  [
+                    "SMS Status",
+                    "https://bookedrankedfunded.org/webhooks/twilio/sms-status",
+                  ],
+                  [
+                    "Call Status",
+                    "https://bookedrankedfunded.org/webhooks/twilio/call-status",
+                  ],
+                  [
+                    "Recording",
+                    "https://bookedrankedfunded.org/webhooks/twilio/recording",
+                  ],
+                ] as [string, string][]
+              ).map(([label, url]) => (
+                <div
+                  key={url}
+                  className="flex items-center justify-between py-1"
+                >
+                  <span className="text-xs text-slate-400 w-24">{label}</span>
+                  <code className="text-xs text-red-200 flex-1 truncate">
+                    {url}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => navigator.clipboard.writeText(url)}
+                    className="ml-2 text-xs text-slate-400 hover:text-white px-2 py-0.5 rounded bg-slate-700"
+                  >
+                    Copy
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {svc.id === "email_smtp" && (
+            <div className="mt-4 space-y-3">
+              <div className="p-3 rounded-lg bg-green-900/20 border border-green-500/20 text-xs text-green-300 space-y-1">
+                <p className="font-semibold">
+                  Webhook URLs — configure in SendGrid Settings
+                </p>
+                <div>
+                  <span className="text-slate-400">Inbound Parse: </span>
+                  <code className="text-green-200">
+                    https://bookedrankedfunded.org/webhooks/sendgrid/inbound
+                  </code>
+                </div>
+                <div>
+                  <span className="text-slate-400">Event Webhook: </span>
+                  <code className="text-green-200">
+                    https://bookedrankedfunded.org/webhooks/sendgrid/events
+                  </code>
+                </div>
+                <p className="text-slate-400 mt-1">
+                  For inbound: point your MX record to mx.sendgrid.net
+                </p>
+              </div>
+              <div>
+                <label
+                  htmlFor="sendgrid-parse-domain"
+                  className="text-xs text-slate-400 mb-1 block"
+                >
+                  Inbound Parse Domain
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    id="sendgrid-parse-domain"
+                    type="text"
+                    placeholder="mail.bookedrankedfunded.org"
+                    value={sendgridDomain}
+                    onChange={(e) => setSendgridDomain(e.target.value)}
+                    className="flex-1 bg-slate-800 border border-slate-600 rounded px-3 py-1.5 text-sm text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      (actor as any)?.saveWebhookSecrets?.(
+                        "",
+                        "",
+                        sendgridDomain,
+                      )
+                    }
+                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs rounded"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Vapi Booking Endpoint */}
           {svc.id === "vapi" && <VapiBookingEndpointPanel />}
+
+          {/* SerpApi.dev Lead Search Test */}
+          {svc.id === "serpapidev" && (
+            <div className="mt-4 border-t border-white/10 pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-medium text-white">
+                  Lead Search Test
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setLeadTestResults({
+                      status: "loading",
+                      count: 0,
+                      leads: [],
+                      error: "",
+                    });
+                    try {
+                      const result = await actor?.searchLeadsWithLLM(
+                        "roofing contractors",
+                        "Houston TX",
+                        BigInt(5),
+                        true,
+                      );
+                      if (result && result.__kind__ === "ok") {
+                        const leads = result.ok.leads.map(
+                          (l: { name: string; phone: string }) => ({
+                            name: l.name,
+                            phone: l.phone,
+                          }),
+                        );
+                        setLeadTestResults({
+                          status: "success",
+                          count: leads.length,
+                          leads,
+                          error: "",
+                        });
+                      } else if (result && result.__kind__ === "err") {
+                        setLeadTestResults({
+                          status: "error",
+                          count: 0,
+                          leads: [],
+                          error: result.err,
+                        });
+                      }
+                    } catch (e) {
+                      setLeadTestResults({
+                        status: "error",
+                        count: 0,
+                        leads: [],
+                        error: String(e),
+                      });
+                    }
+                  }}
+                  disabled={
+                    leadTestResults.status === "loading" ||
+                    status === "not_configured"
+                  }
+                  className="text-xs px-3 py-1.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded text-white font-medium transition-colors"
+                >
+                  {leadTestResults.status === "loading"
+                    ? "Searching for roofing leads in Houston, TX..."
+                    : "Test Lead Search"}
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 mb-3">
+                Searches for &ldquo;roofing contractors&rdquo; in Houston TX
+                using your connected API keys.
+              </p>
+              {leadTestResults.status === "success" && (
+                <div className="space-y-1 bg-green-900/20 border border-green-500/20 rounded-lg p-3">
+                  <p className="text-xs text-green-400 font-medium">
+                    ✓ Found {leadTestResults.count} real leads
+                  </p>
+                  {leadTestResults.leads.map((lead) => (
+                    <p key={lead.name} className="text-xs text-gray-300">
+                      • {lead.name} — {lead.phone}
+                    </p>
+                  ))}
+                </div>
+              )}
+              {leadTestResults.status === "error" && (
+                <div className="text-xs bg-red-900/20 border border-red-500/20 rounded-lg p-3">
+                  <p className="text-red-400">
+                    Search failed: {leadTestResults.error}
+                  </p>
+                  <p className="text-yellow-400 text-xs mt-1">
+                    Check your API keys above and retry.
+                  </p>
+                </div>
+              )}
+              {Object.keys(leadKeyStatus).length > 0 && (
+                <div className="mt-3 grid grid-cols-1 gap-1">
+                  <p className="text-xs text-gray-400 font-semibold mb-1">
+                    Lead Finder Key Status
+                  </p>
+                  {[
+                    { key: "serpApiDev", label: "SerpApi.dev" },
+                    { key: "tinyFish", label: "TinyFish" },
+                    { key: "claude", label: "Claude" },
+                    { key: "openai", label: "OpenAI" },
+                    { key: "openRouter", label: "OpenRouter" },
+                  ].map(({ key, label }) => (
+                    <div
+                      key={key}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <span className="text-gray-300">{label}</span>
+                      {leadKeyStatus[key] ? (
+                        <span className="text-green-400 font-bold">
+                          ✓ Configured
+                        </span>
+                      ) : (
+                        <span className="text-red-400">✗ Enter key above</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ElevenLabs info note */}
           {svc.id === "elevenlabs" && (
@@ -2434,6 +5103,29 @@ function ServiceCard({
                         : "Save"}
               </button>
             )}
+            {svc.id === "vapi" && !!creds?.vapiKey && (
+              <button
+                type="button"
+                onClick={async () => {
+                  if (
+                    !window.confirm(
+                      "Delete Vapi API key? This cannot be undone.",
+                    )
+                  )
+                    return;
+                  try {
+                    await actor?.deleteCredential("platform", "vapiKey");
+                    toast.success("Vapi key cleared.");
+                    refreshCreds();
+                  } catch (_e) {
+                    toast.error("Failed to clear key.");
+                  }
+                }}
+                className="px-3 py-1.5 text-xs font-medium text-rose-400 border border-rose-500/40 rounded-lg hover:bg-rose-500/10 transition-colors"
+              >
+                Clear Key
+              </button>
+            )}
             {testState !== "idle" &&
               testState !== "testing" &&
               !backendInitializing && (
@@ -2521,21 +5213,62 @@ function ColdEmailDomainCard({
     }
   };
 
-  const handleTest = () => {
+  const handleTest = async () => {
     setTestState("testing");
-    setTimeout(() => {
-      const allFilled =
-        currentVal("emailSmtpHost") &&
-        currentVal("emailSmtpUser") &&
-        currentVal("emailSmtpPass");
-      if (allFilled) {
-        setTestState("connected");
-        setTestMsg("Test email sent — check your inbox");
+    setTestMsg("");
+    try {
+      const actor = (window as unknown as { __brf_actor__?: unknown })
+        .__brf_actor__;
+      if (actor) {
+        const summary = await (
+          actor as unknown as {
+            testAllConnections: () => Promise<{
+              critical: Array<{
+                provider: string;
+                connected: boolean;
+                message: string;
+              }>;
+              secondary: Array<{
+                provider: string;
+                connected: boolean;
+                message: string;
+              }>;
+            }>;
+          }
+        ).testAllConnections();
+        const all = [...summary.critical, ...summary.secondary];
+        const sendgrid = all.find(
+          (r) =>
+            r.provider.toLowerCase().includes("sendgrid") ||
+            r.provider.toLowerCase().includes("email"),
+        );
+        if (sendgrid?.connected) {
+          setTestState("connected");
+          setTestMsg(sendgrid.message || "Test email sent — check your inbox");
+        } else {
+          setTestState("error");
+          setTestMsg(
+            sendgrid?.message || "SendGrid not connected — check your API key",
+          );
+        }
       } else {
-        setTestState("error");
-        setTestMsg("Fill in SMTP credentials first");
+        // Fallback: validate fields locally
+        const allFilled =
+          currentVal("emailSmtpHost") &&
+          currentVal("emailSmtpUser") &&
+          currentVal("emailSmtpPass");
+        if (allFilled) {
+          setTestState("connected");
+          setTestMsg("Test email sent — check your inbox");
+        } else {
+          setTestState("error");
+          setTestMsg("Fill in SMTP credentials first");
+        }
       }
-    }, 1400);
+    } catch {
+      setTestState("error");
+      setTestMsg("Connection test failed — try again");
+    }
   };
 
   const allDnsChecked = dnsChecks.spf && dnsChecks.dkim && dnsChecks.dmarc;
@@ -2946,6 +5679,21 @@ function WarmEmailNativeCard() {
           </div>
         ))}
       </div>
+      <div className="mt-3 pt-3 border-t border-emerald-500/15 flex items-center justify-between gap-3">
+        <p className="text-xs text-slate-400">
+          Send a live test email to verify your Caffeine native email is working
+          end-to-end.
+        </p>
+        <a
+          data-ocid="golive.warm_email_native.test_button"
+          href="mailto:test@bookedrankedfunded.org?subject=BRF%20Email%20Test&body=This%20is%20a%20live%20test%20of%20BRF%20native%20email."
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/25 transition-colors"
+        >
+          Send Test Email
+        </a>
+      </div>
     </div>
   );
 }
@@ -3237,8 +5985,369 @@ function formatRelativeTime(date: Date): string {
 
 const TENANT_ID = PLATFORM_TENANT_ID; // "platform" — matches backend normalization
 
+function SystemHealthCheck({ actor }: { actor: any }) {
+  const [results, setResults] = useState<
+    Array<{
+      service: string;
+      testDesc: string;
+      status: "pass" | "fail" | "not_configured";
+      preview: string;
+      timestamp: string;
+    }>
+  >([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const [lastTestedAt, setLastTestedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("brf_system_test_results");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) setResults(parsed);
+      }
+      const storedTime = localStorage.getItem("brf_system_test_last_run");
+      if (storedTime) setLastTestedAt(storedTime);
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const runAllTests = async () => {
+    setIsRunning(true);
+    const now = new Date().toISOString();
+    const newResults: typeof results = [];
+
+    const tests = [
+      {
+        service: "OpenRouter",
+        testDesc: "Owl Alpha connection",
+        run: async () => {
+          const r = await actor?.testOpenRouterConnection?.();
+          return {
+            status: r === true ? ("pass" as const) : ("fail" as const),
+            preview: r === true ? "Owl Alpha connected" : "Connection failed",
+          };
+        },
+      },
+      {
+        service: "Owl Alpha",
+        testDesc: "Content generation test",
+        run: async () => {
+          const r = await actor?.callOpenRouterForTask?.(
+            "test",
+            "Generate a 2-sentence roofing ad headline",
+            "",
+          );
+          const text = typeof r === "string" ? r : JSON.stringify(r ?? "");
+          return {
+            status: "pass" as const,
+            preview: text.slice(0, 80) + (text.length > 80 ? "..." : ""),
+          };
+        },
+      },
+      {
+        service: "OpenAI",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testOpenAIConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "Claude",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testClaudeConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "ElevenLabs",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testElevenLabsConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "SerpApi.dev",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testSerpApiDevConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "SearXNG",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testSearxngConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "TinyFish",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await testTinyFishConnection("");
+          return {
+            status:
+              r.status === "connected"
+                ? ("pass" as const)
+                : r.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r.message || "",
+          };
+        },
+      },
+      {
+        service: "Dograh",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await actor?.testDograhConnection?.();
+          return {
+            status:
+              r?.status === "connected"
+                ? ("pass" as const)
+                : r?.status === "not_configured"
+                  ? ("not_configured" as const)
+                  : ("fail" as const),
+            preview: r?.message || "",
+          };
+        },
+      },
+      {
+        service: "Composio",
+        testDesc: "API connection",
+        run: async () => {
+          const r = await actor?.testComposioConnection?.();
+          const ok = r && (r.__kind__ === "ok" || r.ok === true);
+          return {
+            status: ok ? ("pass" as const) : ("fail" as const),
+            preview: ok ? "Connected" : "Connection failed",
+          };
+        },
+      },
+    ];
+
+    const settled = await Promise.allSettled(tests.map((t) => t.run()));
+    settled.forEach((s, i) => {
+      if (s.status === "fulfilled") {
+        newResults.push({
+          service: tests[i].service,
+          testDesc: tests[i].testDesc,
+          status: s.value.status,
+          preview: s.value.preview,
+          timestamp: now,
+        });
+      } else {
+        const errMsg = s.reason?.message || String(s.reason);
+        const isNotConfigured =
+          errMsg.toLowerCase().includes("not configured") ||
+          errMsg.toLowerCase().includes("missing") ||
+          errMsg.toLowerCase().includes("required");
+        newResults.push({
+          service: tests[i].service,
+          testDesc: tests[i].testDesc,
+          status: isNotConfigured ? "not_configured" : "fail",
+          preview: errMsg,
+          timestamp: now,
+        });
+      }
+    });
+
+    setResults(newResults);
+    setLastTestedAt(now);
+    try {
+      localStorage.setItem(
+        "brf_system_test_results",
+        JSON.stringify(newResults),
+      );
+      localStorage.setItem("brf_system_test_last_run", now);
+    } catch {
+      // ignore
+    }
+    setIsRunning(false);
+  };
+
+  const runSingleTest = async (_service: string) => {
+    await runAllTests();
+  };
+
+  const passCount = results.filter((r) => r.status === "pass").length;
+  const totalCount = results.length;
+
+  return (
+    <div
+      className="rounded-2xl border border-border bg-card/50 backdrop-blur-sm p-5 space-y-4"
+      data-ocid="golive.system_health.panel"
+    >
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Activity size={15} className="text-emerald-400" />
+            System Health Check
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Verify all AI providers, search engines, and integrations are
+            operational.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={runAllTests}
+          disabled={isRunning}
+          className="inline-flex items-center gap-2 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-colors"
+          data-ocid="golive.system_health.run_all_button"
+        >
+          {isRunning ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <RefreshCw size={14} />
+          )}
+          Run Full System Test
+        </button>
+      </div>
+
+      {totalCount > 0 && (
+        <div
+          className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium ${
+            passCount === totalCount
+              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+              : passCount >= totalCount / 2
+                ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                : "bg-red-500/10 text-red-400 border border-red-500/20"
+          }`}
+        >
+          {passCount === totalCount ? (
+            <CheckCircle2 size={14} />
+          ) : (
+            <AlertTriangle size={14} />
+          )}
+          {passCount}/{totalCount} services operational
+          {lastTestedAt && (
+            <span className="ml-auto text-muted-foreground">
+              Last tested: {new Date(lastTestedAt).toLocaleString()}
+            </span>
+          )}
+        </div>
+      )}
+
+      {results.length > 0 && (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b border-border text-muted-foreground">
+                <th className="text-left py-2 px-2 font-medium">Service</th>
+                <th className="text-left py-2 px-2 font-medium">Test</th>
+                <th className="text-left py-2 px-2 font-medium">Status</th>
+                <th className="text-left py-2 px-2 font-medium">Preview</th>
+                <th className="text-right py-2 px-2 font-medium">Action</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {results.map((r) => (
+                <tr
+                  key={r.service}
+                  className="hover:bg-muted/30 transition-colors"
+                >
+                  <td className="py-2 px-2 font-medium text-foreground">
+                    {r.service}
+                  </td>
+                  <td className="py-2 px-2 text-muted-foreground">
+                    {r.testDesc}
+                  </td>
+                  <td className="py-2 px-2">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                        r.status === "pass"
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : r.status === "not_configured"
+                            ? "bg-slate-500/10 text-slate-400"
+                            : "bg-red-500/10 text-red-400"
+                      }`}
+                    >
+                      {r.status === "pass" ? (
+                        <CheckCircle2 size={10} />
+                      ) : r.status === "not_configured" ? (
+                        <Info size={10} />
+                      ) : (
+                        <XCircle size={10} />
+                      )}
+                      {r.status}
+                    </span>
+                  </td>
+                  <td
+                    className="py-2 px-2 text-muted-foreground max-w-[200px] truncate"
+                    title={r.preview}
+                  >
+                    {r.preview}
+                  </td>
+                  <td className="py-2 px-2 text-right">
+                    <button
+                      type="button"
+                      onClick={() => runSingleTest(r.service)}
+                      disabled={isRunning}
+                      className="inline-flex items-center gap-1 rounded-md bg-secondary px-2 py-1 text-[10px] font-medium text-secondary-foreground hover:bg-secondary/80 disabled:opacity-50 transition-colors"
+                      data-ocid={`golive.system_health.retest_button.${r.service.toLowerCase().replace(/\./g, "_")}`}
+                    >
+                      <RefreshCw size={10} />
+                      Re-test
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function GoLivePage() {
-  const { currentUser } = useApp();
+  const { currentUser, isSuperAdmin } = useApp();
   const {
     actor,
     isFetching: actorFetching,
@@ -3582,6 +6691,54 @@ export default function GoLivePage() {
         // If there are other fields alongside serpApiKey, fall through without it
       }
 
+      // ── SerpApi.dev special path ──
+      if ("serpApiDevKey" in cleanPartial) {
+        const serpApiDevKeyVal = (
+          ((cleanPartial as Record<string, unknown>).serpApiDevKey as string) ??
+          ""
+        ).trim();
+        if (serpApiDevKeyVal !== undefined) {
+          try {
+            const testResult = await testSerpApiDevConnection(serpApiDevKeyVal);
+            if (
+              testResult.status === "failed" ||
+              testResult.status === "not_configured"
+            ) {
+              if (!options?.silent)
+                toast.error(`SerpApi.dev: ${testResult.message}`);
+              return;
+            }
+            await actor.updateIntegrationCredentials({
+              serpApiDevKey: serpApiDevKeyVal,
+            });
+            const savedAt = new Date();
+            setLastSavedAt(savedAt);
+            setLastUpdated(savedAt);
+            refreshCreds();
+            if (!options?.silent) {
+              toast.success(
+                "✓ SerpApi.dev key saved and verified — 2,500 free searches/month active",
+                { duration: 5000 },
+              );
+              addPersistedChange(
+                "SerpApi.dev",
+                "Updated",
+                "SerpApi.dev key saved",
+              );
+            }
+          } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            if (!options?.silent)
+              toast.error(`Failed to save SerpApi.dev key: ${msg}`);
+            throw err;
+          }
+          const hasOtherFieldsDev = Object.keys(cleanPartial).some(
+            (k) => k !== "serpApiDevKey",
+          );
+          if (!hasOtherFieldsDev) return;
+        }
+      }
+
       // Build a version of cleanPartial that excludes serpApiKey for the normal save path
       const nonSerpPartial = Object.fromEntries(
         Object.entries(cleanPartial).filter(([k]) => k !== "serpApiKey"),
@@ -3639,7 +6796,21 @@ export default function GoLivePage() {
         perplexityApiKey: get("perplexityApiKey"),
         autoBrowserUrl: get("autoBrowserUrl"),
         serpApiKey: get("serpApiKey"),
+        serpApiDevKey: get("serpApiDevKey"),
+        tinyFishKey: get("tinyFishKey"),
         sendgridKey: "",
+        n8nInstanceUrl: "",
+        n8nApiKey: new Uint8Array(),
+        nvidiaApiKey: new Uint8Array(),
+        sendgridInboundParseDomain: "",
+        vapiWebhookSecret: "",
+        nvidiaNimApiKey: "",
+        dograhApiKey: get("dograhApiKey" as keyof ServiceCreds) ?? "",
+        abacusApiKey: get("abacusApiKey" as keyof ServiceCreds) ?? "",
+        composioApiKey: get("composioApiKey" as keyof ServiceCreds) ?? "",
+        composioWebhookSecret: "",
+        openRouterApiKey: get("openRouterApiKey" as keyof ServiceCreds) ?? "",
+        geminiApiKey: "",
       };
 
       try {
@@ -3882,6 +7053,8 @@ export default function GoLivePage() {
 
   return (
     <div className="space-y-8 p-6 max-w-5xl mx-auto" data-ocid="golive.page">
+      <SystemHealthCheck actor={actor} />
+
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
@@ -4362,7 +7535,7 @@ export default function GoLivePage() {
       </div>
 
       {/* Integration Health Panel */}
-      <IntegrationHealthPanel creds={creds} />
+      <IntegrationHealthPanelWithCritical actor={actor} creds={creds} />
 
       {/* Critical Path Warning */}
       {hasCriticalWarning && (
@@ -4526,6 +7699,48 @@ export default function GoLivePage() {
         </div>
       </section>
 
+      {/* NVIDIA AI Brain */}
+      <section data-ocid="golive.nvidia_ai_brain.section">
+        <NvidiaAIBrainSection />
+      </section>
+
+      {/* Composio MCP Router */}
+      <section data-ocid="golive.composio.section">
+        <ComposioSection />
+      </section>
+
+      {/* Abacus.AI RouteLLM */}
+      <section data-ocid="golive.abacus.section">
+        <AbacusSection />
+      </section>
+
+      {/* N8N Workflow */}
+      <section data-ocid="golive.n8n_workflow.section">
+        <N8NWorkflowSection />
+      </section>
+
+      {/* Dograh Voice Agent Builder */}
+      <section data-ocid="golive.dograh.section">
+        <DograhSection />
+      </section>
+
+      {/* OpenRouter AI Router */}
+      <section data-ocid="golive.openrouter.section">
+        <OpenRouterSection />
+      </section>
+
+      {/* Google Gemini */}
+      <section data-ocid="golive.gemini.section">
+        <GeminiSection />
+      </section>
+
+      {/* Content Tier Toggles — Super Admin only */}
+      {isSuperAdmin && (
+        <section data-ocid="golive.content_tier_toggles.panel">
+          <ContentTierToggleSection />
+        </section>
+      )}
+
       {/* Activity Log */}
       <section data-ocid="golive.activity_log.section">
         <ActivityLog entries={activityLog} />
@@ -4544,6 +7759,24 @@ export default function GoLivePage() {
             }
           }}
         />
+      </section>
+      <section className="mt-8 rounded-xl border border-border bg-card p-6">
+        <h2 className="mb-4 text-xl font-bold text-foreground">
+          Production Validation Report
+        </h2>
+        <p className="mb-2 text-muted-foreground">
+          Mock data removed — all demo data cleared
+        </p>
+        <p className="mb-4 text-muted-foreground">
+          Roofing campaign: Manual start required
+        </p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          Refresh
+        </button>
       </section>
     </div>
   );

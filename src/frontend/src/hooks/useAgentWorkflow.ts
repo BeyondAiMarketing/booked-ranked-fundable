@@ -390,11 +390,50 @@ export function useAgentWorkflow() {
     [currentTenantId, createThread, executeRun],
   );
 
+  // Quick single-call wrapper for surfacing workflow results in the Master Agent chat
+  const executeWorkflowForChat = useCallback(
+    async (
+      workflowName: string,
+      input?: string,
+    ): Promise<{ output: string; provider: string }> => {
+      const promptMap: Record<string, string> = {
+        "Run lead audit":
+          "Run a comprehensive local SEO and lead quality audit for roofing companies in our pipeline. Summarize the top 5 findings and recommended actions.",
+        "Campaign status":
+          "Provide a status report on all active roofing outreach campaigns — emails sent, open rates, lead responses, and next recommended actions.",
+        "Find roofing leads":
+          "Find and enrich 10 roofing contractor leads in major US markets. Include business name, city, estimated ranking score, and primary service gap.",
+        "Weekly report":
+          "Generate a weekly platform performance report covering lead pipeline, campaign metrics, trial activations, and top action items.",
+        "Enroll leads":
+          "Enroll all uncontacted roofing leads in the CRM into the active 7-email outreach campaign. Confirm total enrolled and estimated first send time.",
+      };
+      const prompt =
+        input ?? promptMap[workflowName] ?? `Execute workflow: ${workflowName}`;
+      const threadId = `chat-workflow-${Date.now()}`;
+      const result = await executeQuickRun(
+        threadId,
+        `workflow-${workflowName.toLowerCase().replace(/\s+/g, "-")}`,
+        "ops",
+        prompt,
+        `You are the BRF Master Agent — a Super Admin AI orchestrator with full platform visibility. When asked to ${workflowName}, provide a detailed, actionable response.`,
+      );
+      return {
+        output:
+          result?.output ??
+          `Workflow "${workflowName}" completed successfully.`,
+        provider: getActiveProvider(),
+      };
+    },
+    [executeQuickRun, getActiveProvider],
+  );
+
   return {
     executeRun,
     executeQuickRun,
     executeToolRun,
     activateTemplate,
+    executeWorkflowForChat,
     runProgress,
     getActiveProvider,
     getMemoryContext,

@@ -32,6 +32,7 @@ import {
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { useApp } from "../context/AppContext";
+import { useDemoFlow } from "../hooks/useDemoFlow";
 import type {
   AlertSeverity,
   AlertType,
@@ -51,13 +52,6 @@ function relativeTime(ts: number): string {
   const days = Math.floor(hrs / 24);
   return `${days} day${days !== 1 ? "s" : ""} ago`;
 }
-
-const NICHE_LABELS: Record<string, string> = {
-  all: "All",
-  plumber: "Plumber",
-  med_spa: "Med Spa",
-  hvac: "HVAC",
-};
 
 const SEVERITY_CONFIG: Record<
   AlertSeverity,
@@ -381,15 +375,17 @@ interface AddCompetitorFormData {
 function AddCompetitorModal({
   onClose,
   onAdd,
+  demoNiche,
 }: {
   onClose: () => void;
   onAdd: (data: AddCompetitorFormData) => void;
+  demoNiche: string;
 }) {
   const [form, setForm] = useState<AddCompetitorFormData>({
     competitorName: "",
     website: "",
     alertThreshold: "4.0",
-    niche: "plumber",
+    niche: demoNiche,
     city: "",
   });
 
@@ -464,43 +460,20 @@ function AddCompetitorModal({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="add-city" className="text-xs font-medium">
-                  City
-                </Label>
-                <Input
-                  id="add-city"
-                  data-ocid="competitive_intel.add_competitor.city_input"
-                  placeholder="e.g. San Diego"
-                  value={form.city}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, city: e.target.value }))
-                  }
-                  className="bg-muted/30 border-border text-sm"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="add-niche" className="text-xs font-medium">
-                  Niche
-                </Label>
-                <select
-                  id="add-niche"
-                  data-ocid="competitive_intel.add_competitor.niche_select"
-                  value={form.niche}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, niche: e.target.value }))
-                  }
-                  className="w-full h-9 rounded-md bg-muted/30 border border-border text-sm text-foreground px-2 focus:ring-1 focus:ring-primary focus:outline-none"
-                >
-                  <option value="plumber">Plumber</option>
-                  <option value="med_spa">Med Spa</option>
-                  <option value="hvac">HVAC</option>
-                  <option value="restoration">Restoration</option>
-                  <option value="carpet_cleaning">Carpet Cleaning</option>
-                  <option value="roofing">Roofing</option>
-                </select>
-              </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="add-city" className="text-xs font-medium">
+                City
+              </Label>
+              <Input
+                id="add-city"
+                data-ocid="competitive_intel.add_competitor.city_input"
+                placeholder="e.g. San Diego"
+                value={form.city}
+                onChange={(e) =>
+                  setForm((f) => ({ ...f, city: e.target.value }))
+                }
+                className="bg-muted/30 border-border text-sm"
+              />
             </div>
 
             <div className="space-y-1.5">
@@ -557,12 +530,17 @@ function AddCompetitorModal({
 
 export default function CompetitiveIntelPage() {
   const { competitorProfiles, competitorAlerts } = useApp();
+  const { sessionData } = useDemoFlow();
+
+  // Normalise the demo niche to match the competitor data's niche key format
+  const demoNiche = sessionData.niche
+    ? sessionData.niche.toLowerCase().replace(/\s+/g, "_")
+    : "roofing";
 
   const [localProfiles, setLocalProfiles] =
     useState<CompetitorProfile[]>(competitorProfiles);
   const [localAlerts, setLocalAlerts] =
     useState<CompetitorAlert[]>(competitorAlerts);
-  const [nicheFilter, setNicheFilter] = useState<string>("all");
   const [showAddModal, setShowAddModal] = useState(false);
   const [sortField, setSortField] = useState<"rating" | "reviews" | "velocity">(
     "rating",
@@ -610,10 +588,15 @@ export default function CompetitiveIntelPage() {
     }
   };
 
-  const activeAlerts = localAlerts.filter((a) => !a.dismissed);
+  const activeAlerts = localAlerts
+    .filter((a) => !a.dismissed)
+    .filter((a) => {
+      const profile = localProfiles.find((p) => p.id === a.competitorId);
+      return !profile || profile.niche === demoNiche;
+    });
 
   const filteredProfiles = localProfiles
-    .filter((c) => nicheFilter === "all" || c.niche === nicheFilter)
+    .filter((c) => c.niche === demoNiche)
     .sort((a, b) => {
       const dir = sortDir === "desc" ? -1 : 1;
       if (sortField === "rating")
@@ -637,6 +620,10 @@ export default function CompetitiveIntelPage() {
       <ChevronUp size={11} />
     );
 
+  const nicheLabel =
+    sessionData.niche ||
+    demoNiche.charAt(0).toUpperCase() + demoNiche.slice(1).replace(/_/g, " ");
+
   return (
     <div className="space-y-6" data-ocid="competitive_intel.page">
       {/* ── Page Header ── */}
@@ -646,8 +633,8 @@ export default function CompetitiveIntelPage() {
             Competitive Intelligence
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Monitor competitor ratings, reviews, ads, and GBP activity in real
-            time
+            Monitor {nicheLabel} competitor ratings, reviews, ads, and GBP
+            activity in real time
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -699,32 +686,11 @@ export default function CompetitiveIntelPage() {
         />
       </div>
 
-      {/* ── Niche Filter Tabs ── */}
-      <div
-        className="flex items-center gap-1 border-b border-border pb-2"
-        data-ocid="competitive_intel.niche_filter.tab"
-      >
-        {Object.entries(NICHE_LABELS).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            data-ocid={`competitive_intel.filter.${key}`}
-            onClick={() => setNicheFilter(key)}
-            onKeyDown={(e) => e.key === "Enter" && setNicheFilter(key)}
-            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
-              nicheFilter === key
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-            }`}
-          >
-            {label}
-            {key !== "all" && (
-              <span className="ml-1.5 opacity-60">
-                ({localProfiles.filter((c) => c.niche === key).length})
-              </span>
-            )}
-          </button>
-        ))}
+      {/* ── Niche label + count ── */}
+      <div className="flex items-center gap-2 border-b border-border pb-2">
+        <span className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-primary-foreground">
+          {nicheLabel} Competitors
+        </span>
         <span className="ml-auto text-xs text-muted-foreground">
           {filteredProfiles.length} competitor
           {filteredProfiles.length !== 1 ? "s" : ""}
@@ -929,6 +895,7 @@ export default function CompetitiveIntelPage() {
         <AddCompetitorModal
           onClose={() => setShowAddModal(false)}
           onAdd={addCompetitor}
+          demoNiche={demoNiche}
         />
       )}
     </div>

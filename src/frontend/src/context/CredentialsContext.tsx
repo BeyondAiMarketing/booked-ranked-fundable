@@ -35,6 +35,15 @@ export interface LiveCredentials {
   perplexityApiKey: string;
   // Lead discovery
   serpApiKey: string;
+  serpApiDevKey: string;
+  // MCP integrations
+  composioConfigured: boolean;
+  composioWebhookSecretConfigured: boolean;
+  abacusConfigured: boolean;
+  // AI provider keys (for fallback chain)
+  openRouterApiKey: string;
+  nvidiaApiKey: string;
+  geminiApiKey: string;
 }
 
 interface CredentialsContextValue {
@@ -58,6 +67,13 @@ const DEFAULT_CREDS: LiveCredentials = {
   searxngUrl: "",
   perplexityApiKey: "",
   serpApiKey: "",
+  serpApiDevKey: "",
+  composioConfigured: false,
+  composioWebhookSecretConfigured: false,
+  abacusConfigured: false,
+  openRouterApiKey: "",
+  nvidiaApiKey: "",
+  geminiApiKey: "",
 };
 
 const CredentialsContext = createContext<CredentialsContextValue>({
@@ -127,11 +143,22 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
           vapiStatusResult,
           integrationCredsResult,
           agencySettingsResult,
+          composioStatusResult,
+          abacusStatusResult,
+          composioWebhookSecretResult,
         ] = await Promise.allSettled([
           actor!.getElevenLabsApiKey(),
           actor!.getVapiStatus(TENANT_ID),
           actor!.getIntegrationCredentials(TENANT_ID),
           actor!.getAgencySettings(),
+          actor!.getComposioApiKeyStatus(TENANT_ID),
+          actor!.getAbacusApiKeyStatus(TENANT_ID),
+          (
+            actor as unknown as Record<
+              string,
+              (...args: unknown[]) => Promise<unknown>
+            >
+          )?.getComposioWebhookSecretStatus?.(),
         ]);
 
         if (cancelled) return;
@@ -209,6 +236,29 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
             ? (agencySettingsResult.value as { serpApiKey?: string } | null)
             : null;
 
+        const composioStatus =
+          composioStatusResult.status === "fulfilled"
+            ? (composioStatusResult.value as {
+                configured: boolean;
+                maskedKey: string;
+              })
+            : { configured: false, maskedKey: "" };
+
+        const abacusStatus =
+          abacusStatusResult.status === "fulfilled"
+            ? (abacusStatusResult.value as {
+                configured: boolean;
+                maskedKey: string;
+              })
+            : { configured: false, maskedKey: "" };
+
+        const composioWebhookSecretStatus =
+          composioWebhookSecretResult?.status === "fulfilled"
+            ? (composioWebhookSecretResult.value as {
+                configured: boolean;
+              } | null)
+            : null;
+
         if (!cancelled) {
           setCreds({
             openaiKey: masked?.openaiKey ?? "",
@@ -224,6 +274,14 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
             perplexityApiKey: masked?.perplexityApiKey ?? "",
             // serpApiKey: prefer agencySettings, fall back to integrationCreds
             serpApiKey: agencySettings?.serpApiKey ?? masked?.serpApiKey ?? "",
+            serpApiDevKey: masked?.serpApiDevKey ?? "",
+            composioConfigured: composioStatus.configured,
+            composioWebhookSecretConfigured:
+              composioWebhookSecretStatus?.configured ?? false,
+            abacusConfigured: abacusStatus.configured,
+            openRouterApiKey: masked?.openRouterApiKey ?? "",
+            nvidiaApiKey: masked?.nvidiaApiKey ?? "",
+            geminiApiKey: masked?.geminiApiKey ?? "",
           });
           setBackendError(null);
           setIsLoading(false);

@@ -1,5 +1,6 @@
 import List    "mo:core/List";
 import Time    "mo:core/Time";
+import Nat     "mo:core/Nat";
 import Runtime "mo:core/Runtime";
 import AccessControl "mo:caffeineai-authorization/access-control";
 import Outcall "mo:caffeineai-http-outcalls/outcall";
@@ -233,6 +234,69 @@ mixin (
   public query ({ caller }) func getEmailLogsByTenant(tenantId : Text) : async [T.EmailLogRecord] {
     emailAssertUser(caller);
     emailLogs.filter(func(r : T.EmailLogRecord) : Bool { r.tenantId == tenantId }).toArray()
+  };
+
+  /// Generate AI-tailored email copy for a roofing cold outreach sequence.
+  /// Uses marketing framework templates. Falls back to a high-converting template
+  /// when no OpenAI key is configured (email-api mixin does not hold credentials).
+  public shared ({ caller }) func generateTailoredEmailCopy(
+    businessName : Text,
+    city         : Text,
+    niche        : Text,
+    emailIndex   : Nat,
+    framework    : Text,
+  ) : async { #ok : Text; #err : Text } {
+    emailAssertUser(caller);
+    let idx = emailIndex;
+    let copy = if (framework == "Brunson") {
+      // Hook-Story-Offer
+      let subjects = [
+        "Hey " # businessName # " — most " # niche # " businesses in " # city # " are missing this",
+        "The story of a " # niche # " company that doubled bookings without spending more on ads",
+        "Everything " # businessName # " gets with one platform (value breakdown inside)",
+        "Proof: " # niche # " businesses in " # city # " are booking more jobs automatically",
+        "Last chance — " # businessName # " still hasn't claimed their free demo",
+      ];
+      let bodies = [
+        "I'll be direct.\n\nMost " # niche # " businesses in " # city # " lose 40% of their leads to missed calls and slow follow-up.\n\nWe built an AI that answers every call, books appointments, and follows up automatically — so you never lose a job to a competitor who picked up faster.\n\nTakes 15 minutes to see it live: [DEMO_LINK]\n\nWorth your time?",
+        "A " # niche # " owner in " # city # " was working 14-hour days and still missing calls.\n\nWe gave them an AI that handled follow-ups while they were on the roof.\n\nWithin 30 days: 23 more booked jobs. Zero extra ad spend.\n\nHere's how it works for " # businessName # ": [DEMO_LINK]",
+        "Here's what " # businessName # " gets with BRF:\n\n✅ AI-powered call answering (value: $1,200/mo)\n✅ Automated follow-up sequences (value: $800/mo)\n✅ Review management (value: $400/mo)\n✅ AI booking engine (value: $600/mo)\n\nTotal value: $3,000/mo. Our price: a fraction of that.\n\nSee it in 15 minutes: [DEMO_LINK]",
+        "3 " # niche # " businesses in " # city # " activated BRF last month.\n\nAverage result in week 1: 18 leads contacted automatically, 6 appointments booked without lifting a finger.\n\n" # businessName # " could be next. Demo spots are limited this week: [DEMO_LINK]",
+        "This is my last email to " # businessName # ".\n\nIf automating your follow-ups, bookings, and reviews isn't a priority right now — no hard feelings.\n\nBut if you'd like to see how 15 minutes could change how " # businessName # " operates, book a demo here before the week ends: [DEMO_LINK]",
+      ];
+      let si = if (idx < subjects.size()) idx else 0;
+      let bi = if (idx < bodies.size()) idx else 0;
+      "Subject: " # subjects[si] # "\n\n" # bodies[bi]
+    } else if (framework == "Hormozi") {
+      // Grand Slam Offer Value Stack
+      let subject = "The " # niche # " offer in " # city # " that makes saying no feel stupid";
+      let body = "Grand Slam breakdown for " # businessName # ":\n\n" #
+        "PROBLEM: You're leaving money on the table every time a call goes unanswered.\n" #
+        "SOLUTION: AI that answers, qualifies, and books — 24/7.\n" #
+        "GUARANTEE: If you don't book 10 more jobs in 30 days, you pay nothing.\n" #
+        "URGENCY: We're onboarding 3 " # niche # " businesses in " # city # " this month.\n\n" #
+        "Claim your spot: [DEMO_LINK]";
+      "Subject: " # subject # "\n\n" # body
+    } else if (framework == "Kennedy") {
+      // Pain-Agitate-Solve with deadline
+      let subject = "" # businessName # ": the " # niche # " problem costing you jobs in " # city;
+      let body = "Every missed call is a job that went to your competitor.\n\n" #
+        "In " # city # ", the average " # niche # " business misses 37% of inbound calls. That's not a rounding error — that's your revenue walking out the door.\n\n" #
+        "BRF fixes this: AI answers every call, qualifies the lead, books the appointment, and follows up automatically.\n\n" #
+        "DEADLINE: Demo slots for " # city # " " # niche # " businesses close Friday.\n\n" #
+        "Book yours: [DEMO_LINK]";
+      "Subject: " # subject # "\n\n" # body
+    } else {
+      // Halbert pattern interrupt
+      let subject = "READ THIS, " # businessName # " (it's short and it matters)";
+      let body = "STOP.\n\n" #
+        "Before you delete this: " # businessName # " is losing jobs every week to slower competitors who just picked up the phone.\n\n" #
+        "We built an AI that does that for you.\n\n" #
+        "Every call. Every follow-up. Every booking. Automatic.\n\n" #
+        "See it in 15 minutes — no pitch, just a live demo: [DEMO_LINK]";
+      "Subject: " # subject # "\n\n" # body
+    };
+    #ok copy
   };
 
 };

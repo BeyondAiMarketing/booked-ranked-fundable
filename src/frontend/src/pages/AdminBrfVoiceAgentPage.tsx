@@ -108,7 +108,7 @@ const MOCK_CONFIG: BrfVoiceAgentConfig = {
   outboundEnabled: true,
   inboundVapiAssistantId: "",
   outboundVapiAssistantId: "",
-  inboundPhoneNumber: "",
+  inboundPhoneNumber: "+17603540802",
   brfBrandName: "Booked Ranked & Fundable",
   objectionHandlingEnabled: true,
   maxOutboundAttempts: 2,
@@ -995,7 +995,7 @@ export default function AdminBrfVoiceAgentPage() {
         const result = await actor.provisionVapiAssistant(
           TENANT_ID,
           config.brfBrandName || "Booked Ranked & Fundable",
-          config.inboundPhoneNumber || "+15550000000",
+          config.inboundPhoneNumber || "+17603540802",
           niche,
           "Thank you for calling {{businessName}}, this is {{agentName}} \u2014 how can I help you today?",
           [

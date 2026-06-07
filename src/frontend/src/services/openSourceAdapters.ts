@@ -2196,6 +2196,144 @@ export async function testSerpApiConnection(
   };
 }
 
+export async function testSerpApiDevConnection(
+  apiKey: string,
+): Promise<IntegrationHealthResult> {
+  if (!apiKey?.trim()) {
+    return {
+      service: "SerpApi.dev",
+      status: "not_configured",
+      message: "API key not configured",
+      testedAt: new Date(),
+    };
+  }
+  try {
+    const response = await fetch(
+      `https://serpapi.dev/account?api_key=${encodeURIComponent(apiKey)}`,
+    );
+    if (response.ok) {
+      let quotaRemaining: number | undefined;
+      try {
+        const data = (await response.json()) as Record<string, unknown>;
+        if (data?.searches_per_month_used !== undefined) {
+          quotaRemaining = Math.max(
+            0,
+            2500 - ((data.searches_per_month_used as number) || 0),
+          );
+        }
+      } catch {}
+      const quotaMsg =
+        quotaRemaining !== undefined
+          ? ` — ${quotaRemaining} searches remaining`
+          : "";
+      return {
+        service: "SerpApi.dev",
+        status: "connected",
+        message: `Connected — SerpApi.dev active${quotaMsg}`,
+        testedAt: new Date(),
+      };
+    }
+    if (response.status === 401 || response.status === 403) {
+      return {
+        service: "SerpApi.dev",
+        status: "failed",
+        message: "Invalid API key",
+        testedAt: new Date(),
+      };
+    }
+    if (response.status === 429) {
+      return {
+        service: "SerpApi.dev",
+        status: "failed",
+        message: "Quota exceeded (2,500 searches used)",
+        testedAt: new Date(),
+      };
+    }
+    return {
+      service: "SerpApi.dev",
+      status: "failed",
+      message: `Connection failed (HTTP ${response.status})`,
+      testedAt: new Date(),
+    };
+  } catch {
+    return {
+      service: "SerpApi.dev",
+      status: "failed",
+      message: "Connection failed — check your network",
+      testedAt: new Date(),
+    };
+  }
+}
+
+export async function testTinyFishConnection(
+  tinyFishKey: string,
+): Promise<IntegrationHealthResult> {
+  if (!tinyFishKey?.trim()) {
+    return {
+      service: "TinyFish",
+      status: "not_configured",
+      message: "API key not configured",
+      testedAt: new Date(),
+    };
+  }
+  try {
+    const response = await fetch(
+      `https://agent.tinyfish.ai/health?api_key=${encodeURIComponent(tinyFishKey)}`,
+    );
+    if (response.ok)
+      return {
+        service: "TinyFish",
+        status: "connected",
+        message: "Connected",
+        testedAt: new Date(),
+      };
+    if (response.status === 401 || response.status === 403)
+      return {
+        service: "TinyFish",
+        status: "failed",
+        message: "Invalid API key",
+        testedAt: new Date(),
+      };
+    return {
+      service: "TinyFish",
+      status: "failed",
+      message: `Connection failed (HTTP ${response.status})`,
+      testedAt: new Date(),
+    };
+  } catch {
+    return {
+      service: "TinyFish",
+      status: "failed",
+      message: "Connection failed — check your network",
+      testedAt: new Date(),
+    };
+  }
+}
+
+export async function searchWithSerpApiDev(
+  query: string,
+  apiKey: string,
+  options?: { engine?: string; location?: string; num?: number },
+): Promise<unknown> {
+  const params = new URLSearchParams({
+    api_key: apiKey,
+    q: query,
+    engine: options?.engine ?? "google",
+    ...(options?.location ? { location: options.location } : {}),
+    ...(options?.num ? { num: String(options.num) } : {}),
+  });
+  const response = await fetch(
+    `https://serpapi.dev/search?${params.toString()}`,
+  );
+  if (!response.ok) {
+    const errText = await response.text().catch(() => "");
+    throw new Error(
+      `SerpApi.dev search failed (HTTP ${response.status}): ${errText}`,
+    );
+  }
+  return response.json();
+}
+
 /** Test SearXNG endpoint reachability */
 export async function testSearxngConnection(
   url: string,
@@ -2442,4 +2580,191 @@ export async function testServiceConnection(
       return adapter.checkStatus();
     }
   }
+}
+
+/**
+ * Routes AI calls for the Master Agent through the priority fallback chain:
+ * 1. OpenRouter (Owl Alpha) → 2. OpenAI (gpt-4o) → 3. Google Gemini (free tier) → 4. NVIDIA NIM
+ * Each provider is attempted with a 15-second timeout; on failure the next is tried silently.
+ */
+export async function routeMasterAgentCall(
+  prompt: string,
+  keys: {
+    openRouterKey?: string;
+    openAIKey?: string;
+    geminiApiKey?: string;
+    nvidiaNimKey?: string;
+  },
+): Promise<{
+  success: boolean;
+  content: string;
+  provider: string;
+  fallbackUsed: boolean;
+}> {
+  const messages = [{ role: "user" as const, content: prompt }];
+  let attemptIndex = 0;
+
+  // Helper: create a 15-second AbortController signal
+  function makeSignal(): AbortSignal {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 15000);
+    return controller.signal;
+  }
+
+  // 1. OpenRouter — Owl Alpha
+  if (keys.openRouterKey) {
+    try {
+      const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keys.openRouterKey}`,
+        },
+        body: JSON.stringify({
+          model: "openrouter/auto",
+          messages,
+          stream: false,
+        }),
+        signal: makeSignal(),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          choices: { message: { content: string } }[];
+        };
+        const content = data?.choices?.[0]?.message?.content;
+        if (content) {
+          return {
+            success: true,
+            content,
+            provider: "OpenRouter (Owl Alpha)",
+            fallbackUsed: attemptIndex > 0,
+          };
+        }
+      }
+    } catch {
+      // timeout or network error — try next
+    }
+    attemptIndex++;
+  }
+
+  // 2. OpenAI — gpt-4o
+  if (keys.openAIKey) {
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${keys.openAIKey}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o",
+          messages,
+          stream: false,
+        }),
+        signal: makeSignal(),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          choices: { message: { content: string } }[];
+        };
+        const content = data?.choices?.[0]?.message?.content;
+        if (content) {
+          return {
+            success: true,
+            content,
+            provider: "OpenAI (GPT-4o)",
+            fallbackUsed: attemptIndex > 0,
+          };
+        }
+      }
+    } catch {
+      // timeout or network error — try next
+    }
+    attemptIndex++;
+  }
+
+  // 3. Google Gemini — free tier (key optional)
+  {
+    const geminiKey = keys.geminiApiKey ?? "";
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent${geminiKey ? `?key=${encodeURIComponent(geminiKey)}` : ""}`;
+    try {
+      const res = await fetch(geminiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            {
+              role: "user",
+              parts: [{ text: prompt }],
+            },
+          ],
+        }),
+        signal: makeSignal(),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          candidates: { content: { parts: { text: string }[] } }[];
+        };
+        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (content) {
+          return {
+            success: true,
+            content,
+            provider: "Google Gemini (Flash)",
+            fallbackUsed: attemptIndex > 0,
+          };
+        }
+      }
+    } catch {
+      // timeout or network error — try next
+    }
+    attemptIndex++;
+  }
+
+  // 4. NVIDIA NIM — llama-3.1-8b-instruct
+  if (keys.nvidiaNimKey) {
+    try {
+      const res = await fetch(
+        "https://integrate.api.nvidia.com/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${keys.nvidiaNimKey}`,
+          },
+          body: JSON.stringify({
+            model: "meta/llama-3.1-8b-instruct",
+            messages,
+            stream: false,
+          }),
+          signal: makeSignal(),
+        },
+      );
+      if (res.ok) {
+        const data = (await res.json()) as {
+          choices: { message: { content: string } }[];
+        };
+        const content = data?.choices?.[0]?.message?.content;
+        if (content) {
+          return {
+            success: true,
+            content,
+            provider: "NVIDIA NIM (Llama 3.1)",
+            fallbackUsed: attemptIndex > 0,
+          };
+        }
+      }
+    } catch {
+      // timeout or network error
+    }
+  }
+
+  // All providers failed
+  return {
+    success: false,
+    content:
+      "All AI providers unavailable. Please check your API key configuration.",
+    provider: "none",
+    fallbackUsed: false,
+  };
 }

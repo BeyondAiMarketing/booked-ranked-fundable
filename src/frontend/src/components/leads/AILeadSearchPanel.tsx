@@ -1,11 +1,13 @@
 import {
   AlertTriangle,
   Bot,
+  CheckCircle2,
   CheckSquare,
   Download,
   RefreshCw,
   Search,
   Square,
+  XCircle,
   Zap,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -30,13 +32,29 @@ import NewBusinessFilingsSearch, { NICHES } from "./NewBusinessFilingsSearch";
 
 interface LLMLeadSearchResult {
   leads: GeneratedLeadUI[];
+  serpApiCount: number;
+  tinyFishCount: number;
   claudeCount: number;
   openAICount: number;
+  totalFound: number;
   enrichedCount: number;
   serpApiUsed: boolean;
   errors: string[];
   searchedAt: number;
 }
+
+type PipelineStep = {
+  id: string;
+  label: string;
+  status: "pending" | "running" | "done" | "skipped" | "error";
+};
+
+const INITIAL_PIPELINE: PipelineStep[] = [
+  { id: "serpapi", label: "Searching SerpApi.dev", status: "pending" },
+  { id: "tinyfish", label: "TinyFish fallback", status: "pending" },
+  { id: "ai_gen", label: "AI lead generation", status: "pending" },
+  { id: "enrich", label: "Claude enrichment", status: "pending" },
+];
 
 const STATUS_MESSAGES = [
   "Asking Claude to find businesses...",
@@ -133,6 +151,7 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const [statusIdx, setStatusIdx] = useState(0);
+  const [pipeline, setPipeline] = useState<PipelineStep[]>(INITIAL_PIPELINE);
   const [result, setResult] = useState<LLMLeadSearchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -168,12 +187,30 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
       setResult(null);
       setSelected(new Set());
       setStatusIdx(0);
+      setPipeline(INITIAL_PIPELINE.map((s) => ({ ...s, status: "pending" })));
 
       // Cycle status messages
       let idx = 0;
       statusIntervalRef.current = setInterval(() => {
         idx = (idx + 1) % STATUS_MESSAGES.length;
         setStatusIdx(idx);
+        // Advance pipeline steps visually
+        setPipeline((prev) => {
+          const next = [...prev];
+          if (idx === 0) {
+            next[0] = { ...next[0], status: "running" };
+          } else if (idx === 1) {
+            next[0] = { ...next[0], status: "done" };
+            next[1] = { ...next[1], status: enrich ? "running" : "skipped" };
+          } else if (idx === 2) {
+            next[1] = { ...next[1], status: enrich ? "done" : "skipped" };
+            next[2] = { ...next[2], status: "running" };
+          } else if (idx === 3) {
+            next[2] = { ...next[2], status: "done" };
+            next[3] = { ...next[3], status: "running" };
+          }
+          return next;
+        });
       }, 4500);
 
       // Timeout guard
@@ -205,11 +242,19 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
           setError(
             `Search failed: ${response.err}. Check your API keys in Go Live Dashboard.`,
           );
+          setPipeline((prev) =>
+            prev.map((s) =>
+              s.status === "running" ? { ...s, status: "error" } : s,
+            ),
+          );
         } else {
           const data = response.ok as {
             leads: Record<string, unknown>[];
+            serpApiCount: bigint;
+            tinyFishCount: bigint;
             claudeCount: bigint;
             openAICount: bigint;
+            totalFound: bigint;
             enrichedCount: bigint;
             serpApiUsed: boolean;
             errors: string[];
@@ -217,13 +262,17 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
           };
           setResult({
             leads: normalizeLeads(data.leads ?? [], isFilings),
+            serpApiCount: Number(data.serpApiCount ?? 0),
+            tinyFishCount: Number(data.tinyFishCount ?? 0),
             claudeCount: Number(data.claudeCount ?? 0),
             openAICount: Number(data.openAICount ?? 0),
+            totalFound: Number(data.totalFound ?? 0),
             enrichedCount: Number(data.enrichedCount ?? 0),
             serpApiUsed: data.serpApiUsed ?? false,
             errors: data.errors ?? [],
             searchedAt: Number(data.searchedAt ?? 0),
           });
+          setPipeline((prev) => prev.map((s) => ({ ...s, status: "done" })));
         }
       } catch (err) {
         clearTimers();
@@ -422,6 +471,49 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
               {STATUS_MESSAGES[statusIdx]}
             </p>
           </div>
+
+          {/* Pipeline steps */}
+          <div className="space-y-2 mb-4">
+            {pipeline.map((step) => (
+              <div
+                key={step.id}
+                className="flex items-center gap-3 px-3 py-2 rounded-lg bg-white/5"
+              >
+                {step.status === "pending" && (
+                  <div className="w-4 h-4 rounded-full border-2 border-white/20" />
+                )}
+                {step.status === "running" && (
+                  <RefreshCw
+                    size={14}
+                    className="text-purple-400 animate-spin"
+                  />
+                )}
+                {step.status === "done" && (
+                  <CheckCircle2 size={14} className="text-emerald-400" />
+                )}
+                {step.status === "skipped" && (
+                  <span className="text-[10px] text-gray-500">SKIP</span>
+                )}
+                {step.status === "error" && (
+                  <XCircle size={14} className="text-red-400" />
+                )}
+                <span
+                  className={`text-xs ${
+                    step.status === "running"
+                      ? "text-white font-medium"
+                      : step.status === "done"
+                        ? "text-emerald-300"
+                        : step.status === "error"
+                          ? "text-red-300"
+                          : "text-gray-500"
+                  }`}
+                >
+                  {step.label}
+                </span>
+              </div>
+            ))}
+          </div>
+
           {/* Pulsing progress bar */}
           <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
             <div
@@ -518,12 +610,27 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
             <div className="flex flex-wrap gap-3 p-4 rounded-xl bg-card border border-white/10">
               <div className="flex items-center gap-2">
                 <span className="text-lg font-bold text-white">
-                  {result.leads.length}
+                  {result.totalFound > 0
+                    ? result.totalFound
+                    : result.leads.length}
                 </span>
-                <span className="text-xs text-gray-400">total leads</span>
+                <span className="text-xs text-gray-400">total found</span>
               </div>
               <div className="w-px h-8 bg-white/10" />
-              <div className="flex gap-3 flex-wrap">
+              <div className="flex gap-3 flex-wrap items-center">
+                <span className="text-xs text-gray-400">
+                  Live results from:
+                </span>
+                {result.serpApiCount > 0 && (
+                  <span className="text-xs text-blue-300">
+                    <strong>{result.serpApiCount}</strong> from SerpApi
+                  </span>
+                )}
+                {result.tinyFishCount > 0 && (
+                  <span className="text-xs text-teal-300">
+                    <strong>{result.tinyFishCount}</strong> from TinyFish
+                  </span>
+                )}
                 {result.claudeCount > 0 && (
                   <span className="text-xs text-purple-300">
                     <strong>{result.claudeCount}</strong> from Claude
@@ -535,7 +642,7 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
                   </span>
                 )}
                 {result.enrichedCount > 0 && (
-                  <span className="text-xs text-blue-300">
+                  <span className="text-xs text-indigo-300">
                     <strong>{result.enrichedCount}</strong> enriched
                   </span>
                 )}
@@ -564,13 +671,27 @@ export default function AILeadSearchPanel({ onPushToLake }: Props) {
                 data-ocid="ai_leads.results_list"
               >
                 {result.leads.map((lead, i) => (
-                  <LeadCard
-                    key={lead.id}
-                    lead={lead}
-                    selected={selected.has(lead.id)}
-                    onToggle={toggleSelect}
-                    index={i + 1}
-                  />
+                  <div key={lead.id} className="relative">
+                    {lead.source?.toLowerCase().includes("serpapi") ? (
+                      <span className="absolute top-2 right-2 z-10 text-xs bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 rounded px-1.5 py-0.5">
+                        SerpApi.dev
+                      </span>
+                    ) : lead.source?.toLowerCase().includes("tinyfish") ? (
+                      <span className="absolute top-2 right-2 z-10 text-xs bg-blue-500/20 text-blue-400 border border-blue-500/30 rounded px-1.5 py-0.5">
+                        TinyFish
+                      </span>
+                    ) : (
+                      <span className="absolute top-2 right-2 z-10 text-xs bg-purple-500/20 text-purple-400 border border-purple-500/30 rounded px-1.5 py-0.5">
+                        AI Generated
+                      </span>
+                    )}
+                    <LeadCard
+                      lead={lead}
+                      selected={selected.has(lead.id)}
+                      onToggle={toggleSelect}
+                      index={i + 1}
+                    />
+                  </div>
                 ))}
               </div>
 

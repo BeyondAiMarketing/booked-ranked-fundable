@@ -216,6 +216,11 @@ mixin (
       status         = if (success) "sent" else "failed";
       errorMessage   = if (success) null else ?"outcall failed";
       retryCount     = 0;
+      openedAt       = null;
+      clickedAt      = null;
+      openCount      = 0;
+      clickCount     = 0;
+      trackingToken  = "brftrk-" # recipientEmail # "-" # q.currentIndex.toText();
     };
 
     let logs = switch (dripEmailLogs.get(queueId)) {
@@ -490,6 +495,70 @@ mixin (
         true
       };
     }
+  };
+
+  // ---- Roofing auto-enrollment -----------------------------------------------
+
+  let roofingAutoEnrollState = { var done : Bool = false };
+
+  /// Return all ExtendedLeads matching the given niche across all tenants.
+  public query ({ caller }) func getLeadsByNiche(niche : Text) : async [CsvT.ExtendedLead] {
+    dripAssertUser(caller);
+    let result = List.empty<CsvT.ExtendedLead>();
+    for ((_, tenantMap) in extendedLeads.entries()) {
+      for ((_, lead) in tenantMap.entries()) {
+        if (lead.niche == niche) { result.add(lead) };
+      };
+    };
+    result.toArray()
+  };
+
+  /// Bulk-enroll all roofing leads into the roofing cold sequence drip queue.
+  /// Respects daily quota set on the queue. Returns the count of leads enrolled.
+  public shared ({ caller }) func bulkEnrollRoofingLeads() : async { #ok : Nat; #err : Text } {
+    dripAssertUser(caller);
+    let queueId = "roofing-cold-sequence";
+    let q = switch (dripQueues.get(queueId)) {
+      case (null) { return #err "Drip queue 'roofing-cold-sequence' not found. Create it first." };
+      case (?found) { found };
+    };
+    if (q.status == "cancelled") { return #err "Queue is cancelled" };
+    let now = Time.now();
+    let existing = List.fromArray(q.contactEmails);
+    var added : Nat = 0;
+    label enrollLoop for ((_, tenantMap) in extendedLeads.entries()) {
+      for ((_, lead) in tenantMap.entries()) {
+        if (lead.niche == "roofing") {
+          let alreadyIn = existing.find(func(e : Text) : Bool { e == lead.email });
+          switch (alreadyIn) {
+            case (?_) {}; // skip duplicates
+            case (null) {
+              if (added >= q.dailySendCap) { break enrollLoop };
+              existing.add(lead.email);
+              added += 1;
+            };
+          };
+        };
+      };
+    };
+    if (added > 0) {
+      dripQueues.add(queueId, {
+        q with
+        contactEmails = existing.toArray();
+        updatedAt = now;
+      });
+    };
+    #ok added
+  };
+
+  /// Auto-enroll roofing leads on first call (deploy-time trigger).
+  /// Idempotent — runs only once.
+  public shared ({ caller }) func autoEnrollOnInit() : async () {
+    dripAssertUser(caller);
+    if (not roofingAutoEnrollState.done) {
+      ignore await bulkEnrollRoofingLeads();
+      roofingAutoEnrollState.done := true;
+    };
   };
 
   // ---- Analytics API ----------------------------------------------------------

@@ -128,4 +128,32 @@ module {
     estimatedSizeKB : Nat;
   };
 
+  public type FeatureFlags = {
+    crm: Bool;
+    social: Bool;
+    reputation: Bool;
+    voiceAgent: Bool;
+    creditBuilder: Bool;
+    analytics: Bool;
+  };
+
+  public type TrialAccount = {
+    trialAccountId: Text;
+    sessionId: Text;
+    firstName: Text;
+    businessName: Text;
+    city: Text;
+    niche: Text;
+    phone: Text;
+    email: Text;
+    website: Text;
+    activatedAt: Int;
+    expiresAt: Int;
+    features: FeatureFlags;
+    activityScore: Nat;
+    day5ReminderSent: Bool;
+    convertedAt: ?Int;
+  };
+
+
 };

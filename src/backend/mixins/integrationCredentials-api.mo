@@ -5,6 +5,7 @@ import AccessControl "mo:caffeineai-authorization/access-control";
 import Outcall   "mo:caffeineai-http-outcalls/outcall";
 import ICTypes   "../types/integrationCredentials";
 import ICLib     "../lib/integrationCredentials";
+import Time "mo:core/Time";
 
 mixin (
   accessControlState : AccessControl.AccessControlState,
@@ -104,8 +105,13 @@ mixin (
           elevenLabsKey = ""; elevenLabsVoiceId = "";
           perplexityApiKey = "";
           autoBrowserUrl = "";
-          serpApiKey = "";
+          serpApiKey = ""; serpApiDevKey = ""; tinyFishKey = "";
           sendgridKey = "";
+          nvidiaApiKey = []; n8nApiKey = []; n8nInstanceUrl = "";
+          abacusApiKey = ""; composioApiKey = ""; dograhApiKey = ""; openRouterApiKey = "";
+          nvidiaNimApiKey = ""; vapiWebhookSecret = ""; sendgridInboundParseDomain = "";
+          composioWebhookSecret = "";
+          geminiApiKey = "";
         }
       };
     };
@@ -145,7 +151,21 @@ mixin (
       perplexityApiKey    = pick(creds.perplexityApiKey,    existing.perplexityApiKey);
       autoBrowserUrl      = pick(creds.autoBrowserUrl,      existing.autoBrowserUrl);
       serpApiKey          = pick(creds.serpApiKey,          existing.serpApiKey);
+      serpApiDevKey       = pick(creds.serpApiDevKey,       existing.serpApiDevKey);
+      tinyFishKey         = pick(creds.tinyFishKey,         existing.tinyFishKey);
       sendgridKey         = pick(creds.sendgridKey,         existing.sendgridKey);
+      n8nInstanceUrl      = pick(creds.n8nInstanceUrl,      existing.n8nInstanceUrl);
+      nvidiaApiKey        = if (creds.nvidiaApiKey.size() > 0) creds.nvidiaApiKey else existing.nvidiaApiKey;
+      n8nApiKey           = if (creds.n8nApiKey.size() > 0) creds.n8nApiKey else existing.n8nApiKey;
+      abacusApiKey        = pick(creds.abacusApiKey,        existing.abacusApiKey);
+      composioApiKey      = pick(creds.composioApiKey,      existing.composioApiKey);
+      dograhApiKey        = pick(creds.dograhApiKey,        existing.dograhApiKey);
+      openRouterApiKey    = pick(creds.openRouterApiKey,    existing.openRouterApiKey);
+      nvidiaNimApiKey          = pick(creds.nvidiaNimApiKey,          existing.nvidiaNimApiKey);
+      vapiWebhookSecret        = pick(creds.vapiWebhookSecret,        existing.vapiWebhookSecret);
+      sendgridInboundParseDomain = pick(creds.sendgridInboundParseDomain, existing.sendgridInboundParseDomain);
+      composioWebhookSecret      = pick(creds.composioWebhookSecret,     existing.composioWebhookSecret);
+      geminiApiKey               = pick(creds.geminiApiKey,              existing.geminiApiKey);
     };
     let encrypted = ICLib.encryptAll(merged, credSalt);
     integrationCreds.add(tid, encrypted);
@@ -197,16 +217,16 @@ mixin (
     service  : Text,
   ) : async ICTypes.ConnectionTestResult {
     if (not isAuthenticated(caller)) {
-      return { connected = false; message = "Unauthorized"; statusCode = 401; quotaInfo = null };
+      return { connected = false; message = "Unauthorized"; statusCode = 401; quotaInfo = null; lastTestedAt = null; lastTestError = ?"Unauthorized" };
     };
     let tid = normaliseTenantId(tenantId);
     switch (integrationCreds.get(tid)) {
       case (?enc) {
         let plain = ICLib.decryptAll(enc, credSalt);
-        ICLib.mockConnectionTest(service, plain)
+        { connected = false; message = "Use testAllConnections() for live API tests"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = null }
       };
       case (null) {
-        { connected = false; message = "No credentials configured for this tenant"; statusCode = 0; quotaInfo = null }
+        { connected = false; message = "No credentials configured for this tenant"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"No credentials configured for this tenant" }
       };
     };
   };
@@ -266,13 +286,13 @@ mixin (
     service  : Text,
   ) : async ICTypes.ConnectionTestResult {
     if (not isAuthenticated(caller)) {
-      return { connected = false; message = "Unauthorized"; statusCode = 401; quotaInfo = null };
+      return { connected = false; message = "Unauthorized"; statusCode = 401; quotaInfo = null; lastTestedAt = null; lastTestError = ?"Unauthorized" };
     };
     let tid = normaliseTenantId(tenantId);
     let plain : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
       case (?enc) { ICLib.decryptAll(enc, credSalt) };
       case (null) {
-        return { connected = false; message = "No credentials configured"; statusCode = 0; quotaInfo = null };
+        return { connected = false; message = "No credentials configured"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"No credentials configured" };
       };
     };
 
@@ -281,14 +301,22 @@ mixin (
     let probe : ?ProbeSpec = switch (service) {
       case ("serpapi") {
         if (plain.serpApiKey == "") {
-          return { connected = false; message = "SerpApi key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "SerpApi key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"SerpApi key not set" };
         };
         ?{ url = "https://serpapi.com/account.json?api_key=" # plain.serpApiKey;
            headers = [{ name = "User-Agent"; value = "BRF-IntegrationTest/1.0" }] }
       };
+      case ("serpapidev") {
+        if (plain.serpApiDevKey == "") {
+          return { connected = false; message = "SerpApi.dev key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"SerpApi.dev key not set" };
+        };
+        // SerpApi.dev account endpoint for key validation
+        ?{ url = "https://serpapi.dev/account?api_key=" # plain.serpApiDevKey;
+           headers = [{ name = "User-Agent"; value = "BRF-IntegrationTest/1.0" }] }
+      };
       case ("openai") {
         if (plain.openaiKey == "") {
-          return { connected = false; message = "OpenAI key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "OpenAI key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"OpenAI key not set" };
         };
         ?{ url = "https://api.openai.com/v1/models";
            headers = [
@@ -298,7 +326,7 @@ mixin (
       };
       case ("claude") {
         if (plain.claudeKey == "") {
-          return { connected = false; message = "Anthropic key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "Anthropic key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"Anthropic key not set" };
         };
         ?{ url = "https://api.anthropic.com/v1/models";
            headers = [
@@ -309,7 +337,7 @@ mixin (
       };
       case ("sendgrid") {
         if (plain.sendgridKey == "") {
-          return { connected = false; message = "SendGrid key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "SendGrid key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"SendGrid key not set" };
         };
         ?{ url = "https://api.sendgrid.com/v3/user/account";
            headers = [
@@ -319,7 +347,7 @@ mixin (
       };
       case ("elevenlabs") {
         if (plain.elevenLabsKey == "") {
-          return { connected = false; message = "ElevenLabs key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "ElevenLabs key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"ElevenLabs key not set" };
         };
         ?{ url = "https://api.elevenlabs.io/v1/user";
            headers = [
@@ -329,7 +357,7 @@ mixin (
       };
       case ("stripe") {
         if (plain.stripeKey == "") {
-          return { connected = false; message = "Stripe key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "Stripe key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"Stripe key not set" };
         };
         ?{ url = "https://api.stripe.com/v1/account";
            headers = [
@@ -339,7 +367,7 @@ mixin (
       };
       case ("vapi") {
         if (plain.vapiKey == "") {
-          return { connected = false; message = "Vapi key not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "Vapi key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"Vapi key not set" };
         };
         ?{ url = "https://api.vapi.ai/assistant";
            headers = [
@@ -349,16 +377,29 @@ mixin (
       };
       case ("twilio") {
         if (plain.twilioSid == "") {
-          return { connected = false; message = "Twilio SID not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "Twilio SID not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = null };
         };
+        // Basic Auth: plain SID:AuthToken (not base64 encoded — no base64 lib available in canister)
+        let basicAuth = "Basic " # plain.twilioSid # ":" # plain.twilioAuth;
         ?{ url = "https://api.twilio.com/2010-04-01.json";
            headers = [
+             { name = "Authorization"; value = basicAuth },
+             { name = "User-Agent"; value = "BRF-IntegrationTest/1.0" }
+           ] }
+      };
+      case ("tinyfish") {
+        if (plain.tinyFishKey == "") {
+          return { connected = false; message = "TinyFish key not set"; statusCode = 0; quotaInfo = null; lastTestedAt = ?Time.now(); lastTestError = ?"TinyFish key not set" };
+        };
+        ?{ url = "https://agent.tinyfish.ai/health";
+           headers = [
+             { name = "X-API-Key"; value = plain.tinyFishKey },
              { name = "User-Agent"; value = "BRF-IntegrationTest/1.0" }
            ] }
       };
       case ("searxng") {
         if (plain.searxngUrl == "") {
-          return { connected = false; message = "SearXNG URL not set"; statusCode = 0; quotaInfo = null };
+          return { connected = false; message = "SearXNG URL not set"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"SearXNG URL not set" };
         };
         let base = if (plain.searxngUrl.endsWith(#text "/"))
           plain.searxngUrl # "healthz"
@@ -372,29 +413,102 @@ mixin (
 
     switch (probe) {
       case (null) {
-        // No real probe — fall back to key-presence check
-        ICLib.mockConnectionTest(service, plain)
+        { connected = false; message = "Unknown service — use testAllConnections() for live API tests"; statusCode = 0; quotaInfo = null; lastTestedAt = ?Time.now(); lastTestError = null }
       };
       case (?spec) {
+        let now = Time.now();
         try {
           let body = await Outcall.httpGetRequest(spec.url, spec.headers, transform);
           let hasContent = body.size() > 0;
           // Provide quota hint for SerpApi
-          let quota : ?Text = if (service == "serpapi") {
+          let quota : ?Text = if (service == "serpapi" or service == "serpapidev") {
           if (body.contains(#text "plan_searches_left")) {
               ?"Quota info available in account response"
             } else { null }
           } else { null };
           if (hasContent) {
-            { connected = true; message = "Service reachable"; statusCode = 200; quotaInfo = quota }
+            { connected = true; message = "Service reachable"; statusCode = 200; quotaInfo = quota; lastTestedAt = ?now; lastTestError = null }
           } else {
-            { connected = false; message = "Empty response from service"; statusCode = 200; quotaInfo = null }
+            { connected = false; message = "Empty response from service"; statusCode = 200; quotaInfo = null; lastTestedAt = ?now; lastTestError = ?"Empty response from service" }
           }
         } catch (_e) {
-          { connected = false; message = "HTTP outcall failed — service may be unreachable or key invalid"; statusCode = 0; quotaInfo = null }
+          { connected = false; message = "HTTP outcall failed — service may be unreachable or key invalid"; statusCode = 0; quotaInfo = null; lastTestedAt = ?Time.now(); lastTestError = ?"HTTP outcall failed — service may be unreachable or key invalid" }
         }
       };
     };
   };
 
+  /// Delete (clear) a single named credential field for a tenant.
+  /// Supports all major key fields.
+  public shared ({ caller }) func deleteCredential(
+    tenantId  : Text,
+    fieldName : Text,
+  ) : async { ok : Bool; message : Text } {
+    if (not isAuthenticated(caller)) {
+      return { ok = false; message = "Unauthorized" };
+    };
+    let tid = normaliseTenantId(tenantId);
+    switch (checkTenantAccess(caller, tid)) {
+      case (#err msg) { return { ok = false; message = msg } };
+      case (#ok) {};
+    };
+    switch (integrationCreds.get(tid)) {
+      case (null) { return { ok = false; message = "No credentials found for tenant" } };
+      case (?enc) {
+        let plain = ICLib.decryptAll(enc, credSalt);
+        let updated : ?ICTypes.IntegrationCredentials = switch (fieldName) {
+          case ("openaiKey")                 ?{ plain with openaiKey = "" };
+          case ("claudeKey")                 ?{ plain with claudeKey = "" };
+          case ("litellmUrl")                ?{ plain with litellmUrl = "" };
+          case ("litellmKey")                ?{ plain with litellmKey = "" };
+          case ("ollamaUrl")                 ?{ plain with ollamaUrl = "" };
+          case ("twilioSid")                 ?{ plain with twilioSid = "" };
+          case ("twilioAuth")                ?{ plain with twilioAuth = "" };
+          case ("twilioNumber")              ?{ plain with twilioNumber = "" };
+          case ("vapiKey")                   ?{ plain with vapiKey = "" };
+          case ("stripeKey")                 ?{ plain with stripeKey = "" };
+          case ("stripeWebhookSecret")       ?{ plain with stripeWebhookSecret = "" };
+          case ("googleClientId")            ?{ plain with googleClientId = "" };
+          case ("googleClientSecret")        ?{ plain with googleClientSecret = "" };
+          case ("yelpApiKey")                ?{ plain with yelpApiKey = "" };
+          case ("facebookAppId")             ?{ plain with facebookAppId = "" };
+          case ("facebookAppSecret")         ?{ plain with facebookAppSecret = "" };
+          case ("emailSmtpHost")             ?{ plain with emailSmtpHost = "" };
+          case ("emailSmtpPort")             ?{ plain with emailSmtpPort = "" };
+          case ("emailSmtpUser")             ?{ plain with emailSmtpUser = "" };
+          case ("emailSmtpPass")             ?{ plain with emailSmtpPass = "" };
+          case ("hunterApiKey")              ?{ plain with hunterApiKey = "" };
+          case ("neverBounceKey")            ?{ plain with neverBounceKey = "" };
+          case ("listmonkUrl")               ?{ plain with listmonkUrl = "" };
+          case ("listmonkUser")              ?{ plain with listmonkUser = "" };
+          case ("listmonkPass")              ?{ plain with listmonkPass = "" };
+          case ("searxngUrl")                ?{ plain with searxngUrl = "" };
+          case ("elevenLabsKey")             ?{ plain with elevenLabsKey = "" };
+          case ("elevenLabsVoiceId")         ?{ plain with elevenLabsVoiceId = "" };
+          case ("perplexityApiKey")          ?{ plain with perplexityApiKey = "" };
+          case ("autoBrowserUrl")            ?{ plain with autoBrowserUrl = "" };
+          case ("serpApiKey")                ?{ plain with serpApiKey = "" };
+          case ("serpApiDevKey")             ?{ plain with serpApiDevKey = "" };
+          case ("tinyFishKey")               ?{ plain with tinyFishKey = "" };
+          case ("sendgridKey")               ?{ plain with sendgridKey = "" };
+          case ("nvidiaNimApiKey")           ?{ plain with nvidiaNimApiKey = "" };
+          case ("n8nInstanceUrl")            ?{ plain with n8nInstanceUrl = "" };
+          case ("vapiWebhookSecret")         ?{ plain with vapiWebhookSecret = "" };
+          case ("sendgridInboundParseDomain") ?{ plain with sendgridInboundParseDomain = "" };
+          case ("composioApiKey")            ?{ plain with composioApiKey = "" };
+          case ("abacusApiKey")              ?{ plain with abacusApiKey = "" };
+          case ("dograhApiKey")              ?{ plain with dograhApiKey = "" };
+          case ("openRouterApiKey")          ?{ plain with openRouterApiKey = "" };
+          case (_)                           null;
+        };
+        switch (updated) {
+          case (null) { { ok = false; message = "Unknown field: " # fieldName } };
+          case (?u) {
+            integrationCreds.add(tid, ICLib.encryptAll(u, credSalt));
+            { ok = true; message = "Key deleted" };
+          };
+        };
+      };
+    };
+  };
 };

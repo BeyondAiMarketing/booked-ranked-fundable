@@ -195,4 +195,55 @@ module {
     }
   };
 
+  public func trialConfirmationPayload(
+    toEmail      : Text,
+    businessName : Text,
+    firstName    : Text,
+    expiryDate   : Text,
+    loginUrl     : Text
+  ) : Text {
+    let features = "<ul style='margin:8px 0;padding-left:20px;'>" #
+      "<li>CRM and Lead Management</li>" #
+      "<li>Social Media Campaign Scheduler</li>" #
+      "<li>Reputation Management</li>" #
+      "<li>AI Voice Agent</li>" #
+      "<li>Credit Builder</li>" #
+      "<li>Analytics and Reporting</li>" #
+      "</ul>";
+    let html = "<div style='font-family:Arial,sans-serif;max-width:600px;'>" #
+      "<h1 style='color:#a855f7;'>Your 7-Day Trial is Live!</h1>" #
+      "<p>Hi " # esc(firstName) # ",</p>" #
+      "<p>Your free trial for <strong>" # esc(businessName) # "</strong> has been activated.</p>" #
+      "<p><strong>What you have access to:</strong></p>" # features #
+      "<p><strong>Trial expires:</strong> " # esc(expiryDate) # "</p>" #
+      "<p><a href='" # esc(loginUrl) # "'>Log In to Your Trial</a></p>" #
+      "<p style='font-size:12px;color:#aaa;'>Booked Ranked and Fundable</p>" #
+      "</div>";
+    "{" # kv("to", toEmail) # "," # kv("subject", "Your BRF 7-Day Trial is Live!") # ",\"html\":\"" # html # "\"}"
+  };
+
+  public func adminTrialNotificationPayload(
+    adminEmail    : Text,
+    businessName  : Text,
+    firstName     : Text,
+    prospectEmail : Text,
+    phone         : Text,
+    website       : Text,
+    niche         : Text,
+    city          : Text,
+    activatedAt   : Text
+  ) : Text {
+    let html = "<div style='font-family:Arial,sans-serif;max-width:600px;'>" #
+      "<h1 style='color:#a855f7;'>New Trial Activated</h1>" #
+      "<p><strong>Business:</strong> " # esc(businessName) # "</p>" #
+      "<p><strong>Owner:</strong> " # esc(firstName) # "</p>" #
+      "<p><strong>Email:</strong> " # esc(prospectEmail) # "</p>" #
+      "<p><strong>Phone:</strong> " # esc(phone) # "</p>" #
+      "<p><strong>Website:</strong> " # esc(website) # "</p>" #
+      "<p><strong>Niche:</strong> " # esc(niche) # "</p>" #
+      "<p><strong>City:</strong> " # esc(city) # "</p>" #
+      "<p><strong>Activated:</strong> " # esc(activatedAt) # "</p>" #
+      "</div>";
+    "{" # kv("to", adminEmail) # "," # kv("subject", "New Trial Activated - " # businessName) # ",\"html\":\"" # html # "\"}"
+  };
 };

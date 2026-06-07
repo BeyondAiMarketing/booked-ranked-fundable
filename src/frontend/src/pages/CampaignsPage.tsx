@@ -952,7 +952,7 @@ function ProspectOutreachTab() {
   const [senderEmail, setSenderEmail] = useState(
     "david@bookedrankedfundable.com",
   );
-  const [replyTo, setReplyTo] = useState("reply@bookedrankedfundable.com");
+  const [replyTo, setReplyTo] = useState("BeyondAI.marketing@gmail.com");
 
   const filtered = prospects.filter((p) => {
     if (filterNiche && p.niche !== filterNiche) return false;

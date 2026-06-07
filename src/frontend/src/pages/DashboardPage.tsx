@@ -86,6 +86,22 @@ export default function DashboardPage() {
   } = useApp();
 
   const [greetingDismissed, setGreetingDismissed] = useState(false);
+  const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
+
+  // ── Demo Trial Session Bypass ─────────────────────────────────────────────
+  let trialSession: Record<string, any> | null = null;
+  try {
+    const stored = sessionStorage.getItem("brfTrialSession");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (parsed?.isDemoTrial === true) trialSession = parsed;
+    }
+  } catch {}
+
+  const isDemoTrial = !!trialSession && trialSession.isDemoTrial === true;
+  const trialFirstName = trialSession?.firstName || "";
+  const trialBusinessName = trialSession?.businessName || "";
+  const trialNiche = trialSession?.niche || "";
 
   const leads = LEADS[currentTenantId] ?? [];
   const reviews = REVIEWS[currentTenantId] ?? [];
@@ -536,6 +552,36 @@ export default function DashboardPage() {
   return (
     <>
       <div className="space-y-6">
+        {/* Trial Session Welcome Banner */}
+        {isDemoTrial && !trialBannerDismissed && (
+          <div className="relative rounded-xl p-5 border bg-gradient-to-r from-blue-900/40 to-indigo-900/40 border-blue-500/30">
+            <button
+              type="button"
+              onClick={() => setTrialBannerDismissed(true)}
+              className="absolute top-3 right-3 text-gray-400 hover:text-white transition-colors"
+              aria-label="Dismiss welcome banner"
+              data-ocid="dashboard.trial_banner.dismiss_button"
+            >
+              <X size={16} />
+            </button>
+            <div className="flex items-start gap-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-500/30 flex items-center justify-center flex-shrink-0">
+                <Sparkles size={18} className="text-blue-400" />
+              </div>
+              <div className="flex-1 min-w-0 pr-6">
+                <h3 className="font-semibold text-base mb-1 text-white">
+                  Welcome {trialFirstName || "there"} — your{" "}
+                  {trialNiche || "business"} command center is ready.
+                </h3>
+                <p className="text-sm leading-relaxed text-gray-300">
+                  You have 7 days to explore everything. Your business profile
+                  is pre-loaded and all features are active.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* AI Greeting */}
         {greetingData && !greetingDismissed && (
           <div
@@ -597,7 +643,9 @@ export default function DashboardPage() {
                 ? "Agency Overview"
                 : isDemoMode && demoInfo
                   ? demoInfo.businessName
-                  : "Dashboard"}
+                  : isDemoTrial && trialBusinessName
+                    ? trialBusinessName
+                    : "Dashboard"}
             </h2>
             <p className="text-gray-400 text-sm mt-1">
               {isAdminUser

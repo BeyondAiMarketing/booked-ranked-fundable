@@ -1,10 +1,19 @@
 /**
- * audioService.ts — V129 ROBOTIC VOICE REMOVAL
+ * audioService.ts — BASE64 DECODE FIX + ROBOTIC VOICE REMOVAL
  *
  * TWO-LAYER AUDIO (SpeechSynthesis permanently removed):
  *   Layer 1: ElevenLabs (best quality, pre-decoded via AudioContext)
  *   Layer 2: OpenAI TTS (fallback, pre-decoded via AudioContext)
  *   Fallback: Transcript-only display — no audio, no robotic voices EVER
+ *
+ * BASE64 FIX (critical):
+ *   Raw base64 strings MUST be converted to ArrayBuffer before calling
+ *   decodeAudioData. The correct pipeline:
+ *     const binary = atob(base64String);
+ *     const bytes = new Uint8Array(binary.length);
+ *     for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+ *     const audioBuf = await audioCtx.decodeAudioData(bytes.buffer.slice(0));
+ *   NEVER pass a raw base64 string directly to decodeAudioData.
  *
  * MOBILE-FIRST GOLDEN RULES:
  *   1. AudioContext must be created AND resumed SYNCHRONOUSLY in the first

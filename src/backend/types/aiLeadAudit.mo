@@ -43,13 +43,19 @@ module {
     socialFacebook       : ?Text;
     socialInstagram      : ?Text;
     firstTouchEmailSubject : Text;
-    firstTouchEmailBody  : Text;
-    kitPageSlug          : ?Text;
-    pushedToCrm          : Bool;
-    pushedAt             : ?Int;
-    assignedCampaignId   : ?Text;
-    interactionType      : ?Text;
-    trialActivatedAt     : ?Int;
+    firstTouchEmailBody    : Text;
+    /// 3-5 personalised pain-point angles for outreach copy
+    painPointAngles        : [Text];
+    /// high | medium | low
+    outreachPriority       : Text;
+    /// Alias for totalScore exposed on the public API
+    overallScore           : Nat;
+    kitPageSlug            : ?Text;
+    pushedToCrm            : Bool;
+    pushedAt               : ?Int;
+    assignedCampaignId     : ?Text;
+    interactionType        : ?Text;
+    trialActivatedAt       : ?Int;
   };
 
   /// A batch job that groups many individual lead audit jobs together.
