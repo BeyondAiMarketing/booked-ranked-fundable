@@ -253,6 +253,26 @@ module {
     createdAt      : Int;
   };
 
+  // ---- REF TYPES FOR CONTENT OS ----
+
+  public type ContentCalendarRef = {
+    calendarId : Text;
+    month      : Nat;
+    year       : Nat;
+  };
+
+  public type SocialPostDraftRef = {
+    draftId  : Text;
+    platform : Text;
+    status   : Text;
+  };
+
+  public type PerformanceInsightRef = {
+    insightId   : Text;
+    metricType  : Text;
+    period      : Text;
+  };
+
   // ---- DEMO FUNNEL ENTRIES ----
 
   public type EmailSequenceStatus = {

@@ -546,8 +546,8 @@ export const AdminTrialsPage: React.FC = () => {
             })
           : [],
       );
-    } catch (err) {
-      console.error("getTrialAccountsWithActivity failed", err);
+    } catch {
+      // getTrialAccountsWithActivity failed silently
     } finally {
       setTrialsLoading(false);
     }

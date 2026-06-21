@@ -57,4 +57,9 @@ export default defineConfig({
     ],
     dedupe: ["@dfinity/agent"]
   },
+  test: {
+    environment: "jsdom",
+    globals: true,
+    setupFiles: ["./src/__tests__/setup.ts"],
+  },
 });

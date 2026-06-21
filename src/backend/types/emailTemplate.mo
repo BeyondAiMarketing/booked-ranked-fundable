@@ -1,6 +1,21 @@
 module {
 
-  /// A single pre-written campaign email template with merge fields and a fallback.
+  /// Campaign type variant for email templates and sequences.
+  public type CampaignType = {
+    #leadNurture;
+    #coldEmail;
+    #oldLeadReactivation;
+    #proposalFollowUp;
+    #referralPartnerOutreach;
+    #reviewRequest;
+    #localBusinessOutreach;
+    #seasonalPromo;
+    #financingOffer;
+    #eventWebinar;
+    #verticalSpecific;
+  };
+
+  /// A single pre-written campaign email template with merge fields and a fallback (old stable-compatible version).
   public type EmailTemplate = {
     id             : Nat;
     day            : Nat;
@@ -9,6 +24,23 @@ module {
     fallbackSubject : Text;      // Plain version, no audit-specific fields
     fallbackBody   : Text;       // Plain version, no audit-specific fields
     updatedAt      : Int;
+  };
+
+  /// Extended email template with all new fields (not in stable storage).
+  public type EmailTemplateExt = {
+    id             : Nat;
+    day            : Nat;
+    subject        : Text;
+    body           : Text;
+    fallbackSubject : Text;
+    fallbackBody   : Text;
+    updatedAt      : Int;
+    // New fields
+    campaignType   : ?CampaignType;
+    verticalProfileId : ?Text;
+    complianceNotes : ?Text;
+    consentRequired : ?Bool;
+    unsubscribeFooter : ?Bool;
   };
 
   /// Admin-editable fields for updating a template.

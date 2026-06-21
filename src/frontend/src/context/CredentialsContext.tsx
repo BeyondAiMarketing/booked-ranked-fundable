@@ -163,18 +163,7 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
 
         if (cancelled) return;
 
-        if (elevenLabsResult.status === "rejected") {
-          console.warn(
-            "[CredentialsContext] getElevenLabsApiKey failed:",
-            elevenLabsResult.reason,
-          );
-        }
-        if (vapiStatusResult.status === "rejected") {
-          console.warn(
-            "[CredentialsContext] getVapiStatus failed:",
-            vapiStatusResult.reason,
-          );
-        }
+        // getElevenLabsApiKey and getVapiStatus failures are handled gracefully
 
         if (integrationCredsResult.status === "rejected") {
           retryAttempt += 1;
@@ -193,10 +182,6 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
             continue;
           }
           // Max retries exhausted — surface a clear, actionable error and stop
-          console.error(
-            "[CredentialsContext] getIntegrationCredentials failed after max retries:",
-            integrationCredsResult.reason,
-          );
           if (!cancelled) {
             setBackendError(
               "Unable to connect to credential storage. Please refresh the page.",

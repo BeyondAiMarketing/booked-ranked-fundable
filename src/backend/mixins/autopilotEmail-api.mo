@@ -51,7 +51,7 @@ mixin (
   // SMS autopilot job queue for cross-module notification (fire-and-forget append)
   smsJobQueue        : Queue.Queue<T.SmsAutopilotJob>,
   // Warm sequences library: niche → sequence
-  warmSequenceLib    : Map.Map<Text, WS.WarmSequence>,
+  warmSequenceLib    : Map.Map<Text, WS.WarmSequenceExt>,
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
 ) {
 

@@ -1,3 +1,4 @@
+import { TemplateCard } from "@/components/TemplateCard";
 import { WorkflowCard } from "@/components/WorkflowCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { N8N_TEMPLATE_METADATA } from "@/data/n8nTemplateMetadata";
 import { useN8nWorkflow } from "@/hooks/useN8nWorkflow";
 import {
   ALL_WORKFLOW_SCOPES,
@@ -33,6 +35,7 @@ import {
   ClipboardCopy,
   Filter,
   Globe,
+  Layers,
   Loader2,
   Network,
   Plus,
@@ -124,6 +127,11 @@ export default function AdminWorkflowLibraryPage() {
   const [configKey, setConfigKey] = useState("");
   const [savingConfig, setSavingConfig] = useState(false);
   const [testingConn, setTestingConn] = useState(false);
+
+  // BRF Templates section
+  const [_importingTemplateId, setImportingTemplateId] = useState<
+    string | null
+  >(null);
 
   const loadAll = useCallback(async () => {
     const [defs, execs, cfg, hook] = await Promise.all([
@@ -227,6 +235,35 @@ export default function AdminWorkflowLibraryPage() {
     if (ok) toast.success("N8N connection verified");
     else toast.error("Connection failed — check URL and API key");
     loadAll();
+  };
+
+  const handleUseTemplate = async (templateId: string) => {
+    const template = N8N_TEMPLATE_METADATA.find((t) => t.id === templateId);
+    if (!template) return;
+    setImportingTemplateId(templateId);
+    try {
+      const res = await fetch(`/n8n-templates/${template.fileName}`);
+      if (!res.ok) throw new Error("Failed to fetch template");
+      const workflowJson = await res.text();
+      // Validate JSON
+      JSON.parse(workflowJson);
+      await saveWorkflowDef({
+        name: template.name,
+        description: template.description,
+        tags: template.tags,
+        scope: "AllClients",
+        workflowJson,
+        isActive: true,
+        createdBy: "admin",
+      });
+      toast.success(`Template '${template.name}' imported successfully`);
+      loadAll();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Import failed";
+      toast.error(msg);
+    } finally {
+      setImportingTemplateId(null);
+    }
   };
 
   const filteredWorkflows =
@@ -352,6 +389,34 @@ export default function AdminWorkflowLibraryPage() {
           </div>
         )}
       </div>
+
+      {/* ─── BRF Templates Section ─── */}
+      <div className="mb-8">
+        <div className="mb-4 flex items-center gap-2">
+          <Layers className="h-4 w-4 text-[oklch(0.62_0.2_200)]" />
+          <h2 className="text-lg font-semibold text-foreground">
+            Built-in BRF Workflow Templates
+          </h2>
+        </div>
+        <p className="mb-4 text-sm text-muted-foreground">
+          Import pre-built workflows for common BRF operations
+        </p>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {N8N_TEMPLATE_METADATA.map((template) => (
+            <TemplateCard
+              key={template.id}
+              template={template}
+              onUseTemplate={handleUseTemplate}
+              onPreview={() => {
+                toast.info(`Preview for "${template.name}" — coming soon`);
+              }}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="mb-8 border-t border-border/40" />
 
       {/* Scope filter */}
       <div className="mb-4 flex flex-wrap items-center gap-2">

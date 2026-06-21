@@ -135,6 +135,16 @@ export default function AccountBriefPage() {
         updatedBy: "",
         priorityContacts,
         flagKeywords,
+        performanceHistory: [],
+        doRules: [],
+        sessionLog: [],
+        differentiators: [],
+        targetAudience: [],
+        contentHistory: [],
+        brandVoice: "",
+        services: [],
+        dontRules: [],
+        positioning: "",
       };
       const result = (await actor.saveAccountBrief(payload)) as
         | { ok: AccountBrief }

@@ -487,7 +487,7 @@ export default function TwoWayCallUI({
       // Browser TTS removed — show transcript only when ElevenLabs is unavailable
       const webSpeechFallback = () => {
         // Display the agent text as transcript; ElevenLabs is the only audio path
-        console.info("[TwoWayCallUI] Audio unavailable — transcript only.");
+        // Audio unavailable — transcript only
         onDone();
       };
 
@@ -521,12 +521,8 @@ export default function TwoWayCallUI({
           playUrl(url);
         })
         .catch((err) => {
-          const msg = err instanceof Error ? err.message : String(err);
-          if (msg === "ELEVENLABS_INVALID_KEY") {
-            console.warn(
-              "[TwoWayCallUI] ElevenLabs key invalid — using Web Speech fallback",
-            );
-          }
+          const _msg = err instanceof Error ? err.message : String(err);
+          // ElevenLabs key invalid or other error — using fallback
           webSpeechFallback();
         });
     },

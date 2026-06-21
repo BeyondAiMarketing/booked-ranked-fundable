@@ -151,9 +151,9 @@ export function unlockAudioContext(): void {
     src.start(0);
 
     _audioCtxUnlocked = true;
-    console.log("[audioService] AudioContext unlocked via user gesture ✓");
-  } catch (err) {
-    console.warn("[audioService] AudioContext unlock failed:", err);
+    // AudioContext unlocked via user gesture
+  } catch (_err) {
+    // AudioContext unlock failed — transcript-only fallback will be used
     // Transcript-only fallback will be used — no robotic voices
   }
 }
@@ -207,11 +207,8 @@ export async function loadCachedNicheAudio(nicheId: string): Promise<boolean> {
           bytes.buffer.slice(0),
         );
         buffers[i] = audioBuf;
-      } catch (decodeErr) {
-        console.error(
-          `[audioService] decodeAudioData failed for cache key ${getCacheKey(nicheId, i)}:`,
-          decodeErr,
-        );
+      } catch (_decodeErr) {
+        // decodeAudioData failed for cache key — skip this line
         allLoaded = false;
       }
     }),
@@ -267,23 +264,18 @@ async function _fetchElevenLabsBuffer(
       },
     );
     if (!res.ok) {
-      console.warn(
-        `[audioService] ElevenLabs API returned ${res.status} — will try OpenAI TTS`,
-      );
+      // ElevenLabs API returned non-OK status — will try OpenAI TTS
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
     try {
       return await _audioCtx.decodeAudioData(arrayBuf);
-    } catch (decodeErr) {
-      console.error(
-        "[audioService] ElevenLabs decodeAudioData failed:",
-        decodeErr,
-      );
+    } catch (_decodeErr) {
+      // ElevenLabs decodeAudioData failed
       return null;
     }
-  } catch (err) {
-    console.warn("[audioService] ElevenLabs fetch failed:", err);
+  } catch (_err) {
+    // ElevenLabs fetch failed
     return null;
   }
 }
@@ -304,23 +296,18 @@ async function _fetchOpenAIBuffer(
       signal: AbortSignal.timeout(12000),
     });
     if (!res.ok) {
-      console.warn(
-        `[audioService] OpenAI TTS returned ${res.status} — will use browser speech`,
-      );
+      // OpenAI TTS returned non-OK status
       return null;
     }
     const arrayBuf = await res.arrayBuffer();
     try {
       return await _audioCtx.decodeAudioData(arrayBuf);
-    } catch (decodeErr) {
-      console.error(
-        "[audioService] OpenAI TTS decodeAudioData failed:",
-        decodeErr,
-      );
+    } catch (_decodeErr) {
+      // OpenAI TTS decodeAudioData failed
       return null;
     }
-  } catch (err) {
-    console.warn("[audioService] OpenAI TTS fetch failed:", err);
+  } catch (_err) {
+    // OpenAI TTS fetch failed
     return null;
   }
 }
@@ -406,9 +393,7 @@ export async function preloadNicheScripts(
   // Step 1: Try loading from backend canister cache
   const backendLoadedAll = await loadCachedNicheAudio(nicheId);
   if (backendLoadedAll) {
-    console.log(
-      `[audioService] Layer 1 (cache): All ${lines.length} lines for "${nicheId}" loaded from backend ✓`,
-    );
+    // Layer 1 (cache): all lines loaded from backend
     return;
   }
 
@@ -471,24 +456,16 @@ export async function preloadNicheScripts(
   const speechSynthCount = buffers.filter((b) => b === null).length;
 
   if (elevenLabsCount > 0) {
-    console.log(
-      `[audioService] Layer 1 (ElevenLabs): ${elevenLabsCount} lines preloaded for "${nicheId}" ✓`,
-    );
+    // Layer 1 (ElevenLabs): lines preloaded
   }
   if (openaiCount > 0) {
-    console.log(
-      `[audioService] Layer 2 (OpenAI TTS): ${openaiCount} lines preloaded for "${nicheId}" ✓`,
-    );
+    // Layer 2 (OpenAI TTS): lines preloaded
   }
   if (speechSynthCount > 0) {
-    console.warn(
-      `[audioService] ${speechSynthCount} lines missing premium audio for "${nicheId}" — transcript-only fallback`,
-    );
+    // Some lines missing premium audio — transcript-only fallback
   }
   if (premiumCount === 0) {
-    console.warn(
-      `[audioService] No API keys — all lines for "${nicheId}" will use transcript-only fallback`,
-    );
+    // No API keys — all lines will use transcript-only fallback
   }
 }
 
@@ -544,21 +521,13 @@ export function playPreloadedAudioWithText(
       if (onEnded) source.onended = onEnded;
       source.start(0);
       _currentSource = source;
-      console.log(
-        `[audioService] ▶ Premium audio: line ${lineIndex} for "${nicheId}"`,
-      );
+      // Premium audio playing
       return source;
-    } catch (err) {
-      console.warn(
-        `[audioService] Premium playback failed for line ${lineIndex}:`,
-        err,
-        "→ transcript-only fallback",
-      );
+    } catch (_err) {
+      // Premium playback failed — transcript-only fallback
     }
   } else if (!buffer) {
-    console.warn(
-      `[audioService] No premium buffer for "${nicheId}" line ${lineIndex} → transcript-only fallback`,
-    );
+    // No premium buffer — transcript-only fallback
   }
 
   // Fallback: no premium audio — transcript-only mode, NO SpeechSynthesis
@@ -625,9 +594,7 @@ export function startAudioSequence(
     }
     // Termination: too many consecutive audio failures
     if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-      console.warn(
-        `[audioService] ${MAX_CONSECUTIVE_FAILURES} consecutive audio failures — forcing call complete`,
-      );
+      // Max consecutive audio failures reached — forcing call complete
       if (!abortRef?.current) onComplete();
       return;
     }

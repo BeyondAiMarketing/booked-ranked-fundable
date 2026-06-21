@@ -4,10 +4,12 @@ import {
   BarChart2,
   BarChart3,
   Bell,
+  BookOpen,
   Bot,
   Box,
   Brain,
   BrainCircuit,
+  Briefcase,
   Building2,
   Calendar,
   ChevronDown,
@@ -51,6 +53,7 @@ import {
   Send,
   Settings,
   Share2,
+  Shield,
   ShieldCheck,
   Sliders,
   Sparkles,
@@ -59,6 +62,7 @@ import {
   Target,
   TrendingUp,
   User,
+  UserCheck,
   Users,
   Wand2,
   Workflow,
@@ -89,6 +93,11 @@ const NAV_GROUPS = [
     items: [
       { label: "Leads", path: "/leads", icon: Users },
       { label: "CRM Pipeline", path: "/crm-pipeline", icon: Table },
+      { label: "Booked Center", path: "/booked-center", icon: Briefcase },
+      { label: "Ranked Center", path: "/ranked-center", icon: Globe },
+      { label: "Funded Center", path: "/funded-center", icon: TrendingUp },
+      { label: "Approval Queue", path: "/approval-queue", icon: Shield },
+      { label: "Workflow Logs", path: "/workflow-logs", icon: Activity },
       { label: "Reviews", path: "/reviews", icon: Star },
       { label: "Reputation Inbox", path: "/reputation-inbox", icon: Inbox },
       { label: "SEO Audit", path: "/audit", icon: Search },
@@ -128,6 +137,37 @@ const NAV_GROUPS = [
     ],
   },
   {
+    label: "AGENTS",
+    items: [
+      {
+        label: "Content Orchestrator",
+        path: "/content-orchestrator",
+        icon: Workflow,
+      },
+      { label: "Brand Onboarding", path: "/brand-onboarding", icon: UserCheck },
+      {
+        label: "Content Calendar",
+        path: "/social-content-calendar",
+        icon: Calendar,
+      },
+      { label: "Platform Content", path: "/platform-content", icon: Share2 },
+      {
+        label: "Performance Review",
+        path: "/performance-review",
+        icon: BarChart3,
+      },
+    ],
+  },
+  {
+    label: "LOCAL SEO",
+    items: [
+      { label: "Ranked Dispatch", path: "/ranked-dispatch", icon: Workflow },
+      { label: "Local SEO Audit", path: "/local-seo-audit", icon: Search },
+      { label: "Review Management", path: "/review-management", icon: Star },
+      { label: "GBP Post Drafts", path: "/gbp-post-drafts", icon: FileText },
+    ],
+  },
+  {
     label: "LISTINGS & SOCIAL",
     items: [
       { label: "Listings", path: "/listings", icon: MapPin },
@@ -164,6 +204,7 @@ const NAV_GROUPS = [
       { label: "Social ROI", path: "/social-roi", icon: TrendingUp },
       { label: "Competitive Intel", path: "/competitive-intel", icon: Eye },
       { label: "Lead Attribution", path: "/lead-attribution", icon: GitMerge },
+      { label: "AI Audit Center", path: "/ai-audit-center", icon: BarChart3 },
     ],
   },
   {
@@ -238,6 +279,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/rag-tester": "RAG Chat Tester",
   "/admin/agent-workflows": "Agent Workflow Runner",
   "/admin/workflow-library": "N8N Workflow Library",
+  "/admin/n8n-integration-docs": "N8N Integration Docs",
   "/admin/ai-usage-logs": "AI Usage Logs",
   "/admin/vector-index": "Vector Index Status",
   "/admin/client-ai-manager": "Client AI Manager",
@@ -250,6 +292,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/go-live": "Go Live — Platform Activation",
   "/scanner-3d": "3D Property & Site Scanner",
   "/crm-pipeline": "CRM Pipeline",
+  "/booked-center": "Booked Center",
+  "/ranked-center": "Ranked Center",
+  "/funded-center": "Funded Center",
+  "/approval-queue": "Approval Queue",
+  "/workflow-logs": "Workflow Logs",
   "/admin/mcp-toolkit": "MCP Toolkit",
   "/admin/account-brief": "Account Brief",
   "/tools/connect": "Connected Tools",
@@ -257,6 +304,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/admin/roofing-campaign": "Roofing Campaign Manager",
   "/local-ranking-intelligence": "Local Ranking Intelligence",
   "/voice-agent-studio": "Voice Agent Studio",
+  "/content-orchestrator": "Content Orchestrator",
+  "/brand-onboarding": "Brand Onboarding",
+  "/social-content-calendar": "Social Content Calendar",
+  "/platform-content": "Platform Content",
+  "/performance-review": "Performance Review",
 };
 
 const TYPE_ICONS: Record<Notification["type"], ReactNode> = {
@@ -749,6 +801,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <Workflow size={16} />
               <span className="flex-1">Workflow Library</span>
+            </Link>
+            <Link
+              to="/admin/n8n-integration-docs"
+              data-ocid="nav.n8nintegrationdocs.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/admin/n8n-integration-docs"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-amber-400 hover:bg-amber-500/10 hover:text-amber-300"
+              }`}
+            >
+              <BookOpen size={16} />
+              <span className="flex-1">Integration Docs</span>
             </Link>
             <Link
               to="/admin/ai-usage-logs"

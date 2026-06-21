@@ -93,8 +93,8 @@ export default function AdminMCPToolkitPage() {
             );
           }
           loadedRef.current.add(name);
-        } catch (err) {
-          console.error(`Failed to load ${name} states:`, err);
+        } catch {
+          // Failed to load toolkit states silently
         }
       }
     };
@@ -140,8 +140,8 @@ export default function AdminMCPToolkitPage() {
           return t;
         }),
       );
-    } catch (err) {
-      console.error("Toggle failed:", err);
+    } catch {
+      // Toggle failed silently
       setToolkits((prev) =>
         prev.map((t) => {
           if (t.name === toolkitName) {
@@ -193,8 +193,8 @@ export default function AdminMCPToolkitPage() {
           return t;
         }),
       );
-    } catch (err) {
-      console.error("Bulk toggle failed:", err);
+    } catch {
+      // Bulk toggle failed silently
       setToolkits((prev) =>
         prev.map((t) => {
           if (t.name === toolkitName) {

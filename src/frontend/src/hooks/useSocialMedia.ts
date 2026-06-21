@@ -505,11 +505,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.createScheduledPost(newPost);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] createScheduledPost backend call failed, using local state",
-          err,
-        );
+      } catch {
+        // createScheduledPost backend call failed, using local state
       }
     }
     setScheduledPosts((prev) => [newPost, ...prev]);
@@ -530,11 +527,8 @@ export function useSocialMedia(
           return result;
         }
       }
-    } catch (err) {
-      console.warn(
-        "[useSocialMedia] getScheduledPosts backend call failed, using local state",
-        err,
-      );
+    } catch {
+      // getScheduledPosts backend call failed, using local state
     } finally {
       setIsLoadingScheduled(false);
     }
@@ -553,11 +547,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.updateScheduledPost(id, updates);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] updateScheduledPost backend call failed",
-          err,
-        );
+      } catch {
+        // updateScheduledPost backend call failed
       }
     }
   };
@@ -579,11 +570,8 @@ export function useSocialMedia(
           return result;
         }
       }
-    } catch (err) {
-      console.warn(
-        "[useSocialMedia] getEngagementApprovals backend call failed",
-        err,
-      );
+    } catch {
+      // getEngagementApprovals backend call failed
     } finally {
       setIsLoadingApprovals(false);
     }
@@ -609,11 +597,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.approveEngagement(approvalId, finalResponse);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] approveEngagement backend call failed",
-          err,
-        );
+      } catch {
+        // approveEngagement backend call failed
       }
     }
   };
@@ -633,11 +618,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.rejectEngagement(approvalId);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] rejectEngagement backend call failed",
-          err,
-        );
+      } catch {
+        // rejectEngagement backend call failed
       }
     }
   };
@@ -660,11 +642,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.flagEngagement(approvalId, _reason);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] flagEngagement backend call failed",
-          err,
-        );
+      } catch {
+        // flagEngagement backend call failed
       }
     }
   };
@@ -685,11 +664,8 @@ export function useSocialMedia(
           return result;
         }
       }
-    } catch (err) {
-      console.warn(
-        "[useSocialMedia] getCompetitorIntelReport backend call failed",
-        err,
-      );
+    } catch {
+      // getCompetitorIntelReport backend call failed
     } finally {
       setIsLoadingCompetitor(false);
     }
@@ -708,11 +684,8 @@ export function useSocialMedia(
         await getCompetitorIntelReport(tenantId);
         return;
       }
-    } catch (err) {
-      console.warn(
-        "[useSocialMedia] refreshCompetitorIntel backend call failed",
-        err,
-      );
+    } catch {
+      // refreshCompetitorIntel backend call failed
     } finally {
       setIsLoadingCompetitor(false);
     }
@@ -734,8 +707,8 @@ export function useSocialMedia(
           return result;
         }
       }
-    } catch (err) {
-      console.warn("[useSocialMedia] getSocialLeads backend call failed", err);
+    } catch {
+      // getSocialLeads backend call failed
     } finally {
       setIsLoadingLeads(false);
     }
@@ -755,11 +728,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.createSocialLead(newLead);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] createSocialLead backend call failed",
-          err,
-        );
+      } catch {
+        // createSocialLead backend call failed
       }
     }
     setSocialLeads((prev) => [newLead, ...prev]);
@@ -777,11 +747,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.linkSocialLeadToCRM(leadId);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] linkSocialLeadToCRM backend call failed",
-          err,
-        );
+      } catch {
+        // linkSocialLeadToCRM backend call failed
       }
     }
   };
@@ -802,11 +769,8 @@ export function useSocialMedia(
           return result;
         }
       }
-    } catch (err) {
-      console.warn(
-        "[useSocialMedia] getDemoFunnelEntries backend call failed",
-        err,
-      );
+    } catch {
+      // getDemoFunnelEntries backend call failed
     } finally {
       setIsLoadingFunnel(false);
     }
@@ -824,11 +788,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.addDemoFunnelEntry(newEntry);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] addDemoFunnelEntry backend call failed",
-          err,
-        );
+      } catch {
+        // addDemoFunnelEntry backend call failed
       }
     }
     setDemoFunnelEntries((prev) => [newEntry, ...prev]);
@@ -847,11 +808,8 @@ export function useSocialMedia(
     if (actor) {
       try {
         await actor.updateDemoFunnelEntry(id, updates);
-      } catch (err) {
-        console.warn(
-          "[useSocialMedia] updateDemoFunnelEntry backend call failed",
-          err,
-        );
+      } catch {
+        // updateDemoFunnelEntry backend call failed
       }
     }
   };

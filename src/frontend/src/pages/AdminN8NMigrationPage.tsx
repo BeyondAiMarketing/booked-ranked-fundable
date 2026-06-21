@@ -1,7 +1,20 @@
 import { createActor } from "@/backend";
+import { TemplateCard } from "@/components/TemplateCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  type N8NTemplateMetadata,
+  N8N_TEMPLATE_METADATA,
+} from "@/data/n8nTemplateMetadata";
 import { useActor } from "@caffeineai/core-infrastructure";
 import { Link } from "@tanstack/react-router";
 import {
@@ -9,6 +22,7 @@ import {
   ArrowLeft,
   CheckCircle2,
   FileJson,
+  LayoutTemplate,
   Loader2,
   Upload,
   XCircle,
@@ -46,13 +60,46 @@ export default function AdminN8NMigrationPage() {
   const [committing, setCommitting] = useState(false);
   const [batch, setBatch] = useState<BatchState | null>(null);
   const [committed, setCommitted] = useState(false);
+  const [showTemplateModal, setShowTemplateModal] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<N8NTemplateMetadata | null>(null);
+  const [templateJson, setTemplateJson] = useState<string>("");
+  const [fetchingTemplate, setFetchingTemplate] = useState(false);
 
   const reset = () => {
     setFiles([]);
     setRawJsons([]);
     setBatch(null);
     setCommitted(false);
+    setTemplateJson("");
+    setSelectedTemplate(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleUseTemplate = async (templateId: string) => {
+    const template = N8N_TEMPLATE_METADATA.find((t) => t.id === templateId);
+    if (!template) return;
+    setSelectedTemplate(template);
+    setFetchingTemplate(true);
+    try {
+      const res = await fetch(`/n8n-templates/${template.fileName}`);
+      if (!res.ok) throw new Error("Failed to fetch template");
+      const json = await res.json();
+      const pretty = JSON.stringify(json, null, 2);
+      setTemplateJson(pretty);
+      setRawJsons([pretty]);
+      setFiles([]);
+      setBatch(null);
+      setCommitted(false);
+      setShowTemplateModal(false);
+      toast.success(`Loaded "${template.name}" — customize before validating`);
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to load template",
+      );
+    } finally {
+      setFetchingTemplate(false);
+    }
   };
 
   const readFiles = useCallback(async (fileList: FileList | File[]) => {
@@ -170,7 +217,10 @@ export default function AdminN8NMigrationPage() {
       {/* Step indicator */}
       <div className="mb-8 flex items-center gap-3">
         {[
-          { label: "1. Upload Files", done: files.length > 0 },
+          {
+            label: "1. Upload Files",
+            done: files.length > 0 || !!templateJson,
+          },
           { label: "2. Dry-Run Validation", done: !!batch },
           { label: "3. Commit", done: committed },
         ].map((step, i) => (
@@ -232,6 +282,23 @@ export default function AdminN8NMigrationPage() {
           data-ocid="n8n-migration.upload_button"
         />
 
+        {/* Use BRF Template button */}
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <div className="h-px flex-1 bg-border/40" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <div className="h-px flex-1 bg-border/40" />
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-4 w-full gap-2 border-gold-accent/30 bg-gold-accent/5 text-gold-accent hover:bg-gold-accent/10 hover:text-gold-accent"
+          onClick={() => setShowTemplateModal(true)}
+          data-ocid="n8n-migration.use_brf_template_button"
+        >
+          <LayoutTemplate className="h-4 w-4" />
+          Use BRF Template
+        </Button>
+
         {files.length > 0 && (
           <div className="mt-4 space-y-2">
             <p className="text-xs font-medium text-muted-foreground">
@@ -252,6 +319,65 @@ export default function AdminN8NMigrationPage() {
                 </span>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Template-loaded JSON editor */}
+        {templateJson && selectedTemplate && (
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <LayoutTemplate className="h-4 w-4 text-gold-accent" />
+                <span className="text-sm font-semibold text-foreground">
+                  {selectedTemplate.name}
+                </span>
+                <Badge
+                  variant="outline"
+                  className="border-gold-accent/30 text-gold-accent"
+                >
+                  {selectedTemplate.category}
+                </Badge>
+              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => {
+                  setTemplateJson("");
+                  setSelectedTemplate(null);
+                  setRawJsons([]);
+                }}
+                data-ocid="n8n-migration.clear_template_button"
+              >
+                Clear
+              </Button>
+            </div>
+
+            {/* Webhook contract mapping */}
+            <div className="rounded-lg border border-border/50 bg-muted/20 px-3 py-2">
+              <p className="text-xs text-muted-foreground">
+                Maps to webhook contract:{" "}
+                <code className="rounded bg-muted/60 px-1.5 py-0.5 text-xs text-primary">
+                  {selectedTemplate.webhookId}
+                </code>
+              </p>
+            </div>
+
+            <Textarea
+              value={templateJson}
+              onChange={(e) => {
+                setTemplateJson(e.target.value);
+                setRawJsons([e.target.value]);
+              }}
+              className="min-h-[240px] font-mono text-xs"
+              placeholder="Edit workflow JSON before validating..."
+              data-ocid="n8n-migration.template_json_textarea"
+            />
+            <p className="text-xs text-muted-foreground">
+              You can edit the JSON above before running validation. Make sure
+              the workflow nodes match your n8n instance configuration.
+            </p>
           </div>
         )}
       </Card>
@@ -362,6 +488,36 @@ export default function AdminN8NMigrationPage() {
           </div>
         )}
       </Card>
+
+      {/* ─── Template Selection Dialog ─── */}
+      <Dialog open={showTemplateModal} onOpenChange={setShowTemplateModal}>
+        <DialogContent className="max-w-3xl border border-border/60 bg-card/95 backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-foreground">
+              <LayoutTemplate className="h-5 w-5 text-gold-accent" />
+              Choose a BRF Workflow Template
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Select a pre-built template to import into your n8n instance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {N8N_TEMPLATE_METADATA.map((template) => (
+              <TemplateCard
+                key={template.id}
+                template={template}
+                onUseTemplate={handleUseTemplate}
+              />
+            ))}
+          </div>
+          {fetchingTemplate && (
+            <div className="flex items-center justify-center gap-2 py-4 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading template JSON...
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* ─── Step 3: Commit ─── */}
       <Card className="border border-border/60 bg-card/80 p-6">

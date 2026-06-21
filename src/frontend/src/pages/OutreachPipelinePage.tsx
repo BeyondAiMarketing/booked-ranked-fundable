@@ -410,9 +410,8 @@ function VoiceAgentPanel({
       } else {
         setPendingResult(result);
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to process command. Please try again.");
-      console.error(err);
     } finally {
       setSubmitting(false);
     }
@@ -438,9 +437,8 @@ function VoiceAgentPanel({
           toast.error(errMsg);
         }
       }
-    } catch (err) {
+    } catch {
       toast.error("Execution failed. Please try again.");
-      console.error(err);
     } finally {
       setConfirming(false);
     }
@@ -1164,8 +1162,8 @@ export default function OutreachPipelinePage() {
     try {
       const raw = await actor.getPipelineLeads();
       setLeads(Array.isArray(raw) ? raw.map(normalizeLead) : []);
-    } catch (_err) {
-      console.error("getPipelineLeads failed", _err);
+    } catch {
+      // getPipelineLeads failed silently
     }
   }, [actor, normalizeLead]);
 
@@ -1181,8 +1179,8 @@ export default function OutreachPipelinePage() {
         }
         setPendingActions(counts);
       }
-    } catch (_err) {
-      console.error("getPendingQueuedActions failed", _err);
+    } catch {
+      // getPendingQueuedActions failed silently
     }
   }, [actor]);
 
@@ -1192,8 +1190,8 @@ export default function OutreachPipelinePage() {
     try {
       const raw = await actor.getInboundReplies(null);
       setReplies(Array.isArray(raw) ? raw.map(normalizeReply) : []);
-    } catch (_err) {
-      console.error("getInboundReplies failed", _err);
+    } catch {
+      // getInboundReplies failed silently
     } finally {
       setReplyLoading(false);
     }

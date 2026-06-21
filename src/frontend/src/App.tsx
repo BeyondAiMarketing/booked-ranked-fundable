@@ -1,3 +1,4 @@
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import {
   Navigate,
   Outlet,
@@ -5,6 +6,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  lazyRouteComponent,
   useSearch,
 } from "@tanstack/react-router";
 import { lazy, useEffect } from "react";
@@ -14,6 +16,7 @@ import { Toaster } from "./components/ui/sonner";
 import { AppProvider, useApp } from "./context/AppContext";
 import { CredentialsProvider } from "./context/CredentialsContext";
 import { useActor } from "./hooks/useActor";
+import AIAuditCenterPage from "./pages/AIAuditCenterPage";
 import AILeadIntelligencePage from "./pages/AILeadIntelligencePage";
 import AdminAIChatPage from "./pages/AdminAIChatPage";
 import AdminAgentServicesPage from "./pages/AdminAgentServicesPage";
@@ -31,9 +34,11 @@ import AgentServicesPage from "./pages/AgentServicesPage";
 import AgentWorkflowOSPage from "./pages/AgentWorkflowOSPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
+import ApprovalQueuePage from "./pages/ApprovalQueuePage";
 import AuditPage from "./pages/AuditPage";
 import AutopilotDashboardPage from "./pages/AutopilotDashboardPage";
 import BillingPortalPage from "./pages/BillingPortalPage";
+import BookedCenterPage from "./pages/BookedCenterPage";
 import BrandKitIntakePage from "./pages/BrandKitIntakePage";
 import BrandKitLandingPage from "./pages/BrandKitLandingPage";
 import BrandKitTrialDashboardPage from "./pages/BrandKitTrialDashboardPage";
@@ -58,6 +63,7 @@ import EstimatesPage from "./pages/EstimatesPage";
 import FeatureTogglePage from "./pages/FeatureTogglePage";
 import FreeAuditPage from "./pages/FreeAuditPage";
 import FundabilityPage from "./pages/FundabilityPage";
+import FundedCenterPage from "./pages/FundedCenterPage";
 import GbpManagementPage from "./pages/GbpManagementPage";
 import GoLivePage from "./pages/GoLivePage";
 import HVACPage from "./pages/HVACPage";
@@ -71,6 +77,7 @@ import LoginPage from "./pages/LoginPage";
 import MedSpaPage from "./pages/MedSpaPage";
 import MortgagePage from "./pages/MortgagePage";
 import MultiLocationPage from "./pages/MultiLocationPage";
+import N8NIntegrationDocsPage from "./pages/N8NIntegrationDocsPage";
 import NicheAnalyticsPage from "./pages/NicheAnalyticsPage";
 import NicheWebsitePreviewPage from "./pages/NicheWebsitePreviewPage";
 import NicheWebsiteStudioPage from "./pages/NicheWebsiteStudioPage";
@@ -82,6 +89,7 @@ import PaidAdsAgentPage from "./pages/PaidAdsAgentPage";
 import PlumbingPage from "./pages/PlumbingPage";
 import PricingPage from "./pages/PricingPage";
 import Public3DViewerPage from "./pages/Public3DViewerPage";
+import RankedCenterPage from "./pages/RankedCenterPage";
 import RealEstatePage from "./pages/RealEstatePage";
 import ReplyIntelligenceInboxPage from "./pages/ReplyIntelligenceInboxPage";
 import ReportsPage from "./pages/ReportsPage";
@@ -107,6 +115,7 @@ import WebsiteAgentPage from "./pages/WebsiteAgentPage";
 import WebsiteAgentSettingsPage from "./pages/WebsiteAgentSettingsPage";
 import WhiteLabelHubPage from "./pages/WhiteLabelHubPage";
 import WhyUsPage from "./pages/WhyUsPage";
+import WorkflowLogsPage from "./pages/WorkflowLogsPage";
 import { setBackendActor } from "./services/audioService";
 
 // ─── Newsletter & Outreach Analytics (lazy loaded) ────────────────────────────
@@ -194,6 +203,35 @@ const RoofingCampaignManager = lazy(
   () => import("./pages/RoofingCampaignManager"),
 );
 
+// ─── Social AI Team pages (lazy loaded) ───────────────────────────────────────
+const ContentOrchestratorPage = lazyRouteComponent(
+  () => import("./pages/ContentOrchestratorPage"),
+);
+const BrandOnboardingPage = lazyRouteComponent(
+  () => import("./pages/BrandOnboardingPage"),
+);
+const SocialContentCalendarPage = lazyRouteComponent(
+  () => import("./pages/SocialContentCalendarPage"),
+);
+const PlatformContentPage = lazyRouteComponent(
+  () => import("./pages/PlatformContentPage"),
+);
+const PerformanceReviewPage = lazyRouteComponent(
+  () => import("./pages/PerformanceReviewPage"),
+);
+const RankedDispatchPage = lazyRouteComponent(
+  () => import("./pages/RankedDispatchPage"),
+);
+const LocalSEOAuditPage = lazyRouteComponent(
+  () => import("./pages/LocalSEOAuditPage"),
+);
+const ReviewManagementPage = lazyRouteComponent(
+  () => import("./pages/ReviewManagementPage"),
+);
+const GBPPostDraftPage = lazyRouteComponent(
+  () => import("./pages/GBPPostDraftPage"),
+);
+
 // Redirect components for archived demo routes
 function ServicesDemoRedirect() {
   const search = useSearch({ from: "/services-demo" }) as Record<
@@ -237,13 +275,11 @@ function ProtectedRoute({
 }) {
   const { isLoggedIn, isAdminUser, isSuperAdmin } = useApp();
   if (!isLoggedIn) {
-    window.location.replace("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
   // Super admin has access to everything — never redirect them
   if (adminOnly && !isAdminUser && !isSuperAdmin) {
-    window.location.replace("/dashboard");
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
   return <AppLayout>{children}</AppLayout>;
 }
@@ -253,7 +289,9 @@ const rootRoute = createRootRoute({
     <AppProvider>
       <CredentialsProvider>
         <ActorBridge />
-        <Outlet />
+        <ErrorBoundary>
+          <Outlet />
+        </ErrorBoundary>
         <WeeklyReportPanel />
         <Toaster />
       </CredentialsProvider>
@@ -999,6 +1037,36 @@ const domainSetupRoute = createRoute({
   ),
 });
 
+const bookedCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/booked-center",
+  component: BookedCenterPage,
+});
+
+const rankedCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ranked-center",
+  component: RankedCenterPage,
+});
+
+const fundedCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/funded-center",
+  component: FundedCenterPage,
+});
+
+const approvalQueueRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/approval-queue",
+  component: ApprovalQueuePage,
+});
+
+const workflowLogsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/workflow-logs",
+  component: WorkflowLogsPage,
+});
+
 const crmPipelineRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/crm-pipeline",
@@ -1188,6 +1256,15 @@ const adminN8NMigrationRoute = createRoute({
     </ProtectedRoute>
   ),
 });
+const adminN8NIntegrationDocsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin/n8n-integration-docs",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <N8NIntegrationDocsPage />
+    </ProtectedRoute>
+  ),
+});
 const adminAIUsageLogsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/admin/ai-usage-logs",
@@ -1358,6 +1435,106 @@ const masterAgentRoute = createRoute({
   ),
 });
 
+const contentOrchestratorRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/content-orchestrator",
+  component: () => (
+    <ProtectedRoute>
+      <ContentOrchestratorPage />
+    </ProtectedRoute>
+  ),
+});
+
+const brandOnboardingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/brand-onboarding",
+  component: () => (
+    <ProtectedRoute>
+      <BrandOnboardingPage />
+    </ProtectedRoute>
+  ),
+});
+
+const socialContentCalendarRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/social-content-calendar",
+  component: () => (
+    <ProtectedRoute>
+      <SocialContentCalendarPage />
+    </ProtectedRoute>
+  ),
+});
+
+const platformContentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/platform-content",
+  component: () => (
+    <ProtectedRoute>
+      <PlatformContentPage />
+    </ProtectedRoute>
+  ),
+});
+
+const performanceReviewRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/performance-review",
+  component: () => (
+    <ProtectedRoute>
+      <PerformanceReviewPage />
+    </ProtectedRoute>
+  ),
+});
+
+const rankedDispatchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ranked-dispatch",
+  component: () => (
+    <ProtectedRoute>
+      <RankedDispatchPage />
+    </ProtectedRoute>
+  ),
+});
+
+const localSEOAuditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/local-seo-audit",
+  component: () => (
+    <ProtectedRoute>
+      <LocalSEOAuditPage />
+    </ProtectedRoute>
+  ),
+});
+
+const reviewManagementRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/review-management",
+  component: () => (
+    <ProtectedRoute>
+      <ReviewManagementPage />
+    </ProtectedRoute>
+  ),
+});
+
+const gbpPostDraftRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/gbp-post-drafts",
+  component: () => (
+    <ProtectedRoute>
+      <GBPPostDraftPage />
+    </ProtectedRoute>
+  ),
+});
+
+const aiAuditCenterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/ai-audit-center",
+  component: () => (
+    <ProtectedRoute>
+      <AIAuditCenterPage />
+    </ProtectedRoute>
+  ),
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   loginRoute,
@@ -1447,6 +1624,11 @@ const routeTree = rootRoute.addChildren([
   adminChatAgentRoute,
   adminVoicePreviewRoute,
   domainSetupRoute,
+  bookedCenterRoute,
+  rankedCenterRoute,
+  fundedCenterRoute,
+  approvalQueueRoute,
+  workflowLogsRoute,
   crmPipelineRoute,
   replyInboxRoute,
   smsAutopilotRoute,
@@ -1469,6 +1651,7 @@ const routeTree = rootRoute.addChildren([
   adminAgentWorkflowRunnerRoute,
   adminWorkflowLibraryRoute,
   adminN8NMigrationRoute,
+  adminN8NIntegrationDocsRoute,
   adminAIUsageLogsRoute,
   adminVectorIndexRoute,
   adminClientAIManagerRoute,
@@ -1488,6 +1671,16 @@ const routeTree = rootRoute.addChildren([
   contentCreationStudioRoute,
   localRankingIntelligenceRoute,
   roofingCampaignRoute,
+  contentOrchestratorRoute,
+  brandOnboardingRoute,
+  socialContentCalendarRoute,
+  platformContentRoute,
+  performanceReviewRoute,
+  rankedDispatchRoute,
+  localSEOAuditRoute,
+  reviewManagementRoute,
+  gbpPostDraftRoute,
+  aiAuditCenterRoute,
 ]);
 
 const router = createRouter({ routeTree });

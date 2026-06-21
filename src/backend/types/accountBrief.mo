@@ -12,6 +12,16 @@ module {
     flagKeywords     : [Text];
     updatedAt        : Int;
     updatedBy        : Text;
+    targetAudience   : [Text];
+    services         : [Text];
+    positioning      : Text;
+    differentiators  : [Text];
+    brandVoice       : Text;
+    doRules          : [Text];
+    dontRules        : [Text];
+    sessionLog       : [Text];
+    performanceHistory : [Text];
+    contentHistory   : [Text];
   };
 
   /// Partial update record — only provided fields are merged into the stored brief.
@@ -23,6 +33,16 @@ module {
     offerSummary     : ?Text;
     doNotRespondList : ?[Text];
     flagKeywords     : ?[Text];
+    targetAudience   : ?[Text];
+    services         : ?[Text];
+    positioning      : ?Text;
+    differentiators  : ?[Text];
+    brandVoice       : ?Text;
+    doRules          : ?[Text];
+    dontRules        : ?[Text];
+    sessionLog       : ?[Text];
+    performanceHistory : ?[Text];
+    contentHistory   : ?[Text];
   };
 
 };

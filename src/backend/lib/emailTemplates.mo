@@ -11,12 +11,17 @@ module {
 
   /// Returns the 7 pre-written roofing campaign templates.
   /// Bodies use {{merge_fields}} for personalisation.
-  public func seedTemplates() : [T.EmailTemplate] {
+  public func seedTemplates() : [T.EmailTemplateExt] {
     let now = Time.now();
     [
       // Day 1 — Audit Reveal Hook
       {
         id  = 1;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 1;
         subject = "We ran your Google Maps ranking, {{company_name}} \u{2014} here is what we found";
         body =
@@ -46,6 +51,11 @@ module {
       // Day 2 — Educational Explanation
       {
         id  = 2;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 2;
         subject = "Why {{company_name}} ranks #1 on your street \u{2014} and nowhere else";
         body =
@@ -76,6 +86,11 @@ module {
       // Day 3 — Agitation / Cost of Inaction
       {
         id  = 3;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 3;
         subject = "Every week this goes unfixed, {{company_name}} loses jobs to competitors";
         body =
@@ -105,6 +120,11 @@ module {
       // Day 4 — Solution Introduction
       {
         id  = 4;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 4;
         subject = "What fixing {{company_name}}\u{2019}s local ranking actually looks like";
         body =
@@ -136,6 +156,11 @@ module {
       // Day 5 — Social Proof / Case Study
       {
         id  = 5;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 5;
         subject = "Before and after: a roofing company in {{city}} went from invisible to #1 in 6 weeks";
         body =
@@ -169,6 +194,11 @@ module {
       // Day 6 — Hard CTA / Offer
       {
         id  = 6;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 6;
         subject = "{{company_name}}: 7-day trial, no credit card, no lock-in";
         body =
@@ -201,6 +231,11 @@ module {
       // Day 7 — Last Call Plain-Text
       {
         id  = 7;
+        campaignType = ?#leadNurture;
+        verticalProfileId = ?"roofing";
+        complianceNotes = ?"Roofing lead nurture sequence. No legal/medical claims.";
+        consentRequired = ?true;
+        unsubscribeFooter = ?true;
         day = 7;
         subject = "Last message for {{company_name}} \u{2014} wanted to make sure you saw this";
         body =
@@ -233,7 +268,7 @@ module {
 
   /// Populate the template map on first deploy; noop if already populated.
   public func initTemplatesIfEmpty(
-    store : Map.Map<Nat, T.EmailTemplate>,
+    store : Map.Map<Nat, T.EmailTemplateExt>,
     initialized : { var v : Bool },
   ) {
     if (initialized.v) return;
@@ -257,7 +292,7 @@ module {
   /// Returns (filledBody, usedFallback).
   /// If any merge field ends up empty/missing, we fall back to the fallback template.
   public func mergeFillTemplate(
-    template    : T.EmailTemplate,
+    template    : T.EmailTemplateExt,
     lead        : TRC.LeadCampaignStatus,
     auditResult : ?TRC.GridAuditResult,
     ctaLink     : Text,
@@ -291,7 +326,7 @@ module {
               topComp := gp.competitorAtTop;
             };
           };
-          let deadZones  = 9 - visible;
+          let deadZones  = if (visible > 9) 0 else Nat.sub(9, visible);
           let score      = (visible * 100) / 9;
           let missing    : Text = if (deadZones > 5) "extended service area coverage, review volume"
                                   else if (deadZones > 2) "broader local citations, review consistency"

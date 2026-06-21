@@ -33,25 +33,45 @@ export interface AbacusRouteResponse {
   'response' : string,
 }
 export interface AccountBrief {
+  'performanceHistory' : Array<string>,
+  'doRules' : Array<string>,
+  'sessionLog' : Array<string>,
   'respondTo' : Array<string>,
   'accountId' : string,
   'ignoreList' : Array<string>,
+  'differentiators' : Array<string>,
   'tone' : string,
+  'targetAudience' : Array<string>,
   'offerSummary' : string,
   'doNotRespondList' : Array<string>,
   'updatedAt' : bigint,
   'updatedBy' : string,
   'priorityContacts' : Array<string>,
   'flagKeywords' : Array<string>,
+  'contentHistory' : Array<string>,
+  'brandVoice' : string,
+  'services' : Array<string>,
+  'dontRules' : Array<string>,
+  'positioning' : string,
 }
 export interface AccountBriefUpdate {
+  'performanceHistory' : [] | [Array<string>],
+  'doRules' : [] | [Array<string>],
+  'sessionLog' : [] | [Array<string>],
   'respondTo' : [] | [Array<string>],
   'ignoreList' : [] | [Array<string>],
+  'differentiators' : [] | [Array<string>],
   'tone' : [] | [string],
+  'targetAudience' : [] | [Array<string>],
   'offerSummary' : [] | [string],
   'doNotRespondList' : [] | [Array<string>],
   'priorityContacts' : [] | [Array<string>],
   'flagKeywords' : [] | [Array<string>],
+  'contentHistory' : [] | [Array<string>],
+  'brandVoice' : [] | [string],
+  'services' : [] | [Array<string>],
+  'dontRules' : [] | [Array<string>],
+  'positioning' : [] | [string],
 }
 export interface ActivityFeedItem {
   'id' : string,
@@ -377,10 +397,12 @@ export interface ApprovalItem {
   'status' : ApprovalStatus,
   'action' : string,
   'approverNotes' : [] | [string],
+  'tier' : ApprovalTier,
   'tenantId' : string,
   'threadId' : string,
   'runId' : string,
   'requestedAt' : bigint,
+  'requestedBy' : string,
   'resolvedAt' : [] | [bigint],
   'reason' : string,
 }
@@ -389,6 +411,7 @@ export interface ApprovalItemRecord {
   'status' : string,
   'resolutionNote' : [] | [string],
   'title' : string,
+  'tier' : string,
   'actionType' : string,
   'description' : string,
   'agentId' : string,
@@ -400,10 +423,24 @@ export interface ApprovalItemRecord {
   'resolvedAt' : [] | [bigint],
   'resolvedBy' : [] | [string],
 }
+export interface ApprovalResolution {
+  'status' : ApprovalStatus,
+  'notes' : [] | [string],
+}
 export type ApprovalStatus = { 'expired' : null } |
   { 'pending' : null } |
   { 'approved' : null } |
   { 'rejected' : null };
+export type ApprovalTier = { 'sms_send' : null } |
+  { 'funding_claim' : null } |
+  { 'legal' : null } |
+  { 'email_send' : null } |
+  { 'gbp_publish' : null } |
+  { 'social_publish' : null } |
+  { 'content_publish' : null } |
+  { 'financial' : null } |
+  { 'medical' : null } |
+  { 'voice_call' : null };
 export type ArtifactStatus = { 'final' : null } |
   { 'draft' : null } |
   { 'archived' : null };
@@ -426,6 +463,12 @@ export interface AudioCacheStats {
   'entryCount' : bigint,
   'estimatedSizeKB' : bigint,
 }
+export type AuditCategory = { 'ContentMessaging' : null } |
+  { 'GrowthStrategy' : null } |
+  { 'BrandTrust' : null } |
+  { 'SEODiscoverability' : null } |
+  { 'CompetitivePositioning' : null } |
+  { 'ConversionOptimization' : null };
 export interface AuditLogEntry {
   'id' : string,
   'senderSubdomain' : string,
@@ -481,6 +524,15 @@ export interface AutopilotConfig {
   'dailySmsCap' : bigint,
   'targetDailyVolume' : bigint,
 }
+export interface BRFScore {
+  'rankedFindings' : Array<string>,
+  'overallScore' : bigint,
+  'rankedScore' : bigint,
+  'bookedScore' : bigint,
+  'fundedScore' : bigint,
+  'fundedFindings' : Array<string>,
+  'bookedFindings' : Array<string>,
+}
 export interface BatchAuditJob {
   'id' : string,
   'status' : string,
@@ -507,6 +559,18 @@ export interface BatchScrapeResult {
 export interface BatchScrapeUrlResult {
   'url' : string,
   'result' : ScrapeResult,
+}
+export interface BestPerformerMemory {
+  'topPlatforms' : Array<string>,
+  'topPillars' : Array<string>,
+  'topPosts' : Array<string>,
+  'avgClicks' : bigint,
+  'topFormats' : Array<string>,
+  'avgEngagement' : bigint,
+  'tenantId' : string,
+  'avgReach' : bigint,
+  'lastUpdatedAt' : bigint,
+  'topCtAs' : Array<string>,
 }
 export interface BillingRecord {
   'id' : string,
@@ -695,6 +759,63 @@ export interface BulkToggleRequest {
   'enabled' : boolean,
   'toolkitNames' : Array<string>,
 }
+export interface BusinessBrief {
+  'id' : string,
+  'criticalFindings' : Array<string>,
+  'monitorFindings' : Array<string>,
+  'serviceArea' : string,
+  'performanceHistory' : Array<PerformanceHistoryEntry>,
+  'clientBusinessId' : string,
+  'targetLocations' : Array<string>,
+  'sessionLog' : Array<string>,
+  'approvalConfig' : string,
+  'reviewHistory' : Array<ReviewHistoryEntry>,
+  'lastUpdated' : bigint,
+  'businessName' : string,
+  'verticalProfileId' : string,
+  'website' : string,
+  'primaryKeyword' : string,
+  'currentFindings' : Array<string>,
+  'importantFindings' : Array<string>,
+  'localSEOHistory' : Array<LocalSEOHistoryEntry>,
+  'deliverables' : Array<string>,
+  'fundingHistory' : Array<FundingHistoryEntry>,
+  'contentHistory' : Array<ContentHistoryEntry>,
+  'nextAction' : string,
+  'locationName' : string,
+  'toolsRun' : Array<string>,
+  'services' : Array<string>,
+}
+export interface BusinessBriefUpdate {
+  'criticalFindings' : Array<string>,
+  'monitorFindings' : Array<string>,
+  'serviceArea' : string,
+  'performanceHistory' : Array<PerformanceHistoryEntry>,
+  'clientBusinessId' : string,
+  'targetLocations' : Array<string>,
+  'sessionLog' : Array<string>,
+  'approvalConfig' : string,
+  'reviewHistory' : Array<ReviewHistoryEntry>,
+  'businessName' : string,
+  'verticalProfileId' : string,
+  'website' : string,
+  'primaryKeyword' : string,
+  'currentFindings' : Array<string>,
+  'importantFindings' : Array<string>,
+  'localSEOHistory' : Array<LocalSEOHistoryEntry>,
+  'deliverables' : Array<string>,
+  'fundingHistory' : Array<FundingHistoryEntry>,
+  'contentHistory' : Array<ContentHistoryEntry>,
+  'nextAction' : string,
+  'locationName' : string,
+  'toolsRun' : Array<string>,
+  'services' : Array<string>,
+}
+export type CalendarApprovalStatus = { 'pending_review' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null } |
+  { 'draft' : null } |
+  { 'needs_revision' : null };
 export interface CampaignInstance {
   'id' : string,
   'status' : string,
@@ -741,6 +862,17 @@ export interface CampaignTemplate {
   'campaignType' : string,
   'triggers' : Array<string>,
 }
+export type CampaignType = { 'reviewRequest' : null } |
+  { 'localBusinessOutreach' : null } |
+  { 'referralPartnerOutreach' : null } |
+  { 'oldLeadReactivation' : null } |
+  { 'financingOffer' : null } |
+  { 'seasonalPromo' : null } |
+  { 'leadNurture' : null } |
+  { 'coldEmail' : null } |
+  { 'verticalSpecific' : null } |
+  { 'eventWebinar' : null } |
+  { 'proposalFollowUp' : null };
 export interface ChatWidgetConfig {
   'faqItems' : Array<string>,
   'active' : boolean,
@@ -793,6 +925,30 @@ export type CommentIntent = { 'question' : null } |
   { 'complaint' : null } |
   { 'community_love' : null } |
   { 'competitor_mention' : null };
+export interface Company {
+  'id' : string,
+  'clientBusinessId' : string,
+  'name' : string,
+  'createdAt' : bigint,
+  'size' : string,
+  'vertical' : string,
+  'email' : string,
+  'website' : string,
+  'updatedAt' : bigint,
+  'address' : string,
+  'notes' : string,
+  'phone' : string,
+}
+export interface CompanyUpdate {
+  'name' : [] | [string],
+  'size' : [] | [string],
+  'vertical' : [] | [string],
+  'email' : [] | [string],
+  'website' : [] | [string],
+  'address' : [] | [string],
+  'notes' : [] | [string],
+  'phone' : [] | [string],
+}
 export interface CompetitorAlert {
   'id' : string,
   'alertType' : string,
@@ -857,6 +1013,71 @@ export interface ConnectionTestResult {
   'quotaInfo' : [] | [string],
   'lastTestedAt' : [] | [bigint],
 }
+export interface Contact {
+  'id' : string,
+  'nurtureStatus' : string,
+  'clientBusinessId' : string,
+  'title' : string,
+  'createdAt' : bigint,
+  'email' : string,
+  'updatedAt' : bigint,
+  'notes' : string,
+  'leadSource' : string,
+  'phone' : string,
+  'lastName' : string,
+  'industry' : string,
+  'firstName' : string,
+}
+export interface ContactUpdate {
+  'nurtureStatus' : [] | [string],
+  'title' : [] | [string],
+  'email' : [] | [string],
+  'notes' : [] | [string],
+  'leadSource' : [] | [string],
+  'phone' : [] | [string],
+  'lastName' : [] | [string],
+  'industry' : [] | [string],
+  'firstName' : [] | [string],
+}
+export interface ContentCalendar {
+  'id' : string,
+  'status' : CalendarApprovalStatus,
+  'month' : string,
+  'createdAt' : bigint,
+  'year' : bigint,
+  'tenantId' : string,
+  'entries' : Array<string>,
+  'updatedAt' : bigint,
+  'niche' : string,
+}
+export interface ContentCalendarEntry {
+  'id' : string,
+  'cta' : string,
+  'day' : bigint,
+  'topic' : string,
+  'angle' : string,
+  'objective' : ContentObjective,
+  'createdAt' : bigint,
+  'platform' : string,
+  'tenantId' : string,
+  'approvalStatus' : CalendarApprovalStatus,
+  'updatedAt' : bigint,
+  'pillar' : ContentPillar,
+  'visualDirection' : string,
+  'calendarId' : string,
+  'format' : PostFormat,
+}
+export interface ContentCalendarEntryUpdate {
+  'cta' : [] | [string],
+  'topic' : [] | [string],
+  'angle' : [] | [string],
+  'objective' : [] | [ContentObjective],
+  'platform' : [] | [string],
+  'approvalStatus' : [] | [CalendarApprovalStatus],
+  'pillar' : [] | [ContentPillar],
+  'visualDirection' : [] | [string],
+  'format' : [] | [PostFormat],
+}
 export interface ContentGenerationRequest {
   'accountId' : string,
   'contentType' : ContentType,
@@ -876,6 +1097,17 @@ export interface ContentGenerationResult {
   'prompt' : string,
   'errorMsg' : [] | [string],
 }
+export type ContentHistoryEntry = string;
+export type ContentObjective = { 'awareness' : null } |
+  { 'retention' : null } |
+  { 'authority' : null } |
+  { 'conversion' : null } |
+  { 'engagement' : null };
+export type ContentPillar = { 'entertainment' : null } |
+  { 'education' : null } |
+  { 'community' : null } |
+  { 'promotion' : null } |
+  { 'authority' : null };
 export interface ContentTierToggle {
   'tier' : string,
   'contentCreationEnabled' : boolean,
@@ -884,6 +1116,21 @@ export type ContentType = { 'Blog' : null } |
   { 'Image' : null } |
   { 'AdCopy' : null } |
   { 'Video' : null };
+export interface ContractField {
+  'name' : string,
+  'description' : string,
+  'required' : boolean,
+  'fieldType' : string,
+}
+export interface ContractSummary {
+  'id' : string,
+  'method' : string,
+  'endpoint' : string,
+  'supportsDryRun' : boolean,
+  'category' : string,
+  'requiresApproval' : boolean,
+  'purpose' : string,
+}
 export interface ConversationEntry {
   'content' : string,
   'role' : string,
@@ -901,6 +1148,35 @@ export interface CsvImportBatch {
   'flaggedNoEmail' : bigint,
   'nicheBreakdown' : Array<[string, bigint]>,
 }
+export interface CustomField {
+  'id' : string,
+  'clientBusinessId' : string,
+  'isRequired' : boolean,
+  'name' : string,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'targetEntity' : string,
+  'options' : Array<string>,
+  'fieldType' : string,
+}
+export interface CustomFieldUpdate {
+  'isRequired' : [] | [boolean],
+  'name' : [] | [string],
+  'targetEntity' : [] | [string],
+  'options' : [] | [Array<string>],
+  'fieldType' : [] | [string],
+}
+export interface CustomFieldValue {
+  'id' : string,
+  'clientBusinessId' : string,
+  'value' : string,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'entityId' : string,
+  'customFieldId' : string,
+  'entityType' : string,
+}
+export interface CustomFieldValueUpdate { 'value' : [] | [string] }
 export interface DeliverabilityEvent {
   'id' : string,
   'email' : string,
@@ -1002,6 +1278,20 @@ export interface DomainSetupState {
   'registrar' : [] | [string],
   'aRecord' : string,
 }
+export type DraftPlatform = { 'x' : null } |
+  { 'linkedin' : null } |
+  { 'tiktok' : null } |
+  { 'google_business' : null } |
+  { 'instagram' : null } |
+  { 'threads' : null } |
+  { 'facebook' : null };
+export type DraftStatus = { 'scheduled' : null } |
+  { 'published' : null } |
+  { 'pending_approval' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null } |
+  { 'draft' : null } |
+  { 'failed' : null };
 export interface DripLeadBounceRecord {
   'bounceType' : { 'hard' : null } |
     { 'soft' : null },
@@ -1121,13 +1411,18 @@ export type EmailSequenceStatus = { 'active' : null } |
   { 'completed' : null } |
   { 'not_started' : null } |
   { 'paused' : null };
-export interface EmailTemplate {
+export interface EmailTemplateExt {
   'id' : bigint,
   'day' : bigint,
+  'unsubscribeFooter' : [] | [boolean],
+  'consentRequired' : [] | [boolean],
   'fallbackBody' : string,
   'subject' : string,
   'body' : string,
+  'verticalProfileId' : [] | [string],
   'updatedAt' : bigint,
+  'campaignType' : [] | [CampaignType],
+  'complianceNotes' : [] | [string],
   'fallbackSubject' : string,
 }
 export type EmojiUsage = { 'low' : null } |
@@ -1183,6 +1478,26 @@ export type EstimateStatus = { 'expired' : null } |
   { 'rejected' : null } |
   { 'accepted' : null } |
   { 'draft' : null };
+export interface ExecutionRequest {
+  'clientBusinessId' : string,
+  'isDryRun' : boolean,
+  'verticalProfileId' : [] | [string],
+  'recordId' : [] | [string],
+  'callbackUrl' : [] | [string],
+  'approvalRequestId' : [] | [string],
+  'payload' : Array<[string, string]>,
+  'contractId' : string,
+}
+export interface ExecutionResponse {
+  'status' : { 'cancelled' : null } |
+    { 'pending' : null } |
+    { 'success' : null } |
+    { 'failed' : null },
+  'result' : [] | [string],
+  'isDryRun' : boolean,
+  'executionId' : string,
+  'errorMsg' : [] | [string],
+}
 export interface ExtendedLead {
   'id' : string,
   'status' : string,
@@ -1271,6 +1586,7 @@ export interface FundabilityScore {
   'eligibilityPhase' : bigint,
   'creditworthinessPhase' : bigint,
 }
+export type FundingHistoryEntry = string;
 export interface FunnelEvent {
   'metadata' : [] | [string],
   'step' : FunnelStepType,
@@ -1366,6 +1682,11 @@ export interface HealthScoreComponent {
   'rawScore' : bigint,
   'factor' : string,
 }
+export type HttpMethod = { 'get' : null } |
+  { 'put' : null } |
+  { 'post' : null } |
+  { 'delete' : null } |
+  { 'patch' : null };
 export interface HumanOversightAssignment {
   'id' : string,
   'status' : string,
@@ -1447,6 +1768,13 @@ export interface IntegrationTestResult {
   'latencyMs' : [] | [bigint],
   'message' : string,
   'connected' : boolean,
+}
+export interface InvestmentTier {
+  'name' : string,
+  'investment' : string,
+  'description' : string,
+  'deliverables' : Array<string>,
+  'timeline' : string,
 }
 export interface Invoice {
   'id' : string,
@@ -1586,6 +1914,7 @@ export interface LeadExtractionResult {
   'sourceUrl' : string,
   'leads' : Array<ScrapedLead>,
 }
+export type LocalSEOHistoryEntry = string;
 export interface LocationProfile {
   'id' : string,
   'status' : string,
@@ -1597,6 +1926,90 @@ export interface LocationProfile {
   'address' : string,
   'phoneNumber' : string,
   'locationName' : string,
+}
+export interface LocationSummary {
+  'city' : string,
+  'score' : bigint,
+  'rankingPosition' : bigint,
+  'locationId' : string,
+  'reviewCount' : bigint,
+  'locationName' : string,
+  'avgRating' : number,
+}
+export interface MarketingAudit {
+  'id' : string,
+  'serviceArea' : string,
+  'status' : MarketingAuditStatus,
+  'clientBusinessId' : string,
+  'leadValue' : bigint,
+  'recommendedPackage' : string,
+  'overallScore' : bigint,
+  'offer' : string,
+  'estimatedRevenueImpact' : [] | [string],
+  'brfScore' : BRFScore,
+  'targetCustomer' : string,
+  'createdAt' : bigint,
+  'proposalReadySummary' : string,
+  'verticalProfileId' : string,
+  'website' : string,
+  'updatedAt' : bigint,
+  'goals' : Array<string>,
+  'grade' : string,
+  'executiveSummary' : string,
+  'conversionGoal' : string,
+  'quickWins' : Array<string>,
+  'categoryScores' : Array<MarketingAuditScore>,
+  'knownCompetitors' : Array<string>,
+  'strategicRecommendations' : Array<string>,
+  'longTermInitiatives' : Array<string>,
+  'industry' : string,
+}
+export interface MarketingAuditInput {
+  'serviceArea' : string,
+  'clientBusinessId' : string,
+  'leadValue' : bigint,
+  'offer' : string,
+  'targetCustomer' : string,
+  'verticalProfileId' : string,
+  'website' : string,
+  'goals' : Array<string>,
+  'conversionGoal' : string,
+  'knownCompetitors' : Array<string>,
+  'industry' : string,
+}
+export interface MarketingAuditScore {
+  'weight' : bigint,
+  'score' : bigint,
+  'category' : AuditCategory,
+  'findings' : Array<string>,
+}
+export type MarketingAuditStatus = { 'pending' : null } |
+  { 'in_progress' : null } |
+  { 'completed' : null } |
+  { 'failed' : null };
+export interface MarketingAuditUpdate {
+  'serviceArea' : [] | [string],
+  'status' : [] | [MarketingAuditStatus],
+  'leadValue' : [] | [bigint],
+  'recommendedPackage' : [] | [string],
+  'overallScore' : [] | [bigint],
+  'offer' : [] | [string],
+  'estimatedRevenueImpact' : [] | [string],
+  'brfScore' : [] | [BRFScore],
+  'targetCustomer' : [] | [string],
+  'proposalReadySummary' : [] | [string],
+  'website' : [] | [string],
+  'updatedAt' : [] | [bigint],
+  'goals' : [] | [Array<string>],
+  'grade' : [] | [string],
+  'executiveSummary' : [] | [string],
+  'conversionGoal' : [] | [string],
+  'quickWins' : [] | [Array<string>],
+  'categoryScores' : [] | [Array<MarketingAuditScore>],
+  'knownCompetitors' : [] | [Array<string>],
+  'strategicRecommendations' : [] | [Array<string>],
+  'longTermInitiatives' : [] | [Array<string>],
+  'industry' : [] | [string],
 }
 export type MarketingFramework = { 'bly' : null } |
   { 'sugarman' : null } |
@@ -1682,6 +2095,51 @@ export type MemoryMode = { 'none' : null } |
 export type MessageRole = { 'System' : null } |
   { 'User' : null } |
   { 'Assistant' : null };
+export interface MonthlyReport {
+  'id' : string,
+  'status' : ReportStatus,
+  'month' : string,
+  'period' : string,
+  'recommendations' : Array<string>,
+  'createdAt' : bigint,
+  'year' : bigint,
+  'sentAt' : [] | [bigint],
+  'tenantId' : string,
+  'summary' : string,
+  'updatedAt' : bigint,
+  'insightIds' : Array<string>,
+  'nextMonthStrategy' : string,
+  'keyFindings' : Array<string>,
+}
+export interface MonthlyReportUpdate {
+  'status' : [] | [ReportStatus],
+  'recommendations' : [] | [Array<string>],
+  'sentAt' : [] | [bigint],
+  'summary' : [] | [string],
+  'nextMonthStrategy' : [] | [string],
+  'keyFindings' : [] | [Array<string>],
+}
+export interface MultiLocationReport {
+  'id' : string,
+  'clientBusinessId' : string,
+  'rankingTrend' : TrendDirection,
+  'overallScore' : bigint,
+  'createdAt' : bigint,
+  'locationCount' : bigint,
+  'reviewTrend' : TrendDirection,
+  'locations' : Array<LocationSummary>,
+  'brandName' : string,
+  'citationTrend' : TrendDirection,
+}
+export interface MultiLocationReportUpdate {
+  'rankingTrend' : [] | [TrendDirection],
+  'overallScore' : [] | [bigint],
+  'locationCount' : [] | [bigint],
+  'reviewTrend' : [] | [TrendDirection],
+  'locations' : [] | [Array<LocationSummary>],
+  'brandName' : [] | [string],
+  'citationTrend' : [] | [TrendDirection],
+}
 export interface NewsletterCampaign {
   'id' : string,
   'htmlBody' : string,
@@ -1745,6 +2203,31 @@ export interface NicheVoiceAssignment {
   'assignedAt' : bigint,
   'voiceId' : string,
 }
+export interface Note {
+  'id' : string,
+  'clientBusinessId' : string,
+  'title' : string,
+  'authorId' : string,
+  'body' : string,
+  'createdAt' : bigint,
+  'relatedToType' : string,
+  'updatedAt' : bigint,
+  'category' : NoteCategory,
+  'relatedToId' : string,
+}
+export type NoteCategory = { 'Email' : null } |
+  { 'System' : null } |
+  { 'Call' : null } |
+  { 'Meeting' : null } |
+  { 'General' : null };
+export interface NoteUpdate {
+  'title' : [] | [string],
+  'authorId' : [] | [string],
+  'body' : [] | [string],
+  'relatedToType' : [] | [string],
+  'category' : [] | [NoteCategory],
+  'relatedToId' : [] | [string],
+}
 export interface NotificationRecord {
   'id' : string,
   'title' : string,
@@ -1784,6 +2267,36 @@ export interface OperatorStats {
   'api_health_summary' : string,
   'trials_this_week' : bigint,
   'outreach_sent_today' : bigint,
+}
+export interface Opportunity {
+  'id' : string,
+  'probability' : bigint,
+  'closeDate' : bigint,
+  'clientBusinessId' : string,
+  'title' : string,
+  'value' : bigint,
+  'createdAt' : bigint,
+  'updatedAt' : bigint,
+  'stage' : OpportunityStage,
+  'notes' : string,
+  'contactId' : string,
+  'companyId' : string,
+}
+export type OpportunityStage = { 'New' : null } |
+  { 'Qualified' : null } |
+  { 'Proposal' : null } |
+  { 'ClosedWon' : null } |
+  { 'Negotiation' : null } |
+  { 'ClosedLost' : null };
+export interface OpportunityUpdate {
+  'probability' : [] | [bigint],
+  'closeDate' : [] | [bigint],
+  'title' : [] | [string],
+  'value' : [] | [bigint],
+  'stage' : [] | [OpportunityStage],
+  'notes' : [] | [string],
+  'contactId' : [] | [string],
+  'companyId' : [] | [string],
 }
 export type OutputFormat = { 'both' : null } |
   { 'html' : null } |
@@ -1910,6 +2423,20 @@ export interface PaymentMethod {
   'isDefault' : boolean,
   'cardLast4' : string,
 }
+export type PerformanceHistoryEntry = string;
+export interface PerformanceInsight {
+  'id' : string,
+  'metricValue' : string,
+  'period' : string,
+  'createdAt' : bigint,
+  'platform' : string,
+  'tenantId' : string,
+  'isBestPerformer' : boolean,
+  'insight' : string,
+  'metricName' : string,
+  'recommendation' : string,
+  'reportId' : string,
+}
 export interface PipelineActivityEntry {
   'action' : string,
   'timestamp' : bigint,
@@ -1953,6 +2480,14 @@ export interface PostEngagementMetrics {
   'comments' : bigint,
   'reach' : bigint,
 }
+export type PostFormat = { 'text_only' : null } |
+  { 'single_image' : null } |
+  { 'video' : null } |
+  { 'live' : null } |
+  { 'poll' : null } |
+  { 'reel' : null } |
+  { 'story' : null } |
+  { 'carousel' : null };
 export type PostStatus = { 'scheduled' : null } |
   { 'published' : null } |
   { 'draft' : null } |
@@ -1961,6 +2496,56 @@ export interface PropagationStatus {
   'isLive' : boolean,
   'checkedAt' : bigint,
   'percentage' : bigint,
+}
+export interface Proposal {
+  'id' : string,
+  'status' : ProposalStatus,
+  'clientBusinessId' : string,
+  'title' : string,
+  'investmentTiers' : Array<InvestmentTier>,
+  'roiProjection' : [] | [string],
+  'nextSteps' : string,
+  'strategyApproach' : string,
+  'createdAt' : bigint,
+  'auditId' : [] | [string],
+  'sentAt' : [] | [bigint],
+  'verticalProfileId' : string,
+  'updatedAt' : bigint,
+  'executiveSummary' : string,
+  'assumptions' : string,
+  'scopeOfWork' : string,
+  'sections' : Array<ProposalSection>,
+  'situationAnalysis' : string,
+  'clientResponsibilities' : string,
+  'timeline' : string,
+}
+export interface ProposalSection {
+  'title' : string,
+  'order' : bigint,
+  'body' : string,
+}
+export type ProposalStatus = { 'pending_review' : null } |
+  { 'sent' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null } |
+  { 'accepted' : null } |
+  { 'draft' : null } |
+  { 'archived' : null };
+export interface ProposalUpdate {
+  'status' : [] | [ProposalStatus],
+  'title' : [] | [string],
+  'investmentTiers' : [] | [Array<InvestmentTier>],
+  'roiProjection' : [] | [string],
+  'nextSteps' : [] | [string],
+  'strategyApproach' : [] | [string],
+  'sentAt' : [] | [bigint],
+  'executiveSummary' : [] | [string],
+  'assumptions' : [] | [string],
+  'scopeOfWork' : [] | [string],
+  'sections' : [] | [Array<ProposalSection>],
+  'situationAnalysis' : [] | [string],
+  'clientResponsibilities' : [] | [string],
+  'timeline' : [] | [string],
 }
 export interface ProviderAdapterConfig {
   'id' : string,
@@ -1973,6 +2558,27 @@ export interface ProviderAdapterConfig {
   'modelId' : [] | [string],
   'adapterType' : AdapterType,
 }
+export interface RankedDispatchRoute {
+  'id' : string,
+  'status' : RankedDispatchStatus,
+  'clientBusinessId' : string,
+  'createdAt' : bigint,
+  'verticalProfileId' : string,
+  'updatedAt' : bigint,
+  'notes' : Array<string>,
+  'matchedAgent' : string,
+  'requestText' : string,
+}
+export interface RankedDispatchRouteUpdate {
+  'status' : RankedDispatchStatus,
+  'notes' : Array<string>,
+  'matchedAgent' : string,
+  'requestText' : string,
+}
+export type RankedDispatchStatus = { 'pending' : null } |
+  { 'completed' : null } |
+  { 'routed' : null } |
+  { 'failed' : null };
 export interface ReadinessBreakdownItem {
   'weight' : bigint,
   'service' : string,
@@ -2024,6 +2630,11 @@ export interface ReportSection {
   'description' : string,
   'recommendation' : string,
 }
+export type ReportStatus = { 'pending_review' : null } |
+  { 'sent' : null } |
+  { 'approved' : null } |
+  { 'draft' : null } |
+  { 'archived' : null };
 export interface Review {
   'id' : string,
   'createdAt' : Time,
@@ -2035,6 +2646,7 @@ export interface Review {
   'rating' : bigint,
   'respondedAt' : [] | [Time],
 }
+export type ReviewHistoryEntry = string;
 export type ReviewPlatform = { 'yelp' : null } |
   { 'google' : null } |
   { 'facebook' : null };
@@ -2378,6 +2990,64 @@ export interface SeoGeoVisibilitySnapshot {
   'brandConsistency' : bigint,
   'entityClarity' : bigint,
 }
+export interface ServiceAreaOutline {
+  'serviceArea' : string,
+  'metaDescription' : string,
+  'targetLocations' : Array<string>,
+  'schemaType' : string,
+  'pageTitle' : string,
+  'services' : Array<string>,
+  'targetKeyword' : string,
+  'suggestedHeadings' : Array<string>,
+}
+export interface ServiceAreaPage {
+  'id' : string,
+  'serviceArea' : string,
+  'metaDescription' : string,
+  'status' : ServiceAreaPageStatus,
+  'clientBusinessId' : string,
+  'externalLinks' : Array<string>,
+  'targetLocations' : Array<string>,
+  'createdAt' : Time,
+  'publishedUrl' : [] | [string],
+  'targetUrl' : string,
+  'photoAssets' : Array<string>,
+  'verticalProfileId' : string,
+  'tenantId' : string,
+  'updatedAt' : Time,
+  'seoScore' : [] | [bigint],
+  'pageContent' : string,
+  'internalLinks' : Array<string>,
+  'pageTitle' : string,
+  'schemaMarkup' : [] | [string],
+  'approvalRequestId' : [] | [string],
+  'services' : Array<string>,
+  'targetKeyword' : string,
+}
+export type ServiceAreaPageStatus = { 'published' : null } |
+  { 'pending_approval' : null } |
+  { 'planned' : null } |
+  { 'approved' : null } |
+  { 'draft' : null } |
+  { 'archived' : null };
+export interface ServiceAreaPageUpdate {
+  'serviceArea' : [] | [string],
+  'metaDescription' : [] | [string],
+  'status' : [] | [ServiceAreaPageStatus],
+  'externalLinks' : [] | [Array<string>],
+  'targetLocations' : [] | [Array<string>],
+  'publishedUrl' : [] | [string],
+  'targetUrl' : [] | [string],
+  'photoAssets' : [] | [Array<string>],
+  'seoScore' : [] | [bigint],
+  'pageContent' : [] | [string],
+  'internalLinks' : [] | [Array<string>],
+  'pageTitle' : [] | [string],
+  'schemaMarkup' : [] | [string],
+  'approvalRequestId' : [] | [string],
+  'services' : [] | [Array<string>],
+  'targetKeyword' : [] | [string],
+}
 export interface SmsAutopilotJob {
   'id' : string,
   'status' : { 'cancelled' : null } |
@@ -2465,6 +3135,39 @@ export interface SocialPost {
   'ctaUrl' : string,
   'scheduledAt' : [] | [bigint],
 }
+export interface SocialPostDraft {
+  'id' : string,
+  'cta' : string,
+  'status' : DraftStatus,
+  'content' : string,
+  'hashtags' : Array<string>,
+  'n8nStatus' : [] | [string],
+  'approvedAt' : [] | [bigint],
+  'approvedBy' : [] | [string],
+  'createdAt' : bigint,
+  'publishedUrl' : [] | [string],
+  'platform' : DraftPlatform,
+  'tenantId' : string,
+  'entryId' : [] | [string],
+  'updatedAt' : bigint,
+  'ctaUrl' : string,
+  'calendarId' : [] | [string],
+  'mediaUrls' : Array<string>,
+  'scheduledAt' : [] | [bigint],
+}
+export interface SocialPostDraftUpdate {
+  'cta' : [] | [string],
+  'status' : [] | [DraftStatus],
+  'content' : [] | [string],
+  'hashtags' : [] | [Array<string>],
+  'n8nStatus' : [] | [string],
+  'approvedAt' : [] | [bigint],
+  'approvedBy' : [] | [string],
+  'publishedUrl' : [] | [string],
+  'ctaUrl' : [] | [string],
+  'mediaUrls' : [] | [Array<string>],
+  'scheduledAt' : [] | [bigint],
+}
 export interface SocialPresence {
   'linkedin' : boolean,
   'gmbUrl' : string,
@@ -2505,6 +3208,40 @@ export type SubscriberStatus = { 'active' : null } |
   { 'unsubscribed' : null } |
   { 'complained' : null } |
   { 'bounced' : null };
+export interface Task {
+  'id' : string,
+  'status' : TaskStatus,
+  'clientBusinessId' : string,
+  'title' : string,
+  'assignedTo' : string,
+  'createdAt' : bigint,
+  'relatedToType' : string,
+  'dueDate' : bigint,
+  'description' : string,
+  'taskType' : string,
+  'updatedAt' : bigint,
+  'priority' : TaskPriority,
+  'relatedToId' : string,
+}
+export type TaskPriority = { 'Low' : null } |
+  { 'High' : null } |
+  { 'Medium' : null } |
+  { 'Urgent' : null };
+export type TaskStatus = { 'Cancelled' : null } |
+  { 'InProgress' : null } |
+  { 'Completed' : null } |
+  { 'NotStarted' : null };
+export interface TaskUpdate {
+  'status' : [] | [TaskStatus],
+  'title' : [] | [string],
+  'assignedTo' : [] | [string],
+  'relatedToType' : [] | [string],
+  'dueDate' : [] | [bigint],
+  'description' : [] | [string],
+  'taskType' : [] | [string],
+  'priority' : [] | [TaskPriority],
+  'relatedToId' : [] | [string],
+}
 export type TenantId = string;
 export type Time = bigint;
 export interface ToolActionRequest {
@@ -2544,6 +3281,9 @@ export interface TransformationOutput {
   'body' : Uint8Array,
   'headers' : Array<http_header>,
 }
+export type TrendDirection = { 'up' : null } |
+  { 'down' : null } |
+  { 'flat' : null };
 export interface TrialAccount {
   'id' : string,
   'status' : TrialStatus,
@@ -2638,6 +3378,79 @@ export interface VapiProvisioningStatus {
   'assistantId' : [] | [string],
   'lastSynced' : [] | [bigint],
 }
+export interface VerticalProfileExt {
+  'id' : string,
+  'serviceArea' : Array<string>,
+  'prohibitedClaims' : Array<string>,
+  'contentPillars' : Array<string>,
+  'doRules' : Array<string>,
+  'commonServices' : Array<string>,
+  'commonReviewThemes' : Array<string>,
+  'proposalDeliverables' : Array<string>,
+  'exampleEmailTemplates' : Array<string>,
+  'commonOffers' : Array<string>,
+  'differentiators' : Array<string>,
+  'recommendedDisclaimers' : Array<string>,
+  'createdAt' : bigint,
+  'defaultPipelineLabels' : Array<string>,
+  'tenantId' : string,
+  'targetAudience' : string,
+  'keywords' : Array<string>,
+  'updatedAt' : bigint,
+  'localSEOKeywordPatterns' : Array<string>,
+  'commonGBPPostTypes' : Array<string>,
+  'competitors' : Array<string>,
+  'niche' : string,
+  'category' : string,
+  'commonCampaignTypes' : Array<string>,
+  'smsTone' : string,
+  'emailTone' : string,
+  'exampleSMSFollowUps' : Array<string>,
+  'subNiches' : Array<string>,
+  'exampleContentAngles' : Array<string>,
+  'fundingNeeds' : Array<string>,
+  'leadFormFields' : Array<string>,
+  'commonLeadTypes' : Array<string>,
+  'brandVoice' : string,
+  'complianceNotes' : string,
+  'services' : Array<string>,
+  'doNotRules' : Array<string>,
+  'positioning' : string,
+}
+export interface VerticalProfileUpdate {
+  'serviceArea' : [] | [Array<string>],
+  'prohibitedClaims' : [] | [Array<string>],
+  'contentPillars' : [] | [Array<string>],
+  'doRules' : [] | [Array<string>],
+  'commonReviewThemes' : [] | [Array<string>],
+  'proposalDeliverables' : [] | [Array<string>],
+  'exampleEmailTemplates' : [] | [Array<string>],
+  'commonOffers' : [] | [Array<string>],
+  'differentiators' : [] | [Array<string>],
+  'recommendedDisclaimers' : [] | [Array<string>],
+  'defaultPipelineLabels' : [] | [Array<string>],
+  'targetAudience' : [] | [string],
+  'keywords' : [] | [Array<string>],
+  'localSEOKeywordPatterns' : [] | [Array<string>],
+  'commonGBPPostTypes' : [] | [Array<string>],
+  'competitors' : [] | [Array<string>],
+  'niche' : [] | [string],
+  'category' : [] | [string],
+  'commonCampaignTypes' : [] | [Array<string>],
+  'smsTone' : [] | [string],
+  'emailTone' : [] | [string],
+  'exampleSMSFollowUps' : [] | [Array<string>],
+  'subNiches' : [] | [Array<string>],
+  'exampleContentAngles' : [] | [Array<string>],
+  'fundingNeeds' : [] | [Array<string>],
+  'leadFormFields' : [] | [Array<string>],
+  'commonLeadTypes' : [] | [Array<string>],
+  'brandVoice' : [] | [string],
+  'complianceNotes' : [] | [string],
+  'services' : [] | [Array<string>],
+  'doNotRules' : [] | [Array<string>],
+  'positioning' : [] | [string],
+}
 export interface VoiceAgentConfig {
   'callRouting' : { 'ai' : null } |
     { 'voicemail' : string } |
@@ -2679,6 +3492,35 @@ export interface WarmSequenceEmailSchedule {
   'sendAfter' : bigint,
   'scheduledAt' : bigint,
 }
+export type WebhookCategory = { 'crm' : null } |
+  { 'gbp' : null } |
+  { 'social' : null } |
+  { 'voice' : null } |
+  { 'reports' : null } |
+  { 'general' : null } |
+  { 'email_sms' : null } |
+  { 'funding' : null };
+export interface WebhookContract {
+  'id' : string,
+  'method' : HttpMethod,
+  'clientBusinessIdField' : [] | [string],
+  'approvalRequestIdField' : [] | [string],
+  'verticalProfileIdField' : [] | [string],
+  'endpoint' : string,
+  'createdAt' : bigint,
+  'requiredFields' : Array<ContractField>,
+  'updatedAt' : bigint,
+  'optionalFields' : Array<ContractField>,
+  'supportsDryRun' : boolean,
+  'category' : WebhookCategory,
+  'requiresApproval' : boolean,
+  'successResponse' : string,
+  'workflowLogUpdateType' : [] | [string],
+  'retryStrategy' : [] | [string],
+  'purpose' : string,
+  'recordIdField' : [] | [string],
+  'errorResponse' : string,
+}
 export interface WebhookEvent {
   'status' : { 'ok' : null } |
     { 'failed' : null },
@@ -2687,6 +3529,27 @@ export interface WebhookEvent {
   'errorMsg' : [] | [string],
   'payload' : string,
   'eventType' : string,
+}
+export interface WebhookExecution {
+  'id' : string,
+  'status' : { 'cancelled' : null } |
+    { 'pending' : null } |
+    { 'success' : null } |
+    { 'failed' : null },
+  'completedAt' : [] | [bigint],
+  'result' : [] | [string],
+  'clientBusinessId' : string,
+  'approvedAt' : [] | [bigint],
+  'approvedBy' : [] | [string],
+  'isDryRun' : boolean,
+  'createdAt' : bigint,
+  'verticalProfileId' : [] | [string],
+  'recordId' : [] | [string],
+  'callbackUrl' : [] | [string],
+  'approvalRequestId' : [] | [string],
+  'errorMsg' : [] | [string],
+  'payload' : Array<[string, string]>,
+  'contractId' : string,
 }
 export interface WebsiteAgentScore {
   'id' : string,
@@ -2786,6 +3649,37 @@ export interface WhiteLabelConfig {
   'emailSenderAddress' : string,
   'subdomain' : string,
 }
+export interface WorkflowLogEntry {
+  'id' : string,
+  'status' : WorkflowStatus,
+  'action' : string,
+  'stepIndex' : bigint,
+  'createdAt' : bigint,
+  'agentType' : string,
+  'tenantId' : string,
+  'notes' : string,
+  'inputRef' : [] | [string],
+  'outputRef' : [] | [string],
+  'workflowId' : string,
+}
+export type WorkflowStatus = { 'cancelled' : null } |
+  { 'pending' : null } |
+  { 'in_progress' : null } |
+  { 'completed' : null } |
+  { 'approved' : null } |
+  { 'rejected' : null } |
+  { 'paused_for_approval' : null } |
+  { 'failed' : null };
+export interface WorkflowStatusSnapshot {
+  'status' : WorkflowStatus,
+  'lastAgentType' : string,
+  'tenantId' : string,
+  'lastUpdatedAt' : bigint,
+  'currentStep' : bigint,
+  'totalSteps' : bigint,
+  'lastAction' : string,
+  'workflowId' : string,
+}
 export interface http_header { 'value' : string, 'name' : string }
 export interface http_request_result {
   'status' : bigint,
@@ -2817,6 +3711,11 @@ export interface _SERVICE {
   >,
   'addActivityFeedItem' : ActorMethod<[ActivityFeedItemInput], undefined>,
   'addAgentLog' : ActorMethod<[AgentLogEntryInput], undefined>,
+  'addApprovalRecord' : ActorMethod<
+    [ApprovalItemRecord],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'addAttributionTouch' : ActorMethod<[string, AttributionTouch], boolean>,
   'addConversationMessage' : ActorMethod<
     [string, string, string, string],
@@ -2886,6 +3785,18 @@ export interface _SERVICE {
     [string, Array<[string, boolean]>, string],
     boolean
   >,
+  'calculateMarketingAuditScore' : ActorMethod<
+    [MarketingAuditInput],
+    {
+        'ok' : {
+          'overallScore' : bigint,
+          'brfScore' : BRFScore,
+          'grade' : string,
+          'categoryScores' : Array<MarketingAuditScore>,
+        }
+      } |
+      { 'err' : string }
+  >,
   'callOpenRouterForTask' : ActorMethod<[string, string, string], string>,
   'cancelAutoTrigger' : ActorMethod<[string], undefined>,
   'cancelQueuedAction' : ActorMethod<[string], undefined>,
@@ -2921,10 +3832,10 @@ export interface _SERVICE {
   'createAgentRun' : ActorMethod<[AgentRunRecord], boolean>,
   'createAgentThread' : ActorMethod<[AgentThreadRecord], boolean>,
   'createApprovalItem' : ActorMethod<
-    [string, string, string, string, string],
-    string
+    [ApprovalItem],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
-  'createApprovalRecord' : ActorMethod<[ApprovalItemRecord], boolean>,
   'createArtifact' : ActorMethod<
     [string, string, string, ArtifactType, string, string, Array<string>],
     string
@@ -2944,6 +3855,35 @@ export interface _SERVICE {
     { 'ok' : BrandKitProspect } |
       { 'err' : string }
   >,
+  'createBusinessBrief' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      Array<string>,
+      string,
+      Array<string>,
+      string,
+      Array<PerformanceHistoryEntry>,
+      Array<LocalSEOHistoryEntry>,
+      Array<ReviewHistoryEntry>,
+      Array<ContentHistoryEntry>,
+      Array<FundingHistoryEntry>,
+    ],
+    { 'ok' : BusinessBrief } |
+      { 'err' : string }
+  >,
   'createClientReport' : ActorMethod<
     [
       string,
@@ -2956,6 +3896,37 @@ export interface _SERVICE {
       bigint,
     ],
     { 'ok' : ClientReport } |
+      { 'err' : string }
+  >,
+  'createCompany' : ActorMethod<
+    [string, string, string, string, string, string, string, string, string],
+    { 'ok' : Company } |
+      { 'err' : string }
+  >,
+  'createContact' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+    ],
+    { 'ok' : Contact } |
+      { 'err' : string }
+  >,
+  'createCustomField' : ActorMethod<
+    [string, string, string, string, Array<string>, boolean],
+    { 'ok' : CustomField } |
+      { 'err' : string }
+  >,
+  'createCustomFieldValue' : ActorMethod<
+    [string, string, string, string, string],
+    { 'ok' : CustomFieldValue } |
       { 'err' : string }
   >,
   'createDemoSession' : ActorMethod<[string, string], string>,
@@ -2993,6 +3964,16 @@ export interface _SERVICE {
   >,
   'createLead' : ActorMethod<[Lead], undefined>,
   'createLeadAuditJob' : ActorMethod<[LeadAuditJob], string>,
+  'createMarketingAudit' : ActorMethod<
+    [MarketingAuditInput],
+    { 'ok' : MarketingAudit } |
+      { 'err' : string }
+  >,
+  'createMultiLocationReport' : ActorMethod<
+    [MultiLocationReport],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'createNewsletterCampaign' : ActorMethod<
     [
       string,
@@ -3006,7 +3987,49 @@ export interface _SERVICE {
     ],
     string
   >,
+  'createNote' : ActorMethod<
+    [string, string, string, string, NoteCategory, string, string],
+    { 'ok' : Note } |
+      { 'err' : string }
+  >,
   'createNotification' : ActorMethod<[NotificationRecord], undefined>,
+  'createOpportunity' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      bigint,
+      OpportunityStage,
+      bigint,
+      bigint,
+      string,
+    ],
+    { 'ok' : Opportunity } |
+      { 'err' : string }
+  >,
+  'createProposal' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+      string,
+    ],
+    { 'ok' : Proposal } |
+      { 'err' : string }
+  >,
+  'createRankedDispatchRoute' : ActorMethod<
+    [string, string, string],
+    { 'ok' : RankedDispatchRoute } |
+      { 'err' : string }
+  >,
   'createReview' : ActorMethod<[Review], undefined>,
   'createReviewRequest' : ActorMethod<[ReviewRequest], undefined>,
   'createReviewRequestTrigger' : ActorMethod<
@@ -3048,6 +4071,22 @@ export interface _SERVICE {
   >,
   'createSocialLead' : ActorMethod<[SocialLead], undefined>,
   'createSocialPost' : ActorMethod<[SocialPost], undefined>,
+  'createTask' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      TaskPriority,
+      TaskStatus,
+      bigint,
+      string,
+      string,
+      string,
+    ],
+    { 'ok' : Task } |
+      { 'err' : string }
+  >,
   'createTemplate' : ActorMethod<
     [string, string, string, string, Array<string>, MemoryMode, boolean],
     string
@@ -3059,25 +4098,68 @@ export interface _SERVICE {
   'deleteAgentTask' : ActorMethod<[string], undefined>,
   'deleteCampaignTemplate' : ActorMethod<[string], undefined>,
   'deleteChatWidgetConfig' : ActorMethod<[TenantId], undefined>,
+  'deleteCompany' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'deleteCompetitorAlert' : ActorMethod<[string], undefined>,
   'deleteCompetitorProfile' : ActorMethod<[string], undefined>,
+  'deleteContact' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'deleteCredential' : ActorMethod<
     [string, string],
     { 'ok' : boolean, 'message' : string }
+  >,
+  'deleteCustomField' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'deleteCustomFieldValue' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   'deleteGeneratedContent' : ActorMethod<[string], undefined>,
   'deleteLead' : ActorMethod<[TenantId, string], undefined>,
   'deleteLeadAttribution' : ActorMethod<[string], undefined>,
   'deleteLocationProfile' : ActorMethod<[string], undefined>,
+  'deleteMarketingAudit' : ActorMethod<[string], boolean>,
   'deleteNewsletterCampaign' : ActorMethod<[string, string], boolean>,
   'deleteNewsletterSubscriber' : ActorMethod<[string, string], boolean>,
+  'deleteNote' : ActorMethod<[string], { 'ok' : string } | { 'err' : string }>,
+  'deleteOpportunity' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'deleteProposal' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'deleteRankedDispatchRoute' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'deleteReview' : ActorMethod<[TenantId, string], undefined>,
   'deleteReviewRequest' : ActorMethod<[TenantId, string], undefined>,
   'deleteScanModel' : ActorMethod<[string, string], undefined>,
   'deleteSocialPost' : ActorMethod<[string, string], undefined>,
+  'deleteTask' : ActorMethod<[string], { 'ok' : string } | { 'err' : string }>,
   'deleteTemplate' : ActorMethod<[string], boolean>,
   'deleteTriggerRule' : ActorMethod<[string], undefined>,
   'deleteVoiceAgentConfig' : ActorMethod<[TenantId], undefined>,
+  'deleteWebhookContract' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'deleteWorkflowDef' : ActorMethod<[string], boolean>,
   'deployAgent' : ActorMethod<
     [string],
@@ -3128,6 +4210,11 @@ export interface _SERVICE {
     { 'ok' : ToolActionResponse } |
       { 'err' : string }
   >,
+  'executeWebhookContract' : ActorMethod<
+    [ExecutionRequest],
+    { 'ok' : ExecutionResponse } |
+      { 'err' : string }
+  >,
   'extractLeads' : ActorMethod<[string, string], LeadExtractionResult>,
   'failRun' : ActorMethod<[string, string], boolean>,
   'flagEngagement' : ActorMethod<[string, string, string], undefined>,
@@ -3136,6 +4223,16 @@ export interface _SERVICE {
   'generateOutreachSequence' : ActorMethod<
     [string, string, string, string, string],
     OutreachSequence
+  >,
+  'generateProposalFromAudit' : ActorMethod<
+    [string, string, string, bigint, Array<string>, Array<string>],
+    { 'ok' : Proposal } |
+      { 'err' : string }
+  >,
+  'generateServiceAreaOutline' : ActorMethod<
+    [string, string, Array<string>, Array<string>, string],
+    { 'ok' : ServiceAreaOutline } |
+      { 'err' : string }
   >,
   'generateTailoredEmailCopy' : ActorMethod<
     [string, string, string, bigint, string],
@@ -3259,16 +4356,41 @@ export interface _SERVICE {
     { 'ok' : Array<TrialAccount> } |
       { 'err' : string }
   >,
+  'getAllWebhookContracts' : ActorMethod<
+    [],
+    { 'ok' : Array<WebhookContract> } |
+      { 'err' : string }
+  >,
+  'getAllWebhookExecutions' : ActorMethod<
+    [],
+    { 'ok' : Array<WebhookExecution> } |
+      { 'err' : string }
+  >,
   'getAllWebsiteAgentSubscriptions' : ActorMethod<
     [],
     Array<WebsiteAgentSubscription>
   >,
   'getAllWhiteLabelConfigs' : ActorMethod<[], Array<WhiteLabelConfig>>,
+  'getApprovalItem' : ActorMethod<
+    [string],
+    { 'ok' : ApprovalItem } |
+      { 'err' : string }
+  >,
   'getApprovalRecordsByTenant' : ActorMethod<
     [string],
-    Array<ApprovalItemRecord>
+    { 'ok' : Array<ApprovalItemRecord> } |
+      { 'err' : string }
   >,
-  'getApprovalsByRun' : ActorMethod<[string], Array<ApprovalItem>>,
+  'getApprovalsByRun' : ActorMethod<
+    [string],
+    { 'ok' : Array<ApprovalItem> } |
+      { 'err' : string }
+  >,
+  'getApprovalsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<ApprovalItem> } |
+      { 'err' : string }
+  >,
   'getArtifact' : ActorMethod<[string], [] | [AgentArtifact]>,
   'getArtifactRecordsByTenant' : ActorMethod<
     [string],
@@ -3295,6 +4417,16 @@ export interface _SERVICE {
   >,
   'getAutopilotEmailConfig' : ActorMethod<[], AutopilotConfig>,
   'getBatchAuditJobs' : ActorMethod<[string], Array<BatchAuditJob>>,
+  'getBestPerformerMemory' : ActorMethod<
+    [string],
+    { 'ok' : BestPerformerMemory } |
+      { 'err' : string }
+  >,
+  'getBestPerformers' : ActorMethod<
+    [string],
+    { 'ok' : Array<PerformanceInsight> } |
+      { 'err' : string }
+  >,
   'getBillingRecordsByTenant' : ActorMethod<[TenantId], Array<BillingRecord>>,
   'getBookingsByTenant' : ActorMethod<[string], Array<Booking>>,
   'getBouncesByQueue' : ActorMethod<[string], Array<DripLeadBounceRecord>>,
@@ -3342,6 +4474,11 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'getBulkSendJobs' : ActorMethod<[], Array<BulkSendJob>>,
+  'getBusinessBrief' : ActorMethod<
+    [string],
+    { 'ok' : BusinessBrief } |
+      { 'err' : string }
+  >,
   'getCacheStats' : ActorMethod<[], AudioCacheStats>,
   'getCachedAudio' : ActorMethod<[string], [] | [string]>,
   'getCallerUserProfile' : ActorMethod<[], [] | [UserProfile]>,
@@ -3357,6 +4494,7 @@ export interface _SERVICE {
   'getClientReportById' : ActorMethod<[string], [] | [ClientReport]>,
   'getClientReports' : ActorMethod<[string], Array<ClientReport>>,
   'getCommandHistory' : ActorMethod<[bigint, bigint], Array<CommandLogEntry>>,
+  'getCompany' : ActorMethod<[string], { 'ok' : Company } | { 'err' : string }>,
   'getCompetitorAlertsByTenant' : ActorMethod<[string], Array<CompetitorAlert>>,
   'getCompetitorIntelReport' : ActorMethod<
     [string],
@@ -3386,6 +4524,32 @@ export interface _SERVICE {
     { 'ok' : Array<ComposioTool> } |
       { 'err' : string }
   >,
+  'getContact' : ActorMethod<[string], { 'ok' : Contact } | { 'err' : string }>,
+  'getContentCalendar' : ActorMethod<
+    [string],
+    { 'ok' : ContentCalendar } |
+      { 'err' : string }
+  >,
+  'getContentCalendarEntriesByCalendar' : ActorMethod<
+    [string],
+    { 'ok' : Array<ContentCalendarEntry> } |
+      { 'err' : string }
+  >,
+  'getContentCalendarEntriesByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<ContentCalendarEntry> } |
+      { 'err' : string }
+  >,
+  'getContentCalendarEntry' : ActorMethod<
+    [string],
+    { 'ok' : ContentCalendarEntry } |
+      { 'err' : string }
+  >,
+  'getContentCalendarsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<ContentCalendar> } |
+      { 'err' : string }
+  >,
   'getContentTierToggles' : ActorMethod<[], Array<ContentTierToggle>>,
   'getConversationHistory' : ActorMethod<
     [string, string],
@@ -3400,6 +4564,16 @@ export interface _SERVICE {
     >
   >,
   'getCsvImportBatches' : ActorMethod<[string], Array<CsvImportBatch>>,
+  'getCustomField' : ActorMethod<
+    [string],
+    { 'ok' : CustomField } |
+      { 'err' : string }
+  >,
+  'getCustomFieldValue' : ActorMethod<
+    [string],
+    { 'ok' : CustomFieldValue } |
+      { 'err' : string }
+  >,
   'getDecryptedCredential' : ActorMethod<[string, string], [] | [string]>,
   'getDeliverabilityEvents' : ActorMethod<[], Array<DeliverabilityEvent>>,
   'getDemoAudio' : ActorMethod<[string], [] | [string]>,
@@ -3454,7 +4628,7 @@ export interface _SERVICE {
     { 'ok' : { 'opened' : bigint, 'sent' : bigint, 'clicked' : bigint } } |
       { 'err' : string }
   >,
-  'getEmailTemplates' : ActorMethod<[], Array<EmailTemplate>>,
+  'getEmailTemplates' : ActorMethod<[], Array<EmailTemplateExt>>,
   'getEngagementApprovals' : ActorMethod<[string], Array<EngagementApproval>>,
   'getEstimatesByTenant' : ActorMethod<[string], Array<Estimate>>,
   'getExecutionLog' : ActorMethod<
@@ -3516,6 +4690,12 @@ export interface _SERVICE {
     >
   >,
   'getLastDiscoveryJob' : ActorMethod<[], [] | [ScheduledDiscoveryJob]>,
+  'getLatestMarketingAudit' : ActorMethod<[string], [] | [MarketingAudit]>,
+  'getLatestMultiLocationReport' : ActorMethod<
+    [string],
+    { 'ok' : [] | [MultiLocationReport] } |
+      { 'err' : string }
+  >,
   'getLeadAttribution' : ActorMethod<[string], [] | [LeadAttributionRecord]>,
   'getLeadAttributionsByLead' : ActorMethod<
     [string, string],
@@ -3548,7 +4728,33 @@ export interface _SERVICE {
   'getLeadsByTenantId' : ActorMethod<[TenantId], Array<Lead>>,
   'getLocationProfile' : ActorMethod<[string], [] | [LocationProfile]>,
   'getLocationProfilesByTenant' : ActorMethod<[string], Array<LocationProfile>>,
+  'getMarketingAudit' : ActorMethod<[string], [] | [MarketingAudit]>,
   'getMemory' : ActorMethod<[string], [] | [AgentMemory]>,
+  'getMonthlyReport' : ActorMethod<
+    [string],
+    { 'ok' : MonthlyReport } |
+      { 'err' : string }
+  >,
+  'getMonthlyReportsByStatus' : ActorMethod<
+    [string, ReportStatus],
+    { 'ok' : Array<MonthlyReport> } |
+      { 'err' : string }
+  >,
+  'getMonthlyReportsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<MonthlyReport> } |
+      { 'err' : string }
+  >,
+  'getMultiLocationReport' : ActorMethod<
+    [string],
+    { 'ok' : MultiLocationReport } |
+      { 'err' : string }
+  >,
+  'getMultiLocationReportsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<MultiLocationReport> } |
+      { 'err' : string }
+  >,
   'getN8NConfig' : ActorMethod<
     [],
     {
@@ -3586,6 +4792,7 @@ export interface _SERVICE {
    * / Public query: returns the ElevenLabs voice ID for the given niche.
    */
   'getNicheVoiceId' : ActorMethod<[string], string>,
+  'getNote' : ActorMethod<[string], { 'ok' : Note } | { 'err' : string }>,
   'getNotificationsByTenant' : ActorMethod<
     [TenantId],
     Array<NotificationRecord>
@@ -3604,6 +4811,11 @@ export interface _SERVICE {
   'getOperatorChatHistory' : ActorMethod<[], Array<OperatorChatMessage>>,
   'getOperatorReportData' : ActorMethod<[string], OperatorReportData>,
   'getOperatorStats' : ActorMethod<[], OperatorStats>,
+  'getOpportunity' : ActorMethod<
+    [string],
+    { 'ok' : Opportunity } |
+      { 'err' : string }
+  >,
   'getOptedOutEmails' : ActorMethod<[], Array<string>>,
   'getOptedOutPhones' : ActorMethod<[], Array<string>>,
   'getOutreachEvents' : ActorMethod<[string], Array<OutreachEvent>>,
@@ -3643,14 +4855,39 @@ export interface _SERVICE {
   'getPaymentMethod' : ActorMethod<[TenantId], [] | [PaymentMethod]>,
   'getPendingApprovalRecords' : ActorMethod<
     [string],
-    Array<ApprovalItemRecord>
+    { 'ok' : Array<ApprovalItemRecord> } |
+      { 'err' : string }
   >,
-  'getPendingApprovals' : ActorMethod<[string], Array<ApprovalItem>>,
+  'getPendingApprovalsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<ApprovalItem> } |
+      { 'err' : string }
+  >,
   'getPendingQueuedActions' : ActorMethod<[], Array<OutreachQueuedAction>>,
+  'getPerformanceInsight' : ActorMethod<
+    [string],
+    { 'ok' : PerformanceInsight } |
+      { 'err' : string }
+  >,
+  'getPerformanceInsightsByReport' : ActorMethod<
+    [string],
+    { 'ok' : Array<PerformanceInsight> } |
+      { 'err' : string }
+  >,
+  'getPerformanceInsightsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<PerformanceInsight> } |
+      { 'err' : string }
+  >,
   'getPingHistory' : ActorMethod<[string], Array<ApiPingRecord>>,
   'getPingStatus' : ActorMethod<[], Array<ApiPingRecord>>,
   'getPipelineFunnelStats' : ActorMethod<[string], PipelineFunnelStats>,
   'getPipelineLeads' : ActorMethod<[], Array<PipelineLead>>,
+  'getProposal' : ActorMethod<
+    [string],
+    { 'ok' : Proposal } |
+      { 'err' : string }
+  >,
   'getProviderAdapters' : ActorMethod<[string], Array<ProviderAdapterConfig>>,
   'getProviderConfigs' : ActorMethod<
     [],
@@ -3682,6 +4919,11 @@ export interface _SERVICE {
   'getQueueThrottleConfig' : ActorMethod<
     [string],
     [] | [DripQueueThrottleConfig]
+  >,
+  'getRankedDispatchRoute' : ActorMethod<
+    [string],
+    { 'ok' : RankedDispatchRoute } |
+      { 'err' : string }
   >,
   'getReadinessScore' : ActorMethod<[string], ReadinessScore>,
   'getRecentActivity' : ActorMethod<[bigint], Array<ActivityFeedItem>>,
@@ -3737,6 +4979,26 @@ export interface _SERVICE {
     [TenantId],
     Array<SeoGeoVisibilitySnapshot>
   >,
+  'getServiceAreaPage' : ActorMethod<
+    [string],
+    { 'ok' : ServiceAreaPage } |
+      { 'err' : string }
+  >,
+  'getServiceAreaPagesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<ServiceAreaPage> } |
+      { 'err' : string }
+  >,
+  'getServiceAreaPagesByStatus' : ActorMethod<
+    [string, ServiceAreaPageStatus],
+    { 'ok' : Array<ServiceAreaPage> } |
+      { 'err' : string }
+  >,
+  'getServiceAreaPagesByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<ServiceAreaPage> } |
+      { 'err' : string }
+  >,
   'getSmsAutopilotJobs' : ActorMethod<[], Array<SmsAutopilotJob>>,
   'getSmsAutopilotRules' : ActorMethod<[], Array<SmsAutopilotRule>>,
   'getSmsMessagesByThread' : ActorMethod<[string], Array<SMSMessage>>,
@@ -3750,6 +5012,26 @@ export interface _SERVICE {
     [string],
     Array<SocialListeningAlert>
   >,
+  'getSocialPostDraft' : ActorMethod<
+    [string],
+    { 'ok' : SocialPostDraft } |
+      { 'err' : string }
+  >,
+  'getSocialPostDraftsByEntry' : ActorMethod<
+    [string],
+    { 'ok' : Array<SocialPostDraft> } |
+      { 'err' : string }
+  >,
+  'getSocialPostDraftsByStatus' : ActorMethod<
+    [string, DraftStatus],
+    { 'ok' : Array<SocialPostDraft> } |
+      { 'err' : string }
+  >,
+  'getSocialPostDraftsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<SocialPostDraft> } |
+      { 'err' : string }
+  >,
   'getSocialPostsByTenant' : ActorMethod<
     [string, [] | [bigint], [] | [bigint]],
     Array<SocialPost>
@@ -3759,6 +5041,7 @@ export interface _SERVICE {
     [] | [SocialROIMetrics]
   >,
   'getSubdomainRecords' : ActorMethod<[], Array<SenderSubdomainRecord>>,
+  'getTask' : ActorMethod<[string], { 'ok' : Task } | { 'err' : string }>,
   'getTemplate' : ActorMethod<[string], [] | [AgentTemplateRecord]>,
   'getTemplates' : ActorMethod<[string], Array<AgentTemplateRecord>>,
   'getTenantName' : ActorMethod<[TenantId], string>,
@@ -3823,6 +5106,16 @@ export interface _SERVICE {
       'totalDocuments' : bigint,
     }
   >,
+  'getVerticalProfile' : ActorMethod<
+    [string],
+    { 'ok' : VerticalProfileExt } |
+      { 'err' : string }
+  >,
+  'getVerticalProfileByTenant' : ActorMethod<
+    [string],
+    { 'ok' : VerticalProfileExt } |
+      { 'err' : string }
+  >,
   'getVoiceAgentConfig' : ActorMethod<[TenantId], [] | [VoiceAgentConfig]>,
   'getWarmLeadHandoffs' : ActorMethod<[], Array<WarmLeadHandoff>>,
   'getWarmSequenceEvents' : ActorMethod<
@@ -3832,6 +5125,36 @@ export interface _SERVICE {
   'getWarmSequenceSchedules' : ActorMethod<
     [string],
     Array<WarmSequenceEmailSchedule>
+  >,
+  'getWebhookContract' : ActorMethod<
+    [string],
+    { 'ok' : WebhookContract } |
+      { 'err' : string }
+  >,
+  'getWebhookContractSummaries' : ActorMethod<
+    [],
+    { 'ok' : Array<ContractSummary> } |
+      { 'err' : string }
+  >,
+  'getWebhookContractsByCategory' : ActorMethod<
+    [WebhookCategory],
+    { 'ok' : Array<WebhookContract> } |
+      { 'err' : string }
+  >,
+  'getWebhookExecution' : ActorMethod<
+    [string],
+    { 'ok' : WebhookExecution } |
+      { 'err' : string }
+  >,
+  'getWebhookExecutionsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<WebhookExecution> } |
+      { 'err' : string }
+  >,
+  'getWebhookExecutionsByContract' : ActorMethod<
+    [string],
+    { 'ok' : Array<WebhookExecution> } |
+      { 'err' : string }
   >,
   'getWebhookLog' : ActorMethod<[string], Array<WebhookEvent>>,
   'getWebhookUrl' : ActorMethod<[], string>,
@@ -3882,6 +5205,26 @@ export interface _SERVICE {
         'scope' : string,
       }
     >
+  >,
+  'getWorkflowLogsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<WorkflowLogEntry> } |
+      { 'err' : string }
+  >,
+  'getWorkflowLogsByWorkflow' : ActorMethod<
+    [string],
+    { 'ok' : Array<WorkflowLogEntry> } |
+      { 'err' : string }
+  >,
+  'getWorkflowSnapshot' : ActorMethod<
+    [string],
+    { 'ok' : WorkflowStatusSnapshot } |
+      { 'err' : string }
+  >,
+  'getWorkflowSnapshotsByTenant' : ActorMethod<
+    [string],
+    { 'ok' : Array<WorkflowStatusSnapshot> } |
+      { 'err' : string }
   >,
   'handleNewsletterBounce' : ActorMethod<
     [string, string, BounceType, string],
@@ -3968,10 +5311,86 @@ export interface _SERVICE {
   'isContentEnabledForTier' : ActorMethod<[string], boolean>,
   'isDemoSessionExpired' : ActorMethod<[string], boolean>,
   'linkSocialLeadToCRM' : ActorMethod<[string, string, string], undefined>,
+  'listAllRankedDispatchRoutes' : ActorMethod<
+    [],
+    { 'ok' : Array<RankedDispatchRoute> } |
+      { 'err' : string }
+  >,
+  'listAllVerticalProfiles' : ActorMethod<[], Array<VerticalProfileExt>>,
+  'listBusinessBriefsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<BusinessBrief> } |
+      { 'err' : string }
+  >,
+  'listCompaniesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Company> } |
+      { 'err' : string }
+  >,
+  'listContactsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Contact> } |
+      { 'err' : string }
+  >,
+  'listCustomFieldValuesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<CustomFieldValue> } |
+      { 'err' : string }
+  >,
+  'listCustomFieldValuesByEntity' : ActorMethod<
+    [string, string],
+    { 'ok' : Array<CustomFieldValue> } |
+      { 'err' : string }
+  >,
+  'listCustomFieldsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<CustomField> } |
+      { 'err' : string }
+  >,
   'listLeadEnrichments' : ActorMethod<[], Array<LeadAIEnrichment>>,
   'listLeadScores' : ActorMethod<[], Array<LeadAIScore>>,
+  'listMarketingAuditsByClient' : ActorMethod<[string], Array<MarketingAudit>>,
+  'listNotesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Note> } |
+      { 'err' : string }
+  >,
+  'listOpportunitiesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Opportunity> } |
+      { 'err' : string }
+  >,
   'listOutreachSequences' : ActorMethod<[], Array<OutreachSequence>>,
+  'listProposalsByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Proposal> } |
+      { 'err' : string }
+  >,
+  'listProposalsByStatus' : ActorMethod<
+    [string, ProposalStatus],
+    { 'ok' : Array<Proposal> } |
+      { 'err' : string }
+  >,
+  'listRankedDispatchRoutesByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<RankedDispatchRoute> } |
+      { 'err' : string }
+  >,
+  'listRankedDispatchRoutesByStatus' : ActorMethod<
+    [RankedDispatchStatus],
+    { 'ok' : Array<RankedDispatchRoute> } |
+      { 'err' : string }
+  >,
   'listReplyAnalyses' : ActorMethod<[], Array<ReplyAnalysis>>,
+  'listTasksByClient' : ActorMethod<
+    [string],
+    { 'ok' : Array<Task> } |
+      { 'err' : string }
+  >,
+  'listVerticalProfilesByCategory' : ActorMethod<
+    [string],
+    Array<VerticalProfileExt>
+  >,
   'lockSocialContent' : ActorMethod<[string], boolean>,
   'logDripEmailSent' : ActorMethod<[DripQueueEmailLog], undefined>,
   'logFunnelStep' : ActorMethod<
@@ -3980,6 +5399,11 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'logTrialInteraction' : ActorMethod<[string, string], undefined>,
+  'logWorkflowEntry' : ActorMethod<
+    [WorkflowLogEntry],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'markBrandKitConverted' : ActorMethod<
     [string],
     { 'ok' : BrandKitProspect } |
@@ -4010,6 +5434,11 @@ export interface _SERVICE {
   'masterAgentGetMessages' : ActorMethod<[string], Array<MasterAgentMessage>>,
   'masterAgentListSessions' : ActorMethod<[], Array<MasterAgentSession>>,
   'masterAgentStartSession' : ActorMethod<[[] | [string]], string>,
+  'matchRankedAgent' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'mergeBrowserScoresIntoAuditResult' : ActorMethod<
     [string, string],
     { 'ok' : null } |
@@ -4140,6 +5569,36 @@ export interface _SERVICE {
   >,
   'rejectEngagement' : ActorMethod<[string, string], undefined>,
   'rejectReplyDraft' : ActorMethod<[string], undefined>,
+  'removeContentCalendarEntry' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'removeMonthlyReport' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'removeMultiLocationReport' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'removeServiceAreaPage' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'removeSocialPostDraft' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'removeVerticalProfile' : ActorMethod<
+    [string],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'requestReBrowserAudit' : ActorMethod<
     [string, string, string],
     { 'ok' : string } |
@@ -4153,13 +5612,15 @@ export interface _SERVICE {
   'resetNicheScript' : ActorMethod<[string], undefined>,
   'resetSmsSchedulerTimer' : ActorMethod<[], undefined>,
   'resetToDefaults' : ActorMethod<[], boolean>,
-  'resolveApproval' : ActorMethod<
-    [string, { 'approved' : null } | { 'rejected' : null }, [] | [string]],
-    boolean
+  'resolveApprovalItem' : ActorMethod<
+    [string, ApprovalResolution, string],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   'resolveApprovalRecord' : ActorMethod<
     [string, string, string, string],
-    boolean
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   /**
    * / Respond to a review — sets the AI-drafted response and marks it responded.
@@ -4204,6 +5665,11 @@ export interface _SERVICE {
     [string, boolean, boolean, string],
     undefined
   >,
+  'saveBestPerformerMemory' : ActorMethod<
+    [BestPerformerMemory],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'saveBrowserAuditResult' : ActorMethod<[BrowserAuditResult], undefined>,
   'saveCallerUserProfile' : ActorMethod<[UserProfile], undefined>,
   'saveComposioApiKey' : ActorMethod<
@@ -4214,6 +5680,16 @@ export interface _SERVICE {
   'saveComposioWebhookSecret' : ActorMethod<
     [string],
     { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'saveContentCalendar' : ActorMethod<
+    [ContentCalendar],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'saveContentCalendarEntry' : ActorMethod<
+    [ContentCalendarEntry],
+    { 'ok' : string } |
       { 'err' : string }
   >,
   'saveDemoAudio' : ActorMethod<[string, string], undefined>,
@@ -4251,11 +5727,31 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'saveLeadAuditResult' : ActorMethod<[LeadAuditResult], undefined>,
+  'saveMonthlyReport' : ActorMethod<
+    [MonthlyReport],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'saveN8NConfig' : ActorMethod<[string, string], undefined>,
   'saveOpenRouterApiKey' : ActorMethod<[string], undefined>,
   'saveOperatorChatMessage' : ActorMethod<
     [string, string, [] | [string]],
     string
+  >,
+  'savePerformanceInsight' : ActorMethod<
+    [PerformanceInsight],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'saveServiceAreaPage' : ActorMethod<
+    [ServiceAreaPage],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'saveSocialPostDraft' : ActorMethod<
+    [SocialPostDraft],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   /**
    * / Save Vapi API key and assistant ID for a tenant, then auto-provision any
@@ -4265,6 +5761,11 @@ export interface _SERVICE {
     [string, string, string],
     { 'ok' : boolean, 'error' : [] | [string] }
   >,
+  'saveVerticalProfile' : ActorMethod<
+    [VerticalProfileExt],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'saveWebhookSecrets' : ActorMethod<
     [string, string, string],
     { 'ok' : null } |
@@ -4273,6 +5774,11 @@ export interface _SERVICE {
   'saveWorkflowDef' : ActorMethod<
     [string, string, string, Array<string>, string, string],
     undefined
+  >,
+  'saveWorkflowSnapshot' : ActorMethod<
+    [WorkflowStatusSnapshot],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   'scheduleBrfOutboundCall' : ActorMethod<
     [string],
@@ -4296,7 +5802,17 @@ export interface _SERVICE {
     [string, string, [] | [SubscriberStatus], [] | [string]],
     Array<NewsletterSubscriber>
   >,
+  'seedDefaultWebhookContracts' : ActorMethod<
+    [],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'seedDemoData' : ActorMethod<[], undefined>,
+  'seedVerticalProfiles' : ActorMethod<
+    [],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'sendBookingConfirmationEmail' : ActorMethod<
     [string, string, string, string, string, string, string],
     EmailSendResult
@@ -4476,10 +5992,45 @@ export interface _SERVICE {
     { 'ok' : Booking } |
       { 'err' : string }
   >,
+  'updateBusinessBrief' : ActorMethod<
+    [string, BusinessBriefUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateCompany' : ActorMethod<
+    [string, CompanyUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateComplianceConfig' : ActorMethod<[ComplianceConfig], undefined>,
+  'updateContact' : ActorMethod<
+    [string, ContactUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateContentCalendarEntry' : ActorMethod<
+    [string, ContentCalendarEntryUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateContentCalendarStatus' : ActorMethod<
+    [string, CalendarApprovalStatus],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateContentResult' : ActorMethod<
     [string, GenerationStatus, string, [] | [string], [] | [string]],
     undefined
+  >,
+  'updateCustomField' : ActorMethod<
+    [string, CustomFieldUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateCustomFieldValue' : ActorMethod<
+    [string, CustomFieldValueUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   'updateDemoFunnelEntry' : ActorMethod<
     [string, string, DemoFunnelEntry],
@@ -4515,9 +6066,23 @@ export interface _SERVICE {
   'updateHealthMetric' : ActorMethod<[string, bigint], undefined>,
   'updateLead' : ActorMethod<[TenantId, string, Lead], undefined>,
   'updateLeadAuditJobStatus' : ActorMethod<[string, string, string], boolean>,
+  'updateMarketingAudit' : ActorMethod<
+    [string, MarketingAuditUpdate],
+    [] | [MarketingAudit]
+  >,
   'updateMemory' : ActorMethod<
     [string, string, ConversationEntry, [] | [string], [] | [string]],
     boolean
+  >,
+  'updateMonthlyReport' : ActorMethod<
+    [string, MonthlyReportUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateMultiLocationReport' : ActorMethod<
+    [string, MultiLocationReportUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
   >,
   'updateNewsletterCampaign' : ActorMethod<
     [string, NewsletterCampaign],
@@ -4527,7 +6092,27 @@ export interface _SERVICE {
     [string, string, SendLogStatus, [] | [string]],
     boolean
   >,
+  'updateNote' : ActorMethod<
+    [string, NoteUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateOpportunity' : ActorMethod<
+    [string, OpportunityUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateOutreachJobStatus' : ActorMethod<[string, string], undefined>,
+  'updateProposal' : ActorMethod<
+    [string, ProposalUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateRankedDispatchRoute' : ActorMethod<
+    [string, RankedDispatchRouteUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateReportSchedule' : ActorMethod<
     [string, boolean, boolean, bigint, bigint],
     { 'ok' : ReportSchedule } |
@@ -4556,8 +6141,23 @@ export interface _SERVICE {
     [string, string, ScheduledPost],
     undefined
   >,
+  'updateServiceAreaPage' : ActorMethod<
+    [string, ServiceAreaPageUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateSmsAutopilotRules' : ActorMethod<[Array<SmsAutopilotRule>], undefined>,
   'updateSocialPost' : ActorMethod<[string, string, SocialPost], undefined>,
+  'updateSocialPostDraft' : ActorMethod<
+    [string, SocialPostDraftUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateTask' : ActorMethod<
+    [string, TaskUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'updateTemplate' : ActorMethod<
     [string, string, string, Array<string>, MemoryMode, boolean],
     boolean
@@ -4575,6 +6175,24 @@ export interface _SERVICE {
   'updateVapiAssistant' : ActorMethod<
     [string, string, VapiAssistantUpdate],
     { 'ok' : null } |
+      { 'err' : string }
+  >,
+  'updateVerticalProfile' : ActorMethod<
+    [string, VerticalProfileUpdate],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
+  'updateWebhookExecutionStatus' : ActorMethod<
+    [
+      string,
+      { 'cancelled' : null } |
+        { 'pending' : null } |
+        { 'success' : null } |
+        { 'failed' : null },
+      [] | [string],
+      [] | [string],
+    ],
+    { 'ok' : string } |
       { 'err' : string }
   >,
   'uploadDocument' : ActorMethod<
@@ -4660,6 +6278,11 @@ export interface _SERVICE {
   'upsertSeoGeoSubscription' : ActorMethod<[SeoGeoSubscription], undefined>,
   'upsertSocialROIMetrics' : ActorMethod<[SocialROIMetrics], undefined>,
   'upsertVoiceAgentConfig' : ActorMethod<[VoiceAgentConfig], undefined>,
+  'upsertWebhookContract' : ActorMethod<
+    [WebhookContract],
+    { 'ok' : string } |
+      { 'err' : string }
+  >,
   'upsertWebsiteAgentSubscription' : ActorMethod<
     [WebsiteAgentSubscription],
     undefined

@@ -26,12 +26,22 @@ type AbacusConfig__221088772 =
 type AccountBrief__971078431 =
   {
     accountId : Text;
+    brandVoice : Text;
+    contentHistory : [Text];
+    differentiators : [Text];
     doNotRespondList : [Text];
+    doRules : [Text];
+    dontRules : [Text];
     flagKeywords : [Text];
     ignoreList : [Text];
     offerSummary : Text;
+    performanceHistory : [Text];
+    positioning : Text;
     priorityContacts : [Text];
     respondTo : [Text];
+    services : [Text];
+    sessionLog : [Text];
+    targetAudience : [Text];
     tone : Text;
     updatedAt : Int;
     updatedBy : Text
@@ -410,6 +420,24 @@ type ApprovalItemRecord__227879935 =
     threadId : Text;
     title : Text
   };
+type ApprovalItemRecord__355596150 =
+  {
+    actionType : Text;
+    agentId : Text;
+    description : Text;
+    id : Text;
+    priority : Text;
+    requestedAt : Int;
+    resolutionNote : ?Text;
+    resolvedAt : ?Int;
+    resolvedBy : ?Text;
+    runId : Text;
+    status : Text;
+    tenantId : Text;
+    threadId : Text;
+    tier : Text;
+    title : Text
+  };
 type ApprovalItem__1055619120 =
   {
     action : Text;
@@ -423,7 +451,36 @@ type ApprovalItem__1055619120 =
     tenantId : Text;
     threadId : Text
   };
+type ApprovalItem__165890323 =
+  {
+    action : Text;
+    approverNotes : ?Text;
+    id : Text;
+    reason : Text;
+    requestedAt : Int;
+    requestedBy : Text;
+    resolvedAt : ?Int;
+    runId : Text;
+    status : ApprovalStatus__200792192;
+    tenantId : Text;
+    threadId : Text;
+    tier : ApprovalTier__309894625
+  };
 type ApprovalStatus__1072888826 = {#approved; #expired; #pending; #rejected};
+type ApprovalStatus__200792192 = {#approved; #expired; #pending; #rejected};
+type ApprovalTier__309894625 =
+  {
+    #content_publish;
+    #email_send;
+    #financial;
+    #funding_claim;
+    #gbp_publish;
+    #legal;
+    #medical;
+    #sms_send;
+    #social_publish;
+    #voice_call
+  };
 type ArtifactStatus__185027299 = {#archived; #draft; #final};
 type ArtifactType__212481308 =
   {
@@ -443,6 +500,15 @@ type AttributionTouch__1006492320 =
     source : Text;
     timestamp : Int;
     utmParams : Text
+  };
+type AuditCategory__981963394 =
+  {
+    #BrandTrust;
+    #CompetitivePositioning;
+    #ContentMessaging;
+    #ConversionOptimization;
+    #GrowthStrategy;
+    #SEODiscoverability
   };
 type AuditLogEntry__941448024 =
   {
@@ -497,6 +563,16 @@ type AutopilotConfig__525069354 =
     targetDailyVolume : Nat;
     warmupPhase : Bool
   };
+type BRFScore__1042013029 =
+  {
+    bookedFindings : [Text];
+    bookedScore : Nat;
+    fundedFindings : [Text];
+    fundedScore : Nat;
+    overallScore : Nat;
+    rankedFindings : [Text];
+    rankedScore : Nat
+  };
 type BatchAuditJob__711276014 =
   {
     completedAt : ?Int;
@@ -508,6 +584,19 @@ type BatchAuditJob__711276014 =
     status : Text;
     tenantId : Text;
     totalLeads : Nat
+  };
+type BestPerformerMemory__214108148 =
+  {
+    avgClicks : Nat;
+    avgEngagement : Nat;
+    avgReach : Nat;
+    lastUpdatedAt : Int;
+    tenantId : Text;
+    topCtAs : [Text];
+    topFormats : [Text];
+    topPillars : [Text];
+    topPlatforms : [Text];
+    topPosts : [Text]
   };
 type BillingRecord__495027963 =
   {
@@ -663,6 +752,36 @@ type BulkSendJob__920782188 =
 type BulkSendQuota__644857163 = BulkSendQuota__960212225;
 type BulkSendQuota__960212225 =
   {dailyCount : Nat; dailyLimit : Nat; lastReset : Int; userId : Text};
+type BusinessBrief__94588869 =
+  {
+    approvalConfig : Text;
+    businessName : Text;
+    clientBusinessId : Text;
+    contentHistory : [ContentHistoryEntry__433852016];
+    criticalFindings : [Text];
+    currentFindings : [Text];
+    deliverables : [Text];
+    fundingHistory : [FundingHistoryEntry__596884788];
+    id : Text;
+    importantFindings : [Text];
+    lastUpdated : Int;
+    localSEOHistory : [LocalSEOHistoryEntry__473914919];
+    locationName : Text;
+    monitorFindings : [Text];
+    nextAction : Text;
+    performanceHistory : [PerformanceHistoryEntry__301949727];
+    primaryKeyword : Text;
+    reviewHistory : [ReviewHistoryEntry__308577610];
+    serviceArea : Text;
+    services : [Text];
+    sessionLog : [Text];
+    targetLocations : [Text];
+    toolsRun : [Text];
+    verticalProfileId : Text;
+    website : Text
+  };
+type CalendarApprovalStatus__491149743 =
+  {#approved; #draft; #needs_revision; #pending_review; #rejected};
 type CampaignInstance__8040640 =
   {
     id : Text;
@@ -698,6 +817,34 @@ type CampaignTemplate__815178611 =
     steps : [Text];
     tags : [Text];
     triggers : [Text]
+  };
+type CampaignType__607169540 =
+  {
+    #coldEmail;
+    #eventWebinar;
+    #financingOffer;
+    #leadNurture;
+    #localBusinessOutreach;
+    #oldLeadReactivation;
+    #proposalFollowUp;
+    #referralPartnerOutreach;
+    #reviewRequest;
+    #seasonalPromo;
+    #verticalSpecific
+  };
+type CampaignType__980703237 =
+  {
+    #coldEmail;
+    #eventWebinar;
+    #financingOffer;
+    #leadNurture;
+    #localBusinessOutreach;
+    #oldLeadReactivation;
+    #proposalFollowUp;
+    #referralPartnerOutreach;
+    #reviewRequest;
+    #seasonalPromo;
+    #verticalSpecific
   };
 type ChatWidgetConfig__91418543 =
   {
@@ -777,6 +924,21 @@ type CommentIntent__500045328 =
     #question;
     #spam
   };
+type Company__770452416 =
+  {
+    address : Text;
+    clientBusinessId : Text;
+    createdAt : Int;
+    email : Text;
+    id : Text;
+    name : Text;
+    notes : Text;
+    phone : Text;
+    size : Text;
+    updatedAt : Int;
+    vertical : Text;
+    website : Text
+  };
 type CompetitorAlert__60098617 =
   {
     alertType : Text;
@@ -846,6 +1008,52 @@ type ComposioTool__342994944 =
     id : Text;
     name : Text
   };
+type Contact__759887400 =
+  {
+    clientBusinessId : Text;
+    createdAt : Int;
+    email : Text;
+    firstName : Text;
+    id : Text;
+    industry : Text;
+    lastName : Text;
+    leadSource : Text;
+    notes : Text;
+    nurtureStatus : Text;
+    phone : Text;
+    title : Text;
+    updatedAt : Int
+  };
+type ContentCalendarEntry__656768309 =
+  {
+    angle : Text;
+    approvalStatus : CalendarApprovalStatus__491149743;
+    calendarId : Text;
+    createdAt : Int;
+    cta : Text;
+    day : Nat;
+    format : PostFormat__699207605;
+    id : Text;
+    objective : ContentObjective__91286593;
+    pillar : ContentPillar__582870397;
+    platform : Text;
+    tenantId : Text;
+    topic : Text;
+    updatedAt : Int;
+    visualDirection : Text
+  };
+type ContentCalendar__286169663 =
+  {
+    createdAt : Int;
+    entries : [Text];
+    id : Text;
+    month : Text;
+    niche : Text;
+    status : CalendarApprovalStatus__491149743;
+    tenantId : Text;
+    updatedAt : Int;
+    year : Nat
+  };
 type ContentGenerationResult__611940437 =
   {
     accountId : Text;
@@ -859,9 +1067,16 @@ type ContentGenerationResult__611940437 =
     prompt : Text;
     status : GenerationStatus__842661884
   };
+type ContentHistoryEntry__433852016 = Text;
+type ContentObjective__91286593 =
+  {#authority; #awareness; #conversion; #engagement; #retention};
+type ContentPillar__582870397 =
+  {#authority; #community; #education; #entertainment; #promotion};
 type ContentTierToggle__369940533 =
   {contentCreationEnabled : Bool; tier : Text};
 type ContentType__893770283 = {#AdCopy; #Blog; #Image; #Video};
+type ContractField__246847145 =
+  {description : Text; fieldType : Text; name : Text; required : Bool};
 type ConversationEntry__1041729693 =
   {content : Text; role : Text; timestamp : Int};
 type ConversationMessage__641550733 =
@@ -887,6 +1102,29 @@ type CsvImportBatch__515821595 =
     status : Text;
     tenantId : Text;
     totalLeads : Nat
+  };
+type CustomFieldValue__226427237 =
+  {
+    clientBusinessId : Text;
+    createdAt : Int;
+    customFieldId : Text;
+    entityId : Text;
+    entityType : Text;
+    id : Text;
+    updatedAt : Int;
+    value : Text
+  };
+type CustomField__1060121934 =
+  {
+    clientBusinessId : Text;
+    createdAt : Int;
+    fieldType : Text;
+    id : Text;
+    isRequired : Bool;
+    name : Text;
+    options : [Text];
+    targetEntity : Text;
+    updatedAt : Int
   };
 type Data__628993992<T> = {var count : Nat__1040412405; elements : [var ?T]};
 type Data__80296667<K, V> =
@@ -981,6 +1219,18 @@ type DomainSetupState__650563955 =
     registrar : ?Text;
     siteImportStatus : Text;
     updatedAt : Int
+  };
+type DraftPlatform__25045660 =
+  {#facebook; #google_business; #instagram; #linkedin; #threads; #tiktok; #x};
+type DraftStatus__913923505 =
+  {
+    #approved;
+    #draft;
+    #failed;
+    #pending_approval;
+    #published;
+    #rejected;
+    #scheduled
   };
 type DripLeadBounceRecord__956311172 =
   {
@@ -1080,15 +1330,20 @@ type EmailReplyRecord__630864157 =
   };
 type EmailSequenceStatus__481358779 =
   {#active; #completed; #not_started; #paused};
-type EmailTemplate__933780782 =
+type EmailTemplateExt__680879894 =
   {
     body : Text;
+    campaignType : ?CampaignType__607169540;
+    complianceNotes : ?Text;
+    consentRequired : ?Bool;
     day : Nat;
     fallbackBody : Text;
     fallbackSubject : Text;
     id : Nat;
     subject : Text;
-    updatedAt : Int
+    unsubscribeFooter : ?Bool;
+    updatedAt : Int;
+    verticalProfileId : ?Text
   };
 type EmojiUsage__948900851 = {#high; #low; #moderate; #none_};
 type EngagementApprovalStatus__887837491 = {#approved; #pending; #rejected};
@@ -1209,6 +1464,7 @@ type FundabilityScore__896782777 =
     tenantId : TenantId__142640312;
     timelinePhase : Nat
   };
+type FundingHistoryEntry__596884788 = Text;
 type FunnelEvent__11270465 =
   {
     leadId : Text;
@@ -1277,6 +1533,7 @@ type HealthScoreComponent__552488935 =
     weight : Nat;
     weightedScore : Nat
   };
+type HttpMethod__661898612 = {#delete; #get; #patch; #post; #put};
 type HumanOversightAssignment__644640494 =
   {
     createdAt : Time__688418391;
@@ -1356,6 +1613,14 @@ type Internal__1007892817<T> =
   {children : [var ?Node__918630472<T>]; data : Data__628993992<T>};
 type Internal__41346355<K, V> =
   {children : [var ?Node__1000929467<K, V>]; data : Data__80296667<K, V>};
+type InvestmentTier__279780344 =
+  {
+    deliverables : [Text];
+    description : Text;
+    investment : Text;
+    name : Text;
+    timeline : Text
+  };
 type Invoice__772203955 =
   {
     amount : Nat;
@@ -1497,6 +1762,7 @@ type List__529703492<T> =
     var elementIndex : Nat__1040412405
   };
 type List__560604548<T> = List__529703492<T>;
+type LocalSEOHistoryEntry__473914919 = Text;
 type LocationProfile__245168920 =
   {
     address : Text;
@@ -1510,10 +1776,58 @@ type LocationProfile__245168920 =
     tenantId : Text;
     timezone : Text
   };
+type LocationSummary__642738852 =
+  {
+    avgRating : Float;
+    city : Text;
+    locationId : Text;
+    locationName : Text;
+    rankingPosition : Nat;
+    reviewCount : Nat;
+    score : Nat
+  };
 type Map__222667396<K, V> = Map__912772452<K, V>;
 type Map__709709801<K, V> =
   {var root : Node__1000929467<K, V>; var size : Nat__1040412405};
 type Map__912772452<K, V> = Map__709709801<K, V>;
+type MarketingAuditScore__286540436 =
+  {
+    category : AuditCategory__981963394;
+    findings : [Text];
+    score : Nat;
+    weight : Nat
+  };
+type MarketingAuditStatus__614462927 =
+  {#completed; #failed; #in_progress; #pending};
+type MarketingAudit__956013659 =
+  {
+    brfScore : BRFScore__1042013029;
+    categoryScores : [MarketingAuditScore__286540436];
+    clientBusinessId : Text;
+    conversionGoal : Text;
+    createdAt : Int;
+    estimatedRevenueImpact : ?Text;
+    executiveSummary : Text;
+    goals : [Text];
+    grade : Text;
+    id : Text;
+    industry : Text;
+    knownCompetitors : [Text];
+    leadValue : Nat;
+    longTermInitiatives : [Text];
+    offer : Text;
+    overallScore : Nat;
+    proposalReadySummary : Text;
+    quickWins : [Text];
+    recommendedPackage : Text;
+    serviceArea : Text;
+    status : MarketingAuditStatus__614462927;
+    strategicRecommendations : [Text];
+    targetCustomer : Text;
+    updatedAt : Int;
+    verticalProfileId : Text;
+    website : Text
+  };
 type MarketingFramework__512634654 =
   {
     #bly;
@@ -1541,6 +1855,36 @@ type MemoryMode__131051241 =
   {#conversation_only; #none_; #with_notes; #with_summary};
 type MessageRole__236159398 = {#Assistant; #User};
 type MessageRole__838804652 = {#Assistant; #System; #User};
+type MonthlyReport__302555974 =
+  {
+    createdAt : Int;
+    id : Text;
+    insightIds : [Text];
+    keyFindings : [Text];
+    month : Text;
+    nextMonthStrategy : Text;
+    period : Text;
+    recommendations : [Text];
+    sentAt : ?Int;
+    status : ReportStatus__887824251;
+    summary : Text;
+    tenantId : Text;
+    updatedAt : Int;
+    year : Nat
+  };
+type MultiLocationReport__914904059 =
+  {
+    brandName : Text;
+    citationTrend : TrendDirection__993673351;
+    clientBusinessId : Text;
+    createdAt : Int;
+    id : Text;
+    locationCount : Nat;
+    locations : [LocationSummary__642738852];
+    overallScore : Nat;
+    rankingTrend : TrendDirection__993673351;
+    reviewTrend : TrendDirection__993673351
+  };
 type N8NConnectionConfig__186499644 = N8NConnectionConfig__461009674;
 type N8NConnectionConfig__461009674 =
   {
@@ -1615,6 +1959,20 @@ type Node__402002734<T> =
   };
 type Node__918630472<T> =
   {#internal : Internal__1007892817<T>; #leaf : Leaf__693487502<T>};
+type NoteCategory__873534532 = {#Call; #Email; #General; #Meeting; #System};
+type Note__227694438 =
+  {
+    authorId : Text;
+    body : Text;
+    category : NoteCategory__873534532;
+    clientBusinessId : Text;
+    createdAt : Int;
+    id : Text;
+    relatedToId : Text;
+    relatedToType : Text;
+    title : Text;
+    updatedAt : Int
+  };
 type NotificationRecord__941149763 =
   {
     body : Text;
@@ -1640,6 +1998,23 @@ type OperatorChatMessage__743301513 =
     createdAt : Time__688418391;
     id : Text;
     role : Text
+  };
+type OpportunityStage__189275131 =
+  {#ClosedLost; #ClosedWon; #Negotiation; #New; #Proposal; #Qualified};
+type Opportunity__26285893 =
+  {
+    clientBusinessId : Text;
+    closeDate : Int;
+    companyId : Text;
+    contactId : Text;
+    createdAt : Int;
+    id : Text;
+    notes : Text;
+    probability : Nat;
+    stage : OpportunityStage__189275131;
+    title : Text;
+    updatedAt : Int;
+    value : Nat
   };
 type OutputFormat__1046278636 = {#both; #html; #text_};
 type OutreachEvent__750281588 =
@@ -1788,6 +2163,21 @@ type PendingAction__509252259 =
     userId : Text
   };
 type PendingAction__904313889 = PendingAction__509252259;
+type PerformanceHistoryEntry__301949727 = Text;
+type PerformanceInsight__631297499 =
+  {
+    createdAt : Int;
+    id : Text;
+    insight : Text;
+    isBestPerformer : Bool;
+    metricName : Text;
+    metricValue : Text;
+    period : Text;
+    platform : Text;
+    recommendation : Text;
+    reportId : Text;
+    tenantId : Text
+  };
 type PipelineActivityEntry__299368396 =
   {action : Text; details : Text; timestamp : Int};
 type PipelineLead__964887701 =
@@ -1815,9 +2205,45 @@ type PlatformFormatting__494813575 =
   };
 type PostEngagementMetrics__604052321 =
   {clicks : Nat; comments : Nat; likes : Nat; reach : Nat; shares : Nat};
+type PostFormat__699207605 =
+  {#carousel; #live; #poll; #reel; #single_image; #story; #text_only; #video};
 type PostStatus__184828843 = {#draft; #failed; #published; #scheduled};
 type PropagationStatus__52140906 =
   {checkedAt : Int; isLive : Bool; percentage : Nat};
+type ProposalSection__470103261 = {body : Text; order : Nat; title : Text};
+type ProposalStatus__399306353 =
+  {
+    #accepted;
+    #approved;
+    #archived;
+    #draft;
+    #pending_review;
+    #rejected;
+    #sent
+  };
+type Proposal__716457596 =
+  {
+    assumptions : Text;
+    auditId : ?Text;
+    clientBusinessId : Text;
+    clientResponsibilities : Text;
+    createdAt : Int;
+    executiveSummary : Text;
+    id : Text;
+    investmentTiers : [InvestmentTier__279780344];
+    nextSteps : Text;
+    roiProjection : ?Text;
+    scopeOfWork : Text;
+    sections : [ProposalSection__470103261];
+    sentAt : ?Int;
+    situationAnalysis : Text;
+    status : ProposalStatus__399306353;
+    strategyApproach : Text;
+    timeline : Text;
+    title : Text;
+    updatedAt : Int;
+    verticalProfileId : Text
+  };
 type ProspectData__228938062 =
   {
     capturedAt : Int;
@@ -1841,6 +2267,20 @@ type ProviderAdapterConfig__575526954 =
     tenantId : Text
   };
 type ProviderType__763330179 = {#Cached; #Claude; #NVIDIA; #OpenAI};
+type RankedDispatchRoute__495286538 =
+  {
+    clientBusinessId : Text;
+    createdAt : Int;
+    id : Text;
+    matchedAgent : Text;
+    notes : [Text];
+    requestText : Text;
+    status : RankedDispatchStatus__736380124;
+    updatedAt : Int;
+    verticalProfileId : Text
+  };
+type RankedDispatchStatus__736380124 =
+  {#completed; #failed; #pending; #routed};
 type ReplyAnalysis__1003889084 =
   {
     analyzedAt : Int;
@@ -1883,6 +2323,9 @@ type ReportSection__646171458 =
     trendValue : Text;
     value : Text
   };
+type ReportStatus__887824251 =
+  {#approved; #archived; #draft; #pending_review; #sent};
+type ReviewHistoryEntry__308577610 = Text;
 type ReviewPlatform__109892178 = {#facebook; #google; #yelp};
 type ReviewRequestStatus__680476497 =
   {#awaiting; #happy; #maxAttempts; #reviewed; #sent; #unhappy};
@@ -2273,6 +2716,33 @@ type SeoGeoVisibilitySnapshot__192109743 =
     recordedAt : Time__688418391;
     tenantId : TenantId__142640312
   };
+type ServiceAreaPageStatus__264845419 =
+  {#approved; #archived; #draft; #pending_approval; #planned; #published};
+type ServiceAreaPage__595540939 =
+  {
+    approvalRequestId : ?Text;
+    clientBusinessId : Text;
+    createdAt : Time__688418391;
+    externalLinks : [Text];
+    id : Text;
+    internalLinks : [Text];
+    metaDescription : Text;
+    pageContent : Text;
+    pageTitle : Text;
+    photoAssets : [Text];
+    publishedUrl : ?Text;
+    schemaMarkup : ?Text;
+    seoScore : ?Nat;
+    serviceArea : Text;
+    services : [Text];
+    status : ServiceAreaPageStatus__264845419;
+    targetKeyword : Text;
+    targetLocations : [Text];
+    targetUrl : Text;
+    tenantId : Text;
+    updatedAt : Time__688418391;
+    verticalProfileId : Text
+  };
 type SmsAutopilotJob__522732100 =
   {
     id : Text;
@@ -2336,6 +2806,27 @@ type SocialListeningAlert__632843298 =
   };
 type SocialPlatform__717448715 =
   {#facebook; #google_business; #instagram; #linkedin; #tiktok};
+type SocialPostDraft__388283297 =
+  {
+    approvedAt : ?Int;
+    approvedBy : ?Text;
+    calendarId : ?Text;
+    content : Text;
+    createdAt : Int;
+    cta : Text;
+    ctaUrl : Text;
+    entryId : ?Text;
+    hashtags : [Text];
+    id : Text;
+    mediaUrls : [Text];
+    n8nStatus : ?Text;
+    platform : DraftPlatform__25045660;
+    publishedUrl : ?Text;
+    scheduledAt : ?Int;
+    status : DraftStatus__913923505;
+    tenantId : Text;
+    updatedAt : Int
+  };
 type SocialPost__697355122 =
   {
     beforeAfterPhoto : ?Text;
@@ -2383,6 +2874,25 @@ type TaskCategory__1028993465 =
     #Summarization;
     #TextGeneration
   };
+type TaskPriority__254404471 = {#High; #Low; #Medium; #Urgent};
+type TaskStatus__811239320 =
+  {#Cancelled; #Completed; #InProgress; #NotStarted};
+type Task__186786866 =
+  {
+    assignedTo : Text;
+    clientBusinessId : Text;
+    createdAt : Int;
+    description : Text;
+    dueDate : Int;
+    id : Text;
+    priority : TaskPriority__254404471;
+    relatedToId : Text;
+    relatedToType : Text;
+    status : TaskStatus__811239320;
+    taskType : Text;
+    title : Text;
+    updatedAt : Int
+  };
 type TenantId__142640312 = Text;
 type Time__298180599 = Int__837511138;
 type Time__688418391 = Time__298180599;
@@ -2400,6 +2910,7 @@ type ToolDefinition__108716300 =
   };
 type ToolkitToggle__355897260 =
   {appliedAt : Int; enabled : Bool; tierId : Text; toolkitName : Text};
+type TrendDirection__993673351 = {#down; #flat; #up};
 type TrialAccount__391623479 =
   {
     businessName : Text;
@@ -2477,6 +2988,46 @@ type VapiProvisioningStatus__148283768 =
     lastSynced : ?Int;
     status : {#active; #error; #notConfigured; #provisioning}
   };
+type VerticalProfileExt__866371659 =
+  {
+    brandVoice : Text;
+    category : Text;
+    commonCampaignTypes : [Text];
+    commonGBPPostTypes : [Text];
+    commonLeadTypes : [Text];
+    commonOffers : [Text];
+    commonReviewThemes : [Text];
+    commonServices : [Text];
+    competitors : [Text];
+    complianceNotes : Text;
+    contentPillars : [Text];
+    createdAt : Nat;
+    defaultPipelineLabels : [Text];
+    differentiators : [Text];
+    doNotRules : [Text];
+    doRules : [Text];
+    emailTone : Text;
+    exampleContentAngles : [Text];
+    exampleEmailTemplates : [Text];
+    exampleSMSFollowUps : [Text];
+    fundingNeeds : [Text];
+    id : Text;
+    keywords : [Text];
+    leadFormFields : [Text];
+    localSEOKeywordPatterns : [Text];
+    niche : Text;
+    positioning : Text;
+    prohibitedClaims : [Text];
+    proposalDeliverables : [Text];
+    recommendedDisclaimers : [Text];
+    serviceArea : [Text];
+    services : [Text];
+    smsTone : Text;
+    subNiches : [Text];
+    targetAudience : Text;
+    tenantId : Text;
+    updatedAt : Nat
+  };
 type VoiceAgentConfig__22300794 =
   {
     businessHoursText : Text;
@@ -2521,13 +3072,19 @@ type WarmSequenceEmailSchedule__621450793 =
     subject : Text;
     touchIndex : Nat
   };
-type WarmSequence__158952720 =
+type WarmSequenceExt__151825229 =
   {
+    campaignType : ?CampaignType__980703237;
+    complianceNotes : ?Text;
+    consentTracking : ?Bool;
     id : Text;
     name : Text;
     niche : Text;
+    replyTracking : ?Bool;
     touches : [WarmTouch__61441140];
-    triggerEvents : [Text]
+    triggerEvents : [Text];
+    unsubscribeLink : ?Text;
+    verticalProfileId : ?Text
   };
 type WarmTouch__61441140 =
   {
@@ -2537,6 +3094,49 @@ type WarmTouch__61441140 =
     delayHours : Nat;
     subject : Text;
     touchNumber : Nat
+  };
+type WebhookCategory__417344302 =
+  {#crm; #email_sms; #funding; #gbp; #general; #reports; #social; #voice};
+type WebhookContract__823045856 =
+  {
+    approvalRequestIdField : ?Text;
+    category : WebhookCategory__417344302;
+    clientBusinessIdField : ?Text;
+    createdAt : Int;
+    endpoint : Text;
+    errorResponse : Text;
+    id : Text;
+    method : HttpMethod__661898612;
+    optionalFields : [ContractField__246847145];
+    purpose : Text;
+    recordIdField : ?Text;
+    requiredFields : [ContractField__246847145];
+    requiresApproval : Bool;
+    retryStrategy : ?Text;
+    successResponse : Text;
+    supportsDryRun : Bool;
+    updatedAt : Int;
+    verticalProfileIdField : ?Text;
+    workflowLogUpdateType : ?Text
+  };
+type WebhookExecution__970393702 =
+  {
+    approvalRequestId : ?Text;
+    approvedAt : ?Int;
+    approvedBy : ?Text;
+    callbackUrl : ?Text;
+    clientBusinessId : Text;
+    completedAt : ?Int;
+    contractId : Text;
+    createdAt : Int;
+    errorMsg : ?Text;
+    id : Text;
+    isDryRun : Bool;
+    payload : [(Text, Text)];
+    recordId : ?Text;
+    result : ?Text;
+    status : {#cancelled; #failed; #pending; #success};
+    verticalProfileId : ?Text
   };
 type WebhookState__290626572 =
   {
@@ -2731,6 +3331,20 @@ type WorkflowExecution__826627969 =
     triggeredBy : Text;
     workflowId : Text
   };
+type WorkflowLogEntry__379349992 =
+  {
+    action : Text;
+    agentType : Text;
+    createdAt : Int;
+    id : Text;
+    inputRef : ?Text;
+    notes : Text;
+    outputRef : ?Text;
+    status : WorkflowStatus__831541074;
+    stepIndex : Nat;
+    tenantId : Text;
+    workflowId : Text
+  };
 type WorkflowScope__996851648 =
   {
     #AdminOnly;
@@ -2740,6 +3354,28 @@ type WorkflowScope__996851648 =
     #PlatformWide;
     #ProTier;
     #SpecificAgency : Text
+  };
+type WorkflowStatusSnapshot__439449568 =
+  {
+    currentStep : Nat;
+    lastAction : Text;
+    lastAgentType : Text;
+    lastUpdatedAt : Int;
+    status : WorkflowStatus__831541074;
+    tenantId : Text;
+    totalSteps : Nat;
+    workflowId : Text
+  };
+type WorkflowStatus__831541074 =
+  {
+    #approved;
+    #cancelled;
+    #completed;
+    #failed;
+    #in_progress;
+    #paused_for_approval;
+    #pending;
+    #rejected
   };
 actor {
   stable ACTIVE_HOURS : Nat;
@@ -2965,9 +3601,14 @@ actor {
       var front : ?Node__402002734<SmsAutopilotJob__522732100>;
       var size : Nat__1040412405
     };
+  stable apeWarmSeqExtLib :
+    {
+      var root : Node__1000929467<Text, WarmSequenceExt__151825229>;
+      var size : Nat__1040412405
+    };
   stable apeWarmSeqLib :
     {
-      var root : Node__1000929467<Text, WarmSequence__158952720>;
+      var root : Node__1000929467<Text, WarmSequenceExt__151825229>;
       var size : Nat__1040412405
     };
   stable ape_timerId : {var v : ?Nat};
@@ -2987,6 +3628,11 @@ actor {
     {
       var root : Node__1000929467<Text, ApprovalItem__1055619120>;
       var size : Nat__1040412405
+    };
+  stable approvalQueues :
+    {
+      items : Map__222667396<Text, ApprovalItem__165890323>;
+      records : List__560604548<ApprovalItemRecord__355596150>
     };
   stable auditReportStore :
     {
@@ -3057,6 +3703,8 @@ actor {
       var blocks : [var [var ?BulkSendJob__920782188]];
       var elementIndex : Nat__1040412405
     };
+  stable businessBriefState :
+    {briefs : Map__222667396<Text, BusinessBrief__94588869>};
   stable caffEmailEndpoint : Text;
   stable campaignInstances :
     {
@@ -3143,12 +3791,27 @@ actor {
       toolRegistry :
         Map__222667396<Text, List__560604548<ComposioTool__342994944>>
     };
+  stable contentCalendars :
+    {
+      calendars : Map__222667396<Text, ContentCalendar__286169663>;
+      entries : Map__222667396<Text, ContentCalendarEntry__656768309>
+    };
   stable contentStudioState :
     {
       generatedContent : [ContentGenerationResult__611940437];
       tierToggles : [ContentTierToggle__369940533]
     };
   stable credSalt : Blob;
+  stable crmObjectsState :
+    {
+      companies : Map__222667396<Text, Company__770452416>;
+      contacts : Map__222667396<Text, Contact__759887400>;
+      customFieldValues : Map__222667396<Text, CustomFieldValue__226427237>;
+      customFields : Map__222667396<Text, CustomField__1060121934>;
+      notes : Map__222667396<Text, Note__227694438>;
+      opportunities : Map__222667396<Text, Opportunity__26285893>;
+      tasks : Map__222667396<Text, Task__186786866>
+    };
   stable csvImportBatches :
     {
       var root : Node__1000929467<Text, CsvImportBatch__515821595>;
@@ -3227,7 +3890,12 @@ actor {
     };
   stable emailTemplates :
     {
-      var root : Node__1000929467<Nat, EmailTemplate__933780782>;
+      var root : Node__1000929467<Nat, EmailTemplateExt__680879894>;
+      var size : Nat__1040412405
+    };
+  stable emailTemplatesExt :
+    {
+      var root : Node__1000929467<Nat, EmailTemplateExt__680879894>;
       var size : Nat__1040412405
     };
   stable emailTrackingIdx : {tokenMap : Map__222667396<Text, (Text, Text)>};
@@ -3392,11 +4060,20 @@ actor {
       var root : Node__1000929467<Text, LocationProfile__245168920>;
       var size : Nat__1040412405
     };
+  stable marketingAuditState :
+    {
+      audits : Map__222667396<Text, MarketingAudit__956013659>;
+      var idCounter : Nat
+    };
   stable masterAgentState :
     {
       activeSessionId : {var value : ?Text};
       sessions : List__560604548<MasterAgentSession__776685001>
     };
+  stable monthlyReports :
+    {reports : Map__222667396<Text, MonthlyReport__302555974>};
+  stable multiLocationRollupState :
+    {reports : Map__222667396<Text, MultiLocationReport__914904059>};
   stable n8nState :
     {
       batchCounter : {var value : Nat};
@@ -3502,6 +4179,11 @@ actor {
         Node__1000929467<TenantId__142640312, PaymentMethod__68978920>;
       var size : Nat__1040412405
     };
+  stable performanceInsights :
+    {
+      insights : Map__222667396<Text, PerformanceInsight__631297499>;
+      memory : Map__222667396<Text, BestPerformerMemory__214108148>
+    };
   stable pipelineLeadsStore :
     {
       var root : Node__1000929467<Text, PipelineLead__964887701>;
@@ -3513,6 +4195,8 @@ actor {
       var blocks : [var [var ?(Text, Text, ?Text, Int, Bool, ?Text)]];
       var elementIndex : Nat__1040412405
     };
+  stable proposalState :
+    {proposals : Map__222667396<Text, Proposal__716457596>};
   stable prospectDataStore :
     {
       var root : Node__1000929467<Text, ProspectData__228938062>;
@@ -3537,6 +4221,8 @@ actor {
       openRouterState : State__709335570;
       usageLogs : List__560604548<AIUsageLog__862912987>
     };
+  stable rankedDispatchState :
+    {routes : Map__222667396<Text, RankedDispatchRoute__495286538>};
   stable rc_ctaLink : Text;
   stable replyInboxItems :
     {
@@ -3672,6 +4358,8 @@ actor {
                           List__560604548<SeoGeoVisibilitySnapshot__192109743>>;
       var size : Nat__1040412405
     };
+  stable serviceAreaSEOState :
+    {pages : Map__222667396<Text, ServiceAreaPage__595540939>};
   stable sevenDaysNs : Int;
   stable smsAutopilotJobs :
     {
@@ -3698,6 +4386,8 @@ actor {
       var root : Node__1000929467<Text, SocialLead__744221917>;
       var size : Nat__1040412405
     };
+  stable socialPostDrafts :
+    {drafts : Map__222667396<Text, SocialPostDraft__388283297>};
   stable socialPosts :
     {
       var root : Node__1000929467<Text, SocialPost__697355122>;
@@ -3754,6 +4444,8 @@ actor {
       var root : Node__1000929467<Text, VapiProvisioningStatus__148283768>;
       var size : Nat__1040412405
     };
+  stable verticalProfiles :
+    {profiles : Map__222667396<Text, VerticalProfileExt__866371659>};
   stable voaState :
     {
       commandLog : List__560604548<CommandLogEntry__515590171>;
@@ -3785,6 +4477,11 @@ actor {
     {
       var root : Node__1000929467<Text, WarmLeadHandoff__367263013>;
       var size : Nat__1040412405
+    };
+  stable webhookContractsState :
+    {
+      contracts : Map__222667396<Text, WebhookContract__823045856>;
+      executions : Map__222667396<Text, WebhookExecution__970393702>
     };
   stable webhookStateRef : {var s : WebhookState__290626572};
   stable websiteAgentScores :
@@ -3832,5 +4529,10 @@ actor {
         Node__1000929467<TenantId__142640312, WhiteLabelConfig__480446571>;
       var size : Nat__1040412405
     };
-  stable var workflowIdCounter : Nat
+  stable var workflowIdCounter : Nat;
+  stable workflowLogs :
+    {
+      logs : Map__222667396<Text, WorkflowLogEntry__379349992>;
+      snapshots : Map__222667396<Text, WorkflowStatusSnapshot__439449568>
+    }
 };

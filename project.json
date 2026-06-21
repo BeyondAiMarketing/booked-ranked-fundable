@@ -1,23 +1,22 @@
 {
-  "overview": "BRF is an AI-powered SaaS platform that helps local service businesses get booked, ranked, and fundable through automation, CRM, reputation management, and lead generation.",
+  "overview": "BRF is a multi-niche AI growth operating system for service businesses, local businesses, professional businesses, contractors, agencies, and other client businesses.",
   "features": [
-    "Premium real estate landing page for agents and brokers",
-    "Dynamic scorecard with rules-based instant scores and AI-generated explanations",
-    "9 audience selector cards (Solo Agent, Broker, Luxury, Listing, Buyer, Investor, Commercial, New Agent) that pre-fill the demo form",
-    "13 full page sections including hero, pain points, Booked/Ranked/Fundable framework, before/after comparison, offer stack, FAQ",
-    "Sticky CTA bar with smart scroll visibility",
-    "All CTAs route to unified BRF demo with niche=real-estate pre-selected",
-    "Dark navy, gold, and electric blue premium design system"
+    "Marketing Audit Agent with hybrid scoring and visual charts",
+    "Proposal Builder Agent with vertical disclaimers",
+    "Campaign Builder extending existing sequences",
+    "Twenty CRM object modeling inspiration",
+    "16 N8N webhook contracts with dryRun support",
+    "Unified Webhook Management page with category tabs"
   ],
-  "category": "saas-platform",
+  "category": "productivity",
   "tags": [
-    "real-estate",
-    "ai",
     "crm",
-    "lead-generation",
-    "reputation-management",
-    "landing-page",
-    "saas"
+    "marketing",
+    "automation",
+    "ai",
+    "saas",
+    "local-business",
+    "workflow"
   ],
-  "last_updated": "2026-06-02T14:43:58.709Z"
+  "last_updated": "2026-06-20T19:47:52.575Z"
 }

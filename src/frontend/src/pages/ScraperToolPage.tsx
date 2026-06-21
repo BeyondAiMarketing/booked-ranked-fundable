@@ -662,7 +662,7 @@ function ScraperTab({
             )(req, "admin");
             if (res.isDynamic && mode !== "static") setIsDynamicAlert(true);
             setResult(res);
-          } catch (err) {
+          } catch (_err) {
             // actor call failed — fall back to mock so UI is still usable
             if (mode !== "static") setIsDynamicAlert(true);
             const count = Math.min(limit, MOCK_SCRAPED_ITEMS.length);
@@ -676,7 +676,7 @@ function ScraperTab({
               scrapedAt: BigInt(Date.now()) * BigInt(1_000_000),
             };
             setResult(mockResult);
-            console.warn("scrapeUrl actor call failed, using mock data:", err);
+            // scrapeUrl actor call failed, using mock data
           }
         } else {
           await new Promise((r) => setTimeout(r, 1100 + Math.random() * 700));
@@ -709,8 +709,8 @@ function ScraperTab({
           actor.stageScrapeLeads as (tid: string, id: bigint) => Promise<bigint>
         )("admin", scrapeRecordId);
       }
-    } catch (err) {
-      console.warn("stageScrapeLeads failed, marking pushed anyway:", err);
+    } catch {
+      // stageScrapeLeads failed, marking pushed anyway
     }
     setPushedToCrm(true);
   }
@@ -1203,8 +1203,8 @@ function HistoryTab() {
       )("admin", BigInt(50));
       // History is stored in actor stable state; we use local demo data for display
       // but trigger the actor call to ensure sync
-    } catch (err) {
-      console.warn("getScrapeHistory failed:", err);
+    } catch {
+      // getScrapeHistory failed silently
     }
   }
 

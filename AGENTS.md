@@ -13,7 +13,7 @@
 - **lint fix**: `pnpm fix`
 - **build**: `pnpm build`
 
-**Backend** (run from `src/backend/`):
+**Backend** (run from project root `app/` — mops.toml paths are relative to root):
 
 - **install**: `mops install`
 - **typecheck**: `mops check --fix`

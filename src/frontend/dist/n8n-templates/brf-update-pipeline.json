@@ -1,0 +1,142 @@
+{
+  "name": "BRF - Update Pipeline Stage",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "brf-update-pipeline"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{$credentials.brfApiUrl}}/api/webhooks/update-pipeline",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "leadId": "={{ $json.body.leadId }}",
+          "stage": "={{ $json.body.stage }}",
+          "vertical": "={{ $json.body.vertical }}",
+          "notes": "={{ $json.body.notes }}",
+          "dryRun": false
+        },
+        "options": {}
+      },
+      "id": "http-1",
+      "name": "Update Pipeline in BRF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-1",
+      "name": "Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('Pipeline updated successfully:', $input.first().json); return $input.all();"
+      },
+      "id": "code-1",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "console.error('Pipeline update failed:', $input.first().json); return $input.all();"
+      },
+      "id": "code-2",
+      "name": "Log Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Update Pipeline in BRF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Pipeline in BRF": {
+      "main": [
+        [
+          {
+            "node": "Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success?": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "BRF",
+      "color": "#FFD700"
+    },
+    {
+      "name": "CRM",
+      "color": "#00BFFF"
+    }
+  ],
+  "description": "Updates a lead's pipeline stage in BRF CRM. Triggered by external events (appointment booked, proposal sent, deal closed) to keep the pipeline in sync."
+}

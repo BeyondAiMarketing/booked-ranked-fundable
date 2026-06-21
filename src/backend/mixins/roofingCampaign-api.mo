@@ -36,7 +36,7 @@ mixin (
   campaignCounters    : T.CampaignCounters,
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
   extendedLeads       : Map.Map<Text, Map.Map<Text, CsvTypes.ExtendedLead>>,
-  emailTemplates      : Map.Map<Nat, ET.EmailTemplate>,
+  emailTemplates      : Map.Map<Nat, ET.EmailTemplateExt>,
   templateInitialized : { var v : Bool },
   sendLogs            : Map.Map<Text, List.List<ET.SendLogEntry>>,
 ) {
@@ -83,7 +83,7 @@ mixin (
 
   // ── template helpers ──────────────────────────────────────────────────────
 
-  func rc_getTemplate(day : Nat) : ?ET.EmailTemplate {
+  func rc_getTemplate(day : Nat) : ?ET.EmailTemplateExt {
     emailTemplates.get(day);
   };
 
@@ -400,10 +400,10 @@ mixin (
   // ── Template admin API ────────────────────────────────────────────────────
 
   /// Return all 7 email templates for admin display.
-  public query ({ caller }) func getEmailTemplates() : async [ET.EmailTemplate] {
+  public query ({ caller }) func getEmailTemplates() : async [ET.EmailTemplateExt] {
     rc_assertAdmin(caller);
     ETL.initTemplatesIfEmpty(emailTemplates, templateInitialized);
-    let result = List.empty<ET.EmailTemplate>();
+    let result = List.empty<ET.EmailTemplateExt>();
     for ((_, tmpl) in emailTemplates.entries()) { result.add(tmpl) };
     result.toArray();
   };
@@ -443,7 +443,7 @@ mixin (
                 topC := gp.competitorAtTop;
               };
             };
-            let dz    = 9 - visible;
+            let dz    = Nat.sub(9, visible);
             let score = (visible * 100) / 9;
             let miss  : Text = if (dz > 5) "extended service area coverage, review volume"
                                else if (dz > 2) "broader local citations, review consistency"
@@ -500,7 +500,7 @@ mixin (
                   topC := gp.competitorAtTop;
                 };
               };
-              let dz    = 9 - visible;
+              let dz    = Nat.sub(9, visible);
               let score = (visible * 100) / 9;
               let miss  : Text = if (dz > 5) "extended service area coverage, review volume"
                                  else if (dz > 2) "broader local citations, review consistency"

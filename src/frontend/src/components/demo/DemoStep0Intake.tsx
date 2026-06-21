@@ -80,8 +80,8 @@ export default function DemoStep0Intake({ onNext }: Props) {
           form.city,
         );
       }
-    } catch (error) {
-      console.error("Demo intake error:", error);
+    } catch {
+      // Demo intake error handled silently
     }
     try {
       if (actor && sessionId) {
@@ -96,8 +96,8 @@ export default function DemoStep0Intake({ onNext }: Props) {
           form.website || "",
         );
       }
-    } catch (error) {
-      console.error("activateTrial error:", error);
+    } catch {
+      // activateTrial error handled silently
     }
     const data: SessionData = {
       ...form,

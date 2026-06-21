@@ -1161,7 +1161,7 @@ export default function EstimatesPage() {
 
   const sendReviewRequest = () => {
     setReviewSent(true);
-    setTimeout(() => setReviewPrompt(null), 2000);
+    window.setTimeout(() => setReviewPrompt(null), 2000);
   };
 
   const TABS: { id: Tab; label: string }[] = [

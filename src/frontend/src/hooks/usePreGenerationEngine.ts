@@ -169,12 +169,9 @@ export function usePreGenerationEngine(): UsePreGenerationEngineResult {
             try {
               await actor.setCachedAudio(key, base64Audio);
               saved++;
-            } catch (err) {
+            } catch {
               saveErrors++;
-              console.warn(
-                `[PreGen] Failed to save cache for ${key}:`,
-                err instanceof Error ? err.message : String(err),
-              );
+              // Failed to save cache for key
             }
             setNicheProgress(nicheId, saved + saveErrors, total);
           },

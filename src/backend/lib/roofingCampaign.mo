@@ -153,7 +153,7 @@ module {
   /// Generate email body via Owl Alpha (OpenRouter); falls back to a template.
   /// Fill template body using merge fields; returns the filled body and usedFallback flag.
   public func generateEmailBody(
-    template    : ET.EmailTemplate,
+    template    : ET.EmailTemplateExt,
     lead        : T.LeadCampaignStatus,
     auditResult : ?T.GridAuditResult,
     ctaLink     : Text,

@@ -9,12 +9,40 @@ module {
     bookingLinkIncluded : Bool;
   };
 
+  public type CampaignType = {
+    #leadNurture;
+    #coldEmail;
+    #oldLeadReactivation;
+    #proposalFollowUp;
+    #referralPartnerOutreach;
+    #reviewRequest;
+    #localBusinessOutreach;
+    #seasonalPromo;
+    #financingOffer;
+    #eventWebinar;
+    #verticalSpecific;
+  };
+
   public type WarmSequence = {
     id : Text;
     niche : Text;
     name : Text;
     touches : [WarmTouch];
     triggerEvents : [Text];
+  };
+
+  public type WarmSequenceExt = {
+    id : Text;
+    niche : Text;
+    name : Text;
+    touches : [WarmTouch];
+    triggerEvents : [Text];
+    campaignType : ?CampaignType;
+    verticalProfileId : ?Text;
+    complianceNotes : ?Text;
+    unsubscribeLink : ?Text;
+    consentTracking : ?Bool;
+    replyTracking : ?Bool;
   };
 
   public type AuditSnapshot = {

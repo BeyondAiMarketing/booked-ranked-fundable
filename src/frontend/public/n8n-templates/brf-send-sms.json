@@ -1,0 +1,143 @@
+{
+  "name": "BRF - Send SMS",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "trigger-1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "brf-send-sms"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{$credentials.brfApiUrl}}/api/webhooks/send-sms",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "json",
+        "body": {
+          "toPhone": "={{ $json.body.toPhone }}",
+          "messageBody": "={{ $json.body.messageBody }}",
+          "fromNumber": "={{ $json.body.fromNumber }}",
+          "campaignId": "={{ $json.body.campaignId }}",
+          "vertical": "={{ $json.body.vertical }}",
+          "dryRun": false
+        },
+        "options": {}
+      },
+      "id": "http-1",
+      "name": "Send SMS in BRF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": 200,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "if-1",
+      "name": "Success?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('SMS sent successfully:', $input.first().json); return $input.all();"
+      },
+      "id": "code-1",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "console.error('SMS send failed:', $input.first().json); return $input.all();"
+      },
+      "id": "code-2",
+      "name": "Log Failure",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [850, 400]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Send SMS in BRF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send SMS in BRF": {
+      "main": [
+        [
+          {
+            "node": "Success?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Success?": {
+      "main": [
+        [
+          {
+            "node": "Log Success",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "BRF",
+      "color": "#FFD700"
+    },
+    {
+      "name": "SMS",
+      "color": "#00BFFF"
+    }
+  ],
+  "description": "Sends SMS messages via Twilio. Pulls approved SMS drafts from BRF Campaign Builder and handles opt-out compliance and delivery tracking."
+}

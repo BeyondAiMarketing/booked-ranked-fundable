@@ -111,6 +111,36 @@ export interface Lead {
     phone: string;
     agentSubscriptions: Array<string>;
 }
+export interface SocialPostDraft {
+    id: string;
+    cta: string;
+    status: DraftStatus;
+    content: string;
+    hashtags: Array<string>;
+    n8nStatus?: string;
+    approvedAt?: bigint;
+    approvedBy?: string;
+    createdAt: bigint;
+    publishedUrl?: string;
+    platform: DraftPlatform;
+    tenantId: string;
+    entryId?: string;
+    updatedAt: bigint;
+    ctaUrl: string;
+    calendarId?: string;
+    mediaUrls: Array<string>;
+    scheduledAt?: bigint;
+}
+export interface CustomFieldValue {
+    id: string;
+    clientBusinessId: string;
+    value: string;
+    createdAt: bigint;
+    updatedAt: bigint;
+    entityId: string;
+    customFieldId: string;
+    entityType: string;
+}
 export interface NicheScript {
     voiceName: string;
     nicheId: string;
@@ -141,6 +171,30 @@ export interface PaidAdsDeliverable {
     summary: string;
     deliverableType: string;
 }
+export interface MarketingAuditUpdate {
+    serviceArea?: string;
+    status?: MarketingAuditStatus;
+    leadValue?: bigint;
+    recommendedPackage?: string;
+    overallScore?: bigint;
+    offer?: string;
+    estimatedRevenueImpact?: string;
+    brfScore?: BRFScore;
+    targetCustomer?: string;
+    proposalReadySummary?: string;
+    website?: string;
+    updatedAt?: bigint;
+    goals?: Array<string>;
+    grade?: string;
+    executiveSummary?: string;
+    conversionGoal?: string;
+    quickWins?: Array<string>;
+    categoryScores?: Array<MarketingAuditScore>;
+    knownCompetitors?: Array<string>;
+    strategicRecommendations?: Array<string>;
+    longTermInitiatives?: Array<string>;
+    industry?: string;
+}
 export interface SubscriberImportResult {
     imported: bigint;
     skipped: bigint;
@@ -167,6 +221,15 @@ export interface WarmSequenceEmailSchedule {
     touchIndex: bigint;
     sendAfter: bigint;
     scheduledAt: bigint;
+}
+export interface LocationSummary {
+    city: string;
+    score: bigint;
+    rankingPosition: bigint;
+    locationId: string;
+    reviewCount: bigint;
+    locationName: string;
+    avgRating: number;
 }
 export type TenantId = string;
 export interface SocialComment {
@@ -214,12 +277,25 @@ export interface SenderSubdomainRecord {
     warmupDay: bigint;
     subdomain: string;
 }
+export interface ContractField {
+    name: string;
+    description: string;
+    required: boolean;
+    fieldType: string;
+}
 export interface ContentGenerationRequest {
     accountId: string;
     contentType: ContentType;
     additionalContext?: string;
     niche: string;
     prompt: string;
+}
+export interface WarmSequenceEmailEvent {
+    id: string;
+    enrollmentId: string;
+    occurredAt: bigint;
+    touchIndex: bigint;
+    eventType: string;
 }
 export interface ComplianceConfig {
     maxBounceRate: number;
@@ -229,24 +305,6 @@ export interface ComplianceConfig {
     adminEmail: string;
     softBounceRetries: bigint;
     maxComplaintRate: number;
-}
-export interface WarmSequenceEmailEvent {
-    id: string;
-    enrollmentId: string;
-    occurredAt: bigint;
-    touchIndex: bigint;
-    eventType: string;
-}
-export interface BatchAuditJob {
-    id: string;
-    status: string;
-    completedAt?: bigint;
-    failedLeads: bigint;
-    createdAt: bigint;
-    processedLeads: bigint;
-    tenantId: string;
-    totalLeads: bigint;
-    completedLeads: bigint;
 }
 export interface LLMLeadSearchResult {
     totalFound: bigint;
@@ -259,6 +317,17 @@ export interface LLMLeadSearchResult {
     searchedAt: bigint;
     serpApiUsed: boolean;
     serpApiCount: bigint;
+}
+export interface BatchAuditJob {
+    id: string;
+    status: string;
+    completedAt?: bigint;
+    failedLeads: bigint;
+    createdAt: bigint;
+    processedLeads: bigint;
+    tenantId: string;
+    totalLeads: bigint;
+    completedLeads: bigint;
 }
 export interface AuditSnapshot {
     reputationScore: bigint;
@@ -281,6 +350,20 @@ export interface SeoGeoIssue {
     suggestedFix: string;
     severity: string;
 }
+export interface Opportunity {
+    id: string;
+    probability: bigint;
+    closeDate: bigint;
+    clientBusinessId: string;
+    title: string;
+    value: bigint;
+    createdAt: bigint;
+    updatedAt: bigint;
+    stage: OpportunityStage;
+    notes: string;
+    contactId: string;
+    companyId: string;
+}
 export interface PlatformFormatting {
     hashtags: Array<string>;
     mediaUrl?: string;
@@ -295,6 +378,7 @@ export interface ReportSchedule {
     weeklyEnabled: boolean;
     lastGeneratedAt?: bigint;
 }
+export type ContentHistoryEntry = string;
 export interface AgentThread {
     id: string;
     status: Variant_active_archived_paused;
@@ -366,13 +450,18 @@ export interface ScanModel {
     crmLinked: boolean;
     uploadedAt: bigint;
 }
-export interface EmailTemplate {
+export interface EmailTemplateExt {
     id: bigint;
     day: bigint;
+    unsubscribeFooter?: boolean;
+    consentRequired?: boolean;
     fallbackBody: string;
     subject: string;
     body: string;
+    verticalProfileId?: string;
     updatedAt: bigint;
+    campaignType?: CampaignType;
+    complianceNotes?: string;
     fallbackSubject: string;
 }
 export interface BrfOutboundCallAttempt {
@@ -390,10 +479,12 @@ export interface ApprovalItem {
     status: ApprovalStatus;
     action: string;
     approverNotes?: string;
+    tier: ApprovalTier;
     tenantId: string;
     threadId: string;
     runId: string;
     requestedAt: bigint;
+    requestedBy: string;
     resolvedAt?: bigint;
     reason: string;
 }
@@ -405,16 +496,26 @@ export interface ApiPingRecord {
     lastPingTime: bigint;
 }
 export interface AccountBrief {
+    performanceHistory: Array<string>;
+    doRules: Array<string>;
+    sessionLog: Array<string>;
     respondTo: Array<string>;
     accountId: string;
     ignoreList: Array<string>;
+    differentiators: Array<string>;
     tone: string;
+    targetAudience: Array<string>;
     offerSummary: string;
     doNotRespondList: Array<string>;
     updatedAt: bigint;
     updatedBy: string;
     priorityContacts: Array<string>;
     flagKeywords: Array<string>;
+    contentHistory: Array<string>;
+    brandVoice: string;
+    services: Array<string>;
+    dontRules: Array<string>;
+    positioning: string;
 }
 export interface GridAuditResult {
     gridPoints: Array<GridPoint>;
@@ -433,11 +534,6 @@ export interface PaymentMethod {
     isDefault: boolean;
     cardLast4: string;
 }
-export interface BulkToggleRequest {
-    tierId: string;
-    enabled: boolean;
-    toolkitNames: Array<string>;
-}
 export interface LeadAuditJob {
     id: string;
     status: string;
@@ -453,6 +549,22 @@ export interface LeadAuditJob {
     phone?: string;
     stageProgress: string;
 }
+export interface ContactUpdate {
+    nurtureStatus?: string;
+    title?: string;
+    email?: string;
+    notes?: string;
+    leadSource?: string;
+    phone?: string;
+    lastName?: string;
+    industry?: string;
+    firstName?: string;
+}
+export interface BulkToggleRequest {
+    tierId: string;
+    enabled: boolean;
+    toolkitNames: Array<string>;
+}
 export interface FeatureFlags {
     crm: boolean;
     social: boolean;
@@ -460,6 +572,11 @@ export interface FeatureFlags {
     reputation: boolean;
     voiceAgent: boolean;
     creditBuilder: boolean;
+}
+export interface ProposalSection {
+    title: string;
+    order: bigint;
+    body: string;
 }
 export interface ScrapeResult {
     ok: boolean;
@@ -501,6 +618,10 @@ export interface AgentSessionState {
     userId: string;
     isActive: boolean;
     sessionId: string;
+}
+export interface ApprovalResolution {
+    status: ApprovalStatus;
+    notes?: string;
 }
 export interface VapiProvisioningStatus {
     status: Variant_provisioning_active_notConfigured_error;
@@ -562,11 +683,33 @@ export interface Review {
     rating: bigint;
     respondedAt?: Time;
 }
+export interface WebhookContract {
+    id: string;
+    method: HttpMethod;
+    clientBusinessIdField?: string;
+    approvalRequestIdField?: string;
+    verticalProfileIdField?: string;
+    endpoint: string;
+    createdAt: bigint;
+    requiredFields: Array<ContractField>;
+    updatedAt: bigint;
+    optionalFields: Array<ContractField>;
+    supportsDryRun: boolean;
+    category: WebhookCategory;
+    requiresApproval: boolean;
+    successResponse: string;
+    workflowLogUpdateType?: string;
+    retryStrategy?: string;
+    purpose: string;
+    recordIdField?: string;
+    errorResponse: string;
+}
 export interface ApprovalItemRecord {
     id: string;
     status: string;
     resolutionNote?: string;
     title: string;
+    tier: string;
     actionType: string;
     description: string;
     agentId: string;
@@ -666,6 +809,31 @@ export interface IntegrationCredentials {
     nvidiaNimApiKey: string;
     openaiKey: string;
 }
+export interface NoteUpdate {
+    title?: string;
+    authorId?: string;
+    body?: string;
+    relatedToType?: string;
+    category?: NoteCategory;
+    relatedToId?: string;
+}
+export interface ReadinessScore {
+    breakdown: Array<ReadinessBreakdownItem>;
+    score: bigint;
+    autoBrowserConfigured: boolean;
+}
+export interface PaidAdsAudience {
+    id: string;
+    cpa: string;
+    status: string;
+    performanceRating: string;
+    name: string;
+    roas: string;
+    size: bigint;
+    segmentType: string;
+    tenantId: TenantId;
+    updatedAt: Time;
+}
 export interface BrandKitProspect {
     id: string;
     auditScore?: bigint;
@@ -691,47 +859,28 @@ export interface BrandKitProspect {
     trialStatus: TrialStatus__1;
     firstName: string;
 }
-export interface ReadinessScore {
-    breakdown: Array<ReadinessBreakdownItem>;
-    score: bigint;
-    autoBrowserConfigured: boolean;
-}
-export interface PaidAdsAudience {
+export interface RankedDispatchRoute {
     id: string;
-    cpa: string;
-    status: string;
-    performanceRating: string;
-    name: string;
-    roas: string;
-    size: bigint;
-    segmentType: string;
-    tenantId: TenantId;
-    updatedAt: Time;
-}
-export interface AgentTemplateRecord {
-    id: string;
-    approvalRequired: boolean;
-    name: string;
+    status: RankedDispatchStatus;
+    clientBusinessId: string;
     createdAt: bigint;
-    role: string;
-    tenantId: string;
-    allowedTools: Array<string>;
-    systemPrompt: string;
-    isDefault: boolean;
-    defaultWorkflowSteps: Array<string>;
-    memoryMode: MemoryMode;
-}
-export interface FunnelEvent {
-    metadata?: string;
-    step: FunnelStepType;
-    leadId: string;
-    timestamp: bigint;
+    verticalProfileId: string;
+    updatedAt: bigint;
+    notes: Array<string>;
+    matchedAgent: string;
+    requestText: string;
 }
 export interface ToolkitToggle {
     appliedAt: bigint;
     tierId: string;
     enabled: boolean;
     toolkitName: string;
+}
+export interface FunnelEvent {
+    metadata?: string;
+    step: FunnelStepType;
+    leadId: string;
+    timestamp: bigint;
 }
 export interface ReviewSyncRecord {
     id: string;
@@ -747,6 +896,22 @@ export interface ReviewSyncRecord {
     lastSyncAt: bigint;
     rating: bigint;
     respondedAt?: bigint;
+}
+export interface AgentTemplateRecord {
+    id: string;
+    approvalRequired: boolean;
+    name: string;
+    createdAt: bigint;
+    role: string;
+    tenantId: string;
+    allowedTools: Array<string>;
+    systemPrompt: string;
+    isDefault: boolean;
+    defaultWorkflowSteps: Array<string>;
+    memoryMode: MemoryMode;
+}
+export interface CustomFieldValueUpdate {
+    value?: string;
 }
 export interface AgentSubscription {
     id: string;
@@ -782,6 +947,37 @@ export interface NewsletterCampaignStats {
     clickCount: bigint;
     openCount: bigint;
 }
+export interface WorkflowLogEntry {
+    id: string;
+    status: WorkflowStatus;
+    action: string;
+    stepIndex: bigint;
+    createdAt: bigint;
+    agentType: string;
+    tenantId: string;
+    notes: string;
+    inputRef?: string;
+    outputRef?: string;
+    workflowId: string;
+}
+export interface WebhookExecution {
+    id: string;
+    status: Variant_cancelled_pending_success_failed;
+    completedAt?: bigint;
+    result?: string;
+    clientBusinessId: string;
+    approvedAt?: bigint;
+    approvedBy?: string;
+    isDryRun: boolean;
+    createdAt: bigint;
+    verticalProfileId?: string;
+    recordId?: string;
+    callbackUrl?: string;
+    approvalRequestId?: string;
+    errorMsg?: string;
+    payload: Array<[string, string]>;
+    contractId: string;
+}
 export interface PaidAdsScore {
     id: string;
     accountHealth: bigint;
@@ -790,6 +986,18 @@ export interface PaidAdsScore {
     tenantId: TenantId;
     budgetUtilization: bigint;
     roasEfficiency: bigint;
+}
+export interface MultiLocationReport {
+    id: string;
+    clientBusinessId: string;
+    rankingTrend: TrendDirection;
+    overallScore: bigint;
+    createdAt: bigint;
+    locationCount: bigint;
+    reviewTrend: TrendDirection;
+    locations: Array<LocationSummary>;
+    brandName: string;
+    citationTrend: TrendDirection;
 }
 export interface DograhCommandResult {
     nodesCreated: bigint;
@@ -809,6 +1017,32 @@ export interface ContentGenerationResult {
     prompt: string;
     errorMsg?: string;
 }
+export interface ContentCalendarEntry {
+    id: string;
+    cta: string;
+    day: bigint;
+    topic: string;
+    angle: string;
+    objective: ContentObjective;
+    createdAt: bigint;
+    platform: string;
+    tenantId: string;
+    approvalStatus: CalendarApprovalStatus;
+    updatedAt: bigint;
+    pillar: ContentPillar;
+    visualDirection: string;
+    calendarId: string;
+    format: PostFormat;
+}
+export interface IntegrationHealthSummary {
+    failedWebhookCounts: Array<[string, bigint]>;
+    secondary: Array<IntegrationTestResult>;
+    critical: Array<IntegrationTestResult>;
+}
+export interface BatchScrapeUrlResult {
+    url: string;
+    result: ScrapeResult;
+}
 export interface AgentDeliverable {
     id: string;
     status: string;
@@ -822,15 +1056,6 @@ export interface AgentDeliverable {
     deliverableType: string;
     scoreImpact?: bigint;
     attachments: Array<string>;
-}
-export interface IntegrationHealthSummary {
-    failedWebhookCounts: Array<[string, bigint]>;
-    secondary: Array<IntegrationTestResult>;
-    critical: Array<IntegrationTestResult>;
-}
-export interface BatchScrapeUrlResult {
-    url: string;
-    result: ScrapeResult;
 }
 export interface SeoGeoOpportunity {
     id: string;
@@ -854,6 +1079,15 @@ export interface SocialLead {
     crmLeadId?: string;
     sourcePostId: string;
 }
+export interface MultiLocationReportUpdate {
+    rankingTrend?: TrendDirection;
+    overallScore?: bigint;
+    locationCount?: bigint;
+    reviewTrend?: TrendDirection;
+    locations?: Array<LocationSummary>;
+    brandName?: string;
+    citationTrend?: TrendDirection;
+}
 export type EmailSendResult = {
     __kind__: "ok";
     ok: string;
@@ -861,6 +1095,16 @@ export type EmailSendResult = {
     __kind__: "err";
     err: string;
 };
+export interface PipelineFunnelStats {
+    leadsSourced: bigint;
+    warmSequenceActive: bigint;
+    auditCompleted: bigint;
+    demoVisited: bigint;
+    auditStarted: bigint;
+    callBooked: bigint;
+    niche: string;
+    contacted: bigint;
+}
 export interface AgentArtifact {
     id: string;
     status: ArtifactStatus;
@@ -874,15 +1118,18 @@ export interface AgentArtifact {
     threadId: string;
     runId: string;
 }
-export interface PipelineFunnelStats {
-    leadsSourced: bigint;
-    warmSequenceActive: bigint;
-    auditCompleted: bigint;
-    demoVisited: bigint;
-    auditStarted: bigint;
-    callBooked: bigint;
-    niche: string;
-    contacted: bigint;
+export interface PerformanceInsight {
+    id: string;
+    metricValue: string;
+    period: string;
+    createdAt: bigint;
+    platform: string;
+    tenantId: string;
+    isBestPerformer: boolean;
+    insight: string;
+    metricName: string;
+    recommendation: string;
+    reportId: string;
 }
 export interface FundabilityScore {
     lastUpdated: Time;
@@ -918,10 +1165,15 @@ export interface TriggerRuleUpdate {
     isEnabled?: boolean;
     condition?: string;
 }
-export interface OAuthInitRequest {
-    accountId: string;
-    redirectUri: string;
-    toolId: string;
+export interface OpportunityUpdate {
+    probability?: bigint;
+    closeDate?: bigint;
+    title?: string;
+    value?: bigint;
+    stage?: OpportunityStage;
+    notes?: string;
+    contactId?: string;
+    companyId?: string;
 }
 export interface WebsiteAgentScore {
     id: string;
@@ -958,11 +1210,19 @@ export interface TriggerRuleInput {
     isEnabled: boolean;
     condition: string;
 }
-export interface BatchScrapeResult {
-    ok: boolean;
-    count: bigint;
-    results: Array<BatchScrapeUrlResult>;
+export interface Note {
+    id: string;
+    clientBusinessId: string;
+    title: string;
+    authorId: string;
+    body: string;
+    createdAt: bigint;
+    relatedToType: string;
+    updatedAt: bigint;
+    category: NoteCategory;
+    relatedToId: string;
 }
+export type ReviewHistoryEntry = string;
 export interface RoofingLead {
     city: string;
     businessType: string;
@@ -971,6 +1231,86 @@ export interface RoofingLead {
     state: string;
     companyName: string;
     phone?: string;
+}
+export interface MarketingAuditScore {
+    weight: bigint;
+    score: bigint;
+    category: AuditCategory;
+    findings: Array<string>;
+}
+export interface RankedDispatchRouteUpdate {
+    status: RankedDispatchStatus;
+    notes: Array<string>;
+    matchedAgent: string;
+    requestText: string;
+}
+export interface MarketingAuditInput {
+    serviceArea: string;
+    clientBusinessId: string;
+    leadValue: bigint;
+    offer: string;
+    targetCustomer: string;
+    verticalProfileId: string;
+    website: string;
+    goals: Array<string>;
+    conversionGoal: string;
+    knownCompetitors: Array<string>;
+    industry: string;
+}
+export interface OAuthInitRequest {
+    accountId: string;
+    redirectUri: string;
+    toolId: string;
+}
+export interface CsvImportBatch {
+    id: string;
+    status: string;
+    imported: bigint;
+    skipped: bigint;
+    createdAt: bigint;
+    fileName: string;
+    tenantId: string;
+    totalLeads: bigint;
+    flaggedNoEmail: bigint;
+    nicheBreakdown: Array<[string, bigint]>;
+}
+export interface BusinessBrief {
+    id: string;
+    criticalFindings: Array<string>;
+    monitorFindings: Array<string>;
+    serviceArea: string;
+    performanceHistory: Array<PerformanceHistoryEntry>;
+    clientBusinessId: string;
+    targetLocations: Array<string>;
+    sessionLog: Array<string>;
+    approvalConfig: string;
+    reviewHistory: Array<ReviewHistoryEntry>;
+    lastUpdated: bigint;
+    businessName: string;
+    verticalProfileId: string;
+    website: string;
+    primaryKeyword: string;
+    currentFindings: Array<string>;
+    importantFindings: Array<string>;
+    localSEOHistory: Array<LocalSEOHistoryEntry>;
+    deliverables: Array<string>;
+    fundingHistory: Array<FundingHistoryEntry>;
+    contentHistory: Array<ContentHistoryEntry>;
+    nextAction: string;
+    locationName: string;
+    toolsRun: Array<string>;
+    services: Array<string>;
+}
+export interface BatchScrapeResult {
+    ok: boolean;
+    count: bigint;
+    results: Array<BatchScrapeUrlResult>;
+}
+export interface NicheVoiceAssignment {
+    voiceName: string;
+    nicheId: string;
+    assignedAt: bigint;
+    voiceId: string;
 }
 export interface AgentThreadRecord {
     id: string;
@@ -985,24 +1325,6 @@ export interface AgentThreadRecord {
     tenantId: string;
     updatedAt: bigint;
     messageCount: bigint;
-}
-export interface CsvImportBatch {
-    id: string;
-    status: string;
-    imported: bigint;
-    skipped: bigint;
-    createdAt: bigint;
-    fileName: string;
-    tenantId: string;
-    totalLeads: bigint;
-    flaggedNoEmail: bigint;
-    nicheBreakdown: Array<[string, bigint]>;
-}
-export interface NicheVoiceAssignment {
-    voiceName: string;
-    nicheId: string;
-    assignedAt: bigint;
-    voiceId: string;
 }
 export interface AgentStatus {
     status: string;
@@ -1051,6 +1373,30 @@ export interface CampaignStats {
     emailsSentToday: bigint;
     openRate: number;
 }
+export interface CustomField {
+    id: string;
+    clientBusinessId: string;
+    isRequired: boolean;
+    name: string;
+    createdAt: bigint;
+    updatedAt: bigint;
+    targetEntity: string;
+    options: Array<string>;
+    fieldType: string;
+}
+export interface SocialPostDraftUpdate {
+    cta?: string;
+    status?: DraftStatus;
+    content?: string;
+    hashtags?: Array<string>;
+    n8nStatus?: string;
+    approvedAt?: bigint;
+    approvedBy?: string;
+    publishedUrl?: string;
+    ctaUrl?: string;
+    mediaUrls?: Array<string>;
+    scheduledAt?: bigint;
+}
 export interface MasterAgentContextSnapshot {
     recentActivity: Array<string>;
     totalLeads: bigint;
@@ -1058,6 +1404,17 @@ export interface MasterAgentContextSnapshot {
     activeTrials: bigint;
     totalCampaigns: bigint;
     totalAccounts: bigint;
+}
+export interface ContentCalendar {
+    id: string;
+    status: CalendarApprovalStatus;
+    month: string;
+    createdAt: bigint;
+    year: bigint;
+    tenantId: string;
+    entries: Array<string>;
+    updatedAt: bigint;
+    niche: string;
 }
 export interface UserProfile {
     name: string;
@@ -1182,6 +1539,44 @@ export interface AgentTemplateStorageRecord {
     defaultWorkflowSteps: Array<string>;
     memoryMode: string;
 }
+export interface WorkflowStatusSnapshot {
+    status: WorkflowStatus;
+    lastAgentType: string;
+    tenantId: string;
+    lastUpdatedAt: bigint;
+    currentStep: bigint;
+    totalSteps: bigint;
+    lastAction: string;
+    workflowId: string;
+}
+export interface MarketingAudit {
+    id: string;
+    serviceArea: string;
+    status: MarketingAuditStatus;
+    clientBusinessId: string;
+    leadValue: bigint;
+    recommendedPackage: string;
+    overallScore: bigint;
+    offer: string;
+    estimatedRevenueImpact?: string;
+    brfScore: BRFScore;
+    targetCustomer: string;
+    createdAt: bigint;
+    proposalReadySummary: string;
+    verticalProfileId: string;
+    website: string;
+    updatedAt: bigint;
+    goals: Array<string>;
+    grade: string;
+    executiveSummary: string;
+    conversionGoal: string;
+    quickWins: Array<string>;
+    categoryScores: Array<MarketingAuditScore>;
+    knownCompetitors: Array<string>;
+    strategicRecommendations: Array<string>;
+    longTermInitiatives: Array<string>;
+    industry: string;
+}
 export interface DripLeadBounceRecord {
     bounceType: Variant_hard_soft;
     leadId: string;
@@ -1287,14 +1682,45 @@ export interface AgentPerformanceSnapshot {
     summary: string;
     topWins: Array<string>;
 }
+export interface TaskUpdate {
+    status?: TaskStatus;
+    title?: string;
+    assignedTo?: string;
+    relatedToType?: string;
+    dueDate?: bigint;
+    description?: string;
+    taskType?: string;
+    priority?: TaskPriority;
+    relatedToId?: string;
+}
+export interface ServiceAreaOutline {
+    serviceArea: string;
+    metaDescription: string;
+    targetLocations: Array<string>;
+    schemaType: string;
+    pageTitle: string;
+    services: Array<string>;
+    targetKeyword: string;
+    suggestedHeadings: Array<string>;
+}
 export interface AccountBriefUpdate {
+    performanceHistory?: Array<string>;
+    doRules?: Array<string>;
+    sessionLog?: Array<string>;
     respondTo?: Array<string>;
     ignoreList?: Array<string>;
+    differentiators?: Array<string>;
     tone?: string;
+    targetAudience?: Array<string>;
     offerSummary?: string;
     doNotRespondList?: Array<string>;
     priorityContacts?: Array<string>;
     flagKeywords?: Array<string>;
+    contentHistory?: Array<string>;
+    brandVoice?: string;
+    services?: Array<string>;
+    dontRules?: Array<string>;
+    positioning?: string;
 }
 export interface AgentLogEntry {
     result: string;
@@ -1372,6 +1798,30 @@ export interface TransformationOutput {
     body: Uint8Array;
     headers: Array<http_header>;
 }
+export interface ServiceAreaPage {
+    id: string;
+    serviceArea: string;
+    metaDescription: string;
+    status: ServiceAreaPageStatus;
+    clientBusinessId: string;
+    externalLinks: Array<string>;
+    targetLocations: Array<string>;
+    createdAt: Time;
+    publishedUrl?: string;
+    targetUrl: string;
+    photoAssets: Array<string>;
+    verticalProfileId: string;
+    tenantId: string;
+    updatedAt: Time;
+    seoScore?: bigint;
+    pageContent: string;
+    internalLinks: Array<string>;
+    pageTitle: string;
+    schemaMarkup?: string;
+    approvalRequestId?: string;
+    services: Array<string>;
+    targetKeyword: string;
+}
 export interface SeoGeoDeliverable {
     id: string;
     status: string;
@@ -1398,39 +1848,6 @@ export interface DualModelSearchJob {
     niche: string;
     claudeLeadsFound: bigint;
     openaiLeadsFound: bigint;
-}
-export interface BrowserAuditResult {
-    websiteScreenshotUrl: string;
-    websiteStatus: string;
-    socialGaps: Array<string>;
-    gbpStatus: string;
-    gaps: Array<GapItem>;
-    approvedAt?: bigint;
-    approvedBy?: string;
-    socialScore: bigint;
-    jobId: string;
-    auditedAt: bigint;
-    businessName: string;
-    tenantId: string;
-    websiteScore: bigint;
-    gbpGaps: Array<string>;
-    auditTrail: Array<AuditTrailEntry>;
-    socialScreenshotUrl: string;
-    socialStatus: string;
-    gbpScore: bigint;
-    totalBrowserScore: bigint;
-    gbpScreenshotUrl: string;
-    adminApproved: boolean;
-    websiteGaps: Array<string>;
-}
-export interface ActivityFeedItem {
-    id: string;
-    title: string;
-    description: string;
-    entityId?: string;
-    timestamp: bigint;
-    entityType?: string;
-    eventType: string;
 }
 export interface ExtendedLead {
     id: string;
@@ -1471,6 +1888,30 @@ export interface SeoGeoGbpTask {
     updatedAt: Time;
     priority: string;
 }
+export interface BrowserAuditResult {
+    websiteScreenshotUrl: string;
+    websiteStatus: string;
+    socialGaps: Array<string>;
+    gbpStatus: string;
+    gaps: Array<GapItem>;
+    approvedAt?: bigint;
+    approvedBy?: string;
+    socialScore: bigint;
+    jobId: string;
+    auditedAt: bigint;
+    businessName: string;
+    tenantId: string;
+    websiteScore: bigint;
+    gbpGaps: Array<string>;
+    auditTrail: Array<AuditTrailEntry>;
+    socialScreenshotUrl: string;
+    socialStatus: string;
+    gbpScore: bigint;
+    totalBrowserScore: bigint;
+    gbpScreenshotUrl: string;
+    adminApproved: boolean;
+    websiteGaps: Array<string>;
+}
 export interface AgentRun {
     id: string;
     status: RunStatus;
@@ -1507,6 +1948,15 @@ export interface NotificationRecord {
     createdAt: Time;
     read: boolean;
     tenantId: TenantId;
+}
+export interface ActivityFeedItem {
+    id: string;
+    title: string;
+    description: string;
+    entityId?: string;
+    timestamp: bigint;
+    entityType?: string;
+    eventType: string;
 }
 export interface WebsiteIssue {
     id: string;
@@ -1559,6 +2009,13 @@ export interface AuditScore {
     seoScore: bigint;
     technicalScore: bigint;
 }
+export interface InvestmentTier {
+    name: string;
+    investment: string;
+    description: string;
+    deliverables: Array<string>;
+    timeline: string;
+}
 export interface EmailReplyRecord {
     id: string;
     reviewStatus: Variant_pending_sent_approved_rejected;
@@ -1591,6 +2048,21 @@ export interface FeatureToggleLog {
     newValue: boolean;
     previousValue: boolean;
     featureName: string;
+}
+export interface MonthlyReportUpdate {
+    status?: ReportStatus;
+    recommendations?: Array<string>;
+    sentAt?: bigint;
+    summary?: string;
+    nextMonthStrategy?: string;
+    keyFindings?: Array<string>;
+}
+export interface ExecutionResponse {
+    status: Variant_cancelled_pending_success_failed;
+    result?: string;
+    isDryRun: boolean;
+    executionId: string;
+    errorMsg?: string;
 }
 export interface CompetitorAlert {
     id: string;
@@ -1631,6 +2103,28 @@ export interface http_request_result {
     status: bigint;
     body: Uint8Array;
     headers: Array<http_header>;
+}
+export interface Proposal {
+    id: string;
+    status: ProposalStatus;
+    clientBusinessId: string;
+    title: string;
+    investmentTiers: Array<InvestmentTier>;
+    roiProjection?: string;
+    nextSteps: string;
+    strategyApproach: string;
+    createdAt: bigint;
+    auditId?: string;
+    sentAt?: bigint;
+    verticalProfileId: string;
+    updatedAt: bigint;
+    executiveSummary: string;
+    assumptions: string;
+    scopeOfWork: string;
+    sections: Array<ProposalSection>;
+    situationAnalysis: string;
+    clientResponsibilities: string;
+    timeline: string;
 }
 export interface GridAuditSnapshot {
     result: GridAuditResult;
@@ -1681,10 +2175,23 @@ export interface GapItem {
     description: string;
     severity: string;
 }
-export interface LeadExtractionResult {
-    count: bigint;
-    sourceUrl: string;
-    leads: Array<ScrapedLead>;
+export interface ServiceAreaPageUpdate {
+    serviceArea?: string;
+    metaDescription?: string;
+    status?: ServiceAreaPageStatus;
+    externalLinks?: Array<string>;
+    targetLocations?: Array<string>;
+    publishedUrl?: string;
+    targetUrl?: string;
+    photoAssets?: Array<string>;
+    seoScore?: bigint;
+    pageContent?: string;
+    internalLinks?: Array<string>;
+    pageTitle?: string;
+    schemaMarkup?: string;
+    approvalRequestId?: string;
+    services?: Array<string>;
+    targetKeyword?: string;
 }
 export interface SmsAutopilotRule {
     id: string;
@@ -1693,6 +2200,11 @@ export interface SmsAutopilotRule {
     sentCount: bigint;
     triggerType: Variant_twoOpens_manualTrigger_noOpenFortyEightHours;
     delayMinutes: bigint;
+}
+export interface LeadExtractionResult {
+    count: bigint;
+    sourceUrl: string;
+    leads: Array<ScrapedLead>;
 }
 export interface EngagementApproval {
     id: string;
@@ -1704,14 +2216,6 @@ export interface EngagementApproval {
     approvalStatus: EngagementApprovalStatus;
     flagged: boolean;
     resolvedAt?: bigint;
-}
-export interface CampaignInstance {
-    id: string;
-    status: string;
-    startedAt: Time;
-    metrics: CampaignMetrics;
-    templateId: string;
-    tenantId: TenantId;
 }
 export interface TriggerRule {
     action: string;
@@ -1741,6 +2245,14 @@ export interface ScrapeRequest {
     selectorType: SelectorType;
 }
 export type Time = bigint;
+export interface CampaignInstance {
+    id: string;
+    status: string;
+    startedAt: Time;
+    metrics: CampaignMetrics;
+    templateId: string;
+    tenantId: TenantId;
+}
 export interface AuditReport {
     overallScore: bigint;
     generatedAt: bigint;
@@ -1751,12 +2263,36 @@ export interface AuditReport {
     sessionId: string;
     topGaps: Array<string>;
 }
+export interface Task {
+    id: string;
+    status: TaskStatus;
+    clientBusinessId: string;
+    title: string;
+    assignedTo: string;
+    createdAt: bigint;
+    relatedToType: string;
+    dueDate: bigint;
+    description: string;
+    taskType: string;
+    updatedAt: bigint;
+    priority: TaskPriority;
+    relatedToId: string;
+}
 export interface ScrapedLead {
     businessName?: string;
     sourceUrl: string;
     extractedAt: Time;
     email?: string;
     phone?: string;
+}
+export interface BRFScore {
+    rankedFindings: Array<string>;
+    overallScore: bigint;
+    rankedScore: bigint;
+    bookedScore: bigint;
+    fundedScore: bigint;
+    fundedFindings: Array<string>;
+    bookedFindings: Array<string>;
 }
 export interface ReadinessBreakdownItem {
     weight: bigint;
@@ -1771,24 +2307,6 @@ export interface MasterAgentMessage {
     content: string;
     role: MessageRole;
     timestamp: bigint;
-}
-export interface Booking {
-    id: string;
-    customerName: string;
-    outlookEventId?: string;
-    status: BookingStatus;
-    serviceType: string;
-    customerPhone: string;
-    createdAt: bigint;
-    noShowFollowUpSent: boolean;
-    tenantId: string;
-    reminderSent24h: boolean;
-    durationMinutes: bigint;
-    notes: string;
-    googleCalendarEventId?: string;
-    reminderSent1h: boolean;
-    customerEmail: string;
-    scheduledAt: bigint;
 }
 export interface CompetitorEntry {
     name: string;
@@ -1806,6 +2324,22 @@ export interface SeoGeoSubscription {
     price: bigint;
     assignedStrategist: string;
     startDate: Time;
+}
+export interface ProposalUpdate {
+    status?: ProposalStatus;
+    title?: string;
+    investmentTiers?: Array<InvestmentTier>;
+    roiProjection?: string;
+    nextSteps?: string;
+    strategyApproach?: string;
+    sentAt?: bigint;
+    executiveSummary?: string;
+    assumptions?: string;
+    scopeOfWork?: string;
+    sections?: Array<ProposalSection>;
+    situationAnalysis?: string;
+    clientResponsibilities?: string;
+    timeline?: string;
 }
 export interface LeadAuditResult {
     growthScore: bigint;
@@ -1839,6 +2373,34 @@ export interface LeadAuditResult {
     engagementScore: bigint;
     firstTouchEmailSubject: string;
     painPointAngles: Array<string>;
+}
+export interface Booking {
+    id: string;
+    customerName: string;
+    outlookEventId?: string;
+    status: BookingStatus;
+    serviceType: string;
+    customerPhone: string;
+    createdAt: bigint;
+    noShowFollowUpSent: boolean;
+    tenantId: string;
+    reminderSent24h: boolean;
+    durationMinutes: bigint;
+    notes: string;
+    googleCalendarEventId?: string;
+    reminderSent1h: boolean;
+    customerEmail: string;
+    scheduledAt: bigint;
+}
+export interface ExecutionRequest {
+    clientBusinessId: string;
+    isDryRun: boolean;
+    verticalProfileId?: string;
+    recordId?: string;
+    callbackUrl?: string;
+    approvalRequestId?: string;
+    payload: Array<[string, string]>;
+    contractId: string;
 }
 export interface PostEngagementMetrics {
     clicks: bigint;
@@ -1926,6 +2488,55 @@ export interface DomainSetupState {
     registrar?: string;
     aRecord: string;
 }
+export interface VerticalProfileExt {
+    id: string;
+    serviceArea: Array<string>;
+    prohibitedClaims: Array<string>;
+    contentPillars: Array<string>;
+    doRules: Array<string>;
+    commonServices: Array<string>;
+    commonReviewThemes: Array<string>;
+    proposalDeliverables: Array<string>;
+    exampleEmailTemplates: Array<string>;
+    commonOffers: Array<string>;
+    differentiators: Array<string>;
+    recommendedDisclaimers: Array<string>;
+    createdAt: bigint;
+    defaultPipelineLabels: Array<string>;
+    tenantId: string;
+    targetAudience: string;
+    keywords: Array<string>;
+    updatedAt: bigint;
+    localSEOKeywordPatterns: Array<string>;
+    commonGBPPostTypes: Array<string>;
+    competitors: Array<string>;
+    niche: string;
+    category: string;
+    commonCampaignTypes: Array<string>;
+    smsTone: string;
+    emailTone: string;
+    exampleSMSFollowUps: Array<string>;
+    subNiches: Array<string>;
+    exampleContentAngles: Array<string>;
+    fundingNeeds: Array<string>;
+    leadFormFields: Array<string>;
+    commonLeadTypes: Array<string>;
+    brandVoice: string;
+    complianceNotes: string;
+    services: Array<string>;
+    doNotRules: Array<string>;
+    positioning: string;
+}
+export interface CompanyUpdate {
+    name?: string;
+    size?: string;
+    vertical?: string;
+    email?: string;
+    website?: string;
+    address?: string;
+    notes?: string;
+    phone?: string;
+}
 export interface NewsletterSubscriber {
     id: string;
     status: SubscriberStatus;
@@ -2009,6 +2620,17 @@ export interface BrfVoiceAgentConfig {
     inboundPhoneNumber: string;
     outboundVapiAssistantId: string;
 }
+export interface ContentCalendarEntryUpdate {
+    cta?: string;
+    topic?: string;
+    angle?: string;
+    objective?: ContentObjective;
+    platform?: string;
+    approvalStatus?: CalendarApprovalStatus;
+    pillar?: ContentPillar;
+    visualDirection?: string;
+    format?: PostFormat;
+}
 export interface WebsiteContentBrief {
     id: string;
     assignee: string;
@@ -2035,6 +2657,13 @@ export interface DripQueueEmailLog {
     recipientName: string;
     recipientEmail: string;
     openedAt?: bigint;
+}
+export interface CustomFieldUpdate {
+    isRequired?: boolean;
+    name?: string;
+    targetEntity?: string;
+    options?: Array<string>;
+    fieldType?: string;
 }
 export interface ScrapeItem {
     src?: string;
@@ -2100,17 +2729,6 @@ export interface PaidAdsAlert {
     suggestedFix: string;
     severity: string;
 }
-export interface DemoFunnelEntry {
-    id: string;
-    createdAt: bigint;
-    tenantId: string;
-    engagementCount: bigint;
-    prospectId: string;
-    trialActivatedAt?: bigint;
-    emailSequenceStatus: EmailSequenceStatus;
-    lastEngagedAt: bigint;
-    trialActivated: boolean;
-}
 export interface ToolActionRequest {
     action: string;
     accountId: string;
@@ -2125,6 +2743,18 @@ export interface ScrapeRecord {
     robotsChecked: boolean;
     tenantId: string;
     robotsAllowed: boolean;
+}
+export type PerformanceHistoryEntry = string;
+export interface DemoFunnelEntry {
+    id: string;
+    createdAt: bigint;
+    tenantId: string;
+    engagementCount: bigint;
+    prospectId: string;
+    trialActivatedAt?: bigint;
+    emailSequenceStatus: EmailSequenceStatus;
+    lastEngagedAt: bigint;
+    trialActivated: boolean;
 }
 export interface AutopilotConfig {
     complianceMode: Variant_both_gdpr_canSpam;
@@ -2292,6 +2922,22 @@ export interface PaidAdsCampaign {
     budget: bigint;
     startDate: Time;
 }
+export interface MonthlyReport {
+    id: string;
+    status: ReportStatus;
+    month: string;
+    period: string;
+    recommendations: Array<string>;
+    createdAt: bigint;
+    year: bigint;
+    sentAt?: bigint;
+    tenantId: string;
+    summary: string;
+    updatedAt: bigint;
+    insightIds: Array<string>;
+    nextMonthStrategy: string;
+    keyFindings: Array<string>;
+}
 export interface CommandLogEntry {
     id: string;
     agentAction: AgentActionKind;
@@ -2360,6 +3006,24 @@ export interface BatchScrapeRequest {
     limitPerUrl: bigint;
     selectorType: SelectorType;
 }
+export type FundingHistoryEntry = string;
+export interface ContractSummary {
+    id: string;
+    method: string;
+    endpoint: string;
+    supportsDryRun: boolean;
+    category: string;
+    requiresApproval: boolean;
+    purpose: string;
+}
+export interface ConnectionTestResult {
+    lastTestError?: string;
+    message: string;
+    connected: boolean;
+    statusCode: bigint;
+    quotaInfo?: string;
+    lastTestedAt?: bigint;
+}
 export interface AgentArtifactRecord {
     id: string;
     status: string;
@@ -2373,14 +3037,6 @@ export interface AgentArtifactRecord {
     tenantId: string;
     threadId: string;
     runId: string;
-}
-export interface ConnectionTestResult {
-    lastTestError?: string;
-    message: string;
-    connected: boolean;
-    statusCode: bigint;
-    quotaInfo?: string;
-    lastTestedAt?: bigint;
 }
 export interface ClientReport {
     id: string;
@@ -2466,6 +3122,21 @@ export interface FreeAuditLead {
     phone: string;
     location: string;
 }
+export interface Contact {
+    id: string;
+    nurtureStatus: string;
+    clientBusinessId: string;
+    title: string;
+    createdAt: bigint;
+    email: string;
+    updatedAt: bigint;
+    notes: string;
+    leadSource: string;
+    phone: string;
+    lastName: string;
+    industry: string;
+    firstName: string;
+}
 export interface BulkLeadInput {
     websiteUrl?: string;
     city: string;
@@ -2499,6 +3170,18 @@ export interface LeadAIScore {
     fitReason: string;
     leadId: string;
 }
+export interface BestPerformerMemory {
+    topPlatforms: Array<string>;
+    topPillars: Array<string>;
+    topPosts: Array<string>;
+    avgClicks: bigint;
+    topFormats: Array<string>;
+    avgEngagement: bigint;
+    tenantId: string;
+    avgReach: bigint;
+    lastUpdatedAt: bigint;
+    topCtAs: Array<string>;
+}
 export interface ScheduledDiscoveryJob {
     id: string;
     status: string;
@@ -2514,6 +3197,21 @@ export interface ScheduledDiscoveryJob {
     config: DiscoveryConfig;
     enrichPending: bigint;
 }
+export interface Company {
+    id: string;
+    clientBusinessId: string;
+    name: string;
+    createdAt: bigint;
+    size: string;
+    vertical: string;
+    email: string;
+    website: string;
+    updatedAt: bigint;
+    address: string;
+    notes: string;
+    phone: string;
+}
+export type LocalSEOHistoryEntry = string;
 export interface FeatureToggle {
     proEnabled: boolean;
     agencyEnabled: boolean;
@@ -2529,6 +3227,40 @@ export interface SourceQualityData {
     avg_quality_score: number;
     total_leads: bigint;
 }
+export interface VerticalProfileUpdate {
+    serviceArea?: Array<string>;
+    prohibitedClaims?: Array<string>;
+    contentPillars?: Array<string>;
+    doRules?: Array<string>;
+    commonReviewThemes?: Array<string>;
+    proposalDeliverables?: Array<string>;
+    exampleEmailTemplates?: Array<string>;
+    commonOffers?: Array<string>;
+    differentiators?: Array<string>;
+    recommendedDisclaimers?: Array<string>;
+    defaultPipelineLabels?: Array<string>;
+    targetAudience?: string;
+    keywords?: Array<string>;
+    localSEOKeywordPatterns?: Array<string>;
+    commonGBPPostTypes?: Array<string>;
+    competitors?: Array<string>;
+    niche?: string;
+    category?: string;
+    commonCampaignTypes?: Array<string>;
+    smsTone?: string;
+    emailTone?: string;
+    exampleSMSFollowUps?: Array<string>;
+    subNiches?: Array<string>;
+    exampleContentAngles?: Array<string>;
+    fundingNeeds?: Array<string>;
+    leadFormFields?: Array<string>;
+    commonLeadTypes?: Array<string>;
+    brandVoice?: string;
+    complianceNotes?: string;
+    services?: Array<string>;
+    doNotRules?: Array<string>;
+    positioning?: string;
+}
 export interface GridPoint {
     lat: number;
     lng: number;
@@ -2536,6 +3268,31 @@ export interface GridPoint {
     competitorAtTop: string;
     rankPosition: bigint;
     searched: boolean;
+}
+export interface BusinessBriefUpdate {
+    criticalFindings: Array<string>;
+    monitorFindings: Array<string>;
+    serviceArea: string;
+    performanceHistory: Array<PerformanceHistoryEntry>;
+    clientBusinessId: string;
+    targetLocations: Array<string>;
+    sessionLog: Array<string>;
+    approvalConfig: string;
+    reviewHistory: Array<ReviewHistoryEntry>;
+    businessName: string;
+    verticalProfileId: string;
+    website: string;
+    primaryKeyword: string;
+    currentFindings: Array<string>;
+    importantFindings: Array<string>;
+    localSEOHistory: Array<LocalSEOHistoryEntry>;
+    deliverables: Array<string>;
+    fundingHistory: Array<FundingHistoryEntry>;
+    contentHistory: Array<ContentHistoryEntry>;
+    nextAction: string;
+    locationName: string;
+    toolsRun: Array<string>;
+    services: Array<string>;
 }
 export interface InboundReply {
     id: string;
@@ -2592,6 +3349,18 @@ export enum ApprovalStatus {
     approved = "approved",
     rejected = "rejected"
 }
+export enum ApprovalTier {
+    sms_send = "sms_send",
+    funding_claim = "funding_claim",
+    legal = "legal",
+    email_send = "email_send",
+    gbp_publish = "gbp_publish",
+    social_publish = "social_publish",
+    content_publish = "content_publish",
+    financial = "financial",
+    medical = "medical",
+    voice_call = "voice_call"
+}
 export enum ArtifactStatus {
     final_ = "final",
     draft = "draft",
@@ -2606,6 +3375,14 @@ export enum ArtifactType {
     seo_action_plan = "seo_action_plan",
     proposal = "proposal",
     support_resolution = "support_resolution"
+}
+export enum AuditCategory {
+    ContentMessaging = "ContentMessaging",
+    GrowthStrategy = "GrowthStrategy",
+    BrandTrust = "BrandTrust",
+    SEODiscoverability = "SEODiscoverability",
+    CompetitivePositioning = "CompetitivePositioning",
+    ConversionOptimization = "ConversionOptimization"
 }
 export enum BookingStatus {
     cancelled = "cancelled",
@@ -2632,6 +3409,13 @@ export enum BrfCallStatus {
     SmsFallbackSent = "SmsFallbackSent",
     Pending = "Pending"
 }
+export enum CalendarApprovalStatus {
+    pending_review = "pending_review",
+    approved = "approved",
+    rejected = "rejected",
+    draft = "draft",
+    needs_revision = "needs_revision"
+}
 export enum CampaignLeadStatus {
     active = "active",
     unsubscribed = "unsubscribed",
@@ -2645,6 +3429,19 @@ export enum CampaignStatus {
     draft = "draft",
     paused = "paused"
 }
+export enum CampaignType {
+    reviewRequest = "reviewRequest",
+    localBusinessOutreach = "localBusinessOutreach",
+    referralPartnerOutreach = "referralPartnerOutreach",
+    oldLeadReactivation = "oldLeadReactivation",
+    financingOffer = "financingOffer",
+    seasonalPromo = "seasonalPromo",
+    leadNurture = "leadNurture",
+    coldEmail = "coldEmail",
+    verticalSpecific = "verticalSpecific",
+    eventWebinar = "eventWebinar",
+    proposalFollowUp = "proposalFollowUp"
+}
 export enum CommentIntent {
     question = "question",
     purchase_intent = "purchase_intent",
@@ -2653,11 +3450,43 @@ export enum CommentIntent {
     community_love = "community_love",
     competitor_mention = "competitor_mention"
 }
+export enum ContentObjective {
+    awareness = "awareness",
+    retention = "retention",
+    authority = "authority",
+    conversion = "conversion",
+    engagement = "engagement"
+}
+export enum ContentPillar {
+    entertainment = "entertainment",
+    education = "education",
+    community = "community",
+    promotion = "promotion",
+    authority = "authority"
+}
 export enum ContentType {
     Blog = "Blog",
     Image = "Image",
     AdCopy = "AdCopy",
     Video = "Video"
+}
+export enum DraftPlatform {
+    x = "x",
+    linkedin = "linkedin",
+    tiktok = "tiktok",
+    google_business = "google_business",
+    instagram = "instagram",
+    threads = "threads",
+    facebook = "facebook"
+}
+export enum DraftStatus {
+    scheduled = "scheduled",
+    published = "published",
+    pending_approval = "pending_approval",
+    approved = "approved",
+    rejected = "rejected",
+    draft = "draft",
+    failed = "failed"
 }
 export enum EmailSequenceStatus {
     active = "active",
@@ -2706,6 +3535,19 @@ export enum GenerationStatus {
     Complete = "Complete",
     Pending = "Pending"
 }
+export enum HttpMethod {
+    get = "get",
+    put = "put",
+    post = "post",
+    delete_ = "delete",
+    patch = "patch"
+}
+export enum MarketingAuditStatus {
+    pending = "pending",
+    in_progress = "in_progress",
+    completed = "completed",
+    failed = "failed"
+}
 export enum MarketingFramework {
     bly = "bly",
     sugarman = "sugarman",
@@ -2729,15 +3571,55 @@ export enum MessageRole {
     User = "User",
     Assistant = "Assistant"
 }
+export enum NoteCategory {
+    Email = "Email",
+    System = "System",
+    Call = "Call",
+    Meeting = "Meeting",
+    General = "General"
+}
+export enum OpportunityStage {
+    New = "New",
+    Qualified = "Qualified",
+    Proposal = "Proposal",
+    ClosedWon = "ClosedWon",
+    Negotiation = "Negotiation",
+    ClosedLost = "ClosedLost"
+}
 export enum OutputFormat {
     both = "both",
     html = "html",
     text = "text"
 }
+export enum PostFormat {
+    text_only = "text_only",
+    single_image = "single_image",
+    video = "video",
+    live = "live",
+    poll = "poll",
+    reel = "reel",
+    story = "story",
+    carousel = "carousel"
+}
 export enum PostStatus {
     scheduled = "scheduled",
     published = "published",
     draft = "draft",
+    failed = "failed"
+}
+export enum ProposalStatus {
+    pending_review = "pending_review",
+    sent = "sent",
+    approved = "approved",
+    rejected = "rejected",
+    accepted = "accepted",
+    draft = "draft",
+    archived = "archived"
+}
+export enum RankedDispatchStatus {
+    pending = "pending",
+    completed = "completed",
+    routed = "routed",
     failed = "failed"
 }
 export enum ReplyClassification {
@@ -2746,6 +3628,13 @@ export enum ReplyClassification {
     Neutral = "Neutral",
     PositiveSignal = "PositiveSignal",
     Objection = "Objection"
+}
+export enum ReportStatus {
+    pending_review = "pending_review",
+    sent = "sent",
+    approved = "approved",
+    draft = "draft",
+    archived = "archived"
 }
 export enum ReviewPlatform {
     yelp = "yelp",
@@ -2812,6 +3701,14 @@ export enum SendLogStatus {
     bounced = "bounced",
     clicked = "clicked"
 }
+export enum ServiceAreaPageStatus {
+    published = "published",
+    pending_approval = "pending_approval",
+    planned = "planned",
+    approved = "approved",
+    draft = "draft",
+    archived = "archived"
+}
 export enum SocialEngagementType {
     dm = "dm",
     comment = "comment",
@@ -2831,6 +3728,23 @@ export enum SubscriberStatus {
     unsubscribed = "unsubscribed",
     complained = "complained",
     bounced = "bounced"
+}
+export enum TaskPriority {
+    Low = "Low",
+    High = "High",
+    Medium = "Medium",
+    Urgent = "Urgent"
+}
+export enum TaskStatus {
+    Cancelled = "Cancelled",
+    InProgress = "InProgress",
+    Completed = "Completed",
+    NotStarted = "NotStarted"
+}
+export enum TrendDirection {
+    up = "up",
+    down = "down",
+    flat = "flat"
 }
 export enum TrialStatus {
     Active = "Active",
@@ -2858,14 +3772,16 @@ export enum Variant_active_archived_paused {
     archived = "archived",
     paused = "paused"
 }
-export enum Variant_approved_rejected {
-    approved = "approved",
-    rejected = "rejected"
-}
 export enum Variant_both_gdpr_canSpam {
     both = "both",
     gdpr = "gdpr",
     canSpam = "canSpam"
+}
+export enum Variant_cancelled_pending_success_failed {
+    cancelled = "cancelled",
+    pending = "pending",
+    success = "success",
+    failed = "failed"
 }
 export enum Variant_cancelled_sent_queued_failed {
     cancelled = "cancelled",
@@ -2938,6 +3854,26 @@ export enum Variant_warming_active_flagged_paused {
     flagged = "flagged",
     paused = "paused"
 }
+export enum WebhookCategory {
+    crm = "crm",
+    gbp = "gbp",
+    social = "social",
+    voice = "voice",
+    reports = "reports",
+    general = "general",
+    email_sms = "email_sms",
+    funding = "funding"
+}
+export enum WorkflowStatus {
+    cancelled = "cancelled",
+    pending = "pending",
+    in_progress = "in_progress",
+    completed = "completed",
+    approved = "approved",
+    rejected = "rejected",
+    paused_for_approval = "paused_for_approval",
+    failed = "failed"
+}
 export interface backendInterface {
     activateBrandKitTrial(slug: string, actionType: string): Promise<{
         __kind__: "ok";
@@ -2968,6 +3904,13 @@ export interface backendInterface {
     }>;
     addActivityFeedItem(item: ActivityFeedItemInput): Promise<void>;
     addAgentLog(entry: AgentLogEntryInput): Promise<void>;
+    addApprovalRecord(record: ApprovalItemRecord): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     addAttributionTouch(id: string, touch: AttributionTouch): Promise<boolean>;
     addConversationMessage(tenantId: string, sessionId: string, role: string, content: string): Promise<void>;
     addDemoFunnelEntry(entry: DemoFunnelEntry): Promise<void>;
@@ -3037,6 +3980,18 @@ export interface backendInterface {
     }>;
     bulkImportLeads(tenantId: string, leads: Array<ExtendedLeadInput>): Promise<BulkImportResult>;
     bulkSetFeatureToggles(tier: string, updates: Array<[string, boolean]>, modifiedBy: string): Promise<boolean>;
+    calculateMarketingAuditScore(input: MarketingAuditInput): Promise<{
+        __kind__: "ok";
+        ok: {
+            overallScore: bigint;
+            brfScore: BRFScore;
+            grade: string;
+            categoryScores: Array<MarketingAuditScore>;
+        };
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     callOpenRouterForTask(task: string, prompt: string, context: string): Promise<string>;
     cancelAutoTrigger(leadId: string): Promise<void>;
     cancelQueuedAction(actionId: string): Promise<void>;
@@ -3074,8 +4029,13 @@ export interface backendInterface {
     createAgentFromCommand(req: DograhCreateAgentRequest): Promise<DograhCommandResult>;
     createAgentRun(run: AgentRunRecord): Promise<boolean>;
     createAgentThread(thread: AgentThreadRecord): Promise<boolean>;
-    createApprovalItem(runId: string, threadId: string, tenantId: string, action: string, reason: string): Promise<string>;
-    createApprovalRecord(item: ApprovalItemRecord): Promise<boolean>;
+    createApprovalItem(item: ApprovalItem): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createArtifact(runId: string, threadId: string, tenantId: string, artifactType: ArtifactType, title: string, content: string, tags: Array<string>): Promise<string>;
     createBatchAuditJob(job: BatchAuditJob): Promise<string>;
     createBooking(tenantId: string, customerName: string, customerPhone: string, customerEmail: string, serviceType: string, scheduledAt: bigint, durationMinutes: bigint, notes: string): Promise<{
@@ -3093,9 +4053,44 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    createBusinessBrief(clientBusinessId: string, verticalProfileId: string, businessName: string, locationName: string, website: string, primaryKeyword: string, serviceArea: string, targetLocations: Array<string>, services: Array<string>, currentFindings: Array<string>, criticalFindings: Array<string>, importantFindings: Array<string>, monitorFindings: Array<string>, toolsRun: Array<string>, deliverables: Array<string>, nextAction: string, sessionLog: Array<string>, approvalConfig: string, performanceHistory: Array<PerformanceHistoryEntry>, localSEOHistory: Array<LocalSEOHistoryEntry>, reviewHistory: Array<ReviewHistoryEntry>, contentHistory: Array<ContentHistoryEntry>, fundingHistory: Array<FundingHistoryEntry>): Promise<{
+        __kind__: "ok";
+        ok: BusinessBrief;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createClientReport(tenantId: string, reportType: string, periodLabel: string, sections: Array<ReportSection>, aiNarrative: string, topWins: Array<string>, nextSteps: Array<string>, overallScore: bigint): Promise<{
         __kind__: "ok";
         ok: ClientReport;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createCompany(clientBusinessId: string, name: string, size: string, vertical: string, website: string, address: string, phone: string, email: string, notes: string): Promise<{
+        __kind__: "ok";
+        ok: Company;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createContact(clientBusinessId: string, firstName: string, lastName: string, email: string, phone: string, title: string, leadSource: string, industry: string, nurtureStatus: string, notes: string): Promise<{
+        __kind__: "ok";
+        ok: Contact;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createCustomField(clientBusinessId: string, name: string, fieldType: string, targetEntity: string, options: Array<string>, isRequired: boolean): Promise<{
+        __kind__: "ok";
+        ok: CustomField;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createCustomFieldValue(clientBusinessId: string, customFieldId: string, entityId: string, entityType: string, value: string): Promise<{
+        __kind__: "ok";
+        ok: CustomFieldValue;
     } | {
         __kind__: "err";
         err: string;
@@ -3117,8 +4112,50 @@ export interface backendInterface {
     createFreeAuditLead(businessName: string, websiteUrl: string, location: string, contactEmail: string, phone: string, overallScore: bigint): Promise<void>;
     createLead(lead: Lead): Promise<void>;
     createLeadAuditJob(job: LeadAuditJob): Promise<string>;
+    createMarketingAudit(input: MarketingAuditInput): Promise<{
+        __kind__: "ok";
+        ok: MarketingAudit;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createMultiLocationReport(report: MultiLocationReport): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createNewsletterCampaign(tenantId: string, name: string, subject: string, htmlBody: string, plainTextBody: string | null, fromName: string | null, fromEmail: string | null, tags: Array<string>): Promise<string>;
+    createNote(clientBusinessId: string, authorId: string, title: string, body: string, category: NoteCategory, relatedToId: string, relatedToType: string): Promise<{
+        __kind__: "ok";
+        ok: Note;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createNotification(notification: NotificationRecord): Promise<void>;
+    createOpportunity(clientBusinessId: string, contactId: string, companyId: string, title: string, value: bigint, stage: OpportunityStage, closeDate: bigint, probability: bigint, notes: string): Promise<{
+        __kind__: "ok";
+        ok: Opportunity;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createProposal(clientBusinessId: string, verticalProfileId: string, title: string, executiveSummary: string, situationAnalysis: string, strategyApproach: string, scopeOfWork: string, timeline: string, assumptions: string, clientResponsibilities: string, nextSteps: string): Promise<{
+        __kind__: "ok";
+        ok: Proposal;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    createRankedDispatchRoute(clientBusinessId: string, verticalProfileId: string, requestText: string): Promise<{
+        __kind__: "ok";
+        ok: RankedDispatchRoute;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createReview(review: Review): Promise<void>;
     createReviewRequest(request: ReviewRequest): Promise<void>;
     createReviewRequestTrigger(tenantId: string, triggerType: ReviewRequestTriggerType, bookingId: string | null, estimateId: string | null, customerName: string, customerPhone: string, customerEmail: string, platform: string): Promise<{
@@ -3147,6 +4184,13 @@ export interface backendInterface {
     }>;
     createSocialLead(lead: SocialLead): Promise<void>;
     createSocialPost(post: SocialPost): Promise<void>;
+    createTask(clientBusinessId: string, assignedTo: string, title: string, description: string, priority: TaskPriority, status: TaskStatus, dueDate: bigint, taskType: string, relatedToId: string, relatedToType: string): Promise<{
+        __kind__: "ok";
+        ok: Task;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     createTemplate(tenantId: string, name: string, role: string, systemPrompt: string, allowedTools: Array<string>, memoryMode: MemoryMode, approvalRequired: boolean): Promise<string>;
     createTenant(tenantId: TenantId, name: string): Promise<void>;
     createThread(tenantId: string, agentType: string, title: string): Promise<string>;
@@ -3155,25 +4199,96 @@ export interface backendInterface {
     deleteAgentTask(taskId: string): Promise<void>;
     deleteCampaignTemplate(templateId: string): Promise<void>;
     deleteChatWidgetConfig(tenantId: TenantId): Promise<void>;
+    deleteCompany(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deleteCompetitorAlert(id: string): Promise<void>;
     deleteCompetitorProfile(id: string): Promise<void>;
+    deleteContact(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deleteCredential(tenantId: string, fieldName: string): Promise<{
         ok: boolean;
         message: string;
+    }>;
+    deleteCustomField(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deleteCustomFieldValue(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
     }>;
     deleteGeneratedContent(id: string): Promise<void>;
     deleteLead(tenantId: TenantId, leadId: string): Promise<void>;
     deleteLeadAttribution(id: string): Promise<void>;
     deleteLocationProfile(id: string): Promise<void>;
+    deleteMarketingAudit(id: string): Promise<boolean>;
     deleteNewsletterCampaign(tenantId: string, campaignId: string): Promise<boolean>;
     deleteNewsletterSubscriber(tenantId: string, email: string): Promise<boolean>;
+    deleteNote(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deleteOpportunity(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deleteProposal(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    deleteRankedDispatchRoute(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deleteReview(tenantId: TenantId, reviewId: string): Promise<void>;
     deleteReviewRequest(tenantId: TenantId, requestId: string): Promise<void>;
     deleteScanModel(modelId: string, tenantId: string): Promise<void>;
     deleteSocialPost(tenantId: string, postId: string): Promise<void>;
+    deleteTask(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deleteTemplate(id: string): Promise<boolean>;
     deleteTriggerRule(ruleId: string): Promise<void>;
     deleteVoiceAgentConfig(tenantId: TenantId): Promise<void>;
+    deleteWebhookContract(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     deleteWorkflowDef(workflowId: string): Promise<boolean>;
     deployAgent(agentId: string): Promise<{
         message: string;
@@ -3224,12 +4339,33 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    executeWebhookContract(request: ExecutionRequest): Promise<{
+        __kind__: "ok";
+        ok: ExecutionResponse;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     extractLeads(html: string, sourceUrl: string): Promise<LeadExtractionResult>;
     failRun(runId: string, errorMessage: string): Promise<boolean>;
     flagEngagement(tenantId: string, approvalId: string, reason: string): Promise<void>;
     flushSmsQueue(): Promise<bigint>;
     generateContent(req: ContentGenerationRequest): Promise<string>;
     generateOutreachSequence(leadId: string, companyName: string, niche: string, city: string, framework: string): Promise<OutreachSequence>;
+    generateProposalFromAudit(clientBusinessId: string, verticalProfileId: string, auditId: string, auditScore: bigint, auditFindings: Array<string>, auditRecommendations: Array<string>): Promise<{
+        __kind__: "ok";
+        ok: Proposal;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    generateServiceAreaOutline(businessName: string, serviceArea: string, targetLocations: Array<string>, services: Array<string>, primaryKeyword: string): Promise<{
+        __kind__: "ok";
+        ok: ServiceAreaOutline;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     generateTailoredEmailCopy(businessName: string, city: string, niche: string, emailIndex: bigint, framework: string): Promise<{
         __kind__: "ok";
         ok: string;
@@ -3345,10 +4481,50 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    getAllWebhookContracts(): Promise<{
+        __kind__: "ok";
+        ok: Array<WebhookContract>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getAllWebhookExecutions(): Promise<{
+        __kind__: "ok";
+        ok: Array<WebhookExecution>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getAllWebsiteAgentSubscriptions(): Promise<Array<WebsiteAgentSubscription>>;
     getAllWhiteLabelConfigs(): Promise<Array<WhiteLabelConfig>>;
-    getApprovalRecordsByTenant(tenantId: string): Promise<Array<ApprovalItemRecord>>;
-    getApprovalsByRun(runId: string): Promise<Array<ApprovalItem>>;
+    getApprovalItem(id: string): Promise<{
+        __kind__: "ok";
+        ok: ApprovalItem;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getApprovalRecordsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ApprovalItemRecord>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getApprovalsByRun(runId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ApprovalItem>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getApprovalsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ApprovalItem>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getArtifact(id: string): Promise<AgentArtifact | null>;
     getArtifactRecordsByTenant(tenantId: string): Promise<Array<AgentArtifactRecord>>;
     getArtifactRecordsByThread(threadId: string): Promise<Array<AgentArtifactRecord>>;
@@ -3364,6 +4540,20 @@ export interface backendInterface {
     }>>;
     getAutopilotEmailConfig(): Promise<AutopilotConfig>;
     getBatchAuditJobs(tenantId: string): Promise<Array<BatchAuditJob>>;
+    getBestPerformerMemory(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: BestPerformerMemory;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getBestPerformers(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<PerformanceInsight>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getBillingRecordsByTenant(tenantId: TenantId): Promise<Array<BillingRecord>>;
     getBookingsByTenant(tenantId: string): Promise<Array<Booking>>;
     getBouncesByQueue(queueId: string): Promise<Array<DripLeadBounceRecord>>;
@@ -3398,6 +4588,13 @@ export interface backendInterface {
         err: string;
     }>;
     getBulkSendJobs(): Promise<Array<BulkSendJob>>;
+    getBusinessBrief(id: string): Promise<{
+        __kind__: "ok";
+        ok: BusinessBrief;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getCacheStats(): Promise<AudioCacheStats>;
     getCachedAudio(key: string): Promise<string | null>;
     getCallerUserProfile(): Promise<UserProfile | null>;
@@ -3410,6 +4607,13 @@ export interface backendInterface {
     getClientReportById(reportId: string): Promise<ClientReport | null>;
     getClientReports(tenantId: string): Promise<Array<ClientReport>>;
     getCommandHistory(offset: bigint, limit: bigint): Promise<Array<CommandLogEntry>>;
+    getCompany(id: string): Promise<{
+        __kind__: "ok";
+        ok: Company;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getCompetitorAlertsByTenant(tenantId: string): Promise<Array<CompetitorAlert>>;
     getCompetitorIntelReport(tenantId: string): Promise<CompetitorIntelReport | null>;
     getCompetitorProfile(id: string): Promise<CompetitorProfile | null>;
@@ -3435,6 +4639,48 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    getContact(id: string): Promise<{
+        __kind__: "ok";
+        ok: Contact;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getContentCalendar(id: string): Promise<{
+        __kind__: "ok";
+        ok: ContentCalendar;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getContentCalendarEntriesByCalendar(calendarId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ContentCalendarEntry>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getContentCalendarEntriesByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ContentCalendarEntry>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getContentCalendarEntry(id: string): Promise<{
+        __kind__: "ok";
+        ok: ContentCalendarEntry;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getContentCalendarsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ContentCalendar>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getContentTierToggles(): Promise<Array<ContentTierToggle>>;
     getConversationHistory(tenantId: string, sessionId: string): Promise<Array<{
         id: string;
@@ -3444,6 +4690,20 @@ export interface backendInterface {
         citations: Array<string>;
     }>>;
     getCsvImportBatches(tenantId: string): Promise<Array<CsvImportBatch>>;
+    getCustomField(id: string): Promise<{
+        __kind__: "ok";
+        ok: CustomField;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getCustomFieldValue(id: string): Promise<{
+        __kind__: "ok";
+        ok: CustomFieldValue;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getDecryptedCredential(tenantId: string, field: string): Promise<string | null>;
     getDeliverabilityEvents(): Promise<Array<DeliverabilityEvent>>;
     getDemoAudio(key: string): Promise<string | null>;
@@ -3507,7 +4767,7 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
-    getEmailTemplates(): Promise<Array<EmailTemplate>>;
+    getEmailTemplates(): Promise<Array<EmailTemplateExt>>;
     getEngagementApprovals(tenantId: string): Promise<Array<EngagementApproval>>;
     getEstimatesByTenant(tenantId: string): Promise<Array<Estimate>>;
     getExecutionLog(tenantId: string | null): Promise<Array<{
@@ -3559,6 +4819,14 @@ export interface backendInterface {
         uploadedAt: bigint;
     }>>;
     getLastDiscoveryJob(): Promise<ScheduledDiscoveryJob | null>;
+    getLatestMarketingAudit(clientBusinessId: string): Promise<MarketingAudit | null>;
+    getLatestMultiLocationReport(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: MultiLocationReport | null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getLeadAttribution(id: string): Promise<LeadAttributionRecord | null>;
     getLeadAttributionsByLead(tenantId: string, leadId: string): Promise<Array<LeadAttributionRecord>>;
     getLeadAttributionsByTenant(tenantId: string): Promise<Array<LeadAttributionRecord>>;
@@ -3588,7 +4856,43 @@ export interface backendInterface {
     getLeadsByTenantId(tenantId: TenantId): Promise<Array<Lead>>;
     getLocationProfile(id: string): Promise<LocationProfile | null>;
     getLocationProfilesByTenant(tenantId: string): Promise<Array<LocationProfile>>;
+    getMarketingAudit(id: string): Promise<MarketingAudit | null>;
     getMemory(threadId: string): Promise<AgentMemory | null>;
+    getMonthlyReport(id: string): Promise<{
+        __kind__: "ok";
+        ok: MonthlyReport;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getMonthlyReportsByStatus(tenantId: string, status: ReportStatus): Promise<{
+        __kind__: "ok";
+        ok: Array<MonthlyReport>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getMonthlyReportsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<MonthlyReport>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getMultiLocationReport(id: string): Promise<{
+        __kind__: "ok";
+        ok: MultiLocationReport;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getMultiLocationReportsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<MultiLocationReport>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getN8NConfig(): Promise<{
         instanceUrl: string;
         activeWorkflowCount: bigint;
@@ -3611,6 +4915,13 @@ export interface backendInterface {
      * / Public query: returns the ElevenLabs voice ID for the given niche.
      */
     getNicheVoiceId(niche: string): Promise<string>;
+    getNote(id: string): Promise<{
+        __kind__: "ok";
+        ok: Note;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getNotificationsByTenant(tenantId: TenantId): Promise<Array<NotificationRecord>>;
     getOpenRouterStatus(): Promise<{
         costPerMillion: string;
@@ -3623,6 +4934,13 @@ export interface backendInterface {
     getOperatorChatHistory(): Promise<Array<OperatorChatMessage>>;
     getOperatorReportData(reportType: string): Promise<OperatorReportData>;
     getOperatorStats(): Promise<OperatorStats>;
+    getOpportunity(id: string): Promise<{
+        __kind__: "ok";
+        ok: Opportunity;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getOptedOutEmails(): Promise<Array<string>>;
     getOptedOutPhones(): Promise<Array<string>>;
     getOutreachEvents(leadId: string): Promise<Array<OutreachEvent>>;
@@ -3642,13 +4960,53 @@ export interface backendInterface {
     getPaidAdsScores(tenantId: TenantId): Promise<Array<PaidAdsScore>>;
     getPaidAdsSubscription(tenantId: TenantId): Promise<PaidAdsSubscription | null>;
     getPaymentMethod(tenantId: TenantId): Promise<PaymentMethod | null>;
-    getPendingApprovalRecords(tenantId: string): Promise<Array<ApprovalItemRecord>>;
-    getPendingApprovals(tenantId: string): Promise<Array<ApprovalItem>>;
+    getPendingApprovalRecords(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ApprovalItemRecord>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getPendingApprovalsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ApprovalItem>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getPendingQueuedActions(): Promise<Array<OutreachQueuedAction>>;
+    getPerformanceInsight(id: string): Promise<{
+        __kind__: "ok";
+        ok: PerformanceInsight;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getPerformanceInsightsByReport(reportId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<PerformanceInsight>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getPerformanceInsightsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<PerformanceInsight>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getPingHistory(serviceId: string): Promise<Array<ApiPingRecord>>;
     getPingStatus(): Promise<Array<ApiPingRecord>>;
     getPipelineFunnelStats(niche: string): Promise<PipelineFunnelStats>;
     getPipelineLeads(): Promise<Array<PipelineLead>>;
+    getProposal(id: string): Promise<{
+        __kind__: "ok";
+        ok: Proposal;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getProviderAdapters(tenantId: string): Promise<Array<ProviderAdapterConfig>>;
     getProviderConfigs(): Promise<Array<{
         id: string;
@@ -3668,6 +5026,13 @@ export interface backendInterface {
         bounced: bigint;
     }>>;
     getQueueThrottleConfig(queueId: string): Promise<DripQueueThrottleConfig | null>;
+    getRankedDispatchRoute(id: string): Promise<{
+        __kind__: "ok";
+        ok: RankedDispatchRoute;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getReadinessScore(tenantId: string): Promise<ReadinessScore>;
     getRecentActivity(limit: bigint): Promise<Array<ActivityFeedItem>>;
     getReplyAnalysis(replyId: string): Promise<ReplyAnalysis | null>;
@@ -3701,6 +5066,34 @@ export interface backendInterface {
     getSeoGeoScores(tenantId: TenantId): Promise<Array<SeoGeoScore>>;
     getSeoGeoSubscription(tenantId: TenantId): Promise<SeoGeoSubscription | null>;
     getSeoGeoVisibilitySnapshots(tenantId: TenantId): Promise<Array<SeoGeoVisibilitySnapshot>>;
+    getServiceAreaPage(id: string): Promise<{
+        __kind__: "ok";
+        ok: ServiceAreaPage;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getServiceAreaPagesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ServiceAreaPage>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getServiceAreaPagesByStatus(tenantId: string, status: ServiceAreaPageStatus): Promise<{
+        __kind__: "ok";
+        ok: Array<ServiceAreaPage>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getServiceAreaPagesByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<ServiceAreaPage>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getSmsAutopilotJobs(): Promise<Array<SmsAutopilotJob>>;
     getSmsAutopilotRules(): Promise<Array<SmsAutopilotRule>>;
     getSmsMessagesByThread(threadId: string): Promise<Array<SMSMessage>>;
@@ -3708,9 +5101,44 @@ export interface backendInterface {
     getSocialCommentsByTenant(tenantId: string, postId: string | null): Promise<Array<SocialComment>>;
     getSocialLeads(tenantId: string): Promise<Array<SocialLead>>;
     getSocialListeningAlerts(tenantId: string): Promise<Array<SocialListeningAlert>>;
+    getSocialPostDraft(id: string): Promise<{
+        __kind__: "ok";
+        ok: SocialPostDraft;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getSocialPostDraftsByEntry(entryId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<SocialPostDraft>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getSocialPostDraftsByStatus(tenantId: string, status: DraftStatus): Promise<{
+        __kind__: "ok";
+        ok: Array<SocialPostDraft>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getSocialPostDraftsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<SocialPostDraft>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getSocialPostsByTenant(tenantId: string, startDate: bigint | null, endDate: bigint | null): Promise<Array<SocialPost>>;
     getSocialROIMetrics(tenantId: string, period: string): Promise<SocialROIMetrics | null>;
     getSubdomainRecords(): Promise<Array<SenderSubdomainRecord>>;
+    getTask(id: string): Promise<{
+        __kind__: "ok";
+        ok: Task;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getTemplate(id: string): Promise<AgentTemplateRecord | null>;
     getTemplates(tenantId: string): Promise<Array<AgentTemplateRecord>>;
     getTenantName(tenantId: TenantId): Promise<string>;
@@ -3769,10 +5197,66 @@ export interface backendInterface {
         totalChunks: bigint;
         totalDocuments: bigint;
     }>;
+    getVerticalProfile(id: string): Promise<{
+        __kind__: "ok";
+        ok: VerticalProfileExt;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getVerticalProfileByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: VerticalProfileExt;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getVoiceAgentConfig(tenantId: TenantId): Promise<VoiceAgentConfig | null>;
     getWarmLeadHandoffs(): Promise<Array<WarmLeadHandoff>>;
     getWarmSequenceEvents(enrollmentId: string): Promise<Array<WarmSequenceEmailEvent>>;
     getWarmSequenceSchedules(enrollmentId: string): Promise<Array<WarmSequenceEmailSchedule>>;
+    getWebhookContract(id: string): Promise<{
+        __kind__: "ok";
+        ok: WebhookContract;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWebhookContractSummaries(): Promise<{
+        __kind__: "ok";
+        ok: Array<ContractSummary>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWebhookContractsByCategory(category: WebhookCategory): Promise<{
+        __kind__: "ok";
+        ok: Array<WebhookContract>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWebhookExecution(id: string): Promise<{
+        __kind__: "ok";
+        ok: WebhookExecution;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWebhookExecutionsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<WebhookExecution>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWebhookExecutionsByContract(contractId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<WebhookExecution>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     getWebhookLog(provider: string): Promise<Array<WebhookEvent>>;
     getWebhookUrl(): Promise<string>;
     getWebhookUrls(): Promise<{
@@ -3800,6 +5284,34 @@ export interface backendInterface {
         isActive: boolean;
         scope: string;
     }>>;
+    getWorkflowLogsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<WorkflowLogEntry>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWorkflowLogsByWorkflow(workflowId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<WorkflowLogEntry>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWorkflowSnapshot(workflowId: string): Promise<{
+        __kind__: "ok";
+        ok: WorkflowStatusSnapshot;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    getWorkflowSnapshotsByTenant(tenantId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<WorkflowStatusSnapshot>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     handleNewsletterBounce(tenantId: string, email: string, bounceType: BounceType, reason: string): Promise<boolean>;
     handleNewsletterUnsubscribe(tenantId: string, email: string, campaignId: string): Promise<boolean>;
     http_request(req: {
@@ -3859,10 +5371,111 @@ export interface backendInterface {
     isContentEnabledForTier(tier: string): Promise<boolean>;
     isDemoSessionExpired(sessionId: string): Promise<boolean>;
     linkSocialLeadToCRM(tenantId: string, socialLeadId: string, crmLeadId: string): Promise<void>;
+    listAllRankedDispatchRoutes(): Promise<{
+        __kind__: "ok";
+        ok: Array<RankedDispatchRoute>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listAllVerticalProfiles(): Promise<Array<VerticalProfileExt>>;
+    listBusinessBriefsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<BusinessBrief>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listCompaniesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Company>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listContactsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Contact>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listCustomFieldValuesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<CustomFieldValue>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listCustomFieldValuesByEntity(entityId: string, entityType: string): Promise<{
+        __kind__: "ok";
+        ok: Array<CustomFieldValue>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listCustomFieldsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<CustomField>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     listLeadEnrichments(): Promise<Array<LeadAIEnrichment>>;
     listLeadScores(): Promise<Array<LeadAIScore>>;
+    listMarketingAuditsByClient(clientBusinessId: string): Promise<Array<MarketingAudit>>;
+    listNotesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Note>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listOpportunitiesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Opportunity>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     listOutreachSequences(): Promise<Array<OutreachSequence>>;
+    listProposalsByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Proposal>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listProposalsByStatus(clientBusinessId: string, status: ProposalStatus): Promise<{
+        __kind__: "ok";
+        ok: Array<Proposal>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listRankedDispatchRoutesByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<RankedDispatchRoute>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listRankedDispatchRoutesByStatus(status: RankedDispatchStatus): Promise<{
+        __kind__: "ok";
+        ok: Array<RankedDispatchRoute>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     listReplyAnalyses(): Promise<Array<ReplyAnalysis>>;
+    listTasksByClient(clientBusinessId: string): Promise<{
+        __kind__: "ok";
+        ok: Array<Task>;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    listVerticalProfilesByCategory(category: string): Promise<Array<VerticalProfileExt>>;
     lockSocialContent(sessionId: string): Promise<boolean>;
     logDripEmailSent(log: DripQueueEmailLog): Promise<void>;
     logFunnelStep(leadId: string, step: string, metadata: string | null): Promise<{
@@ -3873,6 +5486,13 @@ export interface backendInterface {
         err: string;
     }>;
     logTrialInteraction(kitPageSlug: string, interactionType: string): Promise<void>;
+    logWorkflowEntry(entry: WorkflowLogEntry): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     markBrandKitConverted(slug: string): Promise<{
         __kind__: "ok";
         ok: BrandKitProspect;
@@ -3906,6 +5526,13 @@ export interface backendInterface {
     masterAgentGetMessages(sessionId: string): Promise<Array<MasterAgentMessage>>;
     masterAgentListSessions(): Promise<Array<MasterAgentSession>>;
     masterAgentStartSession(platformContext: string | null): Promise<string>;
+    matchRankedAgent(requestText: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     mergeBrowserScoresIntoAuditResult(jobId: string, tenantId: string): Promise<{
         __kind__: "ok";
         ok: null;
@@ -4030,6 +5657,48 @@ export interface backendInterface {
     }>;
     rejectEngagement(tenantId: string, approvalId: string): Promise<void>;
     rejectReplyDraft(inboxItemId: string): Promise<void>;
+    removeContentCalendarEntry(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    removeMonthlyReport(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    removeMultiLocationReport(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    removeServiceAreaPage(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    removeSocialPostDraft(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    removeVerticalProfile(id: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     requestReBrowserAudit(jobId: string, tenantId: string, actorName: string): Promise<{
         __kind__: "ok";
         ok: string;
@@ -4045,8 +5714,20 @@ export interface backendInterface {
     resetNicheScript(nicheId: string): Promise<void>;
     resetSmsSchedulerTimer(): Promise<void>;
     resetToDefaults(): Promise<boolean>;
-    resolveApproval(id: string, status: Variant_approved_rejected, notes: string | null): Promise<boolean>;
-    resolveApprovalRecord(id: string, status: string, resolvedBy: string, note: string): Promise<boolean>;
+    resolveApprovalItem(id: string, resolution: ApprovalResolution, resolvedBy: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    resolveApprovalRecord(id: string, status: string, resolvedBy: string, note: string): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     /**
      * / Respond to a review — sets the AI-drafted response and marks it responded.
      */
@@ -4092,6 +5773,13 @@ export interface backendInterface {
     saveAgentMemory(memory: AgentMemoryRecord): Promise<boolean>;
     saveAgentTemplate(tmpl: AgentTemplateStorageRecord): Promise<boolean>;
     saveAutomationConfig(_trigger: string, _isEnabled: boolean, _requiresApproval: boolean, _tenantId: string): Promise<void>;
+    saveBestPerformerMemory(mem: BestPerformerMemory): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     saveBrowserAuditResult(result: BrowserAuditResult): Promise<void>;
     saveCallerUserProfile(profile: UserProfile): Promise<void>;
     saveComposioApiKey(apiKey: string): Promise<{
@@ -4104,6 +5792,20 @@ export interface backendInterface {
     saveComposioWebhookSecret(secret: string): Promise<{
         __kind__: "ok";
         ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    saveContentCalendar(calendar: ContentCalendar): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    saveContentCalendarEntry(entry: ContentCalendarEntry): Promise<{
+        __kind__: "ok";
+        ok: string;
     } | {
         __kind__: "err";
         err: string;
@@ -4148,9 +5850,37 @@ export interface backendInterface {
         err: string;
     }>;
     saveLeadAuditResult(result: LeadAuditResult): Promise<void>;
+    saveMonthlyReport(report: MonthlyReport): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     saveN8NConfig(instanceUrl: string, apiKey: string): Promise<void>;
     saveOpenRouterApiKey(key: string): Promise<void>;
     saveOperatorChatMessage(role: string, content: string, commandType: string | null): Promise<string>;
+    savePerformanceInsight(insight: PerformanceInsight): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    saveServiceAreaPage(page: ServiceAreaPage): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    saveSocialPostDraft(draft: SocialPostDraft): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     /**
      * / Save Vapi API key and assistant ID for a tenant, then auto-provision any
      * / niches that are not yet configured if vapiKey is non-empty.
@@ -4158,6 +5888,13 @@ export interface backendInterface {
     saveVapiCredentials(tenantId: string, vapiKey: string, vapiAssistantId: string): Promise<{
         ok: boolean;
         error?: string;
+    }>;
+    saveVerticalProfile(profile: VerticalProfileExt): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
     }>;
     saveWebhookSecrets(stripeSecret: string, vapiSecret: string, sgDomain: string): Promise<{
         __kind__: "ok";
@@ -4167,6 +5904,13 @@ export interface backendInterface {
         err: string;
     }>;
     saveWorkflowDef(id: string, name: string, description: string, tags: Array<string>, scope: string, workflowJson: string): Promise<void>;
+    saveWorkflowSnapshot(snapshot: WorkflowStatusSnapshot): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     scheduleBrfOutboundCall(prospectSlug: string): Promise<{
         __kind__: "ok";
         ok: BrfOutboundCallAttempt;
@@ -4187,7 +5931,21 @@ export interface backendInterface {
         err: string;
     }>;
     searchNewsletterSubscribers(tenantId: string, searchQuery: string, statusFilter: SubscriberStatus | null, tagFilter: string | null): Promise<Array<NewsletterSubscriber>>;
+    seedDefaultWebhookContracts(): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     seedDemoData(): Promise<void>;
+    seedVerticalProfiles(): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     sendBookingConfirmationEmail(appointmentId: string, customerEmail: string, customerName: string, businessName: string, appointmentDateTime: string, address: string, tenantId: string): Promise<EmailSendResult>;
     sendClientReportEmail(clientId: string, clientEmail: string, clientName: string, reportPeriod: string, reportSummaryHtml: string, tenantId: string): Promise<EmailSendResult>;
     sendHealthScoreAlertEmail(clientId: string, adminEmail: string, clientName: string, healthScore: bigint, previousScore: bigint, topIssue: string, tenantId: string): Promise<EmailSendResult>;
@@ -4342,8 +6100,57 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    updateBusinessBrief(id: string, update: BusinessBriefUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateCompany(id: string, update: CompanyUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateComplianceConfig(config: ComplianceConfig): Promise<void>;
+    updateContact(id: string, update: ContactUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateContentCalendarEntry(id: string, update: ContentCalendarEntryUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateContentCalendarStatus(id: string, status: CalendarApprovalStatus): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateContentResult(id: string, status: GenerationStatus, output: string, mediaUrl: string | null, errorMsg: string | null): Promise<void>;
+    updateCustomField(id: string, update: CustomFieldUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateCustomFieldValue(id: string, update: CustomFieldValueUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateDemoFunnelEntry(tenantId: string, entryId: string, entry: DemoFunnelEntry): Promise<void>;
     updateDemoStep(sessionId: string, step: bigint): Promise<{
         __kind__: "ok";
@@ -4380,10 +6187,53 @@ export interface backendInterface {
     updateHealthMetric(metric: string, value: bigint): Promise<void>;
     updateLead(tenantId: TenantId, leadId: string, lead: Lead): Promise<void>;
     updateLeadAuditJobStatus(jobId: string, status: string, stage: string): Promise<boolean>;
+    updateMarketingAudit(id: string, update: MarketingAuditUpdate): Promise<MarketingAudit | null>;
     updateMemory(threadId: string, tenantId: string, conversationEntry: ConversationEntry, newSummary: string | null, agentNotes: string | null): Promise<boolean>;
+    updateMonthlyReport(id: string, update: MonthlyReportUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateMultiLocationReport(id: string, update: MultiLocationReportUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateNewsletterCampaign(tenantId: string, campaign: NewsletterCampaign): Promise<boolean>;
     updateNewsletterSendStatus(campaignId: string, sendLogId: string, status: SendLogStatus, errorMessage: string | null): Promise<boolean>;
+    updateNote(id: string, update: NoteUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateOpportunity(id: string, update: OpportunityUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateOutreachJobStatus(id: string, status: string): Promise<void>;
+    updateProposal(id: string, update: ProposalUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateRankedDispatchRoute(id: string, upd: RankedDispatchRouteUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateReportSchedule(tenantId: string, weeklyEnabled: boolean, monthlyEnabled: boolean, deliveryDayOfWeek: bigint, deliveryHour: bigint): Promise<{
         __kind__: "ok";
         ok: ReportSchedule;
@@ -4404,8 +6254,29 @@ export interface backendInterface {
     updateScanModel(modelId: string, title: string, description: string): Promise<void>;
     updateScanModelStatus(modelId: string, status: string, modelUrl: string, thumbnailUrl: string): Promise<void>;
     updateScheduledPost(tenantId: string, postId: string, post: ScheduledPost): Promise<void>;
+    updateServiceAreaPage(id: string, update: ServiceAreaPageUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateSmsAutopilotRules(rules: Array<SmsAutopilotRule>): Promise<void>;
     updateSocialPost(tenantId: string, postId: string, post: SocialPost): Promise<void>;
+    updateSocialPostDraft(id: string, update: SocialPostDraftUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateTask(id: string, update: TaskUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     updateTemplate(id: string, name: string, systemPrompt: string, allowedTools: Array<string>, memoryMode: MemoryMode, approvalRequired: boolean): Promise<boolean>;
     updateThreadSummary(id: string, summary: string, agentNotes: string | null): Promise<boolean>;
     updateTrialFeatureFlags(trialAccountId: string, features: FeatureFlags): Promise<{
@@ -4422,6 +6293,20 @@ export interface backendInterface {
     updateVapiAssistant(tenantId: string, assistantId: string, updates: VapiAssistantUpdate): Promise<{
         __kind__: "ok";
         ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateVerticalProfile(id: string, update: VerticalProfileUpdate): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    updateWebhookExecutionStatus(id: string, status: Variant_cancelled_pending_success_failed, result: string | null, errorMsg: string | null): Promise<{
+        __kind__: "ok";
+        ok: string;
     } | {
         __kind__: "err";
         err: string;
@@ -4478,6 +6363,13 @@ export interface backendInterface {
     upsertSeoGeoSubscription(sub: SeoGeoSubscription): Promise<void>;
     upsertSocialROIMetrics(metrics: SocialROIMetrics): Promise<void>;
     upsertVoiceAgentConfig(config: VoiceAgentConfig): Promise<void>;
+    upsertWebhookContract(contract: WebhookContract): Promise<{
+        __kind__: "ok";
+        ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     upsertWebsiteAgentSubscription(sub: WebsiteAgentSubscription): Promise<void>;
     upsertWebsiteContentBrief(brief: WebsiteContentBrief): Promise<void>;
     upsertWebsiteCroOpportunity(opp: WebsiteCroOpportunity): Promise<void>;

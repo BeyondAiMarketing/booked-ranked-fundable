@@ -534,13 +534,7 @@ function AILeadFinderTab() {
     }, 900);
 
     try {
-      // Log credential state for debugging
-      console.log("Lead search credentials:", {
-        hasSerpApi: !!creds?.serpApiKey?.trim(),
-        hasSearxng: !!creds?.searxngUrl?.trim(),
-        hasClaudeKey: !!creds?.claudeKey?.trim(),
-        hasOpenaiKey: !!creds?.openaiKey?.trim(),
-      });
+      // Credential state checked internally
 
       const res = await runDualModelLeadSearch({
         niche,

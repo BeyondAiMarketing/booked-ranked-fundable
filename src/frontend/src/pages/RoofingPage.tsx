@@ -696,8 +696,8 @@ export default function RoofingPage() {
             "Roofing",
             form.city,
           );
-      } catch (error) {
-        console.error("Demo error:", error);
+      } catch {
+        // Demo session creation failed silently
       }
       try {
         if (actor && sessionId) {
@@ -712,8 +712,8 @@ export default function RoofingPage() {
             form.website || "",
           );
         }
-      } catch (error) {
-        console.error("activateTrial error:", error);
+      } catch {
+        // activateTrial failed silently
       }
       try {
         if (actor) {
@@ -739,8 +739,8 @@ export default function RoofingPage() {
             createdAt: BigInt(Date.now()) * BigInt(1_000_000),
           });
         }
-      } catch (error) {
-        console.error("Demo error:", error);
+      } catch {
+        // createLead failed silently
       }
       await new Promise((r) => setTimeout(r, 500));
       setLoading(false);

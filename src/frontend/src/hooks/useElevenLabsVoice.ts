@@ -273,17 +273,13 @@ export function useElevenLabsVoice(
           setIsPlaying(false);
           setIsLoading(false);
           audioElRef.current = null;
-          console.warn(
-            "[useElevenLabsVoice] Audio playback failed — transcript-only mode",
-          );
+          // Audio playback failed — transcript-only mode
         };
 
         audio.play().catch(() => {
           setIsPlaying(false);
           setIsLoading(false);
-          console.warn(
-            "[useElevenLabsVoice] audio.play() rejected — transcript-only mode",
-          );
+          // audio.play() rejected — transcript-only mode
         });
       };
 
@@ -304,17 +300,9 @@ export function useElevenLabsVoice(
         })
         .catch((err) => {
           setIsLoading(false);
-          const msg = err instanceof Error ? err.message : String(err);
-          if (msg === "ELEVENLABS_INVALID_KEY") {
-            console.warn(
-              "[useElevenLabsVoice] ElevenLabs key invalid — transcript-only mode",
-            );
-          } else {
-            console.warn(
-              "[useElevenLabsVoice] ElevenLabs fetch failed — transcript-only mode:",
-              msg,
-            );
-          }
+          const _msg = err instanceof Error ? err.message : String(err);
+          // ElevenLabs fetch failed — transcript-only mode
+          // (invalid key or other error)
           // NO speakWithWebSpeech fallback — transcript only
         });
     }

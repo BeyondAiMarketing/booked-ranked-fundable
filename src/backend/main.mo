@@ -10,7 +10,6 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
-import _Result "mo:core/Result";
 
 import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
 import AccessControl "mo:caffeineai-authorization/access-control";
@@ -19,7 +18,7 @@ import Outcall "mo:caffeineai-http-outcalls/outcall";
 
 import WarmSequencesTypes "types/warmSequences";
 import ICTypes "types/integrationCredentials";
-import ICLib "lib/integrationCredentials";
+import StableJsonStoreCore "lib/StableJsonStoreCore";
 import ICMixin "mixins/integrationCredentials-api";
 import EmailTypes "types/email";
 import EmailMixin "mixins/email-api";
@@ -29,7 +28,6 @@ import BrfSVATypes "types/brfSalesVoiceAgent";
 import BrfSVAMixin "mixins/brfSalesVoiceAgent-api";
 import DripCampaignsTypes "types/dripCampaigns";
 import DripCampaignsMixin "mixins/dripCampaigns-api";
-import _AILeadAuditTypes "types/aiLeadAudit";
 import AILeadIntelligenceMixin "mixins/aiLeadIntelligence-api";
 import SocialMediaTypes "types/socialMedia";
 import SocialMediaMixin "mixins/socialMedia-api";
@@ -54,7 +52,6 @@ import Scanner3DTypes            "types/scanner3d";
 import Scanner3DMixin            "mixins/scanner3d-api";
 import CsvImportTypes            "types/csvImport";
 import CsvImportMixin            "mixins/csvImport-api";
-import _NewsletterTypes          "types/newsletter";
 import NewsletterMixin           "mixins/newsletter-api";
 import WebScraperTypes "types/webScraper";
 import WebScraperMixin "mixins/webScraper-api";
@@ -108,6 +105,66 @@ import RoofingCampaignTypes "types/roofingCampaign";
 import RoofingCampaignLib   "lib/roofingCampaign";
 import RoofingCampaignMixin "mixins/roofingCampaign-api";
 import EmailTemplateTypes   "types/emailTemplate";
+import VerticalProfile "types/verticalProfile";
+import WorkflowLog "types/workflowLog";
+import ContentCalendar "types/contentCalendar";
+import SocialPostDraft "types/socialPostDraft";
+import PerformanceInsight "types/performanceInsight";
+import MonthlyReport "types/monthlyReport";
+import ApprovalQueue "types/approvalQueue";
+import VerticalProfileLib "lib/verticalProfile";
+import WorkflowLogLib "lib/workflowLog";
+import ContentCalendarLib "lib/contentCalendar";
+import SocialPostDraftLib "lib/socialPostDraft";
+import PerformanceInsightLib "lib/performanceInsight";
+import MonthlyReportLib "lib/monthlyReport";
+import ApprovalQueueLib "lib/approvalQueue";
+import VerticalProfileMixin "mixins/verticalProfile-api";
+import VerticalProfileSeed "lib/verticalProfileSeed";
+import WorkflowLogMixin "mixins/workflowLog-api";
+import ContentCalendarMixin "mixins/contentCalendar-api";
+import SocialPostDraftMixin "mixins/socialPostDraft-api";
+import PerformanceInsightMixin "mixins/performanceInsight-api";
+import MonthlyReportMixin "mixins/monthlyReport-api";
+import ApprovalQueueMixin "mixins/approvalQueue-api";
+import BusinessBriefTypes "types/businessBrief";
+import BusinessBriefLib "lib/businessBrief";
+import BusinessBriefMixin "mixins/businessBrief-api";
+import RankedDispatchTypes "types/rankedDispatch";
+import RankedDispatchLib "lib/rankedDispatch";
+import RankedDispatchMixin "mixins/rankedDispatch-api";
+import MultiLocationRollupTypes "types/multiLocationRollup";
+import MultiLocationRollupLib "lib/multiLocationRollup";
+import MultiLocationRollupMixin "mixins/multiLocationRollup-api";
+import ServiceAreaSEOTypes "types/serviceAreaSEO";
+import ServiceAreaSEOLib "lib/serviceAreaSEO";
+import ServiceAreaSEOMixin "mixins/serviceAreaSEO-api";
+import CitationNAPTypes "types/citationNAP";
+import CitationNAPLib "lib/citationNAP";
+import CitationNAPMixin "mixins/citationNAP-api";
+import ScheduledWorkflowTypes "types/scheduledWorkflow";
+import ScheduledWorkflowLib "lib/scheduledWorkflow";
+import ScheduledWorkflowMixin "mixins/scheduledWorkflow-api";
+import LocalReportingTypes "types/localReporting";
+import LocalReportingLib "lib/localReporting";
+import LocalReportingMixin "mixins/localReporting-api";
+import CrmObjectsTypes "types/crmObjects";
+import CrmObjectsLib "lib/crmObjects";
+import CrmObjectsMixin "mixins/crmObjects-api";
+
+
+import MarketingAuditTypes "types/marketingAudit";
+import MarketingAuditLib "lib/marketingAudit";
+import MarketingAuditMixin "mixins/marketingAudit-api";
+import ProposalTypes "types/proposal";
+import ProposalLib "lib/proposal";
+import ProposalMixin "mixins/proposal-api";
+import WebhookContractsTypes "types/webhookContracts";
+import WebhookContractsLib "lib/webhookContracts";
+import WebhookContractsMixin "mixins/webhookContracts-api";
+import ICLib "lib/integrationCredentials";
+import AILeadAuditTypes "types/aiLeadAudit";
+import NewsletterTypes "types/newsletter";
 
 
 
@@ -129,7 +186,9 @@ import EmailTemplateTypes   "types/emailTemplate";
 
 
 
-actor {
+
+ 
+ actor {
   type TenantId = Text;
 
   // ---- CORE TYPES ----
@@ -1128,6 +1187,8 @@ actor {
   // automatically — no stable declarations or upgrade hooks required.
   let integrationCreds = Map.empty<Text, ICTypes.IntegrationCredentials>();
 
+  transient let stableStore = StableJsonStoreCore.Core();
+
   // emptyMasked: the all-empty MaskedCredentials sentinel returned when no
   // credentials have been configured yet.  Declared here (rather than inside the
   // mixin) so that the migration expression can explicitly upgrade it when the
@@ -1300,10 +1361,10 @@ actor {
   let dripThrottleConfigs = Map.empty<Text, DripCampaignsTypes.DripQueueThrottleConfig>();
 
   // AI Lead Intelligence state
-  let leadAuditJobs        = Map.empty<Text, _AILeadAuditTypes.LeadAuditJob>();
-  let leadAuditResults     = Map.empty<Text, _AILeadAuditTypes.LeadAuditResult>();
-  let batchAuditJobs       = Map.empty<Text, _AILeadAuditTypes.BatchAuditJob>();
-  let dualModelSearchJobs  = Map.empty<Text, _AILeadAuditTypes.DualModelSearchJob>();
+  let leadAuditJobs        = Map.empty<Text, AILeadAuditTypes.LeadAuditJob>();
+  let leadAuditResults     = Map.empty<Text, AILeadAuditTypes.LeadAuditResult>();
+  let batchAuditJobs       = Map.empty<Text, AILeadAuditTypes.BatchAuditJob>();
+  let dualModelSearchJobs  = Map.empty<Text, AILeadAuditTypes.DualModelSearchJob>();
 
   include AILeadIntelligenceMixin(
     accessControlState,
@@ -1435,7 +1496,8 @@ actor {
   let apeEmailQueue    = Queue.empty<AutopilotEngineTypes.ApeQueueItem>();
   let apeOpenCounts    = Map.empty<Text, Nat>();
   let apeSmsJobQueue   = Queue.empty<AutopilotEngineTypes.SmsAutopilotJob>();
-  let apeWarmSeqLib    = Map.empty<Text, WarmSequencesTypes.WarmSequence>();
+  let apeWarmSeqLib    = Map.empty<Text, WarmSequencesTypes.WarmSequenceExt>();
+  let apeWarmSeqExtLib = Map.empty<Text, WarmSequencesTypes.WarmSequenceExt>();
 
   include AutopilotEmailMixin(
     accessControlState,
@@ -1544,11 +1606,11 @@ actor {
 
   // Newsletter state
   // nlSubscribers: tenantId -> (email -> subscriber)
-  let nlSubscribers = Map.empty<Text, Map.Map<Text, _NewsletterTypes.NewsletterSubscriber>>();
+  let nlSubscribers = Map.empty<Text, Map.Map<Text, NewsletterTypes.NewsletterSubscriber>>();
   // nlCampaigns: tenantId -> (campaignId -> campaign)
-  let nlCampaigns   = Map.empty<Text, Map.Map<Text, _NewsletterTypes.NewsletterCampaign>>();
+  let nlCampaigns   = Map.empty<Text, Map.Map<Text, NewsletterTypes.NewsletterCampaign>>();
   // nlSendLogs: campaignId -> [SendLog]
-  let nlSendLogs    = Map.empty<Text, List.List<_NewsletterTypes.NewsletterSendLog>>();
+  let nlSendLogs    = Map.empty<Text, List.List<NewsletterTypes.NewsletterSendLog>>();
   let nlIdCounter   = object { public var n : Nat = 0 };
 
   include NewsletterMixin(accessControlState, nlSubscribers, nlCampaigns, nlSendLogs, nlIdCounter);
@@ -1609,6 +1671,55 @@ actor {
   include ComposioMixin(composioState, integrationCreds, credSalt, transform);
   include AccountBriefMixin(accountBriefState);
   include ToolkitTogglesMixin(toolkitTogglesState);
+
+  // ---- NEW SOCIAL / CONTENT OS STATE ----
+  let verticalProfiles    = VerticalProfileLib.emptyState();
+    ignore VerticalProfileLib.seedProfiles(verticalProfiles, VerticalProfileSeed.defaultProfiles());
+  let workflowLogs        = WorkflowLogLib.emptyState();
+  let contentCalendars      = ContentCalendarLib.emptyState();
+  let socialPostDrafts      = SocialPostDraftLib.emptyState();
+  let performanceInsights   = PerformanceInsightLib.emptyState();
+  let monthlyReports        = MonthlyReportLib.emptyState();
+  let approvalQueues        = ApprovalQueueLib.emptyState();
+
+  // ---- CRM OBJECTS STATE ----
+  let crmObjectsState = CrmObjectsLib.emptyState();
+
+  let marketingAuditState = MarketingAuditLib.emptyState();
+  let proposalState = ProposalLib.emptyState();
+  let webhookContractsState = WebhookContractsLib.emptyState();
+
+  // ---- BUSINESS BRIEF STATE ----
+  let businessBriefState = BusinessBriefLib.emptyState();
+
+  // ---- SERVICE AREA SEO STATE ----
+  let serviceAreaSEOState = ServiceAreaSEOLib.emptyState();
+
+  include VerticalProfileMixin(verticalProfiles);
+  include WorkflowLogMixin(workflowLogs);
+  include ContentCalendarMixin(contentCalendars);
+  include SocialPostDraftMixin(socialPostDrafts);
+  include PerformanceInsightMixin(performanceInsights);
+  include MonthlyReportMixin(monthlyReports);
+  include ApprovalQueueMixin(approvalQueues);
+
+  // ---- RANKED DISPATCH STATE ----
+  let rankedDispatchState = RankedDispatchLib.emptyState();
+
+  // ---- MULTI-LOCATION ROLLUP STATE ----
+  let multiLocationRollupState = MultiLocationRollupLib.emptyState();
+
+  // ---- SERVICE AREA SEO MIXIN ----
+  include ServiceAreaSEOMixin(serviceAreaSEOState);
+
+  // ---- BUSINESS BRIEF MIXIN ----
+  include BusinessBriefMixin(businessBriefState);
+  include CrmObjectsMixin(crmObjectsState);
+  include MarketingAuditMixin(marketingAuditState);
+  include ProposalMixin(proposalState);
+  include WebhookContractsMixin(webhookContractsState);
+  include RankedDispatchMixin(rankedDispatchState);
+  include MultiLocationRollupMixin(multiLocationRollupState);
 
   let dograhState = DograhLib.emptyState();
   include DograhMixin(dograhState, integrationCreds, credSalt);
@@ -1685,7 +1796,8 @@ actor {
     var paused        = false;
   };
   // emailTemplates: id -> EmailTemplate (pre-written campaign templates)
-  let emailTemplates      = Map.empty<Nat, EmailTemplateTypes.EmailTemplate>();
+  let emailTemplates      = Map.empty<Nat, EmailTemplateTypes.EmailTemplateExt>();
+  let emailTemplatesExt   = Map.empty<Nat, EmailTemplateTypes.EmailTemplateExt>();
   // templateInitialized: one-time seed guard
   let templateInitialized = { var v = false };
   // sendLogs: email -> list of SendLogEntry (per-lead send history)
@@ -1701,11 +1813,12 @@ actor {
     roofingCampaignCounters,
     transform,
     extendedLeads,
-    emailTemplates,
+    emailTemplatesExt,
     templateInitialized,
     sendLogs,
   );
 
+  // (duplicate block removed — states and mixins consolidated above)
 
   func checkUrl(url : Text) : async Bool {
     try {
@@ -3661,82 +3774,6 @@ actor {
     list.toArray();
   };
 
-  // ApprovalItem operations
-
-  public shared ({ caller }) func createApprovalItem(runId : Text, threadId : Text, tenantId : Text, action : Text, reason : Text) : async Text {
-    if (not (AccessControl.isAdmin(accessControlState, caller) or hasAccessToTenant(caller, tenantId))) {
-      Runtime.trap("Unauthorized: No access to tenant");
-    };
-    let id = genId("appr");
-    approvalItems.add(id, {
-      id; runId; threadId; tenantId; action; reason;
-      status = #pending;
-      requestedAt = Time.now();
-      resolvedAt = null;
-      approverNotes = null;
-    });
-    id;
-  };
-
-  public shared ({ caller }) func resolveApproval(id : Text, status : { #approved; #rejected }, notes : ?Text) : async Bool {
-    if (not AccessControl.isAdmin(accessControlState, caller)) {
-      Runtime.trap("Unauthorized: Admins only");
-    };
-    switch (approvalItems.get(id)) {
-      case (?item) {
-        let newStatus : ApprovalStatus = switch (status) {
-          case (#approved) { #approved };
-          case (#rejected) { #rejected };
-        };
-        approvalItems.add(id, {
-          item with
-          status = newStatus;
-          resolvedAt = ?Time.now();
-          approverNotes = notes;
-        });
-        // Update the run's approval status
-        switch (agentRuns.get(item.runId)) {
-          case (?r) {
-            let runApprovalStatus = switch (status) {
-              case (#approved) { ?#approved };
-              case (#rejected) { ?#rejected };
-            };
-            agentRuns.add(item.runId, { r with approvalStatus = runApprovalStatus });
-          };
-          case (null) {};
-        };
-        true;
-      };
-      case (null) { false };
-    };
-  };
-
-  public query ({ caller }) func getPendingApprovals(tenantId : Text) : async [ApprovalItem] {
-    if (not (AccessControl.isAdmin(accessControlState, caller) or hasAccessToTenant(caller, tenantId))) {
-      Runtime.trap("Unauthorized: No access to tenant");
-    };
-    let list = List.empty<ApprovalItem>();
-    for (item in approvalItems.values()) {
-      if (item.tenantId == tenantId and item.status == #pending) { list.add(item) };
-    };
-    list.toArray();
-  };
-
-  public query ({ caller }) func getApprovalsByRun(runId : Text) : async [ApprovalItem] {
-    if (not AccessControl.hasPermission(accessControlState, caller, #user)) {
-      Runtime.trap("Unauthorized: Users only");
-    };
-    let list = List.empty<ApprovalItem>();
-    for (item in approvalItems.values()) {
-      if (item.runId == runId) {
-        if (AccessControl.isAdmin(accessControlState, caller) or hasAccessToTenant(caller, item.tenantId)) {
-          list.add(item);
-        };
-      };
-    };
-    list.toArray();
-  };
-
   // ProviderAdapter operations
 
   public shared ({ caller }) func setProviderAdapter(tenantId : Text, adapterType : AdapterType, isEnabled : Bool, apiKey : ?Text, baseUrl : ?Text, modelId : ?Text) : async Text {
@@ -3874,30 +3911,8 @@ actor {
 
   // Approval management
 
-  public shared func createApprovalRecord(item : ApprovalItemRecord) : async Bool {
-    approvalItemRecords.add(item);
-    true;
-  };
-
-  public shared func resolveApprovalRecord(id : Text, status : Text, resolvedBy : Text, note : Text) : async Bool {
-    let now = Time.now();
-    approvalItemRecords.mapInPlace(func(a : ApprovalItemRecord) : ApprovalItemRecord {
-      if (a.id == id) {
-        { a with status; resolvedBy = ?resolvedBy; resolutionNote = ?note; resolvedAt = ?now }
-      } else { a }
-    });
-    true;
-  };
-
-  public query func getPendingApprovalRecords(tenantId : Text) : async [ApprovalItemRecord] {
-    approvalItemRecords.filter(func(a : ApprovalItemRecord) : Bool {
-      a.tenantId == tenantId and a.status == "pending"
-    }).toArray();
-  };
-
-  public query func getApprovalRecordsByTenant(tenantId : Text) : async [ApprovalItemRecord] {
-    approvalItemRecords.filter(func(a : ApprovalItemRecord) : Bool { a.tenantId == tenantId }).toArray();
-  };
+  // Approval management — delegated to ApprovalQueueMixin
+  // (createApprovalRecord, resolveApprovalRecord, getPendingApprovalRecords, getApprovalRecordsByTenant)
 
   // Agent template management
 
@@ -5940,6 +5955,14 @@ actor {
     };
 
     jsonResp(200, "{\"success\":true,\"bookingId\":\"" # bookingId # "\",\"message\":\"Appointment confirmed\"}")
+  };
+
+  system func preupgrade() {
+    stableStore.preupgrade();
+  };
+
+  system func postupgrade() {
+    stableStore.postupgrade();
   };
 
 };

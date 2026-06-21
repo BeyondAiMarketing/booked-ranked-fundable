@@ -106,11 +106,11 @@ export class ListmonkAdapter {
         signal: AbortSignal.timeout(8000),
       });
       return res.ok ? { success: true } : { success: false, fallback: true };
-    } catch (err) {
+    } catch {
       return {
         success: false,
         fallback: true,
-        error: err instanceof Error ? err.message : "Unknown error",
+        error: "Unknown error",
       };
     }
   }
