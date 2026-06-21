@@ -237,13 +237,11 @@ function ProtectedRoute({
 }) {
   const { isLoggedIn, isAdminUser, isSuperAdmin } = useApp();
   if (!isLoggedIn) {
-    window.location.replace("/login");
-    return null;
+    return <Navigate to="/login" replace />;
   }
   // Super admin has access to everything — never redirect them
   if (adminOnly && !isAdminUser && !isSuperAdmin) {
-    window.location.replace("/dashboard");
-    return null;
+    return <Navigate to="/dashboard" replace />;
   }
   return <AppLayout>{children}</AppLayout>;
 }

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install frontend deps
+        run: pnpm install --prefer-offline --config.strict-dep-builds=false
+      - name: Typecheck frontend
+        run: pnpm typecheck
+      - name: Build frontend
+        run: pnpm build
+
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install mops
+        run: npm install -g ic-mops
+      - name: Install backend deps
+        run: mops install
+      - name: Typecheck backend
+        run: mops check --fix
+      - name: Build backend
+        run: mops build
+
+  interface-bindings:
+    runs-on: ubuntu-latest
+    needs: [frontend]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+      - name: Install workspace deps
+        run: pnpm install --prefer-offline --config.strict-dep-builds=false
+      - name: Regenerate frontend bindings
+        run: pnpm bindgen
+      - name: Verify bindings committed
+        run: git diff --exit-code -- src/frontend/src/backend.ts src/frontend/src/declarations/backend.did.d.ts src/frontend/src/declarations/backend.did.js

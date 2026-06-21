@@ -1,4 +1,5 @@
 import Array        "mo:core/Array";
+import Int          "mo:core/Int";
 import Time         "mo:core/Time";
 import Text         "mo:core/Text";
 import WebhookState "../types/webhookState";
@@ -36,6 +37,37 @@ module {
     else updated.concat([(provider, 1)])
   };
 
+  /// Parse a decimal timestamp string and return null when invalid.
+  func parseTimestamp(ts : Text) : ?Nat {
+    if (ts == "") return null;
+    ts.toNat()
+  };
+
+  /// Validate a unix timestamp (seconds) against a max age window.
+  func isTimestampFresh(timestamp : Nat, maxAgeSeconds : Nat) : Bool {
+    let nowNs = Int.abs(Time.now());
+    let nowSeconds = nowNs / 1_000_000_000;
+    if (timestamp > nowSeconds) return false;
+    nowSeconds - timestamp <= maxAgeSeconds
+  };
+
+  /// Read a key from a comma-separated signature header such as t=...,v1=...
+  func parseHeaderField(header : Text, key : Text) : Text {
+    let prefix = key # "=";
+    switch (header.split(#text ",").find(func(part) {
+      part.trimStart(#text " ").startsWith(#text prefix)
+    })) {
+      case null "";
+      case (?part) {
+        let trimmed = part.trimStart(#text " ");
+        switch (trimmed.stripStart(#text prefix)) {
+          case (?value) value.trimStart(#text " ");
+          case null "";
+        }
+      };
+    }
+  };
+
   // ---------------------------------------------------------------------------
   // Signature verification
   // NOTE: Motoko does not expose a native HMAC-SHA1 or HMAC-SHA256 primitive.
@@ -55,10 +87,10 @@ module {
     params    : [(Text, Text)],
     signature : Text,
   ) : Bool {
-    // Sort params alphabetically and concatenate url + key + value pairs.
-    // Without HMAC we cannot compute the expected signature — accept all.
-    ignore (authToken, url, params, signature);
-    // Log warning (compile-time unavailable; handled by caller comment).
+    // Fail closed on missing prerequisites even though HMAC is unavailable.
+    if (authToken == "" or signature == "" or url == "") return false;
+    if (params.size() == 0) return false;
+    // HMAC validation is still pending Motoko crypto support.
     true
   };
 
@@ -79,8 +111,15 @@ module {
     if (signingSecret == "") return false;
     // Require all header fields to be present
     if (signature == "" or webhookId == "" or timestamp == "") return false;
-    // Structural pre-condition satisfied. Body is accepted for logging.
-    ignore rawBody;
+    if (rawBody == "") return false;
+    let ts = parseTimestamp(timestamp);
+    switch (ts) {
+      case (?parsed) {
+        // 5-minute tolerance to reduce replay risk.
+        if (not isTimestampFresh(parsed, 300)) return false;
+      };
+      case null return false;
+    };
     // TODO: Replace with HMAC-SHA256(signingSecret, webhookId # "." # timestamp # "." # rawBody)
     // once a Motoko HMAC library becomes available in mo:core.
     true
@@ -95,12 +134,17 @@ module {
     rawBody       : Text,
     sigHeader     : Text,
   ) : Bool {
-    // Parse t= and v1= from the header for logging purposes.
-    ignore (signingSecret, rawBody);
-    // Extract timestamp for logging
-    let _ = switch (sigHeader.split(#text ",").find(func(s) { s.startsWith(#text "t=") })) {
-      case (?ts) ts;
-      case null "";
+    if (signingSecret == "" or rawBody == "" or sigHeader == "") return false;
+    let timestamp = parseHeaderField(sigHeader, "t");
+    let v1 = parseHeaderField(sigHeader, "v1");
+    if (timestamp == "" or v1 == "") return false;
+    let ts = parseTimestamp(timestamp);
+    switch (ts) {
+      case (?parsed) {
+        // Stripe recommends a 5-minute tolerance for replay protection.
+        if (not isTimestampFresh(parsed, 300)) return false;
+      };
+      case null return false;
     };
     true
   };

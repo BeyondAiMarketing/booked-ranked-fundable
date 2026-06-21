@@ -864,7 +864,8 @@ mixin (
 
   /// Receive and process an inbound Composio webhook.
   /// NOTE: Motoko cannot perform HMAC-SHA256 natively. Verification is structural:
-  /// the signing secret must be non-empty and all signature header fields must be present.
+  /// the signing secret must be configured, fields must be present, and timestamp
+  /// freshness is enforced.
   /// Replace with HMAC when a Motoko crypto library becomes available.
   public shared ({ caller = _ }) func receiveComposioWebhook(
     body      : Text,
@@ -875,17 +876,16 @@ mixin (
     let creds = getPlatformCreds();
     let secret = creds.composioWebhookSecret;
 
-    // Open mode: if no secret is configured, accept with a warning log.
-    // When a secret IS configured, all signature fields must be present.
-    if (secret != "") {
-      let valid = WHLib.verifyComposioSignature(secret, body, signature, webhookId, timestamp);
-      if (not valid) {
-        log("composio", "rejected", webhookId, #failed, ?"Invalid signature or missing fields");
-        return { statusCode = 400; body = "{\"success\":false,\"error\":\"Invalid signature\"}"; eventType = ""; success = false };
-      };
-    } else {
-      // No secret configured — log warning and proceed (open mode)
-      log("composio", "open_mode_warning", "No composioWebhookSecret configured — accepting all requests", #ok, null);
+    // Fail closed when no secret is configured.
+    if (secret == "") {
+      log("composio", "rejected", "missing_secret", #failed, ?"Composio webhook secret is not configured");
+      return { statusCode = 503; body = "{\"success\":false,\"error\":\"Webhook secret not configured\"}"; eventType = ""; success = false };
+    };
+
+    let valid = WHLib.verifyComposioSignature(secret, body, signature, webhookId, timestamp);
+    if (not valid) {
+      log("composio", "rejected", webhookId, #failed, ?"Invalid signature, timestamp, or missing fields");
+      return { statusCode = 400; body = "{\"success\":false,\"error\":\"Invalid signature\"}"; eventType = ""; success = false };
     };
 
     let eventType = WHLib.extractJsonField(body, "type");
