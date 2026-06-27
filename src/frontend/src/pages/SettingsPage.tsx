@@ -396,6 +396,42 @@ interface SetupGuideData {
 }
 
 const SETUP_GUIDES: Record<string, SetupGuideData> = {
+  gateway: {
+    id: "gateway",
+    title: "AI/Search Gateway Setup Guide",
+    subtitle:
+      "Secure backend routing for OpenRouter, NVIDIA, Ollama, and SearXNG",
+    estimatedTime: "~20 minutes",
+    whatItDoes:
+      "The gateway becomes the single backend entrypoint for chat, web search, workflow execution, health checks, retries, and provider fallback. Frontend workflows only talk to the gateway, while secrets stay on the server.",
+    prerequisites:
+      "A Node 18+ server or container, outbound access to your model providers, and environment variables for any provider keys you want to enable.",
+    steps: [
+      {
+        title: "Create the gateway runtime",
+        note: "This repo now includes a minimal Node gateway scaffold at src/gateway/server.mjs.",
+      },
+      {
+        title: "Set provider environment variables",
+        note: "Configure OPENROUTER_API_KEY, NVIDIA_API_KEY, OLLAMA_BASE_URL, and SEARXNG_BASE_URL on the server. Keep raw provider secrets out of the frontend.",
+      },
+      {
+        title: "Start the gateway",
+        code: "node src/gateway/server.mjs",
+      },
+      {
+        title: "Protect the gateway",
+        note: "Set GATEWAY_AUTH_TOKEN for bearer auth or terminate auth at your reverse proxy. Use HTTPS in production.",
+      },
+      {
+        title: "Enter the gateway URL below",
+        note: "Base URL: https://your-gateway.example.com\nAuth Token: optional bearer token issued by your gateway layer\nPrimary Provider: auto, openrouter, nvidia, or ollama",
+      },
+    ],
+    fallback:
+      "If the gateway is unavailable, workflow execution falls back to the existing LiteLLM/Ollama chain and finally to the simulated contextual response so the UI remains usable.",
+    tip: "Keep retries, rate limits, and trace IDs in the gateway so you can swap providers without changing the frontend contract.",
+  },
   litellm: {
     id: "litellm",
     title: "LiteLLM Setup Guide",
@@ -742,6 +778,15 @@ function SetupGuideModal({
 const QUICK_START_ITEMS = [
   {
     num: 1,
+    key: "gateway",
+    name: "AI/Search Gateway",
+    tag: "Recommended",
+    time: "~20 min on Node 18+",
+    tagColor: "bg-indigo-900/60 text-indigo-300 border-indigo-700/50",
+    desc: "Centralizes auth, retries, provider fallback, and audit logging so the frontend never needs raw OpenRouter or NVIDIA secrets.",
+  },
+  {
+    num: 2,
     key: "litellm",
     name: "LiteLLM",
     tag: "Start Here",
@@ -750,7 +795,7 @@ const QUICK_START_ITEMS = [
     desc: "Unifies all your AI providers under one key. All AI calls (copy engine, agent workflows, AI Business Manager) route through it automatically.",
   },
   {
-    num: 2,
+    num: 3,
     key: "ollama",
     name: "Ollama",
     tag: "AI Cost Reducer",
@@ -759,7 +804,7 @@ const QUICK_START_ITEMS = [
     desc: "Runs Llama 3 locally for summaries, FAQ drafts, and copy variations. Reduces paid LLM calls by 60–80% for routine tasks.",
   },
   {
-    num: 3,
+    num: 4,
     key: "listmonk",
     name: "Listmonk",
     tag: "Email Independence",
@@ -768,7 +813,7 @@ const QUICK_START_ITEMS = [
     desc: "Self-hosted email for all outreach sequences and campaigns. Full open/click tracking, no per-send fees.",
   },
   {
-    num: 4,
+    num: 5,
     key: "searxng",
     name: "SearXNG",
     tag: "Free Search Data",
@@ -1132,6 +1177,128 @@ function OpenSourceServicesSection() {
           in demo environments.
         </p>
       </div>
+
+      {/* AI/Search Gateway */}
+      <OSServiceCard
+        icon={<Shield size={15} className="text-indigo-300" />}
+        iconBg="bg-indigo-900/40 border border-indigo-700/40"
+        title="AI Gateway"
+        subtitle="Secure Backend Gateway"
+        description="Single backend entrypoint for workflow AI, web search, retries, provider fallback, and trace logging."
+        fallbackSteps={["Gateway", "LiteLLM / Ollama", "Graceful fallback"]}
+        status={cfg.gateway.status}
+        enabled={cfg.gateway.enabled}
+        onToggle={(v) => update("gateway", { enabled: v })}
+        onTest={() => handleTest("gateway")}
+        onOpenGuide={() => setActiveGuide("gateway")}
+      >
+        <div className="space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs text-zinc-400 mb-1 block">
+                Base URL
+              </Label>
+              <Input
+                value={cfg.gateway.baseUrl}
+                onChange={(e) => update("gateway", { baseUrl: e.target.value })}
+                placeholder="https://gateway.example.com"
+                className="text-xs bg-zinc-800/60 border-zinc-700 text-zinc-200 placeholder:text-zinc-600"
+                data-ocid="settings.gateway.url.input"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-zinc-400 mb-1 block">
+                Auth Token
+              </Label>
+              <Input
+                type="password"
+                value={cfg.gateway.authToken}
+                onChange={(e) =>
+                  update("gateway", { authToken: e.target.value })
+                }
+                placeholder="Optional bearer token"
+                className="text-xs bg-zinc-800/60 border-zinc-700 text-zinc-200 placeholder:text-zinc-600"
+                data-ocid="settings.gateway.token.input"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-zinc-400 mb-1 block">
+                Tenant Routing ID
+              </Label>
+              <Input
+                value={cfg.gateway.tenantId}
+                onChange={(e) =>
+                  update("gateway", { tenantId: e.target.value })
+                }
+                placeholder="Optional tenant slug"
+                className="text-xs bg-zinc-800/60 border-zinc-700 text-zinc-200 placeholder:text-zinc-600"
+                data-ocid="settings.gateway.tenant.input"
+              />
+            </div>
+            <div>
+              <Label className="text-xs text-zinc-400 mb-1 block">
+                Primary Provider
+              </Label>
+              <Select
+                value={cfg.gateway.primaryProvider}
+                onValueChange={(v) =>
+                  update("gateway", {
+                    primaryProvider:
+                      v as OpenSourceServiceConfig["gateway"]["primaryProvider"],
+                  })
+                }
+              >
+                <SelectTrigger className="text-xs bg-zinc-800/60 border-zinc-700 text-zinc-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-zinc-900 border-zinc-700">
+                  <SelectItem value="auto">Auto</SelectItem>
+                  <SelectItem value="openrouter">OpenRouter</SelectItem>
+                  <SelectItem value="nvidia">NVIDIA</SelectItem>
+                  <SelectItem value="ollama">Ollama</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              {
+                key: "workflowExecution",
+                label: "Workflow AI",
+                value: cfg.gateway.featureFlags.workflowExecution,
+              },
+              {
+                key: "webSearch",
+                label: "Web Search",
+                value: cfg.gateway.featureFlags.webSearch,
+              },
+              {
+                key: "toolAudit",
+                label: "Tool Audit",
+                value: cfg.gateway.featureFlags.toolAudit,
+              },
+            ].map((flag) => (
+              <div
+                key={flag.key}
+                className="flex items-center justify-between rounded-lg border border-zinc-700/50 bg-zinc-800/40 px-3 py-2"
+              >
+                <span className="text-xs text-zinc-300">{flag.label}</span>
+                <Switch
+                  checked={flag.value}
+                  onCheckedChange={(checked) =>
+                    update("gateway", {
+                      featureFlags: {
+                        ...cfg.gateway.featureFlags,
+                        [flag.key]: checked,
+                      },
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </OSServiceCard>
 
       {/* LiteLLM */}
       <OSServiceCard

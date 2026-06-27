@@ -5,7 +5,10 @@ import type { TenantEntry } from "../context/AppContext";
 import type { AgentSubscription } from "../data/agentData";
 import type { AuditData, Lead } from "../data/demoData";
 import type { AgentArtifact } from "../types/agentWorkflow";
-import type { OpenSourceServiceConfig } from "../types/integrations";
+import type {
+  AIRouteResult,
+  OpenSourceServiceConfig,
+} from "../types/integrations";
 import { routeAICall } from "./openSourceAdapters";
 
 export interface WorkflowStep {
@@ -51,6 +54,7 @@ export interface StepResult {
   artifactId?: string;
   error?: string;
   retryCount?: number;
+  metadata?: Record<string, string>;
 }
 
 // Context injected by useAgentWorkflow — carries live app data so tools can read/write real state
@@ -173,7 +177,19 @@ export class WorkflowEngine {
       context,
     );
 
-    return { stepId: step.id, status: "completed", output: response };
+    return {
+      stepId: step.id,
+      status: "completed",
+      output: response.content,
+      metadata: {
+        routeProvider: response.provider,
+        routeTargetProvider: response.targetProvider ?? response.provider,
+        fallbackUsed: String(response.fallbackUsed),
+        degradedMode: String(response.degraded ?? false),
+        traceId: response.traceId ?? "",
+        providerChain: response.providerChain?.join(" → ") ?? "",
+      },
+    };
   }
 
   private async executeToolStep(
@@ -231,14 +247,14 @@ export class WorkflowEngine {
     _systemPrompt: string,
     prompt: string,
     context: WorkflowExecutionContext,
-  ): Promise<string> {
+  ): Promise<AIRouteResult> {
     // If open source config is present, try the open source routing chain first.
     // Simple tasks (no memoryContext) go to Ollama first; complex tasks go to LiteLLM.
     if (context.openSourceConfig) {
       const taskType = context.memoryContext ? "complex" : "simple";
       const osr = await routeAICall(prompt, taskType, context.openSourceConfig);
       if (osr.success && osr.provider !== "degraded") {
-        return osr.content;
+        return osr;
       }
     }
 
@@ -247,7 +263,14 @@ export class WorkflowEngine {
     await new Promise((resolve) =>
       setTimeout(resolve, 800 + Math.random() * 1200),
     );
-    return this.generateContextualResponse(context.agentRole, prompt);
+    return {
+      success: true,
+      content: this.generateContextualResponse(context.agentRole, prompt),
+      provider: "degraded",
+      fallbackUsed: true,
+      degraded: true,
+      providerChain: ["simulated-contextual-response"],
+    };
   }
 
   private generateContextualResponse(role: string, _prompt: string): string {

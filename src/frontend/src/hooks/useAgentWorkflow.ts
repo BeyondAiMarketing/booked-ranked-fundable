@@ -23,6 +23,7 @@ export function useAgentWorkflow() {
     currentTenantId,
     agentMemories,
     providerAdapters,
+    openSourceConfig,
     createThread,
     startRun,
     completeRun,
@@ -45,6 +46,13 @@ export function useAgentWorkflow() {
 
   // Get the active provider adapter label
   const getActiveProvider = useCallback((): string => {
+    if (
+      openSourceConfig.gateway.enabled &&
+      openSourceConfig.gateway.baseUrl &&
+      openSourceConfig.gateway.featureFlags.workflowExecution
+    ) {
+      return "AI Gateway";
+    }
     if (!providerAdapters || providerAdapters.length === 0) return "native";
     const active = providerAdapters.find((p) => p.isEnabled);
     if (!active || active.adapterType === "native") return "Native";
@@ -56,7 +64,7 @@ export function useAgentWorkflow() {
       abacus_adapter: "Abacus",
     };
     return labels[active.adapterType] ?? active.adapterType;
-  }, [providerAdapters]);
+  }, [openSourceConfig, providerAdapters]);
 
   // Get memory context string for a thread
   const getMemoryContext = useCallback(
@@ -167,6 +175,7 @@ export function useAgentWorkflow() {
         requireApproval,
         allowedTools,
         toolContext,
+        openSourceConfig,
       };
 
       setRunProgress((prev) => ({
@@ -183,6 +192,7 @@ export function useAgentWorkflow() {
 
       let finalOutput = "";
       const artifacts: string[] = [];
+      let finalMetadata: Record<string, string> = {};
 
       for (let i = 0; i < steps.length; i++) {
         const step = steps[i];
@@ -251,6 +261,9 @@ export function useAgentWorkflow() {
         }
 
         finalOutput = result.output;
+        if (result.metadata) {
+          finalMetadata = { ...finalMetadata, ...result.metadata };
+        }
 
         if (result.artifactId) {
           artifacts.push(result.artifactId);
@@ -266,7 +279,7 @@ export function useAgentWorkflow() {
       }
 
       // Run completed
-      completeRun(runId, finalOutput);
+      completeRun(runId, finalOutput, artifacts, finalMetadata);
 
       setRunProgress((prev) => ({
         ...prev,
@@ -283,6 +296,7 @@ export function useAgentWorkflow() {
     },
     [
       currentTenantId,
+      openSourceConfig,
       providerAdapters,
       getMemoryContext,
       buildToolContext,

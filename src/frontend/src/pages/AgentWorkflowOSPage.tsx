@@ -650,6 +650,32 @@ function ThreadDetailPanel({
                           </p>
                         </>
                       )}
+                      {(run.metadata.routeProvider ||
+                        run.metadata.routeTargetProvider ||
+                        run.metadata.traceId) && (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {run.metadata.routeTargetProvider && (
+                            <span className="text-[10px] text-indigo-300 bg-indigo-500/10 px-1.5 py-0.5 rounded-full border border-indigo-500/20">
+                              Provider: {run.metadata.routeTargetProvider}
+                            </span>
+                          )}
+                          {run.metadata.fallbackUsed === "true" && (
+                            <span className="text-[10px] text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded-full border border-amber-500/20">
+                              Fallback Used
+                            </span>
+                          )}
+                          {run.metadata.degradedMode === "true" && (
+                            <span className="text-[10px] text-red-300 bg-red-500/10 px-1.5 py-0.5 rounded-full border border-red-500/20">
+                              Degraded Mode
+                            </span>
+                          )}
+                          {run.metadata.traceId && (
+                            <span className="text-[10px] text-slate-400 bg-slate-700/60 px-1.5 py-0.5 rounded-full border border-slate-600">
+                              Trace: {run.metadata.traceId}
+                            </span>
+                          )}
+                        </div>
+                      )}
                       {run.errorMessage && (
                         <div className="flex items-start gap-1.5 mt-1">
                           <XCircle
@@ -1510,11 +1536,12 @@ export default function AgentWorkflowOSPage() {
                         {lastRun && (
                           <div className="flex flex-col items-end gap-1">
                             <RunStatusBadge status={lastRun.status} size="sm" />
-                            {lastRun.status === "paused_for_approval" && (
-                              <span className="text-[9px] text-slate-500 bg-slate-700/60 px-1.5 py-0.5 rounded">
-                                Via: {getActiveProvider()}
-                              </span>
-                            )}
+                            <span className="text-[9px] text-slate-500 bg-slate-700/60 px-1.5 py-0.5 rounded">
+                              Via:{" "}
+                              {lastRun.metadata.routeTargetProvider ??
+                                lastRun.metadata.routeProvider ??
+                                getActiveProvider()}
+                            </span>
                           </div>
                         )}
                         <Button

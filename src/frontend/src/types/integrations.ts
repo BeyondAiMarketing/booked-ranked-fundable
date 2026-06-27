@@ -7,7 +7,27 @@ export type ServiceStatus =
   | "unconfigured"
   | "testing";
 
+export type GatewayProvider = "auto" | "openrouter" | "nvidia" | "ollama";
+
+export interface GatewayFeatureFlags {
+  workflowExecution: boolean;
+  webSearch: boolean;
+  toolAudit: boolean;
+}
+
+export interface GatewayServiceConfig {
+  enabled: boolean;
+  baseUrl: string;
+  authToken: string;
+  tenantId: string;
+  primaryProvider: GatewayProvider;
+  fallbackOrder: Array<Exclude<GatewayProvider, "auto">>;
+  featureFlags: GatewayFeatureFlags;
+  status: ServiceStatus;
+}
+
 export interface OpenSourceServiceConfig {
+  gateway: GatewayServiceConfig;
   litellm: {
     enabled: boolean;
     baseUrl: string;
@@ -39,8 +59,12 @@ export interface OpenSourceServiceConfig {
 export interface AIRouteResult {
   success: boolean;
   content: string;
-  provider: "ollama" | "litellm" | "openai" | "claude" | "degraded";
+  provider: "gateway" | "ollama" | "litellm" | "openai" | "claude" | "degraded";
   fallbackUsed: boolean;
+  degraded?: boolean;
+  targetProvider?: string;
+  traceId?: string;
+  providerChain?: string[];
 }
 
 export interface EmailPayload {
@@ -91,11 +115,47 @@ export function routeEmail(
 export interface SearchRouteResult {
   success: boolean;
   results: { title: string; url: string; snippet: string; source: string }[];
-  provider: "searxng" | "google_places" | "cached";
+  provider: "gateway" | "searxng" | "google_places" | "cached";
   fallbackUsed: boolean;
+  targetProvider?: string;
+  traceId?: string;
+  providerChain?: string[];
+}
+
+export interface GatewayChatResponse {
+  success: boolean;
+  content: string;
+  provider: string;
+  fallbackUsed: boolean;
+  traceId?: string;
+  providerChain?: string[];
+  model?: string;
+}
+
+export interface GatewaySearchResponse {
+  success: boolean;
+  results: { title: string; url: string; snippet: string; source: string }[];
+  provider: string;
+  fallbackUsed: boolean;
+  traceId?: string;
+  providerChain?: string[];
 }
 
 export const defaultOpenSourceConfig: OpenSourceServiceConfig = {
+  gateway: {
+    enabled: false,
+    baseUrl: "",
+    authToken: "",
+    tenantId: "",
+    primaryProvider: "auto",
+    fallbackOrder: ["openrouter", "nvidia", "ollama"],
+    featureFlags: {
+      workflowExecution: true,
+      webSearch: true,
+      toolAudit: true,
+    },
+    status: "unconfigured",
+  },
   litellm: {
     enabled: false,
     baseUrl: "",

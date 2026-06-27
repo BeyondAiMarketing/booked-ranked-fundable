@@ -379,6 +379,7 @@ interface AppContextType {
     runId: string,
     outputText: string,
     artifactIds?: string[],
+    metadata?: Record<string, string>,
   ) => void;
   failRun: (runId: string, errorMessage: string) => void;
   pauseRunForApproval: (runId: string, reason: string) => ApprovalItem;
@@ -696,7 +697,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Open Source Services config
   const [openSourceConfig, setOpenSourceConfigState] =
     useState<OpenSourceServiceConfig>(() =>
-      loadFromLocal("brf_open_source_config", defaultOpenSourceConfig),
+      (() => {
+        const saved = loadFromLocal(
+          "brf_open_source_config",
+          defaultOpenSourceConfig,
+        );
+        return {
+          ...defaultOpenSourceConfig,
+          ...saved,
+          gateway: {
+            ...defaultOpenSourceConfig.gateway,
+            ...saved.gateway,
+            featureFlags: {
+              ...defaultOpenSourceConfig.gateway.featureFlags,
+              ...saved.gateway?.featureFlags,
+            },
+          },
+          litellm: {
+            ...defaultOpenSourceConfig.litellm,
+            ...saved.litellm,
+          },
+          listmonk: {
+            ...defaultOpenSourceConfig.listmonk,
+            ...saved.listmonk,
+          },
+          searxng: {
+            ...defaultOpenSourceConfig.searxng,
+            ...saved.searxng,
+          },
+          ollama: {
+            ...defaultOpenSourceConfig.ollama,
+            ...saved.ollama,
+          },
+        };
+      })(),
     );
 
   // Telephony state
@@ -1714,6 +1748,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     runId: string,
     outputText: string,
     artifactIds: string[] = [],
+    metadata: Record<string, string> = {},
   ) => {
     setAgentRunsList((prev) =>
       prev.map((r) =>
@@ -1724,6 +1759,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
               outputText,
               artifactIds,
               endedAt: Date.now(),
+              metadata: { ...r.metadata, ...metadata },
             }
           : r,
       ),

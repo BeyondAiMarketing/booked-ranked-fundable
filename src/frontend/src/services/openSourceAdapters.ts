@@ -7,10 +7,186 @@ import type {
   AIRouteResult,
   EmailPayload,
   EmailRouteResult,
+  GatewayChatResponse,
+  GatewaySearchResponse,
   OpenSourceServiceConfig,
   SearchRouteResult,
   ServiceStatus,
 } from "../types/integrations";
+
+// ─── AI/Search Gateway Adapter ────────────────────────────────────────────────
+
+export class GatewayAdapter {
+  private baseUrl: string;
+  private authToken: string;
+  private tenantId: string;
+
+  constructor(baseUrl: string, authToken = "", tenantId = "") {
+    this.baseUrl = baseUrl.replace(/\/$/, "");
+    this.authToken = authToken;
+    this.tenantId = tenantId;
+  }
+
+  private buildHeaders(): Record<string, string> {
+    return {
+      "Content-Type": "application/json",
+      ...(this.authToken
+        ? { Authorization: "Bearer ".concat(this.authToken) }
+        : {}),
+      ...(this.tenantId ? { "X-Tenant-Id": this.tenantId } : {}),
+    };
+  }
+
+  async checkStatus(): Promise<ServiceStatus> {
+    if (!this.baseUrl) return "unconfigured";
+    try {
+      const res = await fetch(`${this.baseUrl}/health`, {
+        headers: this.buildHeaders(),
+        signal: AbortSignal.timeout(3000),
+      });
+      return res.ok ? "connected" : "disconnected";
+    } catch {
+      return "disconnected";
+    }
+  }
+
+  async chat(
+    messages: { role: string; content: string }[],
+    options?: {
+      model?: string;
+      taskType?: "simple" | "complex";
+      primaryProvider?: string;
+      fallbackOrder?: string[];
+    },
+  ): Promise<GatewayChatResponse> {
+    if (!this.baseUrl) {
+      return {
+        success: false,
+        content: "",
+        provider: "gateway",
+        fallbackUsed: true,
+      };
+    }
+
+    try {
+      const res = await fetch(`${this.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: this.buildHeaders(),
+        body: JSON.stringify({
+          model: options?.model,
+          messages,
+          taskType: options?.taskType,
+          primaryProvider: options?.primaryProvider,
+          fallbackOrder: options?.fallbackOrder,
+          tenantId: this.tenantId || undefined,
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          content: "",
+          provider: "gateway",
+          fallbackUsed: true,
+        };
+      }
+
+      const data = (await res.json()) as
+        | GatewayChatResponse
+        | {
+            choices?: { message?: { content?: string } }[];
+            traceId?: string;
+            provider?: string;
+          };
+
+      if ("content" in data && typeof data.content === "string") {
+        return {
+          success: !!data.success,
+          content: data.content,
+          provider: data.provider ?? "gateway",
+          fallbackUsed: !!data.fallbackUsed,
+          traceId: data.traceId,
+          providerChain: data.providerChain ?? [],
+          model: data.model,
+        };
+      }
+
+      const openAiStyle = data as {
+        choices?: { message?: { content?: string } }[];
+        traceId?: string;
+        provider?: string;
+      };
+      return {
+        success: true,
+        content: openAiStyle.choices?.[0]?.message?.content ?? "",
+        provider: openAiStyle.provider ?? "gateway",
+        fallbackUsed: false,
+        traceId: openAiStyle.traceId,
+      };
+    } catch {
+      return {
+        success: false,
+        content: "",
+        provider: "gateway",
+        fallbackUsed: true,
+      };
+    }
+  }
+
+  async search(
+    query: string,
+    categories = "general",
+    language = "en",
+  ): Promise<GatewaySearchResponse> {
+    if (!this.baseUrl) {
+      return {
+        success: false,
+        results: [],
+        provider: "gateway",
+        fallbackUsed: true,
+      };
+    }
+
+    try {
+      const res = await fetch(`${this.baseUrl}/web-search`, {
+        method: "POST",
+        headers: this.buildHeaders(),
+        body: JSON.stringify({
+          query,
+          categories,
+          language,
+          tenantId: this.tenantId || undefined,
+        }),
+        signal: AbortSignal.timeout(12000),
+      });
+      if (!res.ok) {
+        return {
+          success: false,
+          results: [],
+          provider: "gateway",
+          fallbackUsed: true,
+        };
+      }
+
+      const data = (await res.json()) as GatewaySearchResponse;
+      return {
+        success: !!data.success,
+        results: Array.isArray(data.results) ? data.results : [],
+        provider: data.provider ?? "gateway",
+        fallbackUsed: !!data.fallbackUsed,
+        traceId: data.traceId,
+        providerChain: data.providerChain ?? [],
+      };
+    } catch {
+      return {
+        success: false,
+        results: [],
+        provider: "gateway",
+        fallbackUsed: true,
+      };
+    }
+  }
+}
 
 // ─── LiteLLM Adapter ──────────────────────────────────────────────────────────
 
@@ -730,6 +906,39 @@ export async function routeAICall(
   taskType: "simple" | "complex",
   config: OpenSourceServiceConfig,
 ): Promise<AIRouteResult> {
+  // 0. Gateway first (secure backend routing, retries, provider fallback)
+  if (
+    config.gateway.enabled &&
+    config.gateway.baseUrl &&
+    config.gateway.featureFlags.workflowExecution
+  ) {
+    const gateway = new GatewayAdapter(
+      config.gateway.baseUrl,
+      config.gateway.authToken,
+      config.gateway.tenantId,
+    );
+    const result = await gateway.chat([{ role: "user", content: prompt }], {
+      taskType,
+      primaryProvider: config.gateway.primaryProvider,
+      fallbackOrder: config.gateway.fallbackOrder,
+      model:
+        taskType === "simple"
+          ? config.litellm.primaryModel
+          : config.litellm.fallbackModel,
+    });
+    if (result.success && result.content) {
+      return {
+        success: true,
+        content: result.content,
+        provider: "gateway",
+        fallbackUsed: result.fallbackUsed,
+        targetProvider: result.provider,
+        traceId: result.traceId,
+        providerChain: result.providerChain,
+      };
+    }
+  }
+
   // 1. Ollama first (free, local) — for simple tasks
   if (taskType === "simple" && config.ollama.enabled && config.ollama.baseUrl) {
     const ollama = new OllamaAdapter(
@@ -833,6 +1042,31 @@ export async function routeSearch(
   query: string,
   config: OpenSourceServiceConfig,
 ): Promise<SearchRouteResult> {
+  // 0. Gateway first (centralized auth, logging, provider routing)
+  if (
+    config.gateway.enabled &&
+    config.gateway.baseUrl &&
+    config.gateway.featureFlags.webSearch
+  ) {
+    const gateway = new GatewayAdapter(
+      config.gateway.baseUrl,
+      config.gateway.authToken,
+      config.gateway.tenantId,
+    );
+    const result = await gateway.search(query);
+    if (result.success && result.results.length > 0) {
+      return {
+        success: true,
+        results: result.results,
+        provider: "gateway",
+        fallbackUsed: result.fallbackUsed,
+        targetProvider: result.provider,
+        traceId: result.traceId,
+        providerChain: result.providerChain,
+      };
+    }
+  }
+
   // 1. SearXNG (self-hosted, free)
   if (config.searxng.enabled && config.searxng.baseUrl) {
     const searxng = new SearXNGAdapter(config.searxng.baseUrl);
@@ -2407,10 +2641,19 @@ export async function testElevenLabsConnection(
  * Used by the Settings page Test Connection buttons.
  */
 export async function testServiceConnection(
-  service: "litellm" | "listmonk" | "searxng" | "ollama",
+  service: "gateway" | "litellm" | "listmonk" | "searxng" | "ollama",
   config: OpenSourceServiceConfig,
 ): Promise<ServiceStatus> {
   switch (service) {
+    case "gateway": {
+      if (!config.gateway.baseUrl) return "unconfigured";
+      const adapter = new GatewayAdapter(
+        config.gateway.baseUrl,
+        config.gateway.authToken,
+        config.gateway.tenantId,
+      );
+      return adapter.checkStatus();
+    }
     case "litellm": {
       if (!config.litellm.baseUrl) return "unconfigured";
       const adapter = new LiteLLMAdapter(
