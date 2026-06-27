@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  frontend:
+    name: Frontend — typecheck, lint, build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: src/frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --prefer-offline
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm fix
+
+      - name: Build
+        run: pnpm build
+
+  backend:
+    name: Backend — typecheck, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install mops
+        run: npm install -g ic-mops
+
+      - name: Install Motoko toolchain (dfx)
+        uses: dfinity/setup-dfx@main
+
+      - name: Install backend dependencies
+        working-directory: src/backend
+        run: mops install
+
+      - name: Typecheck backend
+        run: mops check --fix
+
+      - name: Build backend
+        run: mops build
+
+  bindgen:
+    name: Binding generation (integration check)
+    runs-on: ubuntu-latest
+    needs: [backend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install root dependencies
+        run: pnpm install --prefer-offline
+
+      - name: Generate frontend bindings
+        run: pnpm bindgen
+
+      - name: Verify no uncommitted binding changes
+        run: |
+          git diff --exit-code src/frontend/src/declarations/ \
+            || (echo "::error::Frontend bindings are out of sync. Run 'pnpm bindgen' and commit the results." && exit 1)
+
+  size-check:
+    name: File size guard
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check App.tsx size
+        run: |
+          SIZE=$(wc -l < src/frontend/src/App.tsx)
+          LIMIT=300
+          echo "App.tsx: $SIZE lines (limit: $LIMIT)"
+          if [ "$SIZE" -gt "$LIMIT" ]; then
+            echo "::error::src/frontend/src/App.tsx exceeds $LIMIT lines ($SIZE). Move route definitions into src/frontend/src/routes/."
+            exit 1
+          fi
+
+      - name: Check backend main.mo size
+        run: |
+          SIZE=$(wc -l < src/backend/main.mo)
+          LIMIT=6000
+          echo "main.mo: $SIZE lines (limit: $LIMIT)"
+          if [ "$SIZE" -gt "$LIMIT" ]; then
+            echo "::warning::src/backend/main.mo exceeds $LIMIT lines ($SIZE). Consider extracting domain modules."
+          fi

@@ -104,6 +104,7 @@ import type {
   MissedCallSmsConfig,
 } from "../types/telephony";
 import { calculateHealthScore } from "../utils/healthScoreCalculator";
+import { safeStringify } from "../lib/bigintSerializer";
 
 interface AppUser {
   name: string;
@@ -815,150 +816,150 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   useEffect(() => {
-    sessionStorage.setItem("brfUser", JSON.stringify(currentUser));
+    sessionStorage.setItem("brfUser", safeStringify(currentUser));
   }, [currentUser]);
   useEffect(() => {
     sessionStorage.setItem("brfTenantId", currentTenantId);
   }, [currentTenantId]);
   useEffect(() => {
-    localStorage.setItem("brfSocialMedia", JSON.stringify(socialMediaEnabled));
+    localStorage.setItem("brfSocialMedia", safeStringify(socialMediaEnabled));
   }, [socialMediaEnabled]);
   useEffect(() => {
-    localStorage.setItem("scanner3dEnabled", JSON.stringify(scanner3dEnabled));
+    localStorage.setItem("scanner3dEnabled", safeStringify(scanner3dEnabled));
   }, [scanner3dEnabled]);
   useEffect(() => {
-    localStorage.setItem("brfAiProvider", JSON.stringify(aiProviderConfig));
+    localStorage.setItem("brfAiProvider", safeStringify(aiProviderConfig));
   }, [aiProviderConfig]);
   useEffect(() => {
-    localStorage.setItem("brfListings", JSON.stringify(listingConfigs));
+    localStorage.setItem("brfListings", safeStringify(listingConfigs));
   }, [listingConfigs]);
   useEffect(() => {
-    sessionStorage.setItem("brfDemo", JSON.stringify(demoInfo));
+    sessionStorage.setItem("brfDemo", safeStringify(demoInfo));
   }, [demoInfo]);
   useEffect(() => {
-    localStorage.setItem("brfCampaignToggles", JSON.stringify(campaignToggles));
+    localStorage.setItem("brfCampaignToggles", safeStringify(campaignToggles));
   }, [campaignToggles]);
   useEffect(() => {
-    localStorage.setItem("brfOnboarding", JSON.stringify(onboardingComplete));
+    localStorage.setItem("brfOnboarding", safeStringify(onboardingComplete));
   }, [onboardingComplete]);
   useEffect(() => {
     localStorage.setItem(
       "brfAgencyOnboarding",
-      JSON.stringify(agencyOnboardingComplete),
+      safeStringify(agencyOnboardingComplete),
     );
   }, [agencyOnboardingComplete]);
   useEffect(() => {
     localStorage.setItem(
       "brfAgentSubscriptions",
-      JSON.stringify(agentSubscriptions),
+      safeStringify(agentSubscriptions),
     );
   }, [agentSubscriptions]);
   useEffect(() => {
-    localStorage.setItem("brfAgentRequests", JSON.stringify(agentRequests));
+    localStorage.setItem("brfAgentRequests", safeStringify(agentRequests));
   }, [agentRequests]);
   useEffect(() => {
-    localStorage.setItem("brfAgentTasks", JSON.stringify(agentTasks));
+    localStorage.setItem("brfAgentTasks", safeStringify(agentTasks));
   }, [agentTasks]);
   useEffect(() => {
     localStorage.setItem(
       "brfAgentPricing",
-      JSON.stringify(agentPricingOverrides),
+      safeStringify(agentPricingOverrides),
     );
   }, [agentPricingOverrides]);
   useEffect(() => {
-    localStorage.setItem("brfWhiteLabel", JSON.stringify(whiteLabelSettings));
+    localStorage.setItem("brfWhiteLabel", safeStringify(whiteLabelSettings));
   }, [whiteLabelSettings]);
 
   // Agent Workflow OS persist effects
   useEffect(() => {
-    localStorage.setItem("brf_agent_threads", JSON.stringify(agentThreads));
+    localStorage.setItem("brf_agent_threads", safeStringify(agentThreads));
   }, [agentThreads]);
   useEffect(() => {
-    localStorage.setItem("brf_agent_runs", JSON.stringify(agentRunsList));
+    localStorage.setItem("brf_agent_runs", safeStringify(agentRunsList));
   }, [agentRunsList]);
   useEffect(() => {
-    localStorage.setItem("brf_artifacts", JSON.stringify(agentArtifacts));
+    localStorage.setItem("brf_artifacts", safeStringify(agentArtifacts));
   }, [agentArtifacts]);
   useEffect(() => {
-    localStorage.setItem("brf_agent_templates", JSON.stringify(agentTemplates));
+    localStorage.setItem("brf_agent_templates", safeStringify(agentTemplates));
   }, [agentTemplates]);
   useEffect(() => {
-    localStorage.setItem("brf_agent_memories", JSON.stringify(agentMemories));
+    localStorage.setItem("brf_agent_memories", safeStringify(agentMemories));
   }, [agentMemories]);
   useEffect(() => {
-    localStorage.setItem("brf_approval_items", JSON.stringify(approvalItems));
+    localStorage.setItem("brf_approval_items", safeStringify(approvalItems));
   }, [approvalItems]);
   useEffect(() => {
     localStorage.setItem(
       "brf_provider_adapters",
-      JSON.stringify(providerAdapters),
+      safeStringify(providerAdapters),
     );
   }, [providerAdapters]);
 
   useEffect(() => {
-    localStorage.setItem("brfLeads", JSON.stringify(leads));
+    localStorage.setItem("brfLeads", safeStringify(leads));
   }, [leads]);
 
   useEffect(() => {
     localStorage.setItem(
       "brf_open_source_config",
-      JSON.stringify(openSourceConfig),
+      safeStringify(openSourceConfig),
     );
   }, [openSourceConfig]);
 
   // Telephony persist effects
   useEffect(() => {
-    localStorage.setItem("brf_call_logs", JSON.stringify(callLogs));
+    localStorage.setItem("brf_call_logs", safeStringify(callLogs));
   }, [callLogs]);
   useEffect(() => {
     localStorage.setItem(
       "brf_missed_sms_configs",
-      JSON.stringify(missedCallSmsConfigs),
+      safeStringify(missedCallSmsConfigs),
     );
   }, [missedCallSmsConfigs]);
   useEffect(() => {
     localStorage.setItem(
       "brf_voice_agent_configs",
-      JSON.stringify(inboundVoiceAgentConfigs),
+      safeStringify(inboundVoiceAgentConfigs),
     );
   }, [inboundVoiceAgentConfigs]);
 
   // SMS Inbox persist effects
   useEffect(() => {
-    localStorage.setItem("brf_sms_threads", JSON.stringify(smsThreads));
+    localStorage.setItem("brf_sms_threads", safeStringify(smsThreads));
   }, [smsThreads]);
   useEffect(() => {
-    localStorage.setItem("brf_sms_messages", JSON.stringify(smsMessages));
+    localStorage.setItem("brf_sms_messages", safeStringify(smsMessages));
   }, [smsMessages]);
 
   // Client Reporting persist effects
   useEffect(() => {
-    localStorage.setItem("brf_client_reports", JSON.stringify(clientReports));
+    localStorage.setItem("brf_client_reports", safeStringify(clientReports));
   }, [clientReports]);
   useEffect(() => {
     localStorage.setItem(
       "brf_report_schedules",
-      JSON.stringify(reportSchedules),
+      safeStringify(reportSchedules),
     );
   }, [reportSchedules]);
 
   // Social Media Engine persist effects
   useEffect(() => {
-    localStorage.setItem("brf_social_posts", JSON.stringify(socialPosts));
+    localStorage.setItem("brf_social_posts", safeStringify(socialPosts));
   }, [socialPosts]);
   useEffect(() => {
-    localStorage.setItem("brf_social_comments", JSON.stringify(socialComments));
+    localStorage.setItem("brf_social_comments", safeStringify(socialComments));
   }, [socialComments]);
   useEffect(() => {
     localStorage.setItem(
       "brf_social_alerts",
-      JSON.stringify(socialListeningAlerts),
+      safeStringify(socialListeningAlerts),
     );
   }, [socialListeningAlerts]);
   useEffect(() => {
     localStorage.setItem(
       "brf_brand_voice_profiles",
-      JSON.stringify(brandVoiceProfiles),
+      safeStringify(brandVoiceProfiles),
     );
   }, [brandVoiceProfiles]);
 
