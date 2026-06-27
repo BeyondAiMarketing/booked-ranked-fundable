@@ -64,6 +64,7 @@ import {
   DEFAULT_VOICE_AGENT_CONFIG,
   DEMO_CALL_LOGS,
 } from "../data/telephonyData";
+import { safeStringify } from "../lib/bigintSerializer";
 import type {
   AgentArtifact,
   AgentMemory,
@@ -104,7 +105,6 @@ import type {
   MissedCallSmsConfig,
 } from "../types/telephony";
 import { calculateHealthScore } from "../utils/healthScoreCalculator";
-import { safeStringify } from "../lib/bigintSerializer";
 
 interface AppUser {
   name: string;

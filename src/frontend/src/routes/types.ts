@@ -4,4 +4,4 @@ import type { ReactNode } from "react";
 export type ProtectedRouteWrapper = (props: {
   children: ReactNode;
   adminOnly?: boolean;
-}) => JSX.Element | null;
+}) => ReactNode;

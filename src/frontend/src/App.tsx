@@ -55,7 +55,6 @@ function ProtectedRoute({
   return <AppLayout>{children}</AppLayout>;
 }
 
-
 const rootRoute = createRootRoute({
   component: () => (
     <AppProvider>

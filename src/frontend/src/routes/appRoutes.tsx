@@ -4,12 +4,10 @@
  */
 import { createRoute } from "@tanstack/react-router";
 import type { AnyRoute } from "@tanstack/react-router";
-import type { ProtectedRouteWrapper } from "./types";
-import AILeadIntelligencePage from "../pages/AILeadIntelligencePage";
+import AgentServicesPage from "../pages/AgentServicesPage";
 import AnalyticsPage from "../pages/AnalyticsPage";
 import AppointmentsPage from "../pages/AppointmentsPage";
 import AuditPage from "../pages/AuditPage";
-import AgentServicesPage from "../pages/AgentServicesPage";
 import BillingPortalPage from "../pages/BillingPortalPage";
 import CallLogPage from "../pages/CallLogPage";
 import CampaignsPage from "../pages/CampaignsPage";
@@ -39,173 +37,309 @@ import SettingsPage from "../pages/SettingsPage";
 import SmsInboxPage from "../pages/SmsInboxPage";
 import VoiceAgentPage from "../pages/VoiceAgentPage";
 import WebsiteAgentPage from "../pages/WebsiteAgentPage";
+import type { ProtectedRouteWrapper } from "./types";
 
-export function buildAppRoutes(rootRoute: AnyRoute, Protected: ProtectedRouteWrapper) {
+export function buildAppRoutes(
+  rootRoute: AnyRoute,
+  Protected: ProtectedRouteWrapper,
+) {
   return [
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/dashboard",
-      component: () => <Protected><DashboardPage /></Protected>,
+      component: () => (
+        <Protected>
+          <DashboardPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/leads",
-      component: () => <Protected><LeadsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <LeadsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/reviews",
-      component: () => <Protected><ReviewsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ReviewsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/audit",
-      component: () => <Protected><AuditPage /></Protected>,
+      component: () => (
+        <Protected>
+          <AuditPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/fundability",
-      component: () => <Protected><FundabilityPage /></Protected>,
+      component: () => (
+        <Protected>
+          <FundabilityPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/reports",
-      component: () => <Protected><ReportsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ReportsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/analytics",
-      component: () => <Protected><AnalyticsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <AnalyticsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/settings",
-      component: () => <Protected><SettingsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <SettingsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/agent-services",
-      component: () => <Protected><AgentServicesPage /></Protected>,
+      component: () => (
+        <Protected>
+          <AgentServicesPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/billing",
-      component: () => <Protected><BillingPortalPage /></Protected>,
+      component: () => (
+        <Protected>
+          <BillingPortalPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/chat-widget",
-      component: () => <Protected><ChatWidgetPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ChatWidgetPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/voice-agent",
-      component: () => <Protected><VoiceAgentPage /></Protected>,
+      component: () => (
+        <Protected>
+          <VoiceAgentPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/call-log",
-      component: () => <Protected><CallLogPage /></Protected>,
+      component: () => (
+        <Protected>
+          <CallLogPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/sms-inbox",
-      component: () => <Protected><SmsInboxPage /></Protected>,
+      component: () => (
+        <Protected>
+          <SmsInboxPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/review-requests",
-      component: () => <Protected><ReviewRequestsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ReviewRequestsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/listings",
-      component: () => <Protected><ListingsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ListingsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/campaigns",
-      component: () => <Protected><CampaignsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <CampaignsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/gbp-management",
-      component: () => <Protected><GbpManagementPage /></Protected>,
+      component: () => (
+        <Protected>
+          <GbpManagementPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/landing-pages",
-      component: () => <Protected><LandingPageBuilderPage /></Protected>,
+      component: () => (
+        <Protected>
+          <LandingPageBuilderPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/my-website",
-      component: () => <Protected><ClientMyWebsitePage /></Protected>,
+      component: () => (
+        <Protected>
+          <ClientMyWebsitePage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/client-reports",
-      component: () => <Protected><ClientReportsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ClientReportsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/estimates",
-      component: () => <Protected><EstimatesPage /></Protected>,
+      component: () => (
+        <Protected>
+          <EstimatesPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/appointments",
-      component: () => <Protected><AppointmentsPage /></Protected>,
+      component: () => (
+        <Protected>
+          <AppointmentsPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/reputation-inbox",
-      component: () => <Protected><ReputationInboxPage /></Protected>,
+      component: () => (
+        <Protected>
+          <ReputationInboxPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/competitive-intel",
-      component: () => <Protected><CompetitiveIntelPage /></Protected>,
+      component: () => (
+        <Protected>
+          <CompetitiveIntelPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/multi-location",
-      component: () => <Protected><MultiLocationPage /></Protected>,
+      component: () => (
+        <Protected>
+          <MultiLocationPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/lead-attribution",
-      component: () => <Protected><LeadAttributionPage /></Protected>,
+      component: () => (
+        <Protected>
+          <LeadAttributionPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/go-live",
-      component: () => <Protected><GoLivePage /></Protected>,
+      component: () => (
+        <Protected>
+          <GoLivePage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/crm-pipeline",
-      component: () => <Protected><CrmPipelinePage /></Protected>,
+      component: () => (
+        <Protected>
+          <CrmPipelinePage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/scanner-3d",
-      component: () => <Protected><Scanner3DPage /></Protected>,
+      component: () => (
+        <Protected>
+          <Scanner3DPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/website-agent",
-      component: () => <Protected><WebsiteAgentPage /></Protected>,
+      component: () => (
+        <Protected>
+          <WebsiteAgentPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/paid-ads-agent",
-      component: () => <Protected><PaidAdsAgentPage /></Protected>,
+      component: () => (
+        <Protected>
+          <PaidAdsAgentPage />
+        </Protected>
+      ),
     }),
     createRoute({
       getParentRoute: () => rootRoute,
       path: "/seo-geo-agent",
-      component: () => <Protected><SeoGeoAgentPage /></Protected>,
+      component: () => (
+        <Protected>
+          <SeoGeoAgentPage />
+        </Protected>
+      ),
     }),
   ];
 }
