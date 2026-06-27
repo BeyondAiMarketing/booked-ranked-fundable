@@ -74,6 +74,10 @@ mops install
 mops check --fix
 mops build
 
+# Restricted sandbox fallback (skips mops network failures after retries)
+MOPS_ALLOW_OFFLINE=1 bash ../../scripts/mopsw.sh check-with-retry --fix
+MOPS_ALLOW_OFFLINE=1 bash ../../scripts/mopsw.sh build-with-retry
+
 # Generate frontend bindings (from root)
 pnpm bindgen
 ```

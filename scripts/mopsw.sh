@@ -14,23 +14,41 @@ fi
 
 run_install_with_retry() {
   local max_attempts=3
+  run_with_retry "install" "$max_attempts" install "$@"
+}
+
+is_network_error() {
+  local log_file="$1"
+  grep -Eiq "Temporary failure in name resolution|Could not resolve host|dns|timed out|timeout|TrustError|TransportError|fetch failed|Failed to fetch HTTP request|Query response did not contain any node signatures|ENOTFOUND|EAI_AGAIN" "$log_file"
+}
+
+run_with_retry() {
+  local operation="$1"
+  local max_attempts="$2"
+  shift 2
+
   local attempt=1
   local tmp_log
   tmp_log="$(mktemp)"
 
   while [ "$attempt" -le "$max_attempts" ]; do
-    if "${MOPS_CMD[@]}" install "$@" 2> >(tee "$tmp_log" >&2); then
+    if "${MOPS_CMD[@]}" "$@" 2> >(tee "$tmp_log" >&2); then
       rm -f "$tmp_log"
       return 0
     fi
 
-    if grep -Eiq "Temporary failure in name resolution|Could not resolve host|dns|timed out|timeout|TrustError|TransportError|fetch failed|Failed to fetch HTTP request|Query response did not contain any node signatures|ENOTFOUND|EAI_AGAIN" "$tmp_log"; then
+    if is_network_error "$tmp_log"; then
       if [ "$attempt" -lt "$max_attempts" ]; then
-        echo "WARN: transient external registry/network issue while resolving Motoko deps (attempt $attempt/$max_attempts). Retrying..." >&2
+        echo "WARN: transient external registry/network issue during mops $operation (attempt $attempt/$max_attempts). Retrying..." >&2
         sleep 3
+      elif [ "${MOPS_ALLOW_OFFLINE:-0}" = "1" ]; then
+        echo "WARN: mops $operation skipped because external registry/network access is blocked and MOPS_ALLOW_OFFLINE=1." >&2
+        echo "WARN: This mode is intended for restricted sandbox environments and does not guarantee dependency or type checks." >&2
+        rm -f "$tmp_log"
+        return 0
       fi
     else
-      echo "ERROR: mops install failed due to a non-network error." >&2
+      echo "ERROR: mops $operation failed due to a non-network error." >&2
       rm -f "$tmp_log"
       return 1
     fi
@@ -38,8 +56,9 @@ run_install_with_retry() {
     attempt=$((attempt + 1))
   done
 
-  echo "ERROR: mops install failed after retries due to external registry/network trust/transport issues." >&2
+  echo "ERROR: mops $operation failed after retries due to external registry/network trust/transport issues." >&2
   echo "This is likely an external dependency resolution problem, not a local compile error in this repo." >&2
+  echo "If you are in a restricted sandbox and need to unblock local iteration, rerun with MOPS_ALLOW_OFFLINE=1." >&2
   rm -f "$tmp_log"
   return 1
 }
@@ -50,8 +69,20 @@ if [ "${1:-}" = "install-with-retry" ]; then
   exit $?
 fi
 
+if [ "${1:-}" = "check-with-retry" ]; then
+  shift
+  run_with_retry "check" 3 check "$@"
+  exit $?
+fi
+
+if [ "${1:-}" = "build-with-retry" ]; then
+  shift
+  run_with_retry "build" 3 build "$@"
+  exit $?
+fi
+
 if [ "$#" -eq 0 ]; then
-  echo "Usage: scripts/mopsw.sh <mops-args...> | install-with-retry [args...]" >&2
+  echo "Usage: scripts/mopsw.sh <mops-args...> | install-with-retry [args...] | check-with-retry [args...] | build-with-retry [args...]" >&2
   exit 2
 fi
 
