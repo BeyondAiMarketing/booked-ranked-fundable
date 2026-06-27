@@ -5133,7 +5133,7 @@ actor {
     if (caller.isAnonymous()) {
       return { ok = false; error = ?"Unauthorized: please log in to save credentials" };
     };
-    let tid = if (tenantId == "" or tenantId == "demo" or tenantId == "default") "platform" else tenantId;
+    let tid = normaliseVapiTenantId(tenantId);
 
     // Merge new Vapi key/assistantId into existing credentials (preserve all other fields)
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
@@ -5201,7 +5201,7 @@ actor {
   } {
     // Allow any caller — the Go Live dashboard calls this on load
     // before user profiles or permissions are set up.
-    let tid = if (tenantId == "" or tenantId == "demo" or tenantId == "default") "platform" else tenantId;
+    let tid = normaliseVapiTenantId(tenantId);
 
     let configured = switch (integrationCreds.get(tid)) {
       case (null) { false };
