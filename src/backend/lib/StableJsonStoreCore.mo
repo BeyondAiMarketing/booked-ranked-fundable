@@ -15,7 +15,7 @@ module StableJsonStoreCore {
     };
 
     public func postupgrade() : () {
-      store := Map.empty<Text, Text>();
+      store := Map.empty();
       for ((k, v) in entries.vals()) {
         store.add(k, v);
       };

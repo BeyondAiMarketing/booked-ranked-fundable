@@ -11,7 +11,7 @@ module {
   };
 
   public func emptyState() : State = {
-    routes = Map.empty<Text, T.RankedDispatchRoute>();
+    routes = Map.empty();
   };
 
   public func save(state : State, route : T.RankedDispatchRoute) : () {

@@ -303,7 +303,7 @@ mixin (
             // Increment rule sentCount
             switch (msgSidOpt) {
               case (?_) {
-                smsAutopilotRules.v := smsAutopilotRules.v.map<T.SmsAutopilotRule, T.SmsAutopilotRule>(
+                smsAutopilotRules.v := smsAutopilotRules.v.map(
                   func(r) { if (r.id == job.ruleId) { { r with sentCount = r.sentCount + 1 } } else r }
                 );
               };

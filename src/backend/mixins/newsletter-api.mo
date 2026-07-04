@@ -598,7 +598,7 @@ mixin (
     switch (nlCampaigns.get(tenantId)) {
       case null    { NL.emptyStats() };
       case (?cmap) {
-        cmap.values().foldLeft<T.NewsletterCampaign, T.NewsletterCampaignStats>(
+        cmap.values().foldLeft(
           NL.emptyStats(),
           func(acc, c) {
             {

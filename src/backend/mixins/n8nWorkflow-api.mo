@@ -118,7 +118,7 @@ mixin (n8nState : N8NWorkflowLib.State) {
     pushedToAccounts : [Text];
   }] {
     let defs = N8NWorkflowLib.getWorkflowDefs(n8nState);
-    defs.map<N8NTypes.WorkflowDef, { id : Text; name : Text; description : Text; tags : [Text]; scope : Text; isActive : Bool; createdAt : Int; pushedToAccounts : [Text] }>(
+    defs.map(
       func(d) {
         {
           id = d.id;
@@ -195,10 +195,7 @@ mixin (n8nState : N8NWorkflowLib.State) {
     let (batchId, validations) = N8NWorkflowLib.importWorkflowBatch(n8nState, "", parsed);
     {
       batchId;
-      results = validations.map<
-        N8NWorkflowLib.WorkflowImportValidation,
-        { index : Nat; id : Text; name : Text; valid : Bool; errors : [Text] }
-      >(func(v) { { index = v.index; id = v.id; name = v.name; valid = v.valid; errors = v.errors } });
+      results = validations.map(func(v) { { index = v.index; id = v.id; name = v.name; valid = v.valid; errors = v.errors } });
     };
   };
 
@@ -252,7 +249,7 @@ mixin (n8nState : N8NWorkflowLib.State) {
     completedAt : ?Int;
   }] {
     let execs = N8NWorkflowLib.getExecutionLog(n8nState, tenantId);
-    execs.map<N8NTypes.WorkflowExecution, { id : Text; workflowId : Text; tenantId : Text; status : Text; outputData : Text; errorMessage : ?Text; startedAt : Int; completedAt : ?Int }>(
+    execs.map(
       func(e) {
         {
           id = e.id;

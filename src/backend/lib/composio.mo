@@ -16,8 +16,8 @@ module {
 
   public func emptyState() : State = {
     configStore          = { var value = null };
-    toolRegistry         = Map.empty<Text, List.List<T.ComposioTool>>();
-    accountToolkits      = Map.empty<Text, [Text]>();
+    toolRegistry         = Map.empty();
+    accountToolkits      = Map.empty();
     composioRouteEnabled = { var value = false };
   };
 

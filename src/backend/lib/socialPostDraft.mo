@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    drafts = Map.empty<Text, T.SocialPostDraft>();
+    drafts = Map.empty();
   };
 
   /// Persist a new post draft.

@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State {
-    { briefs = Map.empty<Text, T.BusinessBrief>() };
+    { briefs = Map.empty() };
   };
 
   public func save(state : State, brief : T.BusinessBrief) : () {

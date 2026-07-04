@@ -13,7 +13,7 @@ module {
   };
 
   public func emptyState() : State = {
-    workflows = Map.empty<Text, T.ScheduledWorkflow>();
+    workflows = Map.empty();
   };
 
   /// Validate frequency string.

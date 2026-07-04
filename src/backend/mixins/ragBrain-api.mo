@@ -144,7 +144,7 @@ mixin (
         debug_show(d.collectionName) == debug_show(col)
       }
     );
-    filtered.map<(Text, RagBrainTypes.KnowledgeDocument), { id : Text; title : Text; chunkCount : Nat; uploadedAt : Int }>(
+    filtered.map(
       func(pair) { let d = pair.1; { id = d.id; title = d.title; chunkCount = d.chunkCount; uploadedAt = d.uploadedAt } }
     )
   };
@@ -161,7 +161,7 @@ mixin (
     tenantId : Text
   ) : async [{ id : Text; provider : Text; inputTokens : Nat; success : Bool; loggedAt : Int }] {
     let logs = RagBrainLib.getUsageLogs(ragBrainState, tenantId);
-    logs.map<RagBrainTypes.AIUsageLog, { id : Text; provider : Text; inputTokens : Nat; success : Bool; loggedAt : Int }>(
+    logs.map(
       func(l) { { id = l.id; provider = providerToText(l.provider); inputTokens = l.inputTokens; success = l.success; loggedAt = l.loggedAt } }
     )
   };
@@ -172,7 +172,7 @@ mixin (
     sessionId : Text
   ) : async [{ id : Text; role : Text; content : Text; citations : [Text]; timestamp : Int }] {
     let msgs = RagBrainLib.getConversationHistory(ragBrainState, tenantId, sessionId);
-    msgs.map<RagBrainTypes.ConversationMessage, { id : Text; role : Text; content : Text; citations : [Text]; timestamp : Int }>(
+    msgs.map(
       func(m) { { id = m.id; role = roleToText(m.role); content = m.content; citations = m.citations; timestamp = m.timestamp } }
     )
   };

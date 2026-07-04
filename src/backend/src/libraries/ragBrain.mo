@@ -33,11 +33,11 @@ module {
   };
 
   public func emptyState() : State = {
-    documents       = Map.empty<Text, KnowledgeDocument>();
-    chunks          = List.empty<DocumentChunk>();
-    usageLogs       = List.empty<AIUsageLog>();
-    messages        = List.empty<ConversationMessage>();
-    agentRuns       = List.empty<AgentNodeRun>();
+    documents       = Map.empty();
+    chunks          = List.empty();
+    usageLogs       = List.empty();
+    messages        = List.empty();
+    agentRuns       = List.empty();
     openRouterState = OpenRouterLib.emptyState();
   };
 
@@ -94,7 +94,7 @@ module {
       title;
       sourceType;
       contentPreview = if (contentLen <= 200) { content } else {
-        Text.fromIter(Array.tabulate<Char>(200, func(i) { contentChars[i] }).vals())
+        Text.fromIter(Array.tabulate(200, func(i) { contentChars[i] }).vals())
       };
       chunkCount = chunkIndex;
       tenantId;
@@ -187,7 +187,7 @@ module {
   /// Returns AI usage logs for a given tenant.
   public func getUsageLogs(state : State, tenantId : Text) : [AIUsageLog] {
     let all = state.usageLogs.toArray();
-    all.filter<AIUsageLog>(func(l) { l.tenantId == tenantId });
+    all.filter(func(l) { l.tenantId == tenantId });
   };
 
   /// Returns conversation history for a given tenant and session.
@@ -197,7 +197,7 @@ module {
     sessionId : Text,
   ) : [ConversationMessage] {
     let all = state.messages.toArray();
-    all.filter<ConversationMessage>(
+    all.filter(
       func(m) { m.tenantId == tenantId and m.sessionId == sessionId },
     );
   };

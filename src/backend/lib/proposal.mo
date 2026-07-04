@@ -11,7 +11,7 @@ module {
   };
 
   public func emptyState() : State = {
-    proposals = Map.empty<Text, T.Proposal>();
+    proposals = Map.empty();
   };
 
   /// Persist a proposal.

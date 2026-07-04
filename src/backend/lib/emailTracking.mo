@@ -15,7 +15,7 @@ module {
   };
 
   public func emptyIndex() : TrackingIndex = {
-    tokenMap = Map.empty<Text, (Text, Text)>();
+    tokenMap = Map.empty();
   };
 
   /// Build a deterministic tracking token from leadId + emailIndex.

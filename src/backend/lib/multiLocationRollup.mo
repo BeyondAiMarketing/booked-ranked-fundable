@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    reports = Map.empty<Text, T.MultiLocationReport>();
+    reports = Map.empty();
   };
 
   /// Persist a multi-location rollup report.

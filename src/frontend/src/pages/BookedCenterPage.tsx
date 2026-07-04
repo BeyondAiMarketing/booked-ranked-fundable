@@ -1,7 +1,9 @@
+import type { Lead } from "@/backend";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApp } from "@/context/AppContext";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Briefcase,
@@ -15,6 +17,7 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import { useActor } from "../hooks/useActor";
 
 const PIPELINE_STAGES = [
   {
@@ -69,57 +72,111 @@ const PIPELINE_STAGES = [
   },
 ];
 
-const DEMO_LEADS = [
+const DEMO_LEADS: Lead[] = [
   {
     id: "l1",
     name: "Sarah Johnson",
-    stage: "appointment_scheduled",
+    status: "appointment_scheduled",
     source: "Website",
-    value: 12500,
+    createdAt: BigInt(Date.now()),
+    email: "sarah@example.com",
+    tenantId: "demo",
+    niche: "roofing",
+    notes: "",
+    phone: "+15551234567",
+    agentSubscriptions: [],
   },
   {
     id: "l2",
     name: "Mike Chen",
-    stage: "proposal_sent",
+    status: "proposal_sent",
     source: "Referral",
-    value: 8400,
+    createdAt: BigInt(Date.now()),
+    email: "mike@example.com",
+    tenantId: "demo",
+    niche: "roofing",
+    notes: "",
+    phone: "+15552345678",
+    agentSubscriptions: [],
   },
   {
     id: "l3",
     name: "David Park",
-    stage: "new_lead",
+    status: "new_lead",
     source: "Google Ads",
-    value: 6200,
+    createdAt: BigInt(Date.now()),
+    email: "david@example.com",
+    tenantId: "demo",
+    niche: "roofing",
+    notes: "",
+    phone: "+15553456789",
+    agentSubscriptions: [],
   },
   {
     id: "l4",
     name: "Lisa Martinez",
-    stage: "follow_up_needed",
+    status: "follow_up_needed",
     source: "Facebook",
-    value: 15000,
+    createdAt: BigInt(Date.now()),
+    email: "lisa@example.com",
+    tenantId: "demo",
+    niche: "roofing",
+    notes: "",
+    phone: "+15554567890",
+    agentSubscriptions: [],
   },
   {
     id: "l5",
     name: "Tom Wilson",
-    stage: "won",
+    status: "won",
     source: "Cold Call",
-    value: 9800,
+    createdAt: BigInt(Date.now()),
+    email: "tom@example.com",
+    tenantId: "demo",
+    niche: "roofing",
+    notes: "",
+    phone: "+15555678901",
+    agentSubscriptions: [],
   },
 ];
 
+function useLeads(tenantId: string) {
+  const { actor, isFetching: actorLoading } = useActor();
+
+  return useQuery<Lead[]>({
+    queryKey: ["leads", tenantId],
+    queryFn: async () => {
+      if (!actor) return DEMO_LEADS;
+      try {
+        const result = await actor.getLeadsByTenantId(tenantId);
+        if (Array.isArray(result) && result.length > 0) {
+          return result as Lead[];
+        }
+        return DEMO_LEADS;
+      } catch {
+        return DEMO_LEADS;
+      }
+    },
+    enabled: !actorLoading,
+    staleTime: 30_000,
+  });
+}
+
 export default function BookedCenterPage() {
-  const { isDemoMode: _isDemoMode } = useApp();
+  const { isDemoMode: _isDemoMode, currentTenantId } = useApp();
   const navigate = useNavigate();
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
+  const { data: leads = [], isLoading } = useLeads(currentTenantId ?? "demo");
+
   const stageCounts = PIPELINE_STAGES.map((s) => ({
     ...s,
-    count: DEMO_LEADS.filter((l) => l.stage === s.key).length,
+    count: leads.filter((l) => l.status === s.key).length,
   }));
 
   const filteredLeads = selectedStage
-    ? DEMO_LEADS.filter((l) => l.stage === selectedStage)
-    : DEMO_LEADS;
+    ? leads.filter((l) => l.status === selectedStage)
+    : leads;
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -178,72 +235,89 @@ export default function BookedCenterPage() {
         ))}
       </div>
 
-      {/* Lead Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredLeads.map((lead) => {
-          const stage = PIPELINE_STAGES.find((s) => s.key === lead.stage);
-          return (
-            <Card
-              key={lead.id}
-              className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 hover:border-[#FFD700]/30 hover:shadow-lg hover:shadow-[#FFD700]/5 rounded-2xl transition-all duration-200"
-              data-ocid={`booked.lead.${lead.id}.card`}
-            >
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold text-white/90">
-                    {lead.name}
-                  </CardTitle>
-                  <Badge
-                    variant="outline"
-                    className={`text-[10px] rounded-full px-3 py-1 font-medium ${stage?.color ?? ""}`}
-                  >
-                    {stage?.label ?? lead.stage}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <div className="flex items-center gap-4 text-xs text-white/50">
-                  <span className="flex items-center gap-1">
-                    <Users size={12} />
-                    {lead.source}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Briefcase size={12} />${lead.value.toLocaleString()}
-                  </span>
-                </div>
-                <div className="flex gap-2 pt-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
-                    data-ocid={`booked.lead.${lead.id}.call.button`}
-                  >
-                    <Phone size={12} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
-                    data-ocid={`booked.lead.${lead.id}.sms.button`}
-                  >
-                    <MessageSquare size={12} />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
-                    data-ocid={`booked.lead.${lead.id}.email.button`}
-                  >
-                    <Mail size={12} />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {/* Loading State */}
+      {isLoading && (
+        <div
+          className="text-center py-12"
+          data-ocid="booked.leads.loading_state"
+        >
+          <Users
+            size={32}
+            className="mx-auto text-white/20 mb-3 animate-pulse"
+          />
+          <p className="text-white/50 text-sm">Loading leads...</p>
+        </div>
+      )}
 
-      {filteredLeads.length === 0 && (
+      {/* Lead Cards */}
+      {!isLoading && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {filteredLeads.map((lead) => {
+            const stage = PIPELINE_STAGES.find((s) => s.key === lead.status);
+            return (
+              <Card
+                key={lead.id}
+                className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 hover:border-[#FFD700]/30 hover:shadow-lg hover:shadow-[#FFD700]/5 rounded-2xl transition-all duration-200"
+                data-ocid={`booked.lead.${lead.id}.card`}
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-sm font-semibold text-white/90">
+                      {lead.name}
+                    </CardTitle>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] rounded-full px-3 py-1 font-medium ${stage?.color ?? ""}`}
+                    >
+                      {stage?.label ?? lead.status}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-4 text-xs text-white/50">
+                    <span className="flex items-center gap-1">
+                      <Users size={12} />
+                      {lead.source}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Briefcase size={12} />
+                      {lead.phone}
+                    </span>
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
+                      data-ocid={`booked.lead.${lead.id}.call.button`}
+                    >
+                      <Phone size={12} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
+                      data-ocid={`booked.lead.${lead.id}.sms.button`}
+                    >
+                      <MessageSquare size={12} />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 rounded-xl text-[#00BFFF] hover:bg-[#00BFFF]/10 hover:scale-105 transition-all duration-200"
+                      data-ocid={`booked.lead.${lead.id}.email.button`}
+                    >
+                      <Mail size={12} />
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+
+      {!isLoading && filteredLeads.length === 0 && (
         <div className="text-center py-12" data-ocid="booked.leads.empty_state">
           <Users size={32} className="mx-auto text-white/20 mb-3" />
           <p className="text-white/50 text-sm">No leads in this stage.</p>

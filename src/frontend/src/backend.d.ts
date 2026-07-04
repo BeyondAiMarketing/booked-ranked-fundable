@@ -5867,6 +5867,17 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    /**
+     * / Save the platform SendGrid API key (any authenticated caller). Stored XOR-obfuscated.
+     * / Writes into integrationCreds["platform"].sendgridKey.
+     */
+    saveSendGridApiKey(tenantId: string, sendgridKey: string): Promise<{
+        __kind__: "ok";
+        ok: null;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
     saveServiceAreaPage(page: ServiceAreaPage): Promise<{
         __kind__: "ok";
         ok: string;
@@ -5877,6 +5888,17 @@ export interface backendInterface {
     saveSocialPostDraft(draft: SocialPostDraft): Promise<{
         __kind__: "ok";
         ok: string;
+    } | {
+        __kind__: "err";
+        err: string;
+    }>;
+    /**
+     * / Save the platform Twilio credentials (any authenticated caller). Stored XOR-obfuscated.
+     * / Writes into integrationCreds["platform"].twilioSid, twilioAuth, twilioNumber.
+     */
+    saveTwilioCredentials(tenantId: string, twilioSid: string, twilioAuth: string, twilioNumber: string): Promise<{
+        __kind__: "ok";
+        ok: null;
     } | {
         __kind__: "err";
         err: string;

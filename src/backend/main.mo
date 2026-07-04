@@ -1748,7 +1748,7 @@ import NewsletterTypes "types/newsletter";
   include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt);
   // ---- Master Agent state ----
   let masterAgentState : MasterAgentTypes.MasterAgentState = {
-    sessions        = List.empty<MasterAgentTypes.MasterAgentSession>();
+    sessions        = List.empty();
     activeSessionId = { var value = null };
   };
   include MasterAgentMixin(
@@ -1957,7 +1957,7 @@ import NewsletterTypes "types/newsletter";
         for (lead in tenantLeads.values()) { leadList.add(lead) };
         leadList;
       };
-      case (null) { List.empty<Lead>() };
+      case (null) { List.empty() };
     };
   };
 
@@ -1987,7 +1987,9 @@ import NewsletterTypes "types/newsletter";
         };
         case (?existing) {
           switch (existing.status) {
-            case (#unsubscribed or #active or #completed) {}; // skip
+            case (#unsubscribed) {};
+            case (#active) {};
+            case (#completed) {}; // skip
             case (#paused) {
               roofingLeadStatuses.add(normEmail, { existing with status = #active });
             };
@@ -2065,7 +2067,7 @@ import NewsletterTypes "types/newsletter";
         for (review in tenantReviews.values()) { reviewList.add(review) };
         reviewList;
       };
-      case (null) { List.empty<Review>() };
+      case (null) { List.empty() };
     };
   };
 
@@ -3416,7 +3418,9 @@ import NewsletterTypes "types/newsletter";
           Runtime.trap("Unauthorized: No access to tenant");
         };
         let endedAt : ?Int = switch (status) {
-          case (#completed or #failed or #cancelled) { ?Time.now() };
+          case (#completed) { ?Time.now() };
+        case (#failed) { ?Time.now() };
+        case (#cancelled) { ?Time.now() };
           case (_) { r.endedAt };
         };
         agentRuns.add(runId, { r with status; outputText; errorMessage; endedAt });
@@ -4888,7 +4892,16 @@ import NewsletterTypes "types/newsletter";
           "Have you already had a contractor out, or would this be a first estimate?",
           "What's the best contact number for your estimate?"
         );
-        case ("real-estate" or "realestate") (
+        case ("real-estate") (
+          "Thank you for calling " # businessName # ", this is your AI assistant — are you looking to buy, sell, or just explore your options today?",
+          "Great talking with you! Someone from " # businessName # " will reach out to schedule your consultation.",
+          "Are you looking to buy a home, sell your current property, or both?",
+          "What area or neighborhood are you focused on?",
+          "Are you pre-approved for financing, or would you like a referral to a trusted lender?",
+          "What's your timeline — are you ready to move in the next 30–90 days, or are you still in the planning stage?",
+          "What's the best way to reach you to schedule a no-pressure consultation?"
+        );
+        case ("realestate") (
           "Thank you for calling " # businessName # ", this is your AI assistant — are you looking to buy, sell, or just explore your options today?",
           "Great talking with you! Someone from " # businessName # " will reach out to schedule your consultation.",
           "Are you looking to buy a home, sell your current property, or both?",
@@ -4906,7 +4919,16 @@ import NewsletterTypes "types/newsletter";
           "What's your target loan amount or price range?",
           "What's a good time this week to speak with one of our licensed loan officers?"
         );
-        case ("chiropractor" or "chiro") (
+        case ("chiropractor") (
+          "Thank you for calling " # businessName # ", this is your AI assistant — are you calling about neck or back pain, or something else we can help you with?",
+          "We look forward to seeing you at " # businessName # ". Take care!",
+          "Are you dealing with back pain, neck pain, headaches, or another concern?",
+          "Is this a new issue or something you've been dealing with for a while?",
+          "Have you been seen by a chiropractor before?",
+          "Are you in the local area — what city are you in?",
+          "Are you available this week for a new patient exam? We have morning and afternoon slots."
+        );
+        case ("chiro") (
           "Thank you for calling " # businessName # ", this is your AI assistant — are you calling about neck or back pain, or something else we can help you with?",
           "We look forward to seeing you at " # businessName # ". Take care!",
           "Are you dealing with back pain, neck pain, headaches, or another concern?",
@@ -5517,7 +5539,7 @@ import NewsletterTypes "types/newsletter";
     let assistantIds : [(Text, Text)] = if (assistantId == "") {
       []
     } else {
-      niches.map<Text, (Text, Text)>(func(n) { (n, assistantId) })
+      niches.map(func(n) { (n, assistantId) })
     };
 
     { configured; provisioningStatus; assistantIds }
@@ -5607,6 +5629,115 @@ import NewsletterTypes "types/newsletter";
     // Read-back verification
     switch (integrationCreds.get("platform")) {
       case (null) { #err "Save verification failed — ElevenLabs key was not persisted." };
+      case (?_) { #ok };
+    };
+  };
+
+  /// Save the platform Twilio credentials (any authenticated caller). Stored XOR-obfuscated.
+  /// Writes into integrationCreds["platform"].twilioSid, twilioAuth, twilioNumber.
+  public shared ({ caller }) func saveTwilioCredentials(tenantId : Text, twilioSid : Text, twilioAuth : Text, twilioNumber : Text) : async { #ok; #err : Text } {
+    if (caller.isAnonymous()) {
+      return #err "Unauthorized: please log in to save credentials";
+    };
+    let tid = if (tenantId == "") "platform" else tenantId;
+    let obfSid = ICLib.obfuscate(twilioSid, credSalt);
+    let obfAuth = ICLib.obfuscate(twilioAuth, credSalt);
+    let obfNumber = ICLib.obfuscate(twilioNumber, credSalt);
+    let emptyIC : ICTypes.IntegrationCredentials = {
+      openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
+      twilioSid = ""; twilioAuth = ""; twilioNumber = ""; vapiKey = "";
+      stripeKey = ""; stripeWebhookSecret = "";
+      googleClientId = ""; googleClientSecret = "";
+      yelpApiKey = ""; facebookAppId = ""; facebookAppSecret = "";
+      emailSmtpHost = ""; emailSmtpPort = ""; emailSmtpUser = ""; emailSmtpPass = "";
+      hunterApiKey = ""; neverBounceKey = "";
+      listmonkUrl = ""; listmonkUser = ""; listmonkPass = "";
+      searxngUrl = "";
+      elevenLabsKey = ""; elevenLabsVoiceId = "";
+      perplexityApiKey = "";
+      autoBrowserUrl = "";
+      serpApiKey = "";
+      serpApiDevKey = "";
+      sendgridKey = "";
+      tinyFishKey = "";
+      n8nInstanceUrl = "";
+      n8nApiKey = [];
+      abacusApiKey = "";
+      composioApiKey = "";
+      dograhApiKey = "";
+      openRouterApiKey = "";
+      nvidiaApiKey = [];
+      nvidiaNimApiKey = "";
+      vapiWebhookSecret = "";
+      sendgridInboundParseDomain = "";
+      composioWebhookSecret = "";
+      geminiApiKey = "";
+    };
+    let existing = switch (integrationCreds.get(tid)) {
+      case (?e) { e };
+      case (null) { emptyIC };
+    };
+    let updated = {
+      existing with
+      twilioSid = obfSid;
+      twilioAuth = obfAuth;
+      twilioNumber = obfNumber;
+    };
+    let encrypted = ICLib.encryptAll(updated, credSalt);
+    integrationCreds.add(tid, encrypted);
+    switch (integrationCreds.get(tid)) {
+      case (null) { #err "Save verification failed — Twilio credentials were not persisted." };
+      case (?_) { #ok };
+    };
+  };
+
+  /// Save the platform SendGrid API key (any authenticated caller). Stored XOR-obfuscated.
+  /// Writes into integrationCreds["platform"].sendgridKey.
+  public shared ({ caller }) func saveSendGridApiKey(tenantId : Text, sendgridKey : Text) : async { #ok; #err : Text } {
+    if (caller.isAnonymous()) {
+      return #err "Unauthorized: please log in to save credentials";
+    };
+    let tid = if (tenantId == "") "platform" else tenantId;
+    let obfKey = ICLib.obfuscate(sendgridKey, credSalt);
+    let emptyIC : ICTypes.IntegrationCredentials = {
+      openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
+      twilioSid = ""; twilioAuth = ""; twilioNumber = ""; vapiKey = "";
+      stripeKey = ""; stripeWebhookSecret = "";
+      googleClientId = ""; googleClientSecret = "";
+      yelpApiKey = ""; facebookAppId = ""; facebookAppSecret = "";
+      emailSmtpHost = ""; emailSmtpPort = ""; emailSmtpUser = ""; emailSmtpPass = "";
+      hunterApiKey = ""; neverBounceKey = "";
+      listmonkUrl = ""; listmonkUser = ""; listmonkPass = "";
+      searxngUrl = "";
+      elevenLabsKey = ""; elevenLabsVoiceId = "";
+      perplexityApiKey = "";
+      autoBrowserUrl = "";
+      serpApiKey = "";
+      serpApiDevKey = "";
+      sendgridKey = "";
+      tinyFishKey = "";
+      n8nInstanceUrl = "";
+      n8nApiKey = [];
+      abacusApiKey = "";
+      composioApiKey = "";
+      dograhApiKey = "";
+      openRouterApiKey = "";
+      nvidiaApiKey = [];
+      nvidiaNimApiKey = "";
+      vapiWebhookSecret = "";
+      sendgridInboundParseDomain = "";
+      composioWebhookSecret = "";
+      geminiApiKey = "";
+    };
+    let existing = switch (integrationCreds.get(tid)) {
+      case (?e) { e };
+      case (null) { emptyIC };
+    };
+    let updated = { existing with sendgridKey = obfKey };
+    let encrypted = ICLib.encryptAll(updated, credSalt);
+    integrationCreds.add(tid, encrypted);
+    switch (integrationCreds.get(tid)) {
+      case (null) { #err "Save verification failed — SendGrid key was not persisted." };
       case (?_) { #ok };
     };
   };
@@ -5714,15 +5845,20 @@ import NewsletterTypes "types/newsletter";
   /// No special characters — clean text safe for ElevenLabs synthesis.
   public query func getDemoCallScript(niche : Text, businessName : Text) : async Text {
     let (agentName, opener) : (Text, Text) = switch (niche) {
-      case ("plumbing" or "plumber")          ("Sarah",   "our plumbing team");
+      case ("plumbing")                       ("Sarah",   "our plumbing team");
+      case ("plumber")                        ("Sarah",   "our plumbing team");
       case ("roofing")                        ("Ashley",  "our roofing team");
       case ("hvac")                           ("Jessica", "our HVAC team");
-      case ("med-spa" or "medspa")            ("Sophia",  "our med spa team");
-      case ("carpet-cleaning" or "carpetcleaning") ("Amanda", "our carpet cleaning team");
+      case ("med-spa")                        ("Sophia",  "our med spa team");
+      case ("medspa")                         ("Sophia",  "our med spa team");
+      case ("carpet-cleaning")                ("Amanda",  "our carpet cleaning team");
+      case ("carpetcleaning")                 ("Amanda",  "our carpet cleaning team");
       case ("restoration")                    ("Lauren",  "our restoration team");
-      case ("real-estate" or "realestate")    ("Emily",   "our real estate team");
+      case ("real-estate")                    ("Emily",   "our real estate team");
+      case ("realestate")                     ("Emily",   "our real estate team");
       case ("mortgage")                       ("Rachel",  "our mortgage team");
-      case ("chiropractor" or "chiro")        ("Michael", "our chiropractic team");
+      case ("chiropractor")                   ("Michael", "our chiropractic team");
+      case ("chiro")                          ("Michael", "our chiropractic team");
       case ("dental")                         ("Alice",   "our dental team");
       case (_)                                ("Alex",    "our team");
     };

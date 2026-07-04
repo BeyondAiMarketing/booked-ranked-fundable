@@ -16,6 +16,11 @@ import { useDemoFlow } from "../../hooks/useDemoFlow";
 
 type Phase = "loading" | "success" | "expired";
 
+interface ActivationError {
+  message: string;
+  retryable: boolean;
+}
+
 interface StepDef {
   key: string;
   label: (businessName: string, city: string) => string;
@@ -62,7 +67,7 @@ export default function DemoStep8Trial() {
   const navigate = useNavigate();
   const { sessionData } = useDemoFlow();
   const { loginDemo } = useApp();
-  const { actor } = useActor();
+  const { actor, isFetching, isAnonymous } = useActor();
 
   const session = resolveSession(sessionData as any);
 
@@ -74,6 +79,9 @@ export default function DemoStep8Trial() {
 
   const [phase, setPhase] = useState<Phase>(session ? "loading" : "expired");
   const [completedSteps, setCompletedSteps] = useState(0);
+  const [activationError, setActivationError] =
+    useState<ActivationError | null>(null);
+  const [isActivating, setIsActivating] = useState(false);
 
   // Stable refs so the interval callback always sees latest values without
   // triggering effect re-runs.
@@ -293,26 +301,86 @@ export default function DemoStep8Trial() {
           ))}
         </div>
 
+        {/* Activation error / status surface */}
+        {activationError && (
+          <div
+            data-ocid="demo.activation.error_state"
+            className="mb-4 rounded-xl border border-red-500/40 bg-red-500/10 p-4 text-center"
+            role="alert"
+          >
+            <p className="text-sm font-medium text-red-300">
+              {activationError.message}
+            </p>
+          </div>
+        )}
+
         {/* Primary CTA */}
         <button
           type="button"
+          disabled={isActivating}
           onClick={async () => {
-            try {
-              if (actor && session?.sessionId) {
-                await actor.activateTrial(
-                  session.sessionId,
-                  session?.firstName || "",
-                  session?.businessName || "",
-                  session?.city || "",
-                  session?.niche || "Roofing",
-                  session?.phone || "",
-                  session?.email || "",
-                  session?.website || "",
-                );
+            setActivationError(null);
+            setIsActivating(true);
+
+            // Guard 1: actor not ready (still connecting to the canister).
+            if (!actor) {
+              setIsActivating(false);
+              if (isAnonymous) {
+                setActivationError({
+                  message:
+                    "Please sign in to activate your trial, then try again.",
+                  retryable: true,
+                });
+              } else if (isFetching) {
+                setActivationError({
+                  message: "Connecting to server... please wait and try again.",
+                  retryable: true,
+                });
+              } else {
+                setActivationError({
+                  message:
+                    "We couldn't reach the server. Please refresh the page and try again.",
+                  retryable: true,
+                });
               }
+              return;
+            }
+
+            // Guard 2: no session id — the initial demo session was never
+            // created (e.g. canister was stopped during intake).
+            if (!session?.sessionId) {
+              setIsActivating(false);
+              setActivationError({
+                message:
+                  "Your session expired. Please restart the demo to activate your trial.",
+                retryable: false,
+              });
+              return;
+            }
+
+            try {
+              await actor.activateTrial(
+                session.sessionId,
+                session?.firstName || "",
+                session?.businessName || "",
+                session?.city || "",
+                session?.niche || "Roofing",
+                session?.phone || "",
+                session?.email || "",
+                session?.website || "",
+              );
             } catch (error) {
               console.error("Trial activation error:", error);
+              setIsActivating(false);
+              setActivationError({
+                message:
+                  "Trial activation failed. Please try again or contact support.",
+                retryable: true,
+              });
+              return;
             }
+
+            // Success — persist trial session and navigate to dashboard.
             const trialSession = {
               isDemoTrial: true,
               firstName: session?.firstName || "",
@@ -329,12 +397,14 @@ export default function DemoStep8Trial() {
               "brfTrialSession",
               JSON.stringify(trialSession),
             );
+            setIsActivating(false);
             navigate({ to: "/dashboard" });
           }}
-          className="w-full py-4 px-8 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white text-lg font-bold rounded-2xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01]"
+          className="w-full py-4 px-8 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:scale-100 text-white text-lg font-bold rounded-2xl transition-all duration-200 shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 hover:scale-[1.01] flex items-center justify-center gap-2"
           data-ocid="demo.enter_back_office.button"
         >
-          Enter My Back Office →
+          {isActivating && <Loader2 className="w-5 h-5 animate-spin" />}
+          {isActivating ? "Activating your trial..." : "Enter My Back Office →"}
         </button>
 
         <p className="text-center text-gray-500 text-xs mt-4">

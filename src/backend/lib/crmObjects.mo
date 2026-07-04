@@ -16,13 +16,13 @@ module {
   };
 
   public func emptyState() : State = {
-    contacts         = Map.empty<Text, T.Contact>();
-    companies        = Map.empty<Text, T.Company>();
-    opportunities    = Map.empty<Text, T.Opportunity>();
-    tasks            = Map.empty<Text, T.Task>();
-    notes            = Map.empty<Text, T.Note>();
-    customFields     = Map.empty<Text, T.CustomField>();
-    customFieldValues= Map.empty<Text, T.CustomFieldValue>();
+    contacts         = Map.empty();
+    companies        = Map.empty();
+    opportunities    = Map.empty();
+    tasks            = Map.empty();
+    notes            = Map.empty();
+    customFields     = Map.empty();
+    customFieldValues= Map.empty();
   };
 
   // ── Contact CRUD ──────────────────────────────────────────────────────────

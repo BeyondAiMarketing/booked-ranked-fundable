@@ -364,6 +364,43 @@ const ICON_COLORS: Record<string, string> = {
   dental: "bg-blue-500/20 ring-1 ring-blue-500/40",
 };
 
+const GENERIC_CARDS: IncludedCard[] = [
+  {
+    icon: "📱",
+    title: "Your Business App",
+    desc: "Booking, CRM, and customer management — all in one place.",
+  },
+  {
+    icon: "🎙️",
+    title: "AI Phone Agent",
+    desc: "Answers every call with your business name — never miss a lead.",
+  },
+  {
+    icon: "📊",
+    title: "Free Business Audit",
+    desc: "See what's costing you customers and how to fix it.",
+  },
+  {
+    icon: "📅",
+    title: "30 Days of Social Posts",
+    desc: "Pre-written posts for Facebook, Google, and Instagram.",
+  },
+  {
+    icon: "🏆",
+    title: "Business Scorecard",
+    desc: "Know your ranking, reputation score, and what to improve first.",
+  },
+  {
+    icon: "🌐",
+    title: "Your Website, Ready to Go",
+    desc: "Use yours or claim the site we already built for you.",
+  },
+];
+
+const GENERIC_ACCENT =
+  "from-indigo-600/20 to-purple-500/10 border-indigo-500/30 shadow-indigo-900/20";
+const GENERIC_ICON = "bg-indigo-500/20 ring-1 ring-indigo-500/40";
+
 interface NicheWhatsIncludedSectionProps {
   nicheKey: string;
   nicheName: string;
@@ -373,9 +410,9 @@ export default function NicheWhatsIncludedSection({
   nicheKey,
   nicheName,
 }: NicheWhatsIncludedSectionProps) {
-  const cards = CARDS[nicheKey] ?? CARDS.plumbing;
-  const accentClass = ACCENT_COLORS[nicheKey] ?? ACCENT_COLORS.plumbing;
-  const iconClass = ICON_COLORS[nicheKey] ?? ICON_COLORS.plumbing;
+  const cards = CARDS[nicheKey] ?? GENERIC_CARDS;
+  const accentClass = ACCENT_COLORS[nicheKey] ?? GENERIC_ACCENT;
+  const iconClass = ICON_COLORS[nicheKey] ?? GENERIC_ICON;
 
   return (
     <section className="py-20 px-6 bg-slate-900/50">

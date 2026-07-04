@@ -11,8 +11,8 @@ module {
   };
 
   public func emptyState() : State = {
-    logs      = Map.empty<Text, T.WorkflowLogEntry>();
-    snapshots = Map.empty<Text, T.WorkflowStatusSnapshot>();
+    logs      = Map.empty();
+    snapshots = Map.empty();
   };
 
   /// Log a single workflow step.

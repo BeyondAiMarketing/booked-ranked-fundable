@@ -12,10 +12,10 @@ module {
   };
 
   public func emptyState() : State = {
-    config      = Map.empty<Text, T.DograhConfig>();
-    agentsCache = Map.empty<Text, T.DograhAgent>();
-    roofingTpl  = Map.empty<Text, T.RoofingTemplate>();
-    syncMeta    = Map.empty<Text, Int>();
+    config      = Map.empty();
+    agentsCache = Map.empty();
+    roofingTpl  = Map.empty();
+    syncMeta    = Map.empty();
   };
 
   public func getConfig(state : State) : ?T.DograhConfig {

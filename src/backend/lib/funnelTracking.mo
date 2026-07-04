@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    funnelEvents = Map.empty<Text, List.List<T.FunnelEvent>>();
+    funnelEvents = Map.empty();
   };
 
   /// Append a funnel step event for a lead.

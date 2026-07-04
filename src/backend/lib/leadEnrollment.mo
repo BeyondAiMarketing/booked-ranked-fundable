@@ -14,7 +14,7 @@ module {
   };
 
   public func emptyState() : State = {
-    enrolledLeads = Map.empty<Text, Map.Map<Text, Bool>>();
+    enrolledLeads = Map.empty();
   };
 
   /// Enroll all roofing leads from extendedLeads into the given drip queue,

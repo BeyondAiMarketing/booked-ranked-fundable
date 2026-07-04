@@ -11,7 +11,7 @@ module {
   };
 
   public func emptyState() : State = {
-    pages = Map.empty<Text, T.ServiceAreaPage>();
+    pages = Map.empty();
   };
 
   // ---- CRUD ----

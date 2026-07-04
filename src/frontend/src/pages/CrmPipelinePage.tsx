@@ -1,3 +1,4 @@
+import type { Lead } from "@/backend";
 import { Link } from "@tanstack/react-router";
 import {
   AlertCircle,
@@ -24,7 +25,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import FunnelTimeline from "../components/FunnelTimeline";
 import { Badge } from "../components/ui/badge";
@@ -33,8 +34,8 @@ import { Input } from "../components/ui/input";
 import { ScrollArea } from "../components/ui/scroll-area";
 import { Textarea } from "../components/ui/textarea";
 import { useApp } from "../context/AppContext";
-import { LEADS, type Lead } from "../data/demoData";
 import { useActor } from "../hooks/useActor";
+import { useLeads } from "../hooks/useLeads";
 
 // ─── Pipeline Stage Config ────────────────────────────────────────────────────
 
@@ -91,7 +92,6 @@ interface PipelineLead extends Lead {
   emailOpens: number;
   demoClicks: number;
   phone: string;
-  niche?: string;
   lastActivity?: string;
 }
 
@@ -166,12 +166,24 @@ function mapLeadToStage(status: string): PipelineStageId {
 
 function seedPipelineLeads(rawLeads: Lead[]): PipelineLead[] {
   return rawLeads.map((l, i) => ({
-    ...l,
+    id: l.id,
+    tenantId: l.tenantId,
+    name: l.name,
+    phone: l.phone ?? "",
+    email: l.email ?? "",
+    source: l.source ?? "",
+    status: l.status,
+    createdAt:
+      typeof l.createdAt === "bigint"
+        ? l.createdAt
+        : BigInt(l.createdAt ?? Date.now()),
     pipelineStage: mapLeadToStage(l.status),
     score: 45 + ((i * 17 + 23) % 55),
     emailOpens: (i * 3) % 6,
     demoClicks: (i * 2) % 4,
-    niche: NICHES[i % NICHES.length],
+    niche: l.niche ?? NICHES[i % NICHES.length],
+    notes: l.notes ?? "",
+    agentSubscriptions: l.agentSubscriptions ?? [],
     lastActivity: [
       "Opened email 3h ago",
       "Clicked demo link 1d ago",
@@ -370,12 +382,15 @@ export default function CrmPipelinePage() {
     markThreadRead,
   } = useApp();
   const { actor } = useActor();
-  const rawLeads: Lead[] =
-    LEADS[currentTenantId] ?? LEADS["tenant-oceanside"] ?? [];
+  const { data: backendLeads } = useLeads(currentTenantId);
 
-  const [pipelineLeads, setPipelineLeads] = useState<PipelineLead[]>(() =>
-    seedPipelineLeads(rawLeads),
-  );
+  const [pipelineLeads, setPipelineLeads] = useState<PipelineLead[]>([]);
+
+  useEffect(() => {
+    if (backendLeads) {
+      setPipelineLeads(seedPipelineLeads(backendLeads));
+    }
+  }, [backendLeads]);
   const [activeTab, setActiveTab] = useState<Tab>("pipeline");
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [dragOverStage, setDragOverStage] = useState<PipelineStageId | null>(

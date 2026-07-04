@@ -9,7 +9,7 @@ module {
   };
 
   public func emptyState() : State = {
-    briefs = Map.empty<Text, T.AccountBrief>();
+    briefs = Map.empty();
   };
 
   /// Persist or replace the brief for an account.

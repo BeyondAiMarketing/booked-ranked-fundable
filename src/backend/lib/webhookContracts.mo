@@ -12,8 +12,8 @@ module {
   };
 
   public func emptyState() : State = {
-    contracts  = Map.empty<Text, T.WebhookContract>();
-    executions = Map.empty<Text, T.WebhookExecution>();
+    contracts  = Map.empty();
+    executions = Map.empty();
   };
 
   // ---------------------------------------------------------------------------

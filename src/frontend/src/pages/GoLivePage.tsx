@@ -2197,6 +2197,7 @@ interface ServiceCreds {
   twilioSid: string;
   twilioAuth: string;
   twilioNumber: string;
+  sendgridKey: string;
   vapiKey: string;
   vapiAssistantId: string;
   // ElevenLabs
@@ -2240,6 +2241,7 @@ type ServiceId =
   | "litellm"
   | "ollama"
   | "twilio"
+  | "sendgrid"
   | "vapi"
   | "elevenlabs"
   | "stripe"
@@ -2429,6 +2431,7 @@ const DEFAULT_CREDS: ServiceCreds = {
   googleClientId: "",
   googleClientSecret: "",
   yelpApiKey: "",
+  sendgridKey: "",
   facebookAppId: "",
   facebookAppSecret: "",
   emailSmtpHost: "",
@@ -6569,7 +6572,7 @@ export default function GoLivePage() {
   // Vapi backend state
   const [vapiProvisionStatus, setVapiProvisionStatus] =
     useState<VapiProvisionStatus>("not_configured");
-  const [vapiSaving, setVapiSaving] = useState(false);
+  const [vapiSaving, _setVapiSaving] = useState(false);
   const [isProvisioningAll, setIsProvisioningAll] = useState(false);
   const [provisionProgress, setProvisionProgress] = useState<string[]>([]);
   const [isSyncingLogs, setIsSyncingLogs] = useState(false);
@@ -6632,6 +6635,27 @@ export default function GoLivePage() {
               { duration: 8000 },
             );
           }
+        }
+        return;
+      }
+
+      // ── AUTH GUARD ──────────────────────────────────────────────────────
+      // Block the save when the user is not authenticated via Internet Identity.
+      // The backend rejects anonymous principals with
+      // "Unauthorized: anonymous principals cannot save credentials" (and a stopped
+      // canister surfaces as IC0508). Rather than sending an anonymous call that
+      // the backend will reject, surface a clear message and bail out before any
+      // actor method is invoked. The actor may be non-null here because the
+      // Caffeine runtime can construct an actor with a fallback anonymous
+      // identity when the II session is not active — so checking `!actor` alone
+      // is NOT sufficient.
+      if (isAnonymous || authStalled) {
+        const msg = authStalled
+          ? "Authentication timed out — please log in again with Internet Identity to save credentials."
+          : "Please sign in with Internet Identity to save credentials.";
+        setGlobalSaveError(msg);
+        if (!options?.silent) {
+          toast.error(msg, { duration: 8000 });
         }
         return;
       }
@@ -6798,7 +6822,7 @@ export default function GoLivePage() {
         serpApiKey: get("serpApiKey"),
         serpApiDevKey: get("serpApiDevKey"),
         tinyFishKey: get("tinyFishKey"),
-        sendgridKey: "",
+        sendgridKey: get("sendgridKey"),
         n8nInstanceUrl: "",
         n8nApiKey: new Uint8Array(),
         nvidiaApiKey: new Uint8Array(),
@@ -6908,56 +6932,15 @@ export default function GoLivePage() {
         }
       }
     },
-    [creds, actor, actorFetching, refreshCreds, addPersistedChange],
-  );
-
-  // Save Vapi credentials to backend only — no localStorage
-  const handleVapiSave = useCallback(
-    async (vapiKey: string, vapiAssistantId: string) => {
-      setVapiSaving(true);
-      setVapiProvisionStatus("provisioning");
-      try {
-        if (actor) {
-          const result = await actor.saveVapiCredentials(
-            TENANT_ID,
-            vapiKey,
-            vapiAssistantId,
-          );
-          const r = result as { ok: boolean; error?: string };
-          if (r.ok) {
-            setVapiProvisionStatus(vapiKey ? "active" : "not_configured");
-            // Merge into full creds silently — the outer ServiceCard handleSave will NOT show a second toast
-            await updateCreds({ vapiKey, vapiAssistantId }, { silent: true });
-            refreshCreds();
-            toast.success(
-              "Vapi credentials saved — synced across all your devices",
-              {
-                duration: 4000,
-              },
-            );
-          } else {
-            setVapiProvisionStatus("error");
-            toast.error(r.error ?? "Failed to save Vapi credentials", {
-              duration: 8000,
-            });
-          }
-        } else {
-          setVapiProvisionStatus("error");
-          toast.error(
-            "Backend not connected — Vapi credentials could not be saved",
-          );
-        }
-      } catch (err) {
-        setVapiProvisionStatus("error");
-        const msg = err instanceof Error ? err.message : String(err);
-        toast.error(`Failed to save Vapi credentials: ${msg}`, {
-          duration: 8000,
-        });
-      } finally {
-        setVapiSaving(false);
-      }
-    },
-    [actor, updateCreds, refreshCreds],
+    [
+      creds,
+      actor,
+      actorFetching,
+      isAnonymous,
+      authStalled,
+      refreshCreds,
+      addPersistedChange,
+    ],
   );
 
   // Provision all niches
@@ -7621,7 +7604,6 @@ export default function GoLivePage() {
                     svc={svc}
                     creds={creds}
                     onChange={updateCreds}
-                    onVapiSave={svc.id === "vapi" ? handleVapiSave : undefined}
                     vapiProvisionStatus={
                       svc.id === "vapi" ? vapiProvisionStatus : undefined
                     }

@@ -20,7 +20,7 @@ module {
   func trimLast<T>(arr : [T], max : Nat) : [T] {
     let n = arr.size();
     if (n <= max) return arr;
-    Array.tabulate<T>(max, func(i) { arr[n - max + i] })
+    Array.tabulate(max, func(i) { arr[n - max + i] })
   };
 
   /// Update the failedCounts association list for a provider, incrementing by 1.

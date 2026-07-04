@@ -98,7 +98,7 @@ mixin (
           end += 1;
         };
         let len : Nat = end - afterMarker;
-        Text.fromIter(Array.tabulate<Char>(len, func(k) { rawChars[afterMarker + k] }).vals());
+        Text.fromIter(Array.tabulate(len, func(k) { rawChars[afterMarker + k] }).vals());
       };
     };
   };
@@ -121,7 +121,7 @@ mixin (
 
   /// Convert (Text, Text) pairs to Outcall.Header array.
   private func toHeaders(pairs : [(Text, Text)]) : [Outcall.Header] {
-    Array.tabulate<Outcall.Header>(
+    Array.tabulate(
       pairs.size(),
       func(i) { { name = pairs[i].0; value = pairs[i].1 } },
     );

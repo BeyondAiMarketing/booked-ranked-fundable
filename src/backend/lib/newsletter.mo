@@ -187,7 +187,8 @@ module {
     error  : ?Text,
   ) : T.NewsletterSendLog {
     let sentAt : ?Int = switch (status) {
-      case (#sent or #delivered) { ?Time.now() };
+      case (#sent)      { ?Time.now() };
+      case (#delivered) { ?Time.now() };
       case (_)                   { entry.sentAt };
     };
     let openedAt : ?Int = switch (status) {

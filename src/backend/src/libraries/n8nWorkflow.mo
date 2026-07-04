@@ -31,9 +31,9 @@ module {
   };
 
   public func emptyState() : State = {
-    workflowDefs   = Map.empty<Text, WorkflowDef>();
-    executions     = List.empty<WorkflowExecution>();
-    pendingBatches = Map.empty<Text, WorkflowBatch>();
+    workflowDefs   = Map.empty();
+    executions     = List.empty();
+    pendingBatches = Map.empty();
     config         = { var n8nConfig = null };
     batchCounter   = { var value = 0 };
   };
@@ -225,7 +225,7 @@ module {
     switch (tenantId) {
       case (null) { all };
       case (?tid) {
-        all.filter<WorkflowExecution>(func(e) { e.tenantId == tid });
+        all.filter(func(e) { e.tenantId == tid });
       };
     };
   };

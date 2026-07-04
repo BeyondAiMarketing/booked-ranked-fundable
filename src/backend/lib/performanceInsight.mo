@@ -11,8 +11,8 @@ module {
   };
 
   public func emptyState() : State = {
-    insights = Map.empty<Text, T.PerformanceInsight>();
-    memory   = Map.empty<Text, T.BestPerformerMemory>();
+    insights = Map.empty();
+    memory   = Map.empty();
   };
 
   // ---- INSIGHTS ----

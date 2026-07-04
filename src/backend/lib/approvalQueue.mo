@@ -11,8 +11,8 @@ module {
   };
 
   public func emptyState() : State = {
-    items   = Map.empty<Text, T.ApprovalItem>();
-    records = List.empty<T.ApprovalItemRecord>();
+    items   = Map.empty();
+    records = List.empty();
   };
 
   /// Create a new approval item.

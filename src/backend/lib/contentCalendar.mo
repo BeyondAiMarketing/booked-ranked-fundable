@@ -11,8 +11,8 @@ module {
   };
 
   public func emptyState() : State = {
-    calendars = Map.empty<Text, T.ContentCalendar>();
-    entries   = Map.empty<Text, T.ContentCalendarEntry>();
+    calendars = Map.empty();
+    entries   = Map.empty();
   };
 
   // ---- CALENDAR ----

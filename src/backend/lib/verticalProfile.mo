@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    profiles = Map.empty<Text, T.VerticalProfileExt>();
+    profiles = Map.empty();
   };
 
   /// Persist or replace a vertical profile.
@@ -89,7 +89,7 @@ module {
   /// List all vertical profiles.
   public func listAll(state : State) : [T.VerticalProfileExt] {
     let arr = state.profiles.toArray();
-    Array.tabulate<T.VerticalProfileExt>(arr.size(), func (n : Nat) : T.VerticalProfileExt { arr[n].1 });
+    Array.tabulate(arr.size(), func (n : Nat) : T.VerticalProfileExt { arr[n].1 });
   };
 
   /// List vertical profiles filtered by category.
@@ -101,7 +101,7 @@ module {
     };
     var i : Nat = 0;
     var j : Nat = 0;
-    Array.tabulate<T.VerticalProfileExt>(count, func (n : Nat) : T.VerticalProfileExt {
+    Array.tabulate(count, func (n : Nat) : T.VerticalProfileExt {
       while (i < arr.size()) {
         let (_, p) = arr[i];
         i += 1;

@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "connector-googlemail": {
+      "source": "caffeinelabs/skills",
+      "sourceType": "github",
+      "computedHash": "875f9c192dacae900b6a97d094240c0501b1127104e5cf52a1df2c375c82fbcf"
+    },
     "extension-authorization": {
       "source": "caffeinelabs/skills",
       "sourceType": "github",
@@ -49,7 +54,7 @@
     "extension-http-outcalls": {
       "source": "caffeinelabs/skills",
       "sourceType": "github",
-      "computedHash": "80ae8890f42ed7833069ce16083dd81b68d738d94921cca78ddbf21e5cbae960"
+      "computedHash": "91d1bfb53b1c2c82dbce61ca641ed96bb272027287aa532c56b2ae736db4fbf7"
     },
     "extension-invite-links": {
       "source": "caffeinelabs/skills",
@@ -59,7 +64,7 @@
     "extension-object-storage": {
       "source": "caffeinelabs/skills",
       "sourceType": "github",
-      "computedHash": "b6bd04883e13f4a88c9b2a031e316673f71ce56826558782ffd2607d0c6c1e70"
+      "computedHash": "ee60f2a44d504428ebc1224f0ac48870406d0ddb408aed66d47a23a20505cb71"
     },
     "extension-openai": {
       "source": "caffeinelabs/skills",
@@ -69,7 +74,7 @@
     "extension-oql": {
       "source": "caffeinelabs/skills",
       "sourceType": "github",
-      "computedHash": "bd14078e85ad2a9cc8b63dc409bc0cf07632e210cba94c9726cd7815aa67dd8b"
+      "computedHash": "74d0b164eb5fec9efa3a464d739ff0e66c32edca2028e2adf1f985afa80ed9e3"
     },
     "extension-posting-to-x": {
       "source": "caffeinelabs/skills",
@@ -81,10 +86,15 @@
       "sourceType": "github",
       "computedHash": "e8db4672e4e3ca1ba21dd8e194dd17c67e4b9d1ce08a227c3de0ad7d303046bd"
     },
+    "extension-querying-oql": {
+      "source": "caffeinelabs/skills",
+      "sourceType": "github",
+      "computedHash": "42b124e5d0fd199025b981f9e210d82e1ebadda0e5438ab0ac94f008c81b61d1"
+    },
     "extension-stripe": {
       "source": "caffeinelabs/skills",
       "sourceType": "github",
-      "computedHash": "afdb77cea0d3a661d30f4dc8a67772022edc24e5d0aee2e1beedf6607de1f7c5"
+      "computedHash": "262d714b3c064bcd1920a058d1979534284a829b881dac2ab1788d07f472c63a"
     },
     "extension-user-approval": {
       "source": "caffeinelabs/skills",

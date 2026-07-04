@@ -11,7 +11,7 @@ module {
   };
 
   public func emptyState() : State = {
-    toggleMap = Map.empty<Text, T.ToolkitToggle>();
+    toggleMap = Map.empty();
   };
 
   func makeKey(tierId : Text, toolkitName : Text) : Text {

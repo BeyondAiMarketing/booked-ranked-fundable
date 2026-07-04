@@ -13,7 +13,7 @@ module {
   };
 
   public func emptyState() : State = {
-    audits = Map.empty<Text, T.MarketingAudit>();
+    audits = Map.empty();
     var idCounter = 0;
   };
 
@@ -146,10 +146,19 @@ module {
     for (cs in categoryScores.vals()) {
       overall += (cs.score * cs.weight) / 100;
       switch (cs.category) {
-        case (#ConversionOptimization or #BrandTrust) {
+        case (#ConversionOptimization) {
           booked += (cs.score * cs.weight) / 100;
         };
-        case (#ContentMessaging or #SEODiscoverability or #CompetitivePositioning) {
+        case (#BrandTrust) {
+          booked += (cs.score * cs.weight) / 100;
+        };
+        case (#ContentMessaging) {
+          ranked += (cs.score * cs.weight) / 100;
+        };
+        case (#SEODiscoverability) {
+          ranked += (cs.score * cs.weight) / 100;
+        };
+        case (#CompetitivePositioning) {
           ranked += (cs.score * cs.weight) / 100;
         };
         case (#GrowthStrategy) {

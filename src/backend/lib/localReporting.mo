@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    reports = Map.empty<Text, T.LocalReport>();
+    reports = Map.empty();
   };
 
   /// Persist a local report.

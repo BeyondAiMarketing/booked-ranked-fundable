@@ -6058,6 +6058,13 @@ service : {
       err: text;
       ok: text;
     });
+  /// Save the platform SendGrid API key (any authenticated caller). Stored XOR-obfuscated.
+  /// Writes into integrationCreds["platform"].sendgridKey.
+  saveSendGridApiKey: (tenantId: text, sendgridKey: text) ->
+   (variant {
+      err: text;
+      ok;
+    });
   saveServiceAreaPage: (page: ServiceAreaPage) ->
    (variant {
       err: text;
@@ -6068,6 +6075,13 @@ service : {
       err: text;
       ok: text;
     });
+  /// Save the platform Twilio credentials (any authenticated caller). Stored XOR-obfuscated.
+  /// Writes into integrationCreds["platform"].twilioSid, twilioAuth, twilioNumber.
+  saveTwilioCredentials: (tenantId: text, twilioSid: text, twilioAuth: 
+   text, twilioNumber: text) -> (variant {
+                                   err: text;
+                                   ok;
+                                 });
   /// Save Vapi API key and assistant ID for a tenant, then auto-provision any
   /// niches that are not yet configured if vapiKey is non-empty.
   saveVapiCredentials: (tenantId: text, vapiKey: text, vapiAssistantId:

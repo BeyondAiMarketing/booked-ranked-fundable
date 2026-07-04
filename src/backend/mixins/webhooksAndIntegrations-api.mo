@@ -470,7 +470,7 @@ mixin (
     /// Helper: fire a GET test and return an IntegrationTestResult.
     func liveGetTest(provider : Text, providerLabel : Text, url : Text, headers : [(Text, Text)]) : async WebhookTypes.IntegrationTestResult {
       let start = Time.now();
-      let outcallHeaders : [Outcall.Header] = headers.map<(Text,Text), Outcall.Header>(func(h) { { name = h.0; value = h.1 } });
+      let outcallHeaders : [Outcall.Header] = headers.map(func(h) { { name = h.0; value = h.1 } });
       try {
         let response = await Outcall.httpGetRequest(url, outcallHeaders, transform);
         let rawLatency : Int = (Time.now() - start) / 1_000_000;
@@ -489,7 +489,7 @@ mixin (
     /// Helper: fire a POST test and return an IntegrationTestResult.
     func livePostTest(provider : Text, providerLabel : Text, url : Text, headers : [(Text,Text)], body : Text) : async WebhookTypes.IntegrationTestResult {
       let start = Time.now();
-      let outcallHeaders : [Outcall.Header] = headers.map<(Text,Text), Outcall.Header>(func(h) { { name = h.0; value = h.1 } });
+      let outcallHeaders : [Outcall.Header] = headers.map(func(h) { { name = h.0; value = h.1 } });
       try {
         let _response = await Outcall.httpPostRequest(url, outcallHeaders, body, transform);
         let rawLatency : Int = (Time.now() - start) / 1_000_000;
@@ -730,7 +730,7 @@ mixin (
       case ("composio") s.composioWebhookLogs;
       case (_)          [];
     };
-    rawLogs.map<{ provider : Text; eventType : Text; receivedAt : Int; payload : Text; status : { #ok; #failed }; errorMsg : ?Text }, WebhookTypes.WebhookEvent>(
+    rawLogs.map(
       func(e) { e }
     )
   };

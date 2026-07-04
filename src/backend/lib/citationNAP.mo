@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    citations = Map.empty<Text, T.Citation>();
+    citations = Map.empty();
   };
 
   public func save(state : State, citation : T.Citation) : () {

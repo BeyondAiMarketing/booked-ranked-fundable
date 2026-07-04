@@ -31,10 +31,10 @@ module {
   };
 
   public func emptyState() : State = {
-    commandLog      = List.empty<CommandLogEntry>();
-    pendingActions  = Map.empty<Text, PendingAction>();
-    quotas          = Map.empty<Text, BulkSendQuota>();
-    sessions        = Map.empty<Text, AgentSessionState>();
+    commandLog      = List.empty();
+    pendingActions  = Map.empty();
+    quotas          = Map.empty();
+    sessions        = Map.empty();
     idCounter       = { var value = 0 };
     openRouterState = OpenRouterLib.emptyState();
   };
@@ -238,7 +238,15 @@ module {
               appendNote(lid, noteText);
             };
           };
-          case (#EditSequence or #ModifyStep) {
+          case (#EditSequence) {
+            let noteText = "[Outreach Agent] Sequence edit: \"" # action.commandText #
+                           "\" | Action: " # actionKindText(action.actionKind) #
+                           " | Agent: " # userId;
+            for (lid in getLeadIds().vals()) {
+              appendNote(lid, noteText);
+            };
+          };
+          case (#ModifyStep) {
             let noteText = "[Outreach Agent] Sequence edit: \"" # action.commandText #
                            "\" | Action: " # actionKindText(action.actionKind) #
                            " | Agent: " # userId;

@@ -62,7 +62,7 @@ mixin (
   /// Fetch raw HTML body with stealth headers and 10 s timeout.
   func ws_fetchHtml(url : Text) : async Text {
     let headers = WebScraperLib.stealthHeaders(null);
-    let outcallHeaders : [Outcall.Header] = headers.map<(Text, Text), Outcall.Header>(
+    let outcallHeaders : [Outcall.Header] = headers.map(
       func((name, value)) { { name; value } }
     );
     try {

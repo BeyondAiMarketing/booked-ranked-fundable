@@ -10,7 +10,7 @@ module {
   };
 
   public func emptyState() : State = {
-    reports = Map.empty<Text, T.MonthlyReport>();
+    reports = Map.empty();
   };
 
   /// Persist a monthly report.

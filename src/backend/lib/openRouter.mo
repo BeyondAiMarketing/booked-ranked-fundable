@@ -347,7 +347,7 @@ module {
           end += 1;
         };
         let len : Nat = end - afterMarker;
-        Text.fromIter(Array.tabulate<Char>(len, func(k) { jsonChars[afterMarker + k] }).vals());
+        Text.fromIter(Array.tabulate(len, func(k) { jsonChars[afterMarker + k] }).vals());
       };
     };
   };
@@ -397,7 +397,7 @@ module {
           end += 1;
         };
         let len : Nat = end - afterMarker;
-        Text.fromIter(Array.tabulate<Char>(len, func(k) { rawChars[afterMarker + k] }).vals());
+        Text.fromIter(Array.tabulate(len, func(k) { rawChars[afterMarker + k] }).vals());
       };
     };
   };
@@ -465,7 +465,7 @@ module {
           end += 1;
         };
         let len : Nat = end - afterMarker;
-        Text.fromIter(Array.tabulate<Char>(len, func(k) { rawChars[afterMarker + k] }).vals());
+        Text.fromIter(Array.tabulate(len, func(k) { rawChars[afterMarker + k] }).vals());
       };
     };
   };

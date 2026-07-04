@@ -18,8 +18,8 @@ module {
   };
 
   public func emptyState() : State = {
-    trialAccounts = Map.empty<Text, T.TrialAccount>();
-    leadIndex     = Map.empty<Text, Text>();
+    trialAccounts = Map.empty();
+    leadIndex     = Map.empty();
     counter       = { var value = 0 };
   };
 

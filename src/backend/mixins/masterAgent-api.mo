@@ -132,7 +132,7 @@ mixin (
     let arr = masterAgentState.sessions.toArray();
     let size = arr.size();
     if (size == 0) { return [] };
-    Array.tabulate<MasterAgentTypes.MasterAgentSession>(size, func j { arr[size - 1 - j] });
+    Array.tabulate(size, func j { arr[size - 1 - j] });
   };
 
   /// Get all messages for a session.
@@ -185,7 +185,7 @@ mixin (
     };
 
     // Build OpenRouter messages from full session history (system + all prior + new user msg)
-    let orMessages : [ORTypes.OpenRouterMessage] = updatedMsgs.map<MasterAgentTypes.MasterAgentMessage, ORTypes.OpenRouterMessage>(
+    let orMessages : [ORTypes.OpenRouterMessage] = updatedMsgs.map(
       func(m) { toORMessage(m) }
     );
 
