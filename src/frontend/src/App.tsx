@@ -71,6 +71,7 @@ import HomePage from "./pages/HomePage";
 import IntegrationHealthPage from "./pages/IntegrationHealthPage";
 import LandingPageBuilderPage from "./pages/LandingPageBuilderPage";
 import LeadAttributionPage from "./pages/LeadAttributionPage";
+import LeadEnginePage from "./pages/LeadEnginePage";
 import LeadsPage from "./pages/LeadsPage";
 import ListingsPage from "./pages/ListingsPage";
 import LoginPage from "./pages/LoginPage";
@@ -111,6 +112,7 @@ import UnifiedDemoPage from "./pages/UnifiedDemoPage";
 import VoiceAgentPage from "./pages/VoiceAgentPage";
 import VoiceAgentPreviewPage from "./pages/VoiceAgentPreviewPage";
 import VoiceAgentStudioPage from "./pages/VoiceAgentStudioPage";
+import WebhookInboxPage from "./pages/WebhookInboxPage";
 import WebsiteAgentPage from "./pages/WebsiteAgentPage";
 import WebsiteAgentSettingsPage from "./pages/WebsiteAgentSettingsPage";
 import WhiteLabelHubPage from "./pages/WhiteLabelHubPage";
@@ -202,6 +204,10 @@ const LocalRankingIntelligence = lazy(
 const RoofingCampaignManager = lazy(
   () => import("./pages/RoofingCampaignManager"),
 );
+
+// ─── Roofer cold outreach campaign + public demo booking (lazy loaded) ─────────
+const RooferCampaignPage = lazy(() => import("./pages/RooferCampaignPage"));
+const DemoBookingPage = lazy(() => import("./pages/DemoBookingPage"));
 
 // ─── Social AI Team pages (lazy loaded) ───────────────────────────────────────
 const ContentOrchestratorPage = lazyRouteComponent(
@@ -925,6 +931,26 @@ const goLiveRoute = createRoute({
   ),
 });
 
+const leadEngineRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/lead-engine",
+  component: () => (
+    <ProtectedRoute>
+      <LeadEnginePage />
+    </ProtectedRoute>
+  ),
+});
+
+const webhookInboxRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/webhook-inbox",
+  component: () => (
+    <ProtectedRoute>
+      <WebhookInboxPage />
+    </ProtectedRoute>
+  ),
+});
+
 const autopilotDashboardRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/autopilot-dashboard",
@@ -1425,6 +1451,29 @@ const roofingCampaignRoute = createRoute({
     </ProtectedRoute>
   ),
 });
+
+// ─── Roofer cold outreach campaign (adminOnly) ────────────────────────────────
+// New dedicated page at /roofer-campaign, separate from the legacy
+// RoofingCampaignManager at /admin/roofing-campaign. Do NOT modify the legacy
+// route above.
+const rooferCampaignRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/roofer-campaign",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <RooferCampaignPage />
+    </ProtectedRoute>
+  ),
+});
+
+// ─── Public demo booking (no auth) ────────────────────────────────────────────
+// Reachable by anyone with the CTA link. Matched to a lead by the unique CTA
+// token embedded in a roofer campaign step's CTA link.
+const demoBookingRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/demo/$ctaToken",
+  component: DemoBookingPage,
+});
 const masterAgentRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/admin/master-agent",
@@ -1611,6 +1660,8 @@ const routeTree = rootRoute.addChildren([
   leadAttributionRoute,
   autopilotDashboardRoute,
   goLiveRoute,
+  leadEngineRoute,
+  webhookInboxRoute,
   brandKitRoute,
   setupRoute,
   brandKitSlugRoute,
@@ -1671,6 +1722,8 @@ const routeTree = rootRoute.addChildren([
   contentCreationStudioRoute,
   localRankingIntelligenceRoute,
   roofingCampaignRoute,
+  rooferCampaignRoute,
+  demoBookingRoute,
   contentOrchestratorRoute,
   brandOnboardingRoute,
   socialContentCalendarRoute,

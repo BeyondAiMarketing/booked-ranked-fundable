@@ -1,10 +1,14 @@
 import Map        "mo:core/Map";
 import List       "mo:core/List";
+import Text       "mo:core/Text";
 import AIEmailGen "../lib/aiEmailGen";
 import AbacusLib  "../lib/abacus";
 import CsvT       "../types/csvImport";
 import DripT      "../types/dripCampaigns";
 import OpenRouterLib "../lib/openRouter";
+import ORT           "../types/openRouter";
+import LLMFT         "../types/llm-fallback";
+import LLMFallbackLib "../lib/llm-fallback";
 import ICTypes "../types/integrationCredentials";
 import ICLib "../lib/integrationCredentials";
 
@@ -17,7 +21,57 @@ mixin (
   transform        : OpenRouterLib.Transform,
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
+  llmFallbackState : LLMFallbackLib.State,
 ) {
+
+  /// Default capability for email-generation LLM calls: any model family,
+  /// 1024 max tokens, temperature 0.7.
+  let eg_capability : LLMFT.TaskCapability = {
+    maxTokens   = 1024;
+    temperature = 0.7;
+    modelFamily = null;
+  };
+
+  /// Route an LLM call through the unified fallback chain for email
+  /// generation. Calls LLMFallbackLib.route directly (the same lib function
+  /// the LLMFallbackMixin wraps) to avoid the cross-mixin method-call issue
+  /// where sibling mixins cannot invoke routeLLMCall as an unbound variable.
+  /// The legacy fallback closure delegates to OpenRouterLib.callWithFallback
+  /// for backward compatibility as the Generic tier.
+  private func routeEmailLLM(
+    task     : ORT.TaskType,
+    messages : [ORT.OpenRouterMessage],
+  ) : async Text {
+    let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
+      case (null) ICLib.emptyCredentials();
+      case (?enc) ICLib.decryptAll(enc, credSalt);
+    };
+    let keys = LLMFallbackLib.resolveKeys(creds);
+    let flags : LLMFallbackLib.FeatureFlags = {
+      leadEngineEnabled = true;
+      twilioEnabled      = true;
+      sendgridEnabled    = true;
+    };
+    await LLMFallbackLib.route(
+      llmFallbackState,
+      task,
+      messages,
+      keys,
+      flags,
+      eg_capability,
+      transform,
+      func(_t : ORT.TaskType, msgs : [ORT.OpenRouterMessage]) : async Text {
+        await OpenRouterLib.callWithFallback(
+          openRouterState,
+          task,
+          msgs,
+          transform,
+          keys.openaiKey,
+          keys.geminiKey,
+        )
+      },
+    )
+  };
 
   /// Generate an AI-tailored email body for a lead using a template from a campaign.
   /// emailIndex is the 0-based index of the campaign's email template step.
@@ -42,15 +96,7 @@ mixin (
           niche        = lead.niche;
           ownerName    = null;
         };
-        let geminiKey = switch (integrationCreds.get("platform")) {
-          case (null) "";
-          case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
-        };
-        let openaiKey = switch (integrationCreds.get("platform")) {
-          case (null) "";
-          case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
-        };
-        let result = await AIEmailGen.generateTailoredEmail(abacusState, openRouterState, templateBody, ctx, transform, openaiKey, geminiKey);
+        let result = await AIEmailGen.generateTailoredEmail(abacusState, routeEmailLLM, templateBody, ctx);
         #ok result;
       };
     };

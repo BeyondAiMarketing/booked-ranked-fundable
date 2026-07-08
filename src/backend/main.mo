@@ -1,5 +1,7 @@
 import Map "mo:core/Map";
 
+import Array "mo:core/Array";
+
 import List "mo:core/List";
 import Queue "mo:core/Queue";
 import Set "mo:core/Set";
@@ -98,13 +100,26 @@ import CSTypes "types/contentStudio";
 import LeadAITypes "lead-ai-types";
 import ContentStudioMixin "mixins/contentStudio-api";
 import LeadAIMixin "mixins/leadAI-api";
+import LLMFallbackLib   "lib/llm-fallback";
+import LLMFallbackMixin "mixins/llm-fallback-api";
+import LeadEngineTypes "types/lead-engine";
+import LeadEngineMixin "mixins/leadEngine-api";
+import LeadEngineOql "lib/leadEngineOql";
+import LLMFallbackOql "lib/llmFallbackOql";
+import OQL "mo:caffeineai-oql";
+import Expose "mo:caffeineai-oql/Expose";
+import LiveSendMixin "mixins/liveSend-api";
 import WebhookState "types/webhookState";
 import WebhooksAndIntegrationsMixin "mixins/webhooksAndIntegrations-api";
+import WebhookInboxTypes "types/webhookInbox";
+import WebhookInboxMixin "mixins/webhookInbox-api";
 
 import RoofingCampaignTypes "types/roofingCampaign";
 import RoofingCampaignLib   "lib/roofingCampaign";
 import RoofingCampaignMixin "mixins/roofingCampaign-api";
 import EmailTemplateTypes   "types/emailTemplate";
+import RooferColdCampaignTypes "types/rooferColdCampaign";
+import RooferColdCampaignMixin "mixins/rooferColdCampaign-api";
 import VerticalProfile "types/verticalProfile";
 import WorkflowLog "types/workflowLog";
 import ContentCalendar "types/contentCalendar";
@@ -187,6 +202,8 @@ import NewsletterTypes "types/newsletter";
 
 
 
+
+ 
  
  actor {
   type TenantId = Text;
@@ -1564,6 +1581,15 @@ import NewsletterTypes "types/newsletter";
     transform,
   );
 
+  // ---- LLM Fallback Router state ----
+  // In-memory health + route log for the unified LLM fallback chain.
+  // Health resets on redeploy (transient); route log is in-memory only.
+  let llmFallbackState = LLMFallbackLib.emptyState();
+  // Include the LLM fallback mixin BEFORE the 3 LLM-using skill mixins
+  // (AutopilotReplyIntel, AIEmailGen, LeadAI) so routeLLMCall is in scope
+  // for all of them. This becomes the single LLM entry point.
+  include LLMFallbackMixin(llmFallbackState, integrationCreds, credSalt, transform);
+
   // Email Reply Intelligence state
   let emailReplyRecords = List.empty<AutopilotEngineTypes.EmailReplyRecord>();
 
@@ -1575,6 +1601,7 @@ import NewsletterTypes "types/newsletter";
     replyInboxItems,
     leads,
     transform,
+    llmFallbackState,
   );
 
   // 3D Scanner — feature flags, audit log, and model/photo storage
@@ -1745,7 +1772,7 @@ import NewsletterTypes "types/newsletter";
   include LeadEnrollMixin(leadEnrollState, extendedLeads, dripQueues, funnelTrackingState);
 
   // ---- AI Email Generation ----
-  include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt);
+  include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt, llmFallbackState);
   // ---- Master Agent state ----
   let masterAgentState : MasterAgentTypes.MasterAgentState = {
     sessions        = List.empty();
@@ -1769,13 +1796,36 @@ import NewsletterTypes "types/newsletter";
 
   // ---- Lead AI state ----
   let leadAIState : LeadAITypes.LeadAIState = LeadAITypes.emptyLeadAIState();
-  include LeadAIMixin(accessControlState, leadAIState, openRouterState, transform, integrationCreds, credSalt);
+  include LeadAIMixin(accessControlState, leadAIState, openRouterState, transform, integrationCreds, credSalt, llmFallbackState);
+  // ---- Lead Engine state (additive — gated by LEAD_ENGINE_ENABLED feature flag) ----
+  let leadEngineState : LeadEngineTypes.LeadEngineState = LeadEngineTypes.emptyLeadEngineState();
+  include LeadEngineMixin(accessControlState, leadEngineState, featureToggles, transform, integrationCreds, credSalt, llmFallbackState, openRouterState);
+  // ---- Lead Engine OQL (additive — exposes leadEngineLead & leadEngineBatch
+  // entities to the Data Intelligence agent; controller-only, no new public
+  // API surface beyond the OQL schema()/execute() endpoints) ----
+  // ---- Lead Engine + LLM Fallback OQL (additive — exposes the Lead Engine
+  // collections and the in-memory LLM fallback route log to the Data
+  // Intelligence agent; controller-only, no new public API surface beyond the
+  // OQL schema()/execute() endpoints). Both entity lists are merged into a
+  // single `Expose` include to avoid duplicate `schema()`/`execute()`
+  // definitions in the actor block. ----
+  include Expose({
+    entities = LeadEngineOql.entities(leadEngineState).concat(
+      LLMFallbackOql.entities(llmFallbackState),
+    );
+  });
+  // ---- Live Send state (additive — gated by TWILIO_INTEGRATION_ENABLED / SENDGRID_INTEGRATION_ENABLED feature flags) ----
+  include LiveSendMixin(accessControlState, integrationCreds, credSalt, featureToggles, transform);
   // ---- Webhooks & Integrations state ----
   let webhookStateRef : { var s : WebhookState.WebhookState } = { var s = WebhookState.empty() };
   let vapiCallLogs = Map.empty<Text, List.List<VapiCallLog>>();
   // Post-call follow-up log: (callerPhone, smsSentTo, emailSentTo, timestamp, success, errorMsg)
   let postCallFollowUpLog = List.empty<(Text, Text, ?Text, Int, Bool, ?Text)>();
-  include WebhooksAndIntegrationsMixin(webhookStateRef, integrationCreds, credSalt, transform, vapiCallLogs, postCallFollowUpLog);
+  // Unified webhook inbox state (normalized event store). Additive — gated by
+  // the WEBHOOK_INBOX_ENABLED feature flag inside the mixin.
+  let webhookInboxState : { var s : WebhookInboxTypes.WebhookInboxState } = { var s = WebhookInboxTypes.empty() };
+  include WebhooksAndIntegrationsMixin(webhookStateRef, integrationCreds, credSalt, transform, vapiCallLogs, postCallFollowUpLog, webhookInboxState);
+  include WebhookInboxMixin(webhookInboxState, featureToggles, optedOutEmails);
 
   // ---- Roofing Outreach Campaign state ----
   // roofingLeadStatuses: email -> LeadCampaignStatus (enrollment & step tracking)
@@ -1819,6 +1869,14 @@ import NewsletterTypes "types/newsletter";
   );
 
   // (duplicate block removed — states and mixins consolidated above)
+
+  // ---- Roofer Cold Campaign state (additive — gated by
+  // ROOFER_COLD_CAMPAIGN_ENABLED feature flag, default true) ----
+  // Lives as a NEW dedicated subsystem separate from the legacy
+  // RoofingCampaignManager; powers the /roofer-campaign page.
+  let rooferColdCampaignState : RooferColdCampaignTypes.RooferColdCampaignState =
+    RooferColdCampaignTypes.emptyRooferColdCampaignState();
+  include RooferColdCampaignMixin(accessControlState, rooferColdCampaignState, featureToggles);
 
   func checkUrl(url : Text) : async Bool {
     try {

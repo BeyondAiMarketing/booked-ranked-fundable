@@ -1,6 +1,7 @@
 import Map        "mo:core/Map";
 import List       "mo:core/List";
 import Time       "mo:core/Time";
+import Text       "mo:core/Text";
 import T          "../types/trialProvisioning";
 import FunnelLib  "../lib/funnelTracking";
 

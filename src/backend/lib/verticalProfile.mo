@@ -1,6 +1,8 @@
-import Map  "mo:core/Map";
-import Time "mo:core/Time";
-import Int  "mo:core/Int";
+import Map   "mo:core/Map";
+import Time  "mo:core/Time";
+import Int   "mo:core/Int";
+import Text  "mo:core/Text";
+import Array "mo:core/Array";
 import T    "../types/verticalProfile";
 
 module {

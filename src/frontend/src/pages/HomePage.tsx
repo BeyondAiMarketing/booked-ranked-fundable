@@ -21,8 +21,7 @@ import StatCallout from "@/components/marketing/StatCallout";
 import TrustInfrastructureSection from "@/components/marketing/TrustInfrastructureSection";
 import WhatsIncludedSection from "@/components/marketing/WhatsIncludedSection";
 import { Button } from "@/components/ui/button";
-import { HOMEPAGE_NICHE_DATA, getNicheData } from "@/data/homepageNicheData";
-// HOMEPAGE_NICHE_DATA[0] is used only as a shape-safe fallback for non-null typed props.
+import { type HomepageNicheData, getNicheData } from "@/data/homepageNicheData";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { ArrowRight, CheckCircle2, X, XCircle, Zap } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
@@ -185,7 +184,74 @@ function MobileStickyDemoBar({ pastFinalCta }: { pastFinalCta: boolean }) {
 }
 
 // ── Generic neutral niche data for use when no niche is selected ─────────────
-const NEUTRAL_NICHE_DATA = HOMEPAGE_NICHE_DATA[0]; // used as shape reference only
+// IMPORTANT: This is a neutral, niche-agnostic placeholder. It must NEVER be
+// the plumber entry (HOMEPAGE_NICHE_DATA[0]) — doing so causes a regression
+// where an unknown/missing niche renders "Your Plumbing Business App" content.
+// Components receive `isNeutral` and must render generic copy from this shape.
+const NEUTRAL_NICHE_DATA: HomepageNicheData = {
+  id: "plumber", // shape-only id; never displayed because isNeutral=true
+  label: "Local Service",
+  icon: "★",
+  emoji: "★",
+  niche: "local service",
+  nicheLabel: "Local Service",
+  painPointStat: "67%",
+  painPointLabel:
+    "of customer calls go to voicemail — those jobs go to whoever answers first",
+  dashboardSample: {
+    callerName: "Alex Morgan",
+    callerInitials: "AM",
+    serviceType: "Service Appointment",
+    appointmentTime: "Today, 2–4 PM",
+    phoneDisplay: "(555) 284-7731",
+  },
+  testimonialQuote:
+    "I was losing jobs every week to voicemail. Now my AI answers every call and I wake up to booked appointments.",
+  testimonialOwner: "Sam R.",
+  testimonialBusiness: "Your Business",
+  testimonialResult: "+$18,400/mo in recaptured revenue",
+  accentHue: 250,
+  primaryService: "service appointment",
+  reviewerName: "Jordan M.",
+  reviewText:
+    "Showed up on time, professional crew, fair price. Won't call anyone else.",
+  aiReviewResponse:
+    "Thank you so much! We're so glad we could help. We truly appreciate you trusting us — see you next time!",
+  socialPostExamples: [
+    "We answer every call 24/7 — that's the difference. ⭐⭐⭐⭐⭐",
+    "5 signs your home needs professional service this season.",
+    "Behind every call is a customer counting on us. Here's how our team prepares for every job.",
+  ],
+  leadName: "Taylor T.",
+  leadPhone: "(555) 247-8831",
+  reputationTestimonial: {
+    quote:
+      "BRF auto-responds to every review and turns our 5-star stories into social posts. Inbound calls are up 38% since we started.",
+    author: "Sam R.",
+    role: "Owner",
+  },
+  sampleClientName: "Sam R.",
+  sampleBusinessName: "Your Business",
+  painPointNumber: "$2,450/day",
+  socialProofEntry: {
+    businessName: "Your Business",
+    achievement: "14 new leads this week",
+  },
+  revenueLoss: 14800,
+  voiceGreeting:
+    "Thank you for calling [BusinessName], this is your AI front desk. How can I help you today?",
+  beforeStats: [
+    "Answering 3 of 10 calls",
+    "14 Google reviews (3.8★)",
+    "No online booking",
+  ],
+  afterStats: [
+    "Every call answered 24/7",
+    "87 Google reviews (4.9★)",
+    "Booked 3 weeks out",
+  ],
+  accentColor: "border-indigo-400",
+};
 
 // ── Main Page ────────────────────────────────────────────────────────────────
 export default function HomePage() {

@@ -1,59 +1,72 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
-import { Check } from "lucide-react";
+import { Check, Sparkles } from "lucide-react";
 import { motion } from "motion/react";
 
-const PLANS = [
+type Plan = {
+  name: string;
+  price: string;
+  setup: string;
+  description: string;
+  features: string[];
+  featured: boolean;
+  cta: string;
+};
+
+const PLANS: Plan[] = [
   {
-    name: "Booked",
-    price: "$497",
-    onboarding: "$1,588",
-    description: "Capture more leads and never miss a booking.",
+    name: "Booked AI Starter",
+    price: "$697/mo",
+    setup: "$2,497 setup",
+    description: "Entry-level stop-missing-calls package.",
     features: [
-      "AI-powered front desk (24/7)",
-      "Lead CRM and pipeline management",
-      "Automated inquiry follow-up",
+      "AI front desk",
+      "Missed-call text-back",
+      "Lead CRM",
+      "Inquiry follow-up",
       "Review request system",
+      "Email/SMS notifications",
       "Basic local SEO audit",
-      "Email and SMS notifications",
-      "Standard onboarding support",
+      "Standard onboarding",
     ],
     featured: false,
     cta: "Get Free Audit",
   },
   {
-    name: "Booked & Ranked",
-    price: "$997",
-    onboarding: "$2,588",
-    description: "Capture more leads and dominate your local search results.",
+    name: "Booked & Ranked Growth",
+    price: "$1,797/mo",
+    setup: "$4,997 setup",
+    description: "Main package — most popular.",
     features: [
-      "Everything in Booked",
-      "Full local SEO audit and optimization",
-      "Google Maps ranking improvements",
-      "Review monitoring and automation",
-      "Reputation management dashboard",
-      "Citation consistency tracking",
-      "Monthly performance reports",
-      "Priority onboarding and support",
+      "Everything in Booked AI Starter, plus:",
+      "Google Business Profile optimization",
+      "Review automation",
+      "Reputation dashboard",
+      "Citation tracking",
+      "Google Maps improvement plan",
+      "Local SEO cleanup",
+      "Monthly ranking/reporting",
+      "Priority onboarding",
     ],
     featured: true,
     cta: "Get Free Audit",
   },
   {
-    name: "Booked, Ranked & Fundable",
-    price: "$1,997",
-    onboarding: "$3,588",
-    description:
-      "The complete growth system — leads, rankings, and funding readiness.",
+    name: "Booked, Ranked & Fundable Pro",
+    price: "$3,497/mo",
+    setup: "$7,997 setup",
+    description: "Full system.",
     features: [
-      "Everything in Booked & Ranked",
-      "Fundability score and roadmap",
+      "Everything in Booked & Ranked Growth, plus:",
+      "Fundability score",
       "Business credit assessment",
       "Loan-readiness evaluation",
-      "Capital access guidance",
-      "Dedicated growth strategist",
-      "Custom reporting and analytics",
+      "Capital access roadmap",
+      "Dedicated strategist",
+      "Custom reporting",
+      "Advanced analytics",
       "White-glove onboarding",
+      "Quarterly growth planning",
     ],
     featured: false,
     cta: "Get Free Audit",
@@ -69,7 +82,7 @@ export default function PricingSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
-          className="text-center mb-14"
+          className="text-center mb-10"
         >
           <div className="inline-block bg-indigo-500/15 border border-indigo-400/25 text-indigo-300 text-xs font-semibold px-4 py-1.5 rounded-full mb-5">
             Growth Plans
@@ -81,6 +94,27 @@ export default function PricingSection() {
             Every plan includes setup, integrations, and configuration — plus
             ongoing support to make sure it works.
           </p>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: -8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4 }}
+          className="mb-8 flex items-center justify-center"
+          data-ocid="pricing.founders_banner"
+        >
+          <div className="w-full max-w-3xl rounded-xl border border-indigo-400/25 bg-indigo-500/10 backdrop-blur-md px-5 py-3.5 flex items-center gap-3">
+            <Sparkles
+              size={18}
+              className="text-indigo-300 flex-shrink-0"
+              aria-hidden
+            />
+            <p className="text-sm md:text-base text-indigo-100 font-medium text-center flex-1">
+              Founders pricing available for the first 5 businesses while we
+              build case studies.
+            </p>
+          </div>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -112,27 +146,44 @@ export default function PricingSection() {
                   {plan.description}
                 </p>
                 <div className="flex items-end gap-1 mb-1">
-                  <span className="text-4xl font-bold text-white">
+                  <span className="text-3xl md:text-4xl font-bold text-white">
                     {plan.price}
                   </span>
-                  <span className="text-slate-200 pb-1">/month</span>
                 </div>
-                <p className="text-xs text-slate-200">
-                  + {plan.onboarding} one-time setup, integrations &amp;
-                  configuration
+                <p className="text-xs text-slate-300 font-medium">
+                  + {plan.setup} one-time
                 </p>
               </div>
 
               <ul className="space-y-2.5 mb-8 flex-1">
-                {plan.features.map((feature) => (
-                  <li key={feature} className="flex items-start gap-2.5">
-                    <Check
-                      size={15}
-                      className="text-indigo-400 mt-0.5 flex-shrink-0"
-                    />
-                    <span className="text-sm text-slate-200">{feature}</span>
-                  </li>
-                ))}
+                {plan.features.map((feature) => {
+                  const isHeader = feature.endsWith(":");
+                  return (
+                    <li
+                      key={feature}
+                      className={`flex items-start gap-2.5 ${
+                        isHeader ? "pt-1" : ""
+                      }`}
+                    >
+                      <Check
+                        size={15}
+                        className={`mt-0.5 flex-shrink-0 ${
+                          isHeader ? "text-indigo-300" : "text-indigo-400"
+                        }`}
+                        aria-hidden
+                      />
+                      <span
+                        className={`text-sm ${
+                          isHeader
+                            ? "text-white font-semibold"
+                            : "text-slate-200"
+                        }`}
+                      >
+                        {feature}
+                      </span>
+                    </li>
+                  );
+                })}
               </ul>
 
               <Link to="/free-audit">
@@ -151,20 +202,20 @@ export default function PricingSection() {
           ))}
         </div>
 
-        <p className="text-center text-slate-200 text-sm mt-8">
-          Need a custom solution for your agency or enterprise?{" "}
-          <button
-            type="button"
-            className="text-indigo-400 hover:text-indigo-300 transition-colors underline"
-            onClick={() => {
-              const el = document.getElementById("audit-form");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            Contact us
-          </button>{" "}
-          for tailored pricing.
-        </p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="text-center text-slate-300 text-sm md:text-base mt-8 max-w-2xl mx-auto"
+          data-ocid="pricing.enterprise_callout"
+        >
+          Need storm-season growth, outbound campaigns, or multi-location
+          domination? Ask about{" "}
+          <span className="text-white font-semibold">Enterprise Growth OS</span>{" "}
+          starting at{" "}
+          <span className="text-indigo-300 font-semibold">$5,997/month</span>.
+        </motion.p>
       </div>
     </section>
   );

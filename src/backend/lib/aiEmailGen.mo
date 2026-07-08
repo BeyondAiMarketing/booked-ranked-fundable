@@ -1,6 +1,4 @@
 import AbacusLib      "../lib/abacus";
-import AbacusT        "../types/abacus";
-import OpenRouterLib  "../lib/openRouter";
 import ORT            "../types/openRouter";
 
 module {
@@ -12,16 +10,24 @@ module {
     ownerName    : ?Text;
   };
 
-  /// Build and dispatch an AI-tailored email body via Abacus RouteLLM.
-  /// Returns the tailored email text or an error message.
+  /// Route callback type: routes an LLM task through the unified fallback
+  /// chain. Lib modules cannot call actor methods directly, so the caller
+  /// (a mixin with access to routeLLMCall) passes this closure in. The
+  /// callback is a flat (task, messages) -> async Text function — NOT curried —
+  /// so the caller can define it at the top level of a public shared func body
+  /// where the sibling routeLLMCall method is in scope (matching the working
+  /// leadAI-api.mo pattern). A curried callback forced the call site into a
+  /// nested local closure where routeLLMCall could not be resolved.
+  public type RouteCallback = (ORT.TaskType, [ORT.OpenRouterMessage]) -> async Text;
+
+  /// Build and dispatch an AI-tailored email body via the unified LLM fallback
+  /// chain, with an Abacus-style placeholder fallback when the chain returns
+  /// empty. Returns the tailored email text.
   public func generateTailoredEmail(
     abacusState      : AbacusLib.State,
-    openRouterState  : OpenRouterLib.State,
+    route            : RouteCallback,
     template         : Text,
     ctx              : LeadContext,
-    transform        : OpenRouterLib.Transform,
-    openaiKey        : Text,
-    geminiKey        : Text,
   ) : async Text {
     let ownerPart = switch (ctx.ownerName) {
       case (?n) " (owner: " # n # ")";
@@ -37,8 +43,8 @@ module {
       { role = "user";   content = "Template to rewrite:\n\n" # template },
     ];
 
-    // Try OpenRouter with fallback
-    let aiResult = await OpenRouterLib.callWithFallback(openRouterState, #EmailGeneration, messages, transform, openaiKey, geminiKey);
+    // Route through the unified fallback chain
+    let aiResult = await route(#EmailGeneration, messages);
     if (aiResult != "") return aiResult;
 
     // Fallback: Abacus-style placeholder enrichment

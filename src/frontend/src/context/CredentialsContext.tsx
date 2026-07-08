@@ -89,7 +89,7 @@ const MAX_RETRIES = 3;
 const RETRY_DELAYS = [3000, 6000, 12000] as const;
 
 export function CredentialsProvider({ children }: { children: ReactNode }) {
-  const { actor, isFetching, authStalled } = useActor();
+  const { actor, isFetching, authStalled, identity } = useActor();
   const [creds, setCreds] = useState<LiveCredentials | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [backendError, setBackendError] = useState<string | null>(null);
@@ -103,7 +103,6 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
 
   const refresh = useCallback(() => setRefreshToken((t) => t + 1), []);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Clear any in-flight retry timer when actor/token changes
     // retryTimerRef is a ref — intentionally excluded from dep array per React docs
@@ -121,8 +120,13 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
       return;
     }
 
-    // Wait until actor is ready
-    if (isFetching || !actor) return;
+    // Wait until actor is ready AND the authenticated identity is present.
+    // The Caffeine runtime can hand back a non-null actor built with a fallback
+    // anonymous identity before the II session resolves; fetching credentials
+    // through that actor would either be rejected by the backend or return
+    // empty/default values. Gating on `identity` ensures we only read through
+    // an actor constructed with the authenticated principal.
+    if (isFetching || !actor || !identity) return;
 
     // refreshToken is read here to satisfy the exhaustive-deps rule —
     // its value is intentionally ignored; changing it re-runs this effect.
@@ -284,7 +288,7 @@ export function CredentialsProvider({ children }: { children: ReactNode }) {
         retryTimerRef.current = null;
       }
     };
-  }, [actor, isFetching, authStalled, refreshToken]);
+  }, [actor, isFetching, authStalled, refreshToken, identity]);
 
   return (
     <CredentialsContext.Provider

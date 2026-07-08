@@ -26,6 +26,7 @@ import {
   RefreshCw,
   Rocket,
   Search,
+  SendHorizontal,
   Settings,
   Shield,
   Smartphone,
@@ -49,6 +50,7 @@ import { useApp } from "../context/AppContext";
 import { useCredentials } from "../context/CredentialsContext";
 import { useActor } from "../hooks/useActor";
 import type { CredentialChangeEntry } from "../hooks/useIntegrationHealth";
+import { isIntegrationEnabled } from "../integrations/_shared/env";
 import { APP_DOMAIN, PLATFORM_TENANT_ID } from "../lib/constants";
 import {
   type IntegrationHealthResult,
@@ -2822,6 +2824,532 @@ function IntegrationHealthPanelWithCritical({
   creds: ServiceCreds;
 }) {
   return <IntegrationHealthPanel creds={creds} actor={injectedActor} />;
+}
+
+// ── LLM Fallback Chain Panel ─────────────────────────────────────────────────
+
+// Backend provider variants arrive as tagged objects (e.g. { #Nemotron: null }).
+// We treat them opaquely and stringify the key for display.
+type LLMProviderTag = Record<string, null> | string | null | undefined;
+
+interface LLMProviderHealthEntry {
+  provider: LLMProviderTag;
+  consecutiveFailures: number;
+  isSkipped: boolean;
+  skipUntilNs: bigint;
+}
+
+interface LLMRouteLogEntry {
+  provider: LLMProviderTag;
+  model: string;
+  estimatedCost: number;
+  success: boolean;
+  attempts: number;
+  timestampNs: bigint;
+}
+
+interface NemotronTestResult {
+  responseText: string;
+  success: boolean;
+  provider: string;
+  model: string;
+  timestampNs: bigint;
+  errorMessage: [] | [string];
+}
+
+const LLM_FALLBACK_ORDER: { tag: string; label: string }[] = [
+  { tag: "Nemotron", label: "Nemotron (NVIDIA NIM)" },
+  { tag: "OpenRouter", label: "OpenRouter / Owl Alpha" },
+  { tag: "OpenAI", label: "OpenAI" },
+  { tag: "Anthropic", label: "Anthropic Claude" },
+];
+
+function providerTagToString(tag: LLMProviderTag | undefined | null): string {
+  if (!tag || typeof tag !== "object") return "Generic";
+  const keys = Object.keys(tag);
+  return keys.length > 0 ? keys[0] : "Generic";
+}
+
+function costTier(cost: number): "low" | "mid" | "high" {
+  if (cost < 0.001) return "low";
+  if (cost < 0.01) return "mid";
+  return "high";
+}
+
+function formatRemaining(nsTarget: bigint, nowNs: bigint): string {
+  const remainingMs = Number(nsTarget - nowNs) / 1_000_000;
+  if (!Number.isFinite(remainingMs) || remainingMs <= 0) return "now";
+  const totalSec = Math.ceil(remainingMs / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function LLMFallbackChainPanel({
+  actor,
+}: {
+  actor: ReturnType<typeof useActor>["actor"] | null;
+}) {
+  const [health, setHealth] = useState<LLMProviderHealthEntry[]>([]);
+  const [routeLog, setRouteLog] = useState<LLMRouteLogEntry[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [resetting, setResetting] = useState<string | null>(null);
+  const [nowNs, setNowNs] = useState<bigint>(0n);
+  const [available, setAvailable] = useState(true);
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<NemotronTestResult | null>(null);
+
+  async function fetchAll() {
+    if (!actor) {
+      setAvailable(false);
+      return;
+    }
+    setLoading(true);
+    try {
+      const hasMethod = !!(actor as any)?.getLLMProviderHealth;
+      if (!hasMethod) {
+        setAvailable(false);
+        return;
+      }
+      setAvailable(true);
+      const [h, log] = await Promise.all([
+        (actor as any)?.getLLMProviderHealth?.(),
+        (actor as any)?.getLLMRouteLog?.(10),
+      ]);
+      if (Array.isArray(h)) setHealth(h as LLMProviderHealthEntry[]);
+      if (Array.isArray(log)) setRouteLog(log as LLMRouteLogEntry[]);
+    } catch {
+      setAvailable(false);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      if (!actor) {
+        if (!cancelled) setAvailable(false);
+        return;
+      }
+      setLoading(true);
+      try {
+        const hasMethod = !!(actor as any)?.getLLMProviderHealth;
+        if (!hasMethod) {
+          if (!cancelled) setAvailable(false);
+          return;
+        }
+        if (!cancelled) setAvailable(true);
+        const [h, log] = await Promise.all([
+          (actor as any)?.getLLMProviderHealth?.(),
+          (actor as any)?.getLLMRouteLog?.(10),
+        ]);
+        if (cancelled) return;
+        if (Array.isArray(h)) setHealth(h as LLMProviderHealthEntry[]);
+        if (Array.isArray(log)) setRouteLog(log as LLMRouteLogEntry[]);
+      } catch {
+        if (!cancelled) setAvailable(false);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [actor]);
+
+  // Tick every 1s so cooling-down remaining-time labels update live.
+  useEffect(() => {
+    if (!available) return;
+    setNowNs(BigInt(Date.now()) * 1_000_000n);
+    const id = window.setInterval(() => {
+      setNowNs(BigInt(Date.now()) * 1_000_000n);
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [available]);
+
+  async function handleReset(providerTag: string) {
+    if (!actor || resetting) return;
+    setResetting(providerTag);
+    try {
+      const tagObj = { [`#${providerTag}`]: null } as unknown as LLMProviderTag;
+      await (actor as any)?.resetLLMProviderHealth?.(tagObj);
+      toast.success(`${providerTag} health reset`, {
+        description: "Provider re-enabled in the fallback chain.",
+      });
+      await fetchAll();
+    } catch {
+      toast.error(`Failed to reset ${providerTag}`, {
+        description: "The backend rejected the reset request.",
+      });
+    } finally {
+      setResetting(null);
+    }
+  }
+
+  async function handleTestNemotron() {
+    if (!actor || testing) return;
+    const hasMethod = !!(actor as any)?.testNemotronPrompt;
+    if (!hasMethod) {
+      toast.error("Nemotron test unavailable", {
+        description:
+          "testNemotronPrompt is not deployed on the backend actor yet.",
+      });
+      return;
+    }
+    setTesting(true);
+    try {
+      const result = await (actor as any).testNemotronPrompt();
+      setTestResult(result as NemotronTestResult);
+      if (result?.success) {
+        toast.success("Nemotron test succeeded", {
+          description: `Answered by ${result.provider || "Nemotron"}.`,
+        });
+      } else {
+        const errMsg =
+          Array.isArray(result?.errorMessage) && result.errorMessage.length > 0
+            ? result.errorMessage[0]
+            : "Nemotron was skipped — a fallback provider answered.";
+        toast.error("Nemotron test failed", { description: errMsg });
+      }
+      await fetchAll();
+    } catch (err) {
+      toast.error("Nemotron test request failed", {
+        description:
+          err instanceof Error ? err.message : "The backend rejected the test.",
+      });
+    } finally {
+      setTesting(false);
+    }
+  }
+
+  function clearTestResult() {
+    setTestResult(null);
+  }
+
+  const healthByProvider = new Map<string, LLMProviderHealthEntry>();
+  for (const h of health) {
+    healthByProvider.set(providerTagToString(h.provider), h);
+  }
+
+  const lastRoute = routeLog.length > 0 ? routeLog[0] : null;
+  const lastRouteProvider = lastRoute
+    ? providerTagToString(lastRoute.provider)
+    : null;
+  const lastRouteTier = lastRoute
+    ? costTier(Number(lastRoute.estimatedCost))
+    : null;
+
+  function stateOf(
+    h: LLMProviderHealthEntry | undefined,
+  ): "healthy" | "cooling" | "disabled" | "unknown" {
+    if (!h) return "unknown";
+    if (h.isSkipped) return "disabled";
+    if (h.skipUntilNs && h.skipUntilNs > nowNs) return "cooling";
+    return "healthy";
+  }
+
+  function statusText(tag: string): string {
+    const h = healthByProvider.get(tag);
+    const s = stateOf(h);
+    if (s === "unknown") return "Awaiting first call";
+    if (s === "disabled")
+      return `Skipped · ${h?.consecutiveFailures ?? 0} consecutive failures`;
+    if (s === "cooling") {
+      const remaining = h ? formatRemaining(h.skipUntilNs, nowNs) : "now";
+      return `Cooling down · eligible in ${remaining}`;
+    }
+    if ((h?.consecutiveFailures ?? 0) > 0)
+      return `Healthy · ${h?.consecutiveFailures} prior failure(s)`;
+    return "Healthy";
+  }
+
+  return (
+    <section
+      className="fallback-panel p-5 space-y-4"
+      data-ocid="golive.llm_fallback.panel"
+    >
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-bold text-foreground flex items-center gap-2">
+            <Activity
+              size={15}
+              className="text-[oklch(var(--fallback-panel-border))]"
+            />
+            LLM Fallback Chain
+          </h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Provider priority order, live health, cooling-down timers, and
+            cost-aware routing for the 3 LLM-using skills
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={fetchAll}
+          disabled={loading || !available}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[oklch(var(--fallback-panel-border)/0.12)] border border-[oklch(var(--fallback-panel-border)/0.35)] text-[oklch(0.82_0.14_290)] hover:bg-[oklch(var(--fallback-panel-border)/0.22)] transition-colors disabled:opacity-50"
+          data-ocid="golive.llm_fallback.refresh_button"
+        >
+          {loading ? (
+            <>
+              <Loader2 size={11} className="animate-spin" /> Syncing…
+            </>
+          ) : (
+            <>
+              <RefreshCw size={11} /> Refresh
+            </>
+          )}
+        </button>
+      </div>
+
+      {/* Priority chain — connected nodes */}
+      <div className="flex items-center gap-1 flex-wrap">
+        {LLM_FALLBACK_ORDER.map((node, idx) => {
+          const h = healthByProvider.get(node.tag);
+          const s = stateOf(h);
+          return (
+            <div key={node.tag} className="flex items-center">
+              <div className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.06] min-w-[7.5rem]">
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className={`fallback-health-dot ${s === "unknown" ? "healthy" : s}`}
+                    aria-hidden="true"
+                  />
+                  <span className="text-[11px] font-semibold text-slate-200">
+                    {node.tag}
+                  </span>
+                </div>
+                <span className="text-[9px] text-slate-500 uppercase tracking-wider">
+                  Priority {idx + 1}
+                </span>
+              </div>
+              {idx < LLM_FALLBACK_ORDER.length - 1 && (
+                <span
+                  className="fallback-priority-connector"
+                  aria-hidden="true"
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Cost-aware routing indicator */}
+      <div
+        className="flex items-center gap-2 flex-wrap rounded-lg bg-white/[0.025] border border-white/[0.06] px-3 py-2.5"
+        data-ocid="golive.llm_fallback.route_indicator"
+      >
+        <Zap
+          size={12}
+          className="text-[oklch(var(--fallback-priority-active))]"
+        />
+        <span className="text-[11px] font-semibold text-slate-300">
+          Last routed call
+        </span>
+        {lastRoute && lastRouteProvider && lastRouteTier ? (
+          <>
+            <span className="text-[11px] text-slate-400">
+              {lastRouteProvider}
+              {lastRoute.model ? ` · ${lastRoute.model}` : ""}
+            </span>
+            <span className={`fallback-cost-pill ${lastRouteTier}`}>
+              {Number(lastRoute.estimatedCost).toFixed(5)} per call
+            </span>
+            <span className="text-[10px] text-slate-500">
+              {lastRoute.success ? "succeeded" : "failed"} ·{" "}
+              {Number(lastRoute.attempts)} attempt(s)
+            </span>
+          </>
+        ) : (
+          <span className="text-[11px] text-slate-500 italic">
+            No routes logged yet — chain will record the first LLM call.
+          </span>
+        )}
+      </div>
+
+      {/* Test Nemotron — live prompt through the fallback router */}
+      <div
+        className="rounded-lg bg-white/[0.025] border border-white/[0.06] px-3 py-2.5 space-y-2.5"
+        data-ocid="golive.llm_fallback.nemotron_test.section"
+      >
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <Sparkles
+              size={12}
+              className="text-[oklch(var(--fallback-panel-border))]"
+            />
+            <span className="text-[11px] font-semibold text-slate-300">
+              Test Nemotron routing
+            </span>
+            <span className="text-[10px] text-slate-500">
+              Sends a fixed prompt through the fallback chain
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleTestNemotron}
+            disabled={testing || !available}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-[oklch(var(--fallback-panel-border)/0.12)] border border-[oklch(var(--fallback-panel-border)/0.35)] text-[oklch(0.82_0.14_290)] hover:bg-[oklch(var(--fallback-panel-border)/0.22)] transition-colors disabled:opacity-50"
+            data-ocid="golive.llm_fallback.nemotron_test.test_button"
+          >
+            {testing ? (
+              <>
+                <Loader2 size={11} className="animate-spin" /> Testing…
+              </>
+            ) : (
+              <>
+                <Zap size={11} /> Test Nemotron
+              </>
+            )}
+          </button>
+        </div>
+
+        {testResult && (
+          <div
+            className={`rounded-lg border px-3 py-2.5 space-y-2 ${
+              testResult.success
+                ? "border-emerald-500/30 bg-emerald-500/[0.06]"
+                : "border-rose-500/30 bg-rose-500/[0.06]"
+            }`}
+            data-ocid={
+              testResult.success
+                ? "golive.llm_fallback.nemotron_test.success_state"
+                : "golive.llm_fallback.nemotron_test.error_state"
+            }
+          >
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                {testResult.success ? (
+                  <CheckCircle2 size={13} className="text-emerald-400" />
+                ) : (
+                  <XCircle size={13} className="text-rose-400" />
+                )}
+                <span
+                  className={`text-[11px] font-semibold ${
+                    testResult.success ? "text-emerald-300" : "text-rose-300"
+                  }`}
+                >
+                  {testResult.success
+                    ? "Nemotron responded"
+                    : "Nemotron skipped — fallback answered"}
+                </span>
+                <span
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/[0.06] border border-white/[0.1] text-slate-200"
+                  data-ocid="golive.llm_fallback.nemotron_test.provider_badge"
+                >
+                  Answered by: {testResult.provider || "Nemotron"}
+                </span>
+                {testResult.model && (
+                  <span className="text-[10px] text-slate-500 font-mono">
+                    {testResult.model}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-500 inline-flex items-center gap-1">
+                  <Clock size={10} />
+                  {new Date(
+                    Number(testResult.timestampNs) / 1_000_000,
+                  ).toLocaleString()}
+                </span>
+                <button
+                  type="button"
+                  onClick={clearTestResult}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-semibold bg-white/[0.04] border border-white/[0.08] text-slate-400 hover:text-slate-200 hover:bg-white/[0.08] transition-colors"
+                  aria-label="Clear Nemotron test result"
+                  data-ocid="golive.llm_fallback.nemotron_test.clear_button"
+                >
+                  <XCircle size={10} /> Clear
+                </button>
+              </div>
+            </div>
+
+            {!testResult.success &&
+              Array.isArray(testResult.errorMessage) &&
+              testResult.errorMessage.length > 0 && (
+                <p className="text-[11px] text-rose-300/90 break-words">
+                  {testResult.errorMessage[0]}
+                </p>
+              )}
+
+            {testResult.responseText && (
+              <div
+                className="rounded-md bg-black/20 border border-white/[0.06] px-2.5 py-2 max-h-40 overflow-auto"
+                data-ocid="golive.llm_fallback.nemotron_test.response_text"
+              >
+                <p className="text-[11px] text-slate-200 whitespace-pre-wrap break-words font-mono leading-relaxed">
+                  {testResult.responseText}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Provider rows */}
+      <div className="space-y-2">
+        {LLM_FALLBACK_ORDER.map((node, idx) => {
+          const h = healthByProvider.get(node.tag);
+          const s = stateOf(h);
+          const status = statusText(node.tag);
+          const canReset = available && (s === "disabled" || s === "cooling");
+          return (
+            <div
+              key={node.tag}
+              className="fallback-provider-row"
+              data-ocid={`golive.llm_fallback.provider.row.${idx + 1}`}
+            >
+              <span
+                className={`fallback-health-dot ${s === "unknown" ? "healthy" : s}`}
+                aria-hidden="true"
+              />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-slate-200 truncate">
+                    {node.label}
+                  </span>
+                  <span className="text-[9px] text-slate-500 uppercase tracking-wider">
+                    P{idx + 1}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 truncate">{status}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleReset(node.tag)}
+                disabled={!canReset || resetting === node.tag}
+                className="fallback-reset-btn"
+                aria-label={`Reset ${node.label} health`}
+                data-ocid={`golive.llm_fallback.provider.reset_button.${idx + 1}`}
+              >
+                {resetting === node.tag ? (
+                  <Loader2 size={11} className="animate-spin" />
+                ) : (
+                  <RefreshCw size={11} />
+                )}
+                Reset
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {!available && (
+        <div
+          className="rounded-lg border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-[11px] text-slate-500 flex items-center gap-2"
+          data-ocid="golive.llm_fallback.empty_state"
+        >
+          <Info size={12} className="shrink-0" />
+          Fallback chain backend methods are not yet deployed. The panel will
+          activate once{" "}
+          <code className="font-mono text-slate-400">getLLMProviderHealth</code>{" "}
+          is available on the actor.
+        </div>
+      )}
+    </section>
+  );
 }
 
 // ── Score Calculator ──────────────────────────────────────────────────────────
@@ -5701,6 +6229,406 @@ function WarmEmailNativeCard() {
   );
 }
 
+// ── Send Test Panel (live SMS + Email) ────────────────────────────────────────
+/**
+ * SendTestPanel — additive Priority 0 panel that lets operators fire a single
+ * live test SMS (via Twilio) and a single live test email (via SendGrid)
+ * through the backend `sendLiveSms` / `sendLiveEmail` actors.
+ *
+ * No credential values are ever displayed — only a readiness indicator
+ * (configured / not configured) derived from the stored ServiceCreds. Both
+ * cards are disabled with explanatory copy when their respective feature flags
+ * (TWILIO_INTEGRATION_ENABLED / SENDGRID_INTEGRATION_ENABLED) are off.
+ */
+type LiveSendResult = {
+  ok: boolean;
+  messageId: string | null;
+  error: string | null;
+};
+
+function SendTestPanel({ creds }: { creds: ServiceCreds }) {
+  const { actor } = useActor();
+
+  const twilioEnabled = isIntegrationEnabled("TWILIO_INTEGRATION_ENABLED");
+  const sendgridEnabled = isIntegrationEnabled("SENDGRID_INTEGRATION_ENABLED");
+
+  const twilioConfigured =
+    !!creds.twilioSid && !!creds.twilioAuth && !!creds.twilioNumber;
+  const sendgridConfigured = !!creds.sendgridKey;
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <SendTestSmsCard
+        actor={actor}
+        enabled={twilioEnabled}
+        configured={twilioConfigured}
+      />
+      <SendTestEmailCard
+        actor={actor}
+        enabled={sendgridEnabled}
+        configured={sendgridConfigured}
+        defaultFrom={creds.emailSmtpUser}
+      />
+    </div>
+  );
+}
+
+function SendTestSmsCard({
+  actor,
+  enabled,
+  configured,
+}: {
+  actor: ReturnType<typeof useActor>["actor"];
+  enabled: boolean;
+  configured: boolean;
+}) {
+  const [to, setTo] = useState("");
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<LiveSendResult | null>(null);
+
+  const disabled = !enabled || !configured || sending;
+
+  async function handleSend() {
+    if (!actor) return;
+    setSending(true);
+    setResult(null);
+    try {
+      const res = (await actor.sendLiveSms(
+        TENANT_ID,
+        to.trim(),
+        body,
+      )) as LiveSendResult;
+      setResult(res);
+      if (res.ok) {
+        toast.success("Test SMS sent");
+      } else {
+        toast.error(res.error || "SMS send failed");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setResult({ ok: false, messageId: null, error: msg });
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div
+      data-ocid="golive.send_test.sms.card"
+      className="rounded-xl border border-white/8 bg-card p-4 space-y-3"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <MessageSquare className="h-4 w-4 text-amber-300" />
+          <h3 className="text-sm font-semibold text-foreground">Test SMS</h3>
+        </div>
+        <span
+          className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+            configured
+              ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
+              : "text-slate-400 border-white/10 bg-white/5"
+          }`}
+        >
+          {configured ? "Configured" : "Not configured"}
+        </span>
+      </div>
+
+      {!enabled && (
+        <p
+          data-ocid="golive.send_test.sms.disabled_notice"
+          className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-md px-2.5 py-1.5"
+        >
+          Twilio integration is disabled. Enable the TWILIO_INTEGRATION_ENABLED
+          flag to send live test messages.
+        </p>
+      )}
+
+      <div className="space-y-2">
+        <label
+          htmlFor="golive-send-test-sms-to"
+          className="text-xs font-medium text-slate-300"
+        >
+          To (E.164)
+        </label>
+        <input
+          id="golive-send-test-sms-to"
+          data-ocid="golive.send_test.sms.to.input"
+          type="tel"
+          inputMode="tel"
+          placeholder="+15551234567"
+          value={to}
+          onChange={(e) => setTo(e.target.value)}
+          disabled={disabled}
+          className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400/40 disabled:opacity-50"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="golive-send-test-sms-body"
+          className="text-xs font-medium text-slate-300"
+        >
+          Body
+        </label>
+        <textarea
+          id="golive-send-test-sms-body"
+          data-ocid="golive.send_test.sms.body.textarea"
+          rows={3}
+          placeholder="This is a live test from BRF."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          disabled={disabled}
+          className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-amber-400/40 disabled:opacity-50 resize-none"
+        />
+      </div>
+
+      <button
+        type="button"
+        data-ocid="golive.send_test.sms.send_button"
+        onClick={handleSend}
+        disabled={disabled}
+        className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-amber-200 bg-amber-500/15 border border-amber-500/30 hover:bg-amber-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {sending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <SendHorizontal className="h-4 w-4" />
+        )}
+        {sending ? "Sending…" : "Send Test SMS"}
+      </button>
+
+      {result && (
+        <div
+          data-ocid={
+            result.ok
+              ? "golive.send_test.sms.success_state"
+              : "golive.send_test.sms.error_state"
+          }
+          className={`flex items-start gap-2 rounded-md px-2.5 py-2 text-xs border ${
+            result.ok
+              ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
+              : "text-red-300 border-red-500/30 bg-red-500/10"
+          }`}
+        >
+          {result.ok ? (
+            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+          ) : (
+            <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          )}
+          <div className="min-w-0 break-words">
+            {result.ok
+              ? `Sent. Message SID: ${result.messageId ?? "(no SID returned)"}`
+              : `Failed: ${result.error ?? "unknown error"}`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SendTestEmailCard({
+  actor,
+  enabled,
+  configured,
+  defaultFrom,
+}: {
+  actor: ReturnType<typeof useActor>["actor"];
+  enabled: boolean;
+  configured: boolean;
+  defaultFrom: string;
+}) {
+  const [to, setTo] = useState("");
+  const [from, setFrom] = useState(defaultFrom || "");
+  const [subject, setSubject] = useState("BRF Live Email Test");
+  const [body, setBody] = useState(
+    "This is a live test email sent from the BRF Go Live panel.",
+  );
+  const [sending, setSending] = useState(false);
+  const [result, setResult] = useState<LiveSendResult | null>(null);
+
+  const disabled = !enabled || !configured || sending;
+
+  async function handleSend() {
+    if (!actor) return;
+    setSending(true);
+    setResult(null);
+    try {
+      const res = (await actor.sendLiveEmail(
+        TENANT_ID,
+        to.trim(),
+        from.trim(),
+        subject,
+        body,
+      )) as LiveSendResult;
+      setResult(res);
+      if (res.ok) {
+        toast.success("Test email sent");
+      } else {
+        toast.error(res.error || "Email send failed");
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      setResult({ ok: false, messageId: null, error: msg });
+      toast.error(msg);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  return (
+    <div
+      data-ocid="golive.send_test.email.card"
+      className="rounded-xl border border-white/8 bg-card p-4 space-y-3"
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Mail className="h-4 w-4 text-emerald-300" />
+          <h3 className="text-sm font-semibold text-foreground">Test Email</h3>
+        </div>
+        <span
+          className={`text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border ${
+            configured
+              ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
+              : "text-slate-400 border-white/10 bg-white/5"
+          }`}
+        >
+          {configured ? "Configured" : "Not configured"}
+        </span>
+      </div>
+
+      {!enabled && (
+        <p
+          data-ocid="golive.send_test.email.disabled_notice"
+          className="text-xs text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-md px-2.5 py-1.5"
+        >
+          SendGrid integration is disabled. Enable the
+          SENDGRID_INTEGRATION_ENABLED flag to send live test emails.
+        </p>
+      )}
+
+      <div className="grid gap-2 sm:grid-cols-2">
+        <div className="space-y-2">
+          <label
+            htmlFor="golive-send-test-email-to"
+            className="text-xs font-medium text-slate-300"
+          >
+            To
+          </label>
+          <input
+            id="golive-send-test-email-to"
+            data-ocid="golive.send_test.email.to.input"
+            type="email"
+            placeholder="recipient@example.com"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            disabled={disabled}
+            className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-400/40 disabled:opacity-50"
+          />
+        </div>
+        <div className="space-y-2">
+          <label
+            htmlFor="golive-send-test-email-from"
+            className="text-xs font-medium text-slate-300"
+          >
+            From
+          </label>
+          <input
+            id="golive-send-test-email-from"
+            data-ocid="golive.send_test.email.from.input"
+            type="email"
+            placeholder="sender@example.com"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            disabled={disabled}
+            className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-400/40 disabled:opacity-50"
+          />
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="golive-send-test-email-subject"
+          className="text-xs font-medium text-slate-300"
+        >
+          Subject
+        </label>
+        <input
+          id="golive-send-test-email-subject"
+          data-ocid="golive.send_test.email.subject.input"
+          type="text"
+          placeholder="Subject"
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          disabled={disabled}
+          className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-400/40 disabled:opacity-50"
+        />
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor="golive-send-test-email-body"
+          className="text-xs font-medium text-slate-300"
+        >
+          Body
+        </label>
+        <textarea
+          id="golive-send-test-email-body"
+          data-ocid="golive.send_test.email.body.textarea"
+          rows={3}
+          placeholder="Email body"
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          disabled={disabled}
+          className="w-full rounded-lg border border-white/10 bg-background px-3 py-2 text-sm text-foreground placeholder:text-slate-500 focus:outline-none focus:ring-1 focus:ring-emerald-400/40 disabled:opacity-50 resize-none"
+        />
+      </div>
+
+      <button
+        type="button"
+        data-ocid="golive.send_test.email.send_button"
+        onClick={handleSend}
+        disabled={disabled}
+        className="w-full flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-emerald-200 bg-emerald-500/15 border border-emerald-500/30 hover:bg-emerald-500/25 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {sending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <SendHorizontal className="h-4 w-4" />
+        )}
+        {sending ? "Sending…" : "Send Test Email"}
+      </button>
+
+      {result && (
+        <div
+          data-ocid={
+            result.ok
+              ? "golive.send_test.email.success_state"
+              : "golive.send_test.email.error_state"
+          }
+          className={`flex items-start gap-2 rounded-md px-2.5 py-2 text-xs border ${
+            result.ok
+              ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10"
+              : "text-red-300 border-red-500/30 bg-red-500/10"
+          }`}
+        >
+          {result.ok ? (
+            <CheckCircle2 className="h-4 w-4 mt-0.5 shrink-0" />
+          ) : (
+            <XCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          )}
+          <div className="min-w-0 break-words">
+            {result.ok
+              ? `Sent. Message ID: ${result.messageId ?? "(no ID returned)"}`
+              : `Failed: ${result.error ?? "unknown error"}`}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Masked value detection ────────────────────────────────────────────────────
 /**
  * Returns true if the value looks like a masked credential from the backend
@@ -6356,6 +7284,7 @@ export default function GoLivePage() {
     isFetching: actorFetching,
     authStalled,
     isAnonymous,
+    identity,
   } = useActor();
   const { login } = useInternetIdentity();
   const {
@@ -6648,8 +7577,11 @@ export default function GoLivePage() {
       // actor method is invoked. The actor may be non-null here because the
       // Caffeine runtime can construct an actor with a fallback anonymous
       // identity when the II session is not active — so checking `!actor` alone
-      // is NOT sufficient.
-      if (isAnonymous || authStalled) {
+      // is NOT sufficient. `isAnonymous` can also already be false in the window
+      // where identity just arrived but the actor has not yet been rebuilt with
+      // it, so we additionally require `identity` to be present. This guarantees
+      // the actor used below was constructed with the authenticated principal.
+      if (!identity || isAnonymous || authStalled) {
         const msg = authStalled
           ? "Authentication timed out — please log in again with Internet Identity to save credentials."
           : "Please sign in with Internet Identity to save credentials.";
@@ -6837,6 +7769,32 @@ export default function GoLivePage() {
         geminiApiKey: "",
       };
 
+      // ── SOURCE-LEVEL IDENTITY GATE ─────────────────────────────────────
+      // This gate sits DIRECTLY at the call site that invokes
+      // actor.saveIntegrationCredentials — not in a wrapper or middleware
+      // layer that could be bypassed or regressed by a future refactor. The
+      // backend rejects anonymous principals with
+      // "Unauthorized: anonymous principals cannot save credentials"
+      // (integrationCredentials-api.mo:80-82). The Caffeine runtime can hand
+      // back a non-null actor built with a fallback anonymous identity before
+      // the II session resolves, so checking `!actor` alone is NOT sufficient
+      // and `isAnonymous` can lag behind identity state. Gating on the real
+      // authenticated `identity` principal right here guarantees the actor
+      // used for this specific call was constructed with the authenticated
+      // principal. If identity is null, anonymous, or not yet loaded, the save
+      // must NOT fire against the backend — surface a clear sign-in message.
+      if (!identity || isAnonymous || authStalled) {
+        const msg = authStalled
+          ? "Authentication timed out — please log in again with Internet Identity to save credentials."
+          : "Please sign in with Internet Identity to save credentials.";
+        setGlobalSaveError(msg);
+        setGlobalSaving(false);
+        if (!options?.silent) {
+          toast.error(msg, { duration: 8000 });
+        }
+        return;
+      }
+
       try {
         // saveIntegrationCredentials returns { __kind__: "ok" } | { __kind__: "err"; err: string }
         const saveResult = await actor.saveIntegrationCredentials(
@@ -6938,6 +7896,7 @@ export default function GoLivePage() {
       actorFetching,
       isAnonymous,
       authStalled,
+      identity,
       refreshCreds,
       addPersistedChange,
     ],
@@ -7520,6 +8479,9 @@ export default function GoLivePage() {
       {/* Integration Health Panel */}
       <IntegrationHealthPanelWithCritical actor={actor} creds={creds} />
 
+      {/* LLM Fallback Chain Panel */}
+      <LLMFallbackChainPanel actor={actor} />
+
       {/* Critical Path Warning */}
       {hasCriticalWarning && (
         <div
@@ -7578,6 +8540,7 @@ export default function GoLivePage() {
         <div className="space-y-3">
           <ColdEmailDomainCard creds={creds} onChange={updateCreds} />
           <WarmEmailNativeCard />
+          <SendTestPanel creds={creds} />
         </div>
       </section>
 

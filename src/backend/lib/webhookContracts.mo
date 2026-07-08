@@ -2,6 +2,7 @@ import Map  "mo:core/Map";
 import List "mo:core/List";
 import Time "mo:core/Time";
 import Text "mo:core/Text";
+import Int  "mo:core/Int";
 import T    "../types/webhookContracts";
 
 module {

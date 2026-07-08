@@ -1,5 +1,6 @@
 import Map     "mo:core/Map";
 import List    "mo:core/List";
+import Text    "mo:core/Text";
 import FTTypes "../types/featureToggle";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";

@@ -4,6 +4,7 @@ import ICTypes   "../types/integrationCredentials";
 import ICLib     "../lib/integrationCredentials";
 import Map       "mo:core/Map";
 import Time      "mo:core/Time";
+import Text      "mo:core/Text";
 import Outcall   "mo:caffeineai-http-outcalls/outcall";
 
 mixin (

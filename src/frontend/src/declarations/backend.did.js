@@ -1137,23 +1137,75 @@ export const MemoryMode = IDL.Variant({
   'conversation_only' : IDL.Null,
   'with_summary' : IDL.Null,
 });
-export const http_header = IDL.Record({
-  'value' : IDL.Text,
-  'name' : IDL.Text,
+export const DemoBooking = IDL.Record({
+  'id' : IDL.Text,
+  'rooferEmail' : IDL.Text,
+  'bookedAt' : IDL.Int,
+  'campaignId' : IDL.Text,
+  'ctaToken' : IDL.Text,
+  'leadId' : IDL.Text,
+  'slotTime' : IDL.Text,
+  'rooferName' : IDL.Text,
+  'confirmed' : IDL.Bool,
 });
-export const http_request_result = IDL.Record({
+export const RooferColdCampaignStatus = IDL.Variant({
+  'active' : IDL.Null,
+  'completed' : IDL.Null,
+  'draft' : IDL.Null,
+  'paused' : IDL.Null,
+});
+export const RooferCampaignStats = IDL.Record({
+  'opened' : IDL.Nat,
+  'unsubscribed' : IDL.Nat,
+  'sent' : IDL.Nat,
+  'booked' : IDL.Nat,
+  'totalLeads' : IDL.Nat,
+  'replied' : IDL.Nat,
+  'bounced' : IDL.Nat,
+});
+export const RooferCampaignStep = IDL.Record({
+  'delayDays' : IDL.Nat,
+  'subject' : IDL.Text,
+  'body' : IDL.Text,
+  'personalizationTokens' : IDL.Vec(IDL.Text),
+  'enabled' : IDL.Bool,
+  'stepNumber' : IDL.Nat,
+  'sendTime' : IDL.Text,
+});
+export const RooferColdCampaign = IDL.Record({
+  'id' : IDL.Text,
+  'status' : RooferColdCampaignStatus,
+  'name' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'tenantId' : IDL.Text,
+  'updatedAt' : IDL.Int,
+  'stats' : RooferCampaignStats,
+  'senderName' : IDL.Text,
+  'senderEmail' : IDL.Text,
+  'leadListFilter' : IDL.Text,
+  'enrolledLeadIds' : IDL.Vec(IDL.Text),
+  'sequence' : IDL.Vec(RooferCampaignStep),
+});
+export const LeadEngineLead__1 = IDL.Reserved;
+export const DemoBookingLookup = IDL.Record({
+  'campaign' : IDL.Opt(RooferColdCampaign),
+  'lead' : IDL.Opt(LeadEngineLead__1),
+  'existingBooking' : IDL.Opt(DemoBooking),
+});
+export const HttpHeader = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+export const HttpRequestResult = IDL.Record({
   'status' : IDL.Nat,
   'body' : IDL.Vec(IDL.Nat8),
-  'headers' : IDL.Vec(http_header),
+  'headers' : IDL.Vec(HttpHeader),
 });
 export const TransformationInput = IDL.Record({
   'context' : IDL.Vec(IDL.Nat8),
-  'response' : http_request_result,
+  'response' : HttpRequestResult,
 });
 export const TransformationOutput = IDL.Record({
   'status' : IDL.Nat,
   'body' : IDL.Vec(IDL.Nat8),
-  'headers' : IDL.Vec(http_header),
+  'headers' : IDL.Vec(HttpHeader),
 });
 export const LeadAIEnrichment = IDL.Record({
   'model' : IDL.Text,
@@ -1176,6 +1228,19 @@ export const RoofingLead = IDL.Record({
   'state' : IDL.Text,
   'companyName' : IDL.Text,
   'phone' : IDL.Opt(IDL.Text),
+});
+export const Value = IDL.Variant({
+  'int' : IDL.Int,
+  'nat' : IDL.Nat,
+  'float' : IDL.Float64,
+  'bool' : IDL.Bool,
+  'null' : IDL.Null,
+  'text' : IDL.Text,
+});
+export const Cell = IDL.Record({ 'value' : Value, 'name' : IDL.Text });
+export const Result = IDL.Record({
+  'hasMore' : IDL.Bool,
+  'rows' : IDL.Vec(IDL.Vec(Cell)),
 });
 export const OperatorCommandResult = IDL.Record({
   'requires_confirmation' : IDL.Bool,
@@ -2532,6 +2597,27 @@ export const Invoice = IDL.Record({
   'currency' : IDL.Text,
   'amount' : IDL.Nat,
 });
+export const ProviderId = IDL.Variant({
+  'OpenRouter' : IDL.Null,
+  'OpenAI' : IDL.Null,
+  'Anthropic' : IDL.Null,
+  'Generic' : IDL.Null,
+  'Nemotron' : IDL.Null,
+});
+export const ProviderHealthSnapshot = IDL.Record({
+  'provider' : ProviderId,
+  'isSkipped' : IDL.Bool,
+  'skipUntilNs' : IDL.Int,
+  'consecutiveFailures' : IDL.Nat,
+});
+export const RouteLogEntry = IDL.Record({
+  'model' : IDL.Text,
+  'provider' : ProviderId,
+  'attempts' : IDL.Nat,
+  'success' : IDL.Bool,
+  'estimatedCost' : IDL.Float64,
+  'timestampNs' : IDL.Int,
+});
 export const ScheduledDiscoveryJob = IDL.Record({
   'id' : IDL.Text,
   'status' : IDL.Text,
@@ -3314,6 +3400,42 @@ export const ContractSummary = IDL.Record({
   'requiresApproval' : IDL.Bool,
   'purpose' : IDL.Text,
 });
+export const WebhookInboxProvider = IDL.Variant({
+  'twilio' : IDL.Null,
+  'instantly' : IDL.Null,
+  'smartlead' : IDL.Null,
+  'sendgrid' : IDL.Null,
+});
+export const NormalizedWebhookEvent = IDL.Record({
+  'id' : IDL.Text,
+  'provider' : WebhookInboxProvider,
+  'replySubject' : IDL.Opt(IDL.Text),
+  'leadEmail' : IDL.Opt(IDL.Text),
+  'routedTo' : IDL.Text,
+  'normalizedEventType' : IDL.Text,
+  'providerTimestamp' : IDL.Int,
+  'externalLeadId' : IDL.Opt(IDL.Text),
+  'receivedAt' : IDL.Int,
+  'leadPhone' : IDL.Opt(IDL.Text),
+  'internalLeadId' : IDL.Opt(IDL.Text),
+  'replyText' : IDL.Opt(IDL.Text),
+  'rawPayload' : IDL.Text,
+  'externalCampaignId' : IDL.Opt(IDL.Text),
+});
+export const WebhookInboxFilters = IDL.Record({
+  'toTimestamp' : IDL.Opt(IDL.Int),
+  'fromTimestamp' : IDL.Opt(IDL.Int),
+  'provider' : IDL.Opt(WebhookInboxProvider),
+  'normalizedEventType' : IDL.Opt(IDL.Text),
+  'limit' : IDL.Nat,
+  'leadEmailOrPhone' : IDL.Opt(IDL.Text),
+});
+export const WebhookInboxStats = IDL.Record({
+  'eventsLast24h' : IDL.Nat,
+  'totalEvents' : IDL.Nat,
+  'eventsByType' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  'eventsByProvider' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+});
 export const WebhookEvent = IDL.Record({
   'status' : IDL.Variant({ 'ok' : IDL.Null, 'failed' : IDL.Null }),
   'provider' : IDL.Text,
@@ -3434,6 +3556,153 @@ export const OAuthInitResponse = IDL.Record({
   'state' : IDL.Text,
   'authUrl' : IDL.Text,
 });
+export const EnrichmentField = IDL.Variant({
+  'inferredNiche' : IDL.Text,
+  'websiteSummary' : IDL.Text,
+  'suggestedOutreachAngle' : IDL.Text,
+  'companySize' : IDL.Text,
+});
+export const EnrichmentResult = IDL.Record({
+  'provider' : IDL.Text,
+  'errorMessage' : IDL.Opt(IDL.Text),
+  'fields' : IDL.Vec(EnrichmentField),
+  'leadId' : IDL.Text,
+  'success' : IDL.Bool,
+  'enrichedAt' : IDL.Int,
+  'failingProvider' : IDL.Opt(IDL.Text),
+});
+export const DedupeResolution = IDL.Variant({
+  'Linked' : IDL.Null,
+  'Merged' : IDL.Record({
+    'mergedAwayLeadId' : IDL.Text,
+    'mergedIntoLeadId' : IDL.Text,
+  }),
+  'Ignored' : IDL.Null,
+  'KeptSeparate' : IDL.Null,
+});
+export const DedupeMatchField = IDL.Variant({
+  'domain' : IDL.Null,
+  'businessName' : IDL.Null,
+  'email' : IDL.Null,
+  'website' : IDL.Null,
+  'address' : IDL.Null,
+  'phone' : IDL.Null,
+});
+export const DedupeGroup = IDL.Record({
+  'id' : IDL.Text,
+  'leadIds' : IDL.Vec(IDL.Text),
+  'createdAt' : IDL.Int,
+  'resolution' : IDL.Opt(DedupeResolution),
+  'tenantId' : IDL.Text,
+  'matchedFields' : IDL.Vec(DedupeMatchField),
+  'resolvedAt' : IDL.Opt(IDL.Int),
+});
+export const RawLeadInput = IDL.Record({
+  'source' : IDL.Text,
+  'businessName' : IDL.Text,
+  'email' : IDL.Text,
+  'sourceTags' : IDL.Vec(IDL.Text),
+  'niche' : IDL.Text,
+  'phone' : IDL.Text,
+  'locationTags' : IDL.Vec(IDL.Text),
+});
+export const RejectionReason = IDL.Variant({
+  'invalidEmailFormat' : IDL.Null,
+  'invalidPhoneFormat' : IDL.Null,
+  'missingRequiredField' : IDL.Null,
+});
+export const RejectedRow = IDL.Record({
+  'raw' : RawLeadInput,
+  'rowIndex' : IDL.Nat,
+  'reason' : RejectionReason,
+});
+export const LeadEngineBatch = IDL.Record({
+  'id' : IDL.Text,
+  'status' : IDL.Text,
+  'imported' : IDL.Nat,
+  'skipped' : IDL.Nat,
+  'createdAt' : IDL.Int,
+  'totalRows' : IDL.Nat,
+  'tenantId' : IDL.Text,
+  'sourceTool' : IDL.Text,
+  'rejected' : IDL.Vec(RejectedRow),
+  'flagged' : IDL.Nat,
+  'importerName' : IDL.Text,
+});
+export const LeadSourceFormat = IDL.Variant({
+  'csv' : IDL.Null,
+  'omkar' : IDL.Null,
+  'json' : IDL.Null,
+  'gosom' : IDL.Null,
+});
+export const LeadProvenance = IDL.Record({
+  'originalFormat' : LeadSourceFormat,
+  'importDate' : IDL.Int,
+  'sourceTool' : IDL.Text,
+  'importerName' : IDL.Text,
+});
+export const DedupeFlag = IDL.Record({
+  'matchedFields' : IDL.Vec(DedupeMatchField),
+  'matchedLeadId' : IDL.Text,
+  'flaggedAt' : IDL.Int,
+  'importBatchId' : IDL.Text,
+});
+export const LeadEngineLead = IDL.Record({
+  'id' : IDL.Text,
+  'provenance' : LeadProvenance,
+  'status' : IDL.Text,
+  'source' : IDL.Text,
+  'createdAt' : IDL.Int,
+  'businessName' : IDL.Text,
+  'email' : IDL.Text,
+  'enrichmentResult' : IDL.Opt(EnrichmentResult),
+  'tenantId' : IDL.Text,
+  'sourceTags' : IDL.Vec(IDL.Text),
+  'isDuplicate' : IDL.Bool,
+  'dedupeResolution' : IDL.Opt(DedupeResolution),
+  'linkedLeadIds' : IDL.Vec(IDL.Text),
+  'niche' : IDL.Text,
+  'phone' : IDL.Text,
+  'locationTags' : IDL.Vec(IDL.Text),
+  'dedupeFlags' : IDL.Vec(DedupeFlag),
+});
+export const LeadEngineImportResult = IDL.Record({
+  'rejectedRows' : IDL.Vec(RejectedRow),
+  'imported' : IDL.Nat,
+  'skipped' : IDL.Nat,
+  'batchId' : IDL.Text,
+  'flagged' : IDL.Nat,
+});
+export const LeadListFilters = IDL.Record({
+  'enrichmentStatus' : IDL.Opt(
+    IDL.Variant({
+      'any' : IDL.Null,
+      'enriched' : IDL.Null,
+      'notEnriched' : IDL.Null,
+    })
+  ),
+  'dedupeStatus' : IDL.Opt(
+    IDL.Variant({
+      'any' : IDL.Null,
+      'resolved' : IDL.Null,
+      'flagged' : IDL.Null,
+    })
+  ),
+  'batchId' : IDL.Opt(IDL.Text),
+});
+export const LeadListPage = IDL.Record({
+  'total' : IDL.Nat,
+  'offset' : IDL.Nat,
+  'leads' : IDL.Vec(LeadEngineLead),
+  'limit' : IDL.Nat,
+});
+export const LeadStatus = IDL.Variant({
+  'new' : IDL.Null,
+  'enriched' : IDL.Null,
+  'reviewed' : IDL.Null,
+  'flagged' : IDL.Null,
+  'ready' : IDL.Null,
+});
 export const MessageRole = IDL.Variant({
   'System' : IDL.Null,
   'User' : IDL.Null,
@@ -3471,6 +3740,68 @@ export const TrialProvisionRequest = IDL.Record({
 export const ApprovalResolution = IDL.Record({
   'status' : ApprovalStatus,
   'notes' : IDL.Opt(IDL.Text),
+});
+export const RooferEnrollResult = IDL.Record({
+  'enrolled' : IDL.Nat,
+  'skipped' : IDL.Nat,
+});
+export const RooferCampaignLeadStatus = IDL.Variant({
+  'opened' : IDL.Null,
+  'pending' : IDL.Null,
+  'unsubscribed' : IDL.Null,
+  'sent' : IDL.Null,
+  'booked' : IDL.Null,
+  'replied' : IDL.Null,
+  'bounced' : IDL.Null,
+});
+export const RooferCampaignLead = IDL.Record({
+  'status' : RooferCampaignLeadStatus,
+  'nextSendAt' : IDL.Opt(IDL.Int),
+  'bookedAt' : IDL.Opt(IDL.Int),
+  'campaignId' : IDL.Text,
+  'ctaToken' : IDL.Text,
+  'bookedSlot' : IDL.Opt(IDL.Text),
+  'currentStep' : IDL.Nat,
+  'leadId' : IDL.Text,
+  'lastEventAt' : IDL.Opt(IDL.Int),
+});
+export const RooferCampaignLeadsPage = IDL.Record({
+  'total' : IDL.Nat,
+  'leads' : IDL.Vec(RooferCampaignLead),
+});
+export const RooferCampaignSummary = IDL.Record({
+  'id' : IDL.Text,
+  'status' : RooferColdCampaignStatus,
+  'opened' : IDL.Nat,
+  'leadCount' : IDL.Nat,
+  'name' : IDL.Text,
+  'sent' : IDL.Nat,
+  'booked' : IDL.Nat,
+  'replied' : IDL.Nat,
+  'bounced' : IDL.Nat,
+});
+export const RooferProcessSendsResult = IDL.Record({
+  'sent' : IDL.Nat,
+  'errors' : IDL.Vec(IDL.Text),
+});
+export const TaskType = IDL.Variant({
+  'ProposalWriting' : IDL.Null,
+  'EmailGeneration' : IDL.Null,
+  'FollowUpDraft' : IDL.Null,
+  'OutreachCopy' : IDL.Null,
+  'MorningDigest' : IDL.Null,
+  'RAGAnswer' : IDL.Null,
+  'ReviewResponse' : IDL.Null,
+  'Summarization' : IDL.Null,
+});
+export const OpenRouterMessage = IDL.Record({
+  'content' : IDL.Text,
+  'role' : IDL.Text,
+});
+export const TaskCapability = IDL.Record({
+  'temperature' : IDL.Float64,
+  'maxTokens' : IDL.Nat,
+  'modelFamily' : IDL.Opt(IDL.Text),
 });
 export const AbacusRouteRequest = IDL.Record({
   'temperature' : IDL.Opt(IDL.Float64),
@@ -3548,6 +3879,17 @@ export const EmailSendResult = IDL.Variant({
   'ok' : IDL.Text,
   'err' : IDL.Text,
 });
+export const LiveSendResult = IDL.Record({
+  'ok' : IDL.Bool,
+  'messageId' : IDL.Opt(IDL.Text),
+  'error' : IDL.Opt(IDL.Text),
+});
+export const WebhookTestPayload = IDL.Variant({
+  'twilio' : IDL.Null,
+  'instantly' : IDL.Null,
+  'smartlead' : IDL.Null,
+  'sendgrid' : IDL.Null,
+});
 export const BulkLeadInput = IDL.Record({
   'websiteUrl' : IDL.Opt(IDL.Text),
   'city' : IDL.Text,
@@ -3578,6 +3920,14 @@ export const ConnectionTestResult = IDL.Record({
   'statusCode' : IDL.Nat,
   'quotaInfo' : IDL.Opt(IDL.Text),
   'lastTestedAt' : IDL.Opt(IDL.Int),
+});
+export const NemotronTestResult = IDL.Record({
+  'model' : IDL.Text,
+  'provider' : IDL.Text,
+  'errorMessage' : IDL.Opt(IDL.Text),
+  'success' : IDL.Bool,
+  'responseText' : IDL.Text,
+  'timestampNs' : IDL.Nat,
 });
 export const AccountBriefUpdate = IDL.Record({
   'performanceHistory' : IDL.Opt(IDL.Vec(IDL.Text)),
@@ -4434,6 +4784,21 @@ export const idlService = IDL.Service({
       [],
     ),
   'deleteWorkflowDef' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'demoBooking_create' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [IDL.Opt(DemoBooking)],
+      [],
+    ),
+  'demoBooking_getByCtaToken' : IDL.Func(
+      [IDL.Text],
+      [DemoBookingLookup],
+      ['query'],
+    ),
+  'demoBooking_listByCampaign' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Vec(DemoBooking)],
+      ['query'],
+    ),
   'deployAgent' : IDL.Func(
       [IDL.Text],
       [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
@@ -4486,6 +4851,7 @@ export const idlService = IDL.Service({
       [IDL.Record({ 'enrolled' : IDL.Nat, 'skipped' : IDL.Nat })],
       [],
     ),
+  'execute' : IDL.Func([IDL.Text], [Result], ['query']),
   'executeAgentAction' : IDL.Func(
       [IDL.Text],
       [
@@ -5282,6 +5648,8 @@ export const idlService = IDL.Service({
       ],
       ['query'],
     ),
+  'getLLMProviderHealth' : IDL.Func([], [IDL.Vec(ProviderHealthSnapshot)], []),
+  'getLLMRouteLog' : IDL.Func([IDL.Nat], [IDL.Vec(RouteLogEntry)], []),
   'getLastDiscoveryJob' : IDL.Func(
       [],
       [IDL.Opt(ScheduledDiscoveryJob)],
@@ -6020,6 +6388,17 @@ export const idlService = IDL.Service({
       [IDL.Variant({ 'ok' : IDL.Vec(WebhookExecution), 'err' : IDL.Text })],
       [],
     ),
+  'getWebhookInboxEvent' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(NormalizedWebhookEvent)],
+      ['query'],
+    ),
+  'getWebhookInboxEvents' : IDL.Func(
+      [WebhookInboxFilters],
+      [IDL.Vec(NormalizedWebhookEvent)],
+      ['query'],
+    ),
+  'getWebhookInboxStats' : IDL.Func([], [WebhookInboxStats], ['query']),
   'getWebhookLog' : IDL.Func([IDL.Text], [IDL.Vec(WebhookEvent)], ['query']),
   'getWebhookUrl' : IDL.Func([], [IDL.Text], ['query']),
   'getWebhookUrls' : IDL.Func(
@@ -6210,6 +6589,56 @@ export const idlService = IDL.Service({
   'isComposioRoutingEnabled' : IDL.Func([], [IDL.Bool], ['query']),
   'isContentEnabledForTier' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
   'isDemoSessionExpired' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+  'leadEngine_enrichBatch' : IDL.Func(
+      [IDL.Text, IDL.Vec(IDL.Text)],
+      [IDL.Vec(EnrichmentResult)],
+      [],
+    ),
+  'leadEngine_enrichLead' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(EnrichmentResult)],
+      [],
+    ),
+  'leadEngine_getDedupeGroups' : IDL.Func(
+      [IDL.Text, IDL.Bool],
+      [IDL.Vec(DedupeGroup)],
+      ['query'],
+    ),
+  'leadEngine_getImportBatch' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(LeadEngineBatch)],
+      ['query'],
+    ),
+  'leadEngine_getLead' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(LeadEngineLead)],
+      ['query'],
+    ),
+  'leadEngine_importLeads' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(RawLeadInput)],
+      [LeadEngineImportResult],
+      [],
+    ),
+  'leadEngine_listBatches' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(LeadEngineBatch)],
+      ['query'],
+    ),
+  'leadEngine_listLeads' : IDL.Func(
+      [IDL.Text, LeadListFilters, IDL.Nat, IDL.Nat],
+      [LeadListPage],
+      ['query'],
+    ),
+  'leadEngine_resolveDuplicate' : IDL.Func(
+      [IDL.Text, IDL.Text, DedupeResolution],
+      [IDL.Opt(DedupeGroup)],
+      [],
+    ),
+  'leadEngine_updateLeadStatus' : IDL.Func(
+      [IDL.Text, IDL.Text, LeadStatus],
+      [IDL.Opt(LeadEngineLead)],
+      [],
+    ),
   'linkSocialLeadToCRM' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
   'listAllRankedDispatchRoutes' : IDL.Func(
       [],
@@ -6477,6 +6906,11 @@ export const idlService = IDL.Service({
       ],
       [],
     ),
+  'receiveInstantlyWebhook' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
+      [],
+    ),
   'receiveN8NWebhook' : IDL.Func([IDL.Text, IDL.Text], [], []),
   'receiveSendgridEvents' : IDL.Func(
       [IDL.Text],
@@ -6486,6 +6920,11 @@ export const idlService = IDL.Service({
   'receiveSendgridInbound' : IDL.Func(
       [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
       [IDL.Text],
+      [],
+    ),
+  'receiveSmartleadWebhook' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+      [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
       [],
     ),
   'receiveStripeWebhook' : IDL.Func(
@@ -6585,6 +7024,7 @@ export const idlService = IDL.Service({
   'resetDiscoveryTimer' : IDL.Func([], [], []),
   'resetDripDailyCap' : IDL.Func([IDL.Text], [], []),
   'resetEmailSchedulerTimer' : IDL.Func([], [], []),
+  'resetLLMProviderHealth' : IDL.Func([ProviderId], [], []),
   'resetNicheScript' : IDL.Func([IDL.Text], [], []),
   'resetSmsSchedulerTimer' : IDL.Func([], [], []),
   'resetToDefaults' : IDL.Func([], [IDL.Bool], []),
@@ -6603,6 +7043,71 @@ export const idlService = IDL.Service({
   'resumeRoofingCampaign' : IDL.Func(
       [],
       [IDL.Variant({ 'ok' : IDL.Null })],
+      [],
+    ),
+  'rooferColdCampaign_create' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [RooferColdCampaign],
+      [],
+    ),
+  'rooferColdCampaign_enrollLeads' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Vec(IDL.Text)],
+      [RooferEnrollResult],
+      [],
+    ),
+  'rooferColdCampaign_exportLeadsCsv' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Text],
+      ['query'],
+    ),
+  'rooferColdCampaign_get' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(RooferColdCampaign)],
+      ['query'],
+    ),
+  'rooferColdCampaign_getLeads' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat],
+      [RooferCampaignLeadsPage],
+      ['query'],
+    ),
+  'rooferColdCampaign_getReplies' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Vec(NormalizedWebhookEvent)],
+      ['query'],
+    ),
+  'rooferColdCampaign_getStats' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(RooferCampaignStats)],
+      ['query'],
+    ),
+  'rooferColdCampaign_list' : IDL.Func(
+      [IDL.Text],
+      [IDL.Vec(RooferCampaignSummary)],
+      ['query'],
+    ),
+  'rooferColdCampaign_pauseSending' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(RooferColdCampaign)],
+      [],
+    ),
+  'rooferColdCampaign_processDueSends' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [RooferProcessSendsResult],
+      [],
+    ),
+  'rooferColdCampaign_startSending' : IDL.Func(
+      [IDL.Text, IDL.Text],
+      [IDL.Opt(RooferColdCampaign)],
+      [],
+    ),
+  'rooferColdCampaign_updateSequence' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Vec(RooferCampaignStep)],
+      [IDL.Opt(RooferColdCampaign)],
+      [],
+    ),
+  'routeLLMCall' : IDL.Func(
+      [TaskType, IDL.Vec(OpenRouterMessage), TaskCapability],
+      [IDL.Text],
       [],
     ),
   'routeModelRequest' : IDL.Func(
@@ -6784,6 +7289,7 @@ export const idlService = IDL.Service({
       [IDL.Text],
       [],
     ),
+  'schema' : IDL.Func([], [IDL.Text], ['query']),
   'scoreLead' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [LeadAIScore], []),
   'scrapeUrl' : IDL.Func([ScrapeRequest, IDL.Text], [ScrapeResult], []),
   'searchLeadsWithLLM' : IDL.Func(
@@ -6822,6 +7328,16 @@ export const idlService = IDL.Service({
       [EmailSendResult],
       [],
     ),
+  'sendLiveEmail' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+      [LiveSendResult],
+      [],
+    ),
+  'sendLiveSms' : IDL.Func(
+      [IDL.Text, IDL.Text, IDL.Text],
+      [LiveSendResult],
+      [],
+    ),
   'sendNewsletterCampaign' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
   'sendOnboardingEmail' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
@@ -6831,6 +7347,11 @@ export const idlService = IDL.Service({
   'sendReviewRequestEmail' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
       [EmailSendResult],
+      [],
+    ),
+  'sendTestWebhookEvent' : IDL.Func(
+      [WebhookTestPayload],
+      [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
       [],
     ),
   'sendWarmSequenceEmail' : IDL.Func(
@@ -6954,6 +7475,7 @@ export const idlService = IDL.Service({
     ),
   'testLeadFinderDiagnostic' : IDL.Func([], [IDL.Text], ['query']),
   'testN8NConnection' : IDL.Func([], [IDL.Bool], []),
+  'testNemotronPrompt' : IDL.Func([], [NemotronTestResult], []),
   'testNvidiaConnection' : IDL.Func([], [IntegrationTestResult], []),
   'testOpenRouterConnection' : IDL.Func([], [IDL.Bool], []),
   'testServiceConnection' : IDL.Func(
@@ -8509,20 +9031,75 @@ export const idlFactory = ({ IDL }) => {
     'conversation_only' : IDL.Null,
     'with_summary' : IDL.Null,
   });
-  const http_header = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
-  const http_request_result = IDL.Record({
+  const DemoBooking = IDL.Record({
+    'id' : IDL.Text,
+    'rooferEmail' : IDL.Text,
+    'bookedAt' : IDL.Int,
+    'campaignId' : IDL.Text,
+    'ctaToken' : IDL.Text,
+    'leadId' : IDL.Text,
+    'slotTime' : IDL.Text,
+    'rooferName' : IDL.Text,
+    'confirmed' : IDL.Bool,
+  });
+  const RooferColdCampaignStatus = IDL.Variant({
+    'active' : IDL.Null,
+    'completed' : IDL.Null,
+    'draft' : IDL.Null,
+    'paused' : IDL.Null,
+  });
+  const RooferCampaignStats = IDL.Record({
+    'opened' : IDL.Nat,
+    'unsubscribed' : IDL.Nat,
+    'sent' : IDL.Nat,
+    'booked' : IDL.Nat,
+    'totalLeads' : IDL.Nat,
+    'replied' : IDL.Nat,
+    'bounced' : IDL.Nat,
+  });
+  const RooferCampaignStep = IDL.Record({
+    'delayDays' : IDL.Nat,
+    'subject' : IDL.Text,
+    'body' : IDL.Text,
+    'personalizationTokens' : IDL.Vec(IDL.Text),
+    'enabled' : IDL.Bool,
+    'stepNumber' : IDL.Nat,
+    'sendTime' : IDL.Text,
+  });
+  const RooferColdCampaign = IDL.Record({
+    'id' : IDL.Text,
+    'status' : RooferColdCampaignStatus,
+    'name' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'tenantId' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'stats' : RooferCampaignStats,
+    'senderName' : IDL.Text,
+    'senderEmail' : IDL.Text,
+    'leadListFilter' : IDL.Text,
+    'enrolledLeadIds' : IDL.Vec(IDL.Text),
+    'sequence' : IDL.Vec(RooferCampaignStep),
+  });
+  const LeadEngineLead__1 = IDL.Reserved;
+  const DemoBookingLookup = IDL.Record({
+    'campaign' : IDL.Opt(RooferColdCampaign),
+    'lead' : IDL.Opt(LeadEngineLead__1),
+    'existingBooking' : IDL.Opt(DemoBooking),
+  });
+  const HttpHeader = IDL.Record({ 'value' : IDL.Text, 'name' : IDL.Text });
+  const HttpRequestResult = IDL.Record({
     'status' : IDL.Nat,
     'body' : IDL.Vec(IDL.Nat8),
-    'headers' : IDL.Vec(http_header),
+    'headers' : IDL.Vec(HttpHeader),
   });
   const TransformationInput = IDL.Record({
     'context' : IDL.Vec(IDL.Nat8),
-    'response' : http_request_result,
+    'response' : HttpRequestResult,
   });
   const TransformationOutput = IDL.Record({
     'status' : IDL.Nat,
     'body' : IDL.Vec(IDL.Nat8),
-    'headers' : IDL.Vec(http_header),
+    'headers' : IDL.Vec(HttpHeader),
   });
   const LeadAIEnrichment = IDL.Record({
     'model' : IDL.Text,
@@ -8545,6 +9122,19 @@ export const idlFactory = ({ IDL }) => {
     'state' : IDL.Text,
     'companyName' : IDL.Text,
     'phone' : IDL.Opt(IDL.Text),
+  });
+  const Value = IDL.Variant({
+    'int' : IDL.Int,
+    'nat' : IDL.Nat,
+    'float' : IDL.Float64,
+    'bool' : IDL.Bool,
+    'null' : IDL.Null,
+    'text' : IDL.Text,
+  });
+  const Cell = IDL.Record({ 'value' : Value, 'name' : IDL.Text });
+  const Result = IDL.Record({
+    'hasMore' : IDL.Bool,
+    'rows' : IDL.Vec(IDL.Vec(Cell)),
   });
   const OperatorCommandResult = IDL.Record({
     'requires_confirmation' : IDL.Bool,
@@ -9901,6 +10491,27 @@ export const idlFactory = ({ IDL }) => {
     'currency' : IDL.Text,
     'amount' : IDL.Nat,
   });
+  const ProviderId = IDL.Variant({
+    'OpenRouter' : IDL.Null,
+    'OpenAI' : IDL.Null,
+    'Anthropic' : IDL.Null,
+    'Generic' : IDL.Null,
+    'Nemotron' : IDL.Null,
+  });
+  const ProviderHealthSnapshot = IDL.Record({
+    'provider' : ProviderId,
+    'isSkipped' : IDL.Bool,
+    'skipUntilNs' : IDL.Int,
+    'consecutiveFailures' : IDL.Nat,
+  });
+  const RouteLogEntry = IDL.Record({
+    'model' : IDL.Text,
+    'provider' : ProviderId,
+    'attempts' : IDL.Nat,
+    'success' : IDL.Bool,
+    'estimatedCost' : IDL.Float64,
+    'timestampNs' : IDL.Int,
+  });
   const ScheduledDiscoveryJob = IDL.Record({
     'id' : IDL.Text,
     'status' : IDL.Text,
@@ -10683,6 +11294,42 @@ export const idlFactory = ({ IDL }) => {
     'requiresApproval' : IDL.Bool,
     'purpose' : IDL.Text,
   });
+  const WebhookInboxProvider = IDL.Variant({
+    'twilio' : IDL.Null,
+    'instantly' : IDL.Null,
+    'smartlead' : IDL.Null,
+    'sendgrid' : IDL.Null,
+  });
+  const NormalizedWebhookEvent = IDL.Record({
+    'id' : IDL.Text,
+    'provider' : WebhookInboxProvider,
+    'replySubject' : IDL.Opt(IDL.Text),
+    'leadEmail' : IDL.Opt(IDL.Text),
+    'routedTo' : IDL.Text,
+    'normalizedEventType' : IDL.Text,
+    'providerTimestamp' : IDL.Int,
+    'externalLeadId' : IDL.Opt(IDL.Text),
+    'receivedAt' : IDL.Int,
+    'leadPhone' : IDL.Opt(IDL.Text),
+    'internalLeadId' : IDL.Opt(IDL.Text),
+    'replyText' : IDL.Opt(IDL.Text),
+    'rawPayload' : IDL.Text,
+    'externalCampaignId' : IDL.Opt(IDL.Text),
+  });
+  const WebhookInboxFilters = IDL.Record({
+    'toTimestamp' : IDL.Opt(IDL.Int),
+    'fromTimestamp' : IDL.Opt(IDL.Int),
+    'provider' : IDL.Opt(WebhookInboxProvider),
+    'normalizedEventType' : IDL.Opt(IDL.Text),
+    'limit' : IDL.Nat,
+    'leadEmailOrPhone' : IDL.Opt(IDL.Text),
+  });
+  const WebhookInboxStats = IDL.Record({
+    'eventsLast24h' : IDL.Nat,
+    'totalEvents' : IDL.Nat,
+    'eventsByType' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+    'eventsByProvider' : IDL.Vec(IDL.Tuple(IDL.Text, IDL.Nat)),
+  });
   const WebhookEvent = IDL.Record({
     'status' : IDL.Variant({ 'ok' : IDL.Null, 'failed' : IDL.Null }),
     'provider' : IDL.Text,
@@ -10803,6 +11450,153 @@ export const idlFactory = ({ IDL }) => {
     'state' : IDL.Text,
     'authUrl' : IDL.Text,
   });
+  const EnrichmentField = IDL.Variant({
+    'inferredNiche' : IDL.Text,
+    'websiteSummary' : IDL.Text,
+    'suggestedOutreachAngle' : IDL.Text,
+    'companySize' : IDL.Text,
+  });
+  const EnrichmentResult = IDL.Record({
+    'provider' : IDL.Text,
+    'errorMessage' : IDL.Opt(IDL.Text),
+    'fields' : IDL.Vec(EnrichmentField),
+    'leadId' : IDL.Text,
+    'success' : IDL.Bool,
+    'enrichedAt' : IDL.Int,
+    'failingProvider' : IDL.Opt(IDL.Text),
+  });
+  const DedupeResolution = IDL.Variant({
+    'Linked' : IDL.Null,
+    'Merged' : IDL.Record({
+      'mergedAwayLeadId' : IDL.Text,
+      'mergedIntoLeadId' : IDL.Text,
+    }),
+    'Ignored' : IDL.Null,
+    'KeptSeparate' : IDL.Null,
+  });
+  const DedupeMatchField = IDL.Variant({
+    'domain' : IDL.Null,
+    'businessName' : IDL.Null,
+    'email' : IDL.Null,
+    'website' : IDL.Null,
+    'address' : IDL.Null,
+    'phone' : IDL.Null,
+  });
+  const DedupeGroup = IDL.Record({
+    'id' : IDL.Text,
+    'leadIds' : IDL.Vec(IDL.Text),
+    'createdAt' : IDL.Int,
+    'resolution' : IDL.Opt(DedupeResolution),
+    'tenantId' : IDL.Text,
+    'matchedFields' : IDL.Vec(DedupeMatchField),
+    'resolvedAt' : IDL.Opt(IDL.Int),
+  });
+  const RawLeadInput = IDL.Record({
+    'source' : IDL.Text,
+    'businessName' : IDL.Text,
+    'email' : IDL.Text,
+    'sourceTags' : IDL.Vec(IDL.Text),
+    'niche' : IDL.Text,
+    'phone' : IDL.Text,
+    'locationTags' : IDL.Vec(IDL.Text),
+  });
+  const RejectionReason = IDL.Variant({
+    'invalidEmailFormat' : IDL.Null,
+    'invalidPhoneFormat' : IDL.Null,
+    'missingRequiredField' : IDL.Null,
+  });
+  const RejectedRow = IDL.Record({
+    'raw' : RawLeadInput,
+    'rowIndex' : IDL.Nat,
+    'reason' : RejectionReason,
+  });
+  const LeadEngineBatch = IDL.Record({
+    'id' : IDL.Text,
+    'status' : IDL.Text,
+    'imported' : IDL.Nat,
+    'skipped' : IDL.Nat,
+    'createdAt' : IDL.Int,
+    'totalRows' : IDL.Nat,
+    'tenantId' : IDL.Text,
+    'sourceTool' : IDL.Text,
+    'rejected' : IDL.Vec(RejectedRow),
+    'flagged' : IDL.Nat,
+    'importerName' : IDL.Text,
+  });
+  const LeadSourceFormat = IDL.Variant({
+    'csv' : IDL.Null,
+    'omkar' : IDL.Null,
+    'json' : IDL.Null,
+    'gosom' : IDL.Null,
+  });
+  const LeadProvenance = IDL.Record({
+    'originalFormat' : LeadSourceFormat,
+    'importDate' : IDL.Int,
+    'sourceTool' : IDL.Text,
+    'importerName' : IDL.Text,
+  });
+  const DedupeFlag = IDL.Record({
+    'matchedFields' : IDL.Vec(DedupeMatchField),
+    'matchedLeadId' : IDL.Text,
+    'flaggedAt' : IDL.Int,
+    'importBatchId' : IDL.Text,
+  });
+  const LeadEngineLead = IDL.Record({
+    'id' : IDL.Text,
+    'provenance' : LeadProvenance,
+    'status' : IDL.Text,
+    'source' : IDL.Text,
+    'createdAt' : IDL.Int,
+    'businessName' : IDL.Text,
+    'email' : IDL.Text,
+    'enrichmentResult' : IDL.Opt(EnrichmentResult),
+    'tenantId' : IDL.Text,
+    'sourceTags' : IDL.Vec(IDL.Text),
+    'isDuplicate' : IDL.Bool,
+    'dedupeResolution' : IDL.Opt(DedupeResolution),
+    'linkedLeadIds' : IDL.Vec(IDL.Text),
+    'niche' : IDL.Text,
+    'phone' : IDL.Text,
+    'locationTags' : IDL.Vec(IDL.Text),
+    'dedupeFlags' : IDL.Vec(DedupeFlag),
+  });
+  const LeadEngineImportResult = IDL.Record({
+    'rejectedRows' : IDL.Vec(RejectedRow),
+    'imported' : IDL.Nat,
+    'skipped' : IDL.Nat,
+    'batchId' : IDL.Text,
+    'flagged' : IDL.Nat,
+  });
+  const LeadListFilters = IDL.Record({
+    'enrichmentStatus' : IDL.Opt(
+      IDL.Variant({
+        'any' : IDL.Null,
+        'enriched' : IDL.Null,
+        'notEnriched' : IDL.Null,
+      })
+    ),
+    'dedupeStatus' : IDL.Opt(
+      IDL.Variant({
+        'any' : IDL.Null,
+        'resolved' : IDL.Null,
+        'flagged' : IDL.Null,
+      })
+    ),
+    'batchId' : IDL.Opt(IDL.Text),
+  });
+  const LeadListPage = IDL.Record({
+    'total' : IDL.Nat,
+    'offset' : IDL.Nat,
+    'leads' : IDL.Vec(LeadEngineLead),
+    'limit' : IDL.Nat,
+  });
+  const LeadStatus = IDL.Variant({
+    'new' : IDL.Null,
+    'enriched' : IDL.Null,
+    'reviewed' : IDL.Null,
+    'flagged' : IDL.Null,
+    'ready' : IDL.Null,
+  });
   const MessageRole = IDL.Variant({
     'System' : IDL.Null,
     'User' : IDL.Null,
@@ -10840,6 +11634,68 @@ export const idlFactory = ({ IDL }) => {
   const ApprovalResolution = IDL.Record({
     'status' : ApprovalStatus,
     'notes' : IDL.Opt(IDL.Text),
+  });
+  const RooferEnrollResult = IDL.Record({
+    'enrolled' : IDL.Nat,
+    'skipped' : IDL.Nat,
+  });
+  const RooferCampaignLeadStatus = IDL.Variant({
+    'opened' : IDL.Null,
+    'pending' : IDL.Null,
+    'unsubscribed' : IDL.Null,
+    'sent' : IDL.Null,
+    'booked' : IDL.Null,
+    'replied' : IDL.Null,
+    'bounced' : IDL.Null,
+  });
+  const RooferCampaignLead = IDL.Record({
+    'status' : RooferCampaignLeadStatus,
+    'nextSendAt' : IDL.Opt(IDL.Int),
+    'bookedAt' : IDL.Opt(IDL.Int),
+    'campaignId' : IDL.Text,
+    'ctaToken' : IDL.Text,
+    'bookedSlot' : IDL.Opt(IDL.Text),
+    'currentStep' : IDL.Nat,
+    'leadId' : IDL.Text,
+    'lastEventAt' : IDL.Opt(IDL.Int),
+  });
+  const RooferCampaignLeadsPage = IDL.Record({
+    'total' : IDL.Nat,
+    'leads' : IDL.Vec(RooferCampaignLead),
+  });
+  const RooferCampaignSummary = IDL.Record({
+    'id' : IDL.Text,
+    'status' : RooferColdCampaignStatus,
+    'opened' : IDL.Nat,
+    'leadCount' : IDL.Nat,
+    'name' : IDL.Text,
+    'sent' : IDL.Nat,
+    'booked' : IDL.Nat,
+    'replied' : IDL.Nat,
+    'bounced' : IDL.Nat,
+  });
+  const RooferProcessSendsResult = IDL.Record({
+    'sent' : IDL.Nat,
+    'errors' : IDL.Vec(IDL.Text),
+  });
+  const TaskType = IDL.Variant({
+    'ProposalWriting' : IDL.Null,
+    'EmailGeneration' : IDL.Null,
+    'FollowUpDraft' : IDL.Null,
+    'OutreachCopy' : IDL.Null,
+    'MorningDigest' : IDL.Null,
+    'RAGAnswer' : IDL.Null,
+    'ReviewResponse' : IDL.Null,
+    'Summarization' : IDL.Null,
+  });
+  const OpenRouterMessage = IDL.Record({
+    'content' : IDL.Text,
+    'role' : IDL.Text,
+  });
+  const TaskCapability = IDL.Record({
+    'temperature' : IDL.Float64,
+    'maxTokens' : IDL.Nat,
+    'modelFamily' : IDL.Opt(IDL.Text),
   });
   const AbacusRouteRequest = IDL.Record({
     'temperature' : IDL.Opt(IDL.Float64),
@@ -10914,6 +11770,17 @@ export const idlFactory = ({ IDL }) => {
     'serpApiCount' : IDL.Nat,
   });
   const EmailSendResult = IDL.Variant({ 'ok' : IDL.Text, 'err' : IDL.Text });
+  const LiveSendResult = IDL.Record({
+    'ok' : IDL.Bool,
+    'messageId' : IDL.Opt(IDL.Text),
+    'error' : IDL.Opt(IDL.Text),
+  });
+  const WebhookTestPayload = IDL.Variant({
+    'twilio' : IDL.Null,
+    'instantly' : IDL.Null,
+    'smartlead' : IDL.Null,
+    'sendgrid' : IDL.Null,
+  });
   const BulkLeadInput = IDL.Record({
     'websiteUrl' : IDL.Opt(IDL.Text),
     'city' : IDL.Text,
@@ -10944,6 +11811,14 @@ export const idlFactory = ({ IDL }) => {
     'statusCode' : IDL.Nat,
     'quotaInfo' : IDL.Opt(IDL.Text),
     'lastTestedAt' : IDL.Opt(IDL.Int),
+  });
+  const NemotronTestResult = IDL.Record({
+    'model' : IDL.Text,
+    'provider' : IDL.Text,
+    'errorMessage' : IDL.Opt(IDL.Text),
+    'success' : IDL.Bool,
+    'responseText' : IDL.Text,
+    'timestampNs' : IDL.Nat,
   });
   const AccountBriefUpdate = IDL.Record({
     'performanceHistory' : IDL.Opt(IDL.Vec(IDL.Text)),
@@ -11814,6 +12689,21 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteWorkflowDef' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'demoBooking_create' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [IDL.Opt(DemoBooking)],
+        [],
+      ),
+    'demoBooking_getByCtaToken' : IDL.Func(
+        [IDL.Text],
+        [DemoBookingLookup],
+        ['query'],
+      ),
+    'demoBooking_listByCampaign' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Vec(DemoBooking)],
+        ['query'],
+      ),
     'deployAgent' : IDL.Func(
         [IDL.Text],
         [IDL.Record({ 'message' : IDL.Text, 'success' : IDL.Bool })],
@@ -11866,6 +12756,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Record({ 'enrolled' : IDL.Nat, 'skipped' : IDL.Nat })],
         [],
       ),
+    'execute' : IDL.Func([IDL.Text], [Result], ['query']),
     'executeAgentAction' : IDL.Func(
         [IDL.Text],
         [
@@ -12704,6 +13595,12 @@ export const idlFactory = ({ IDL }) => {
         ],
         ['query'],
       ),
+    'getLLMProviderHealth' : IDL.Func(
+        [],
+        [IDL.Vec(ProviderHealthSnapshot)],
+        [],
+      ),
+    'getLLMRouteLog' : IDL.Func([IDL.Nat], [IDL.Vec(RouteLogEntry)], []),
     'getLastDiscoveryJob' : IDL.Func(
         [],
         [IDL.Opt(ScheduledDiscoveryJob)],
@@ -13488,6 +14385,17 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Variant({ 'ok' : IDL.Vec(WebhookExecution), 'err' : IDL.Text })],
         [],
       ),
+    'getWebhookInboxEvent' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(NormalizedWebhookEvent)],
+        ['query'],
+      ),
+    'getWebhookInboxEvents' : IDL.Func(
+        [WebhookInboxFilters],
+        [IDL.Vec(NormalizedWebhookEvent)],
+        ['query'],
+      ),
+    'getWebhookInboxStats' : IDL.Func([], [WebhookInboxStats], ['query']),
     'getWebhookLog' : IDL.Func([IDL.Text], [IDL.Vec(WebhookEvent)], ['query']),
     'getWebhookUrl' : IDL.Func([], [IDL.Text], ['query']),
     'getWebhookUrls' : IDL.Func(
@@ -13678,6 +14586,56 @@ export const idlFactory = ({ IDL }) => {
     'isComposioRoutingEnabled' : IDL.Func([], [IDL.Bool], ['query']),
     'isContentEnabledForTier' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
     'isDemoSessionExpired' : IDL.Func([IDL.Text], [IDL.Bool], ['query']),
+    'leadEngine_enrichBatch' : IDL.Func(
+        [IDL.Text, IDL.Vec(IDL.Text)],
+        [IDL.Vec(EnrichmentResult)],
+        [],
+      ),
+    'leadEngine_enrichLead' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(EnrichmentResult)],
+        [],
+      ),
+    'leadEngine_getDedupeGroups' : IDL.Func(
+        [IDL.Text, IDL.Bool],
+        [IDL.Vec(DedupeGroup)],
+        ['query'],
+      ),
+    'leadEngine_getImportBatch' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(LeadEngineBatch)],
+        ['query'],
+      ),
+    'leadEngine_getLead' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(LeadEngineLead)],
+        ['query'],
+      ),
+    'leadEngine_importLeads' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Vec(RawLeadInput)],
+        [LeadEngineImportResult],
+        [],
+      ),
+    'leadEngine_listBatches' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(LeadEngineBatch)],
+        ['query'],
+      ),
+    'leadEngine_listLeads' : IDL.Func(
+        [IDL.Text, LeadListFilters, IDL.Nat, IDL.Nat],
+        [LeadListPage],
+        ['query'],
+      ),
+    'leadEngine_resolveDuplicate' : IDL.Func(
+        [IDL.Text, IDL.Text, DedupeResolution],
+        [IDL.Opt(DedupeGroup)],
+        [],
+      ),
+    'leadEngine_updateLeadStatus' : IDL.Func(
+        [IDL.Text, IDL.Text, LeadStatus],
+        [IDL.Opt(LeadEngineLead)],
+        [],
+      ),
     'linkSocialLeadToCRM' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
     'listAllRankedDispatchRoutes' : IDL.Func(
         [],
@@ -13972,6 +14930,11 @@ export const idlFactory = ({ IDL }) => {
         ],
         [],
       ),
+    'receiveInstantlyWebhook' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
+        [],
+      ),
     'receiveN8NWebhook' : IDL.Func([IDL.Text, IDL.Text], [], []),
     'receiveSendgridEvents' : IDL.Func(
         [IDL.Text],
@@ -13981,6 +14944,11 @@ export const idlFactory = ({ IDL }) => {
     'receiveSendgridInbound' : IDL.Func(
         [IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
         [IDL.Text],
+        [],
+      ),
+    'receiveSmartleadWebhook' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Vec(IDL.Tuple(IDL.Text, IDL.Text))],
+        [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
         [],
       ),
     'receiveStripeWebhook' : IDL.Func(
@@ -14080,6 +15048,7 @@ export const idlFactory = ({ IDL }) => {
     'resetDiscoveryTimer' : IDL.Func([], [], []),
     'resetDripDailyCap' : IDL.Func([IDL.Text], [], []),
     'resetEmailSchedulerTimer' : IDL.Func([], [], []),
+    'resetLLMProviderHealth' : IDL.Func([ProviderId], [], []),
     'resetNicheScript' : IDL.Func([IDL.Text], [], []),
     'resetSmsSchedulerTimer' : IDL.Func([], [], []),
     'resetToDefaults' : IDL.Func([], [IDL.Bool], []),
@@ -14098,6 +15067,71 @@ export const idlFactory = ({ IDL }) => {
     'resumeRoofingCampaign' : IDL.Func(
         [],
         [IDL.Variant({ 'ok' : IDL.Null })],
+        [],
+      ),
+    'rooferColdCampaign_create' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [RooferColdCampaign],
+        [],
+      ),
+    'rooferColdCampaign_enrollLeads' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Vec(IDL.Text)],
+        [RooferEnrollResult],
+        [],
+      ),
+    'rooferColdCampaign_exportLeadsCsv' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Text],
+        ['query'],
+      ),
+    'rooferColdCampaign_get' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(RooferColdCampaign)],
+        ['query'],
+      ),
+    'rooferColdCampaign_getLeads' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Nat],
+        [RooferCampaignLeadsPage],
+        ['query'],
+      ),
+    'rooferColdCampaign_getReplies' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Vec(NormalizedWebhookEvent)],
+        ['query'],
+      ),
+    'rooferColdCampaign_getStats' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(RooferCampaignStats)],
+        ['query'],
+      ),
+    'rooferColdCampaign_list' : IDL.Func(
+        [IDL.Text],
+        [IDL.Vec(RooferCampaignSummary)],
+        ['query'],
+      ),
+    'rooferColdCampaign_pauseSending' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(RooferColdCampaign)],
+        [],
+      ),
+    'rooferColdCampaign_processDueSends' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [RooferProcessSendsResult],
+        [],
+      ),
+    'rooferColdCampaign_startSending' : IDL.Func(
+        [IDL.Text, IDL.Text],
+        [IDL.Opt(RooferColdCampaign)],
+        [],
+      ),
+    'rooferColdCampaign_updateSequence' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Vec(RooferCampaignStep)],
+        [IDL.Opt(RooferColdCampaign)],
+        [],
+      ),
+    'routeLLMCall' : IDL.Func(
+        [TaskType, IDL.Vec(OpenRouterMessage), TaskCapability],
+        [IDL.Text],
         [],
       ),
     'routeModelRequest' : IDL.Func(
@@ -14283,6 +15317,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Text],
         [],
       ),
+    'schema' : IDL.Func([], [IDL.Text], ['query']),
     'scoreLead' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [LeadAIScore], []),
     'scrapeUrl' : IDL.Func([ScrapeRequest, IDL.Text], [ScrapeResult], []),
     'searchLeadsWithLLM' : IDL.Func(
@@ -14321,6 +15356,16 @@ export const idlFactory = ({ IDL }) => {
         [EmailSendResult],
         [],
       ),
+    'sendLiveEmail' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
+        [LiveSendResult],
+        [],
+      ),
+    'sendLiveSms' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Text],
+        [LiveSendResult],
+        [],
+      ),
     'sendNewsletterCampaign' : IDL.Func([IDL.Text, IDL.Text], [IDL.Nat], []),
     'sendOnboardingEmail' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
@@ -14330,6 +15375,11 @@ export const idlFactory = ({ IDL }) => {
     'sendReviewRequestEmail' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [EmailSendResult],
+        [],
+      ),
+    'sendTestWebhookEvent' : IDL.Func(
+        [WebhookTestPayload],
+        [IDL.Record({ 'ok' : IDL.Bool, 'eventId' : IDL.Text })],
         [],
       ),
     'sendWarmSequenceEmail' : IDL.Func(
@@ -14461,6 +15511,7 @@ export const idlFactory = ({ IDL }) => {
       ),
     'testLeadFinderDiagnostic' : IDL.Func([], [IDL.Text], ['query']),
     'testN8NConnection' : IDL.Func([], [IDL.Bool], []),
+    'testNemotronPrompt' : IDL.Func([], [NemotronTestResult], []),
     'testNvidiaConnection' : IDL.Func([], [IntegrationTestResult], []),
     'testOpenRouterConnection' : IDL.Func([], [IDL.Bool], []),
     'testServiceConnection' : IDL.Func(

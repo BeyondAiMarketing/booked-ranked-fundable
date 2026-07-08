@@ -2,6 +2,7 @@ import Map     "mo:core/Map";
 import List    "mo:core/List";
 import Time    "mo:core/Time";
 import Text    "mo:core/Text";
+import Nat     "mo:core/Nat";
 import Runtime "mo:core/Runtime";
 import AccessControl "mo:caffeineai-authorization/access-control";
 import Outcall "mo:caffeineai-http-outcalls/outcall";

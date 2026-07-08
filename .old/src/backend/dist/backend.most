@@ -1128,6 +1128,43 @@ type CustomField__1060121934 =
   };
 type Data__547710445<T> = {var count : Nat__93962160; elements : [var ?T]};
 type Data__552063367<K, V> = {var count : Nat__93962160; kvs : [var ?(K, V)]};
+type DedupeFlag__935842122 =
+  {
+    flaggedAt : Int;
+    importBatchId : Text;
+    matchedFields : [DedupeMatchField__488654340];
+    matchedLeadId : Text
+  };
+type DedupeGroup__86885370 =
+  {
+    createdAt : Int;
+    id : Text;
+    leadIds : [Text];
+    matchedFields : [DedupeMatchField__488654340];
+    resolution : ?DedupeResolution__429548594;
+    resolvedAt : ?Int;
+    tenantId : Text
+  };
+type DedupeMatchField__488654340 =
+  {#address; #businessName; #domain; #email; #phone; #website};
+type DedupeResolutionLogEntry__922573098 =
+  {
+    groupId : Text;
+    id : Text;
+    leadIdA : Text;
+    leadIdB : Text;
+    resolution : DedupeResolution__429548594;
+    resolvedAt : Int;
+    resolvedBy : Text;
+    tenantId : Text
+  };
+type DedupeResolution__429548594 =
+  {
+    #Ignored;
+    #KeptSeparate;
+    #Linked;
+    #Merged : {mergedAwayLeadId : Text; mergedIntoLeadId : Text}
+  };
 type DeliverabilityEvent__753469675 =
   {
     email : Text;
@@ -1146,6 +1183,18 @@ type DemoAuditReport__449169018 =
     prospectEmail : Text;
     recommendations : [Text];
     score : Nat
+  };
+type DemoBooking__90750747 =
+  {
+    bookedAt : Int;
+    campaignId : Text;
+    confirmed : Bool;
+    ctaToken : Text;
+    id : Text;
+    leadId : Text;
+    rooferEmail : Text;
+    rooferName : Text;
+    slotTime : Text
   };
 type DemoFunnelEntry__755436335 =
   {
@@ -1357,6 +1406,23 @@ type EngagementApproval__523825574 =
     id : Text;
     resolvedAt : ?Int;
     tenantId : Text
+  };
+type EnrichmentField__69080906 =
+  {
+    #companySize : Text;
+    #inferredNiche : Text;
+    #suggestedOutreachAngle : Text;
+    #websiteSummary : Text
+  };
+type EnrichmentResult__626134396 =
+  {
+    enrichedAt : Int;
+    errorMessage : ?Text;
+    failingProvider : ?Text;
+    fields : [EnrichmentField__69080906];
+    leadId : Text;
+    provider : Text;
+    success : Bool
   };
 type EstimateLineItem__228575551 =
   {
@@ -1738,6 +1804,48 @@ type LeadCampaignStatus__882515218 =
     status : CampaignLeadStatus__963701153;
     website : ?Text
   };
+type LeadEngineBatch__31093183 =
+  {
+    createdAt : Int;
+    flagged : Nat;
+    id : Text;
+    imported : Nat;
+    importerName : Text;
+    rejected : [RejectedRow__712358694];
+    skipped : Nat;
+    sourceTool : Text;
+    status : Text;
+    tenantId : Text;
+    totalRows : Nat
+  };
+type LeadEngineLead__738994216 =
+  {
+    businessName : Text;
+    createdAt : Int;
+    dedupeFlags : [DedupeFlag__935842122];
+    dedupeResolution : ?DedupeResolution__429548594;
+    email : Text;
+    enrichmentResult : ?EnrichmentResult__626134396;
+    id : Text;
+    isDuplicate : Bool;
+    linkedLeadIds : [Text];
+    locationTags : [Text];
+    niche : Text;
+    phone : Text;
+    provenance : LeadProvenance__920946120;
+    source : Text;
+    sourceTags : [Text];
+    status : Text;
+    tenantId : Text
+  };
+type LeadProvenance__920946120 =
+  {
+    importDate : Int;
+    importerName : Text;
+    originalFormat : LeadSourceFormat__406466591;
+    sourceTool : Text
+  };
+type LeadSourceFormat__406466591 = {#csv; #gosom; #json; #omkar};
 type Lead__21276013 =
   {
     agentSubscriptions : [Text];
@@ -1957,6 +2065,23 @@ type Node__93045588<T> =
     var next : ?Node__93045588<T>;
     var previous : ?Node__93045588<T>;
     value : T
+  };
+type NormalizedWebhookEvent__994921277 =
+  {
+    externalCampaignId : ?Text;
+    externalLeadId : ?Text;
+    id : Text;
+    internalLeadId : ?Text;
+    leadEmail : ?Text;
+    leadPhone : ?Text;
+    normalizedEventType : Text;
+    provider : WebhookInboxProvider__714409462;
+    providerTimestamp : Int;
+    rawPayload : Text;
+    receivedAt : Int;
+    replySubject : ?Text;
+    replyText : ?Text;
+    routedTo : Text
   };
 type NoteCategory__873534532 = {#Call; #Email; #General; #Meeting; #System};
 type Note__227694438 =
@@ -2265,6 +2390,10 @@ type ProviderAdapterConfig__575526954 =
     priority : Nat;
     tenantId : Text
   };
+type ProviderHealth__113741570 =
+  {var consecutiveFailures : Nat; var skipUntilNs : Int};
+type ProviderId__747642693 =
+  {#Anthropic; #Generic; #Nemotron; #OpenAI; #OpenRouter};
 type ProviderType__763330179 = {#Cached; #Claude; #NVIDIA; #OpenAI};
 type RankedDispatchRoute__495286538 =
   {
@@ -2280,6 +2409,24 @@ type RankedDispatchRoute__495286538 =
   };
 type RankedDispatchStatus__736380124 =
   {#completed; #failed; #pending; #routed};
+type RawLeadInput__585123823 =
+  {
+    businessName : Text;
+    email : Text;
+    locationTags : [Text];
+    niche : Text;
+    phone : Text;
+    source : Text;
+    sourceTags : [Text]
+  };
+type RejectedRow__712358694 =
+  {
+    raw : RawLeadInput__585123823;
+    reason : RejectionReason__812391107;
+    rowIndex : Nat
+  };
+type RejectionReason__812391107 =
+  {#invalidEmailFormat; #invalidPhoneFormat; #missingRequiredField};
 type ReplyAnalysis__1003889084 =
   {
     analyzedAt : Int;
@@ -2390,12 +2537,72 @@ type Review__422344017 =
     sentiment : Text;
     tenantId : TenantId__142640312
   };
+type RooferCampaignLeadStatus__837097540 =
+  {#booked; #bounced; #opened; #pending; #replied; #sent; #unsubscribed};
+type RooferCampaignLead__912274947 =
+  {
+    bookedAt : ?Int;
+    bookedSlot : ?Text;
+    campaignId : Text;
+    ctaToken : Text;
+    currentStep : Nat;
+    lastEventAt : ?Int;
+    leadId : Text;
+    nextSendAt : ?Int;
+    status : RooferCampaignLeadStatus__837097540
+  };
+type RooferCampaignStats__82817146 =
+  {
+    booked : Nat;
+    bounced : Nat;
+    opened : Nat;
+    replied : Nat;
+    sent : Nat;
+    totalLeads : Nat;
+    unsubscribed : Nat
+  };
+type RooferCampaignStep__1015896588 =
+  {
+    body : Text;
+    delayDays : Nat;
+    enabled : Bool;
+    personalizationTokens : [Text];
+    sendTime : Text;
+    stepNumber : Nat;
+    subject : Text
+  };
+type RooferColdCampaignStatus__406328041 =
+  {#active; #completed; #draft; #paused};
+type RooferColdCampaign__175671419 =
+  {
+    createdAt : Int;
+    enrolledLeadIds : [Text];
+    id : Text;
+    leadListFilter : Text;
+    name : Text;
+    senderEmail : Text;
+    senderName : Text;
+    sequence : [RooferCampaignStep__1015896588];
+    stats : RooferCampaignStats__82817146;
+    status : RooferColdCampaignStatus__406328041;
+    tenantId : Text;
+    updatedAt : Int
+  };
 type RoofingTemplate__171815962 =
   {
     description : Text;
     name : Text;
     niche : Text;
     nodes : [DograhNode__345691589]
+  };
+type RouteLogEntry__867755582 =
+  {
+    attempts : Nat;
+    estimatedCost : Float;
+    model : Text;
+    provider : ProviderId__747642693;
+    success : Bool;
+    timestampNs : Int
   };
 type RunStatus__271948425 =
   {#cancelled; #completed; #failed; #paused_for_approval; #queued; #running};
@@ -3137,6 +3344,10 @@ type WebhookExecution__970393702 =
     status : {#cancelled; #failed; #pending; #success};
     verticalProfileId : ?Text
   };
+type WebhookInboxProvider__714409462 =
+  {#instantly; #sendgrid; #smartlead; #twilio};
+type WebhookInboxState__978938561 =
+  {events : Map__246123559<Text, NormalizedWebhookEvent__994921277>};
 type WebhookState__290626572 =
   {
     composioWebhookLogs :
@@ -3816,6 +4027,8 @@ actor {
       var root : Node__279997185<Text, CsvImportBatch__515821595>;
       var size : Nat__93962160
     };
+  stable defaultCapability :
+    {maxTokens : Nat; modelFamily : ?Text; temperature : Float};
   stable deliverabilityEvents :
     {
       var blockIndex : Nat__93962160;
@@ -3872,6 +4085,8 @@ actor {
       var root : Node__279997185<Text, DualModelSearchJob__691109652>;
       var size : Nat__93962160
     };
+  stable eg_capability :
+    {maxTokens : Nat; modelFamily : ?Text; temperature : Float};
   stable elevenLabsAudioCache :
     {var root : Node__279997185<Text, Text>; var size : Nat__93962160};
   stable emailIdCounter : {var n : Nat};
@@ -3951,6 +4166,7 @@ actor {
       var root : Node__279997185<Text, EngagementApproval__523825574>;
       var size : Nat__93962160
     };
+  stable var eventCounter : Nat;
   stable extendedLeads :
     {
       var root :
@@ -4045,6 +4261,15 @@ actor {
       var root : Node__279997185<Text, LeadAuditResult__606992864>;
       var size : Nat__93962160
     };
+  stable leadEngineState :
+    {
+      var batches : Map__246123559<Text, LeadEngineBatch__31093183>;
+      var dedupeGroups : Map__246123559<Text, DedupeGroup__86885370>;
+      var dedupeResolutionLog :
+        Map__246123559<Text, DedupeResolutionLogEntry__922573098>;
+      var leads :
+        Map__246123559<Text, Map__246123559<Text, LeadEngineLead__738994216>>
+    };
   stable leadEnrollState :
     {enrolledLeads : Map__246123559<Text, Map__246123559<Text, Bool>>};
   stable leads :
@@ -4053,6 +4278,11 @@ actor {
         Node__279997185<TenantId__142640312,
                          Map__246123559<Text, Lead__21276013>>;
       var size : Nat__93962160
+    };
+  stable llmFallbackState :
+    {
+      var health : Map__246123559<Text, ProviderHealth__113741570>;
+      var routeLog : [RouteLogEntry__867755582]
     };
   stable locationProfiles :
     {
@@ -4240,6 +4470,18 @@ actor {
         Node__279997185<TenantId__142640312,
                          Map__246123559<Text, Review__422344017>>;
       var size : Nat__93962160
+    };
+  stable ri_capability :
+    {maxTokens : Nat; modelFamily : ?Text; temperature : Float};
+  stable rooferColdCampaignState :
+    {
+      var bookings : Map__246123559<Text, DemoBooking__90750747>;
+      var bookingsByToken : Map__246123559<Text, DemoBooking__90750747>;
+      var campaigns : Map__246123559<Text, RooferColdCampaign__175671419>;
+      var ctaTokens : Map__246123559<Text, Text>;
+      var leads :
+        Map__246123559<Text,
+                        Map__246123559<Text, RooferCampaignLead__912274947>>
     };
   stable roofingAutoEnrollState : {var done : Bool};
   stable roofingCampaignCounters :
@@ -4480,6 +4722,7 @@ actor {
       contracts : Map__246123559<Text, WebhookContract__823045856>;
       executions : Map__246123559<Text, WebhookExecution__970393702>
     };
+  stable webhookInboxState : {var s : WebhookInboxState__978938561};
   stable webhookStateRef : {var s : WebhookState__290626572};
   stable websiteAgentScores :
     {

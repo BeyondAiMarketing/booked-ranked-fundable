@@ -87,13 +87,45 @@ type DemoState =
   | { phase: "track2"; step: number }
   | { phase: "complete" };
 
+// Canonical niche keys (must match DemoNicheSelector NICHES[].key).
+// Keeping this list local avoids importing the selector's private constant.
+const VALID_NICHES = [
+  "plumbing",
+  "med-spa",
+  "hvac",
+  "restoration",
+  "carpet-cleaning",
+  "roofing",
+  "real-estate",
+  "mortgage",
+  "chiropractor",
+  "dental",
+] as const;
+
+// Neutral placeholder used ONLY when the URL niche is genuinely missing or
+// invalid. Previously this defaulted to "plumbing", which caused the Real
+// Estate flow (/demo?niche=real-estate) to render "Your Plumbing Business App"
+// whenever the query param was absent or mismatched. With the isValidNiche guard
+// below, an invalid/missing niche sends the user to the selector phase, so this
+// placeholder never reaches the niche content maps. It is intentionally NOT
+// "plumbing" so no code path can silently impersonate the plumbing niche.
+const NEUTRAL_NICHE = "";
+
+function isValidNiche(niche: string | null | undefined): niche is string {
+  return !!niche && (VALID_NICHES as readonly string[]).includes(niche);
+}
+
 export default function ServicesDemoPage() {
   // Read URL params for niche and name pre-selection
   const search = useSearch({ strict: false }) as Record<
     string,
     string | undefined
   >;
-  const urlNiche = (search.niche as string | undefined) ?? null;
+  const urlNicheRaw = (search.niche as string | undefined) ?? null;
+  // Only accept the URL niche if it is a known, valid niche key. This is the
+  // v213 regression fix: an invalid/missing niche no longer falls back to
+  // "plumbing" — it is treated as "no niche" so the user lands on the selector.
+  const urlNiche = isValidNiche(urlNicheRaw) ? urlNicheRaw : null;
   const urlName = (search.name as string | undefined) ?? null;
 
   const [demoState, setDemoState] = useState<DemoState>(() => {
@@ -101,8 +133,12 @@ export default function ServicesDemoPage() {
     return { phase: "select" };
   });
 
+  // selectedNiche only seeds from a VALID url niche. When no valid niche is
+  // present we keep a neutral placeholder; the user must pick a niche from the
+  // selector before any scene renders, so this value never reaches the niche
+  // content maps in that case.
   const [selectedNiche, setSelectedNiche] = useState<string>(
-    urlNiche ?? "plumbing",
+    urlNiche ?? NEUTRAL_NICHE,
   );
   const [businessName, setBusinessName] = useState<string>(() => {
     if (urlName) return urlName;

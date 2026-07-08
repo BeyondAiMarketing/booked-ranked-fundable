@@ -873,6 +873,7 @@ export type CampaignType = { 'reviewRequest' : null } |
   { 'verticalSpecific' : null } |
   { 'eventWebinar' : null } |
   { 'proposalFollowUp' : null };
+export interface Cell { 'value' : Value, 'name' : string }
 export interface ChatWidgetConfig {
   'faqItems' : Array<string>,
   'active' : boolean,
@@ -1177,6 +1178,31 @@ export interface CustomFieldValue {
   'entityType' : string,
 }
 export interface CustomFieldValueUpdate { 'value' : [] | [string] }
+export interface DedupeFlag {
+  'matchedFields' : Array<DedupeMatchField>,
+  'matchedLeadId' : string,
+  'flaggedAt' : bigint,
+  'importBatchId' : string,
+}
+export interface DedupeGroup {
+  'id' : string,
+  'leadIds' : Array<string>,
+  'createdAt' : bigint,
+  'resolution' : [] | [DedupeResolution],
+  'tenantId' : string,
+  'matchedFields' : Array<DedupeMatchField>,
+  'resolvedAt' : [] | [bigint],
+}
+export type DedupeMatchField = { 'domain' : null } |
+  { 'businessName' : null } |
+  { 'email' : null } |
+  { 'website' : null } |
+  { 'address' : null } |
+  { 'phone' : null };
+export type DedupeResolution = { 'Linked' : null } |
+  { 'Merged' : { 'mergedAwayLeadId' : string, 'mergedIntoLeadId' : string } } |
+  { 'Ignored' : null } |
+  { 'KeptSeparate' : null };
 export interface DeliverabilityEvent {
   'id' : string,
   'email' : string,
@@ -1197,6 +1223,22 @@ export interface DemoAuditReport {
   'prospectEmail' : string,
   'score' : bigint,
   'niche' : string,
+}
+export interface DemoBooking {
+  'id' : string,
+  'rooferEmail' : string,
+  'bookedAt' : bigint,
+  'campaignId' : string,
+  'ctaToken' : string,
+  'leadId' : string,
+  'slotTime' : string,
+  'rooferName' : string,
+  'confirmed' : boolean,
+}
+export interface DemoBookingLookup {
+  'campaign' : [] | [RooferColdCampaign],
+  'lead' : [] | [LeadEngineLead__1],
+  'existingBooking' : [] | [DemoBooking],
 }
 export interface DemoFunnelEntry {
   'id' : string,
@@ -1443,6 +1485,19 @@ export interface EngagementApproval {
 export type EngagementApprovalStatus = { 'pending' : null } |
   { 'approved' : null } |
   { 'rejected' : null };
+export type EnrichmentField = { 'inferredNiche' : string } |
+  { 'websiteSummary' : string } |
+  { 'suggestedOutreachAngle' : string } |
+  { 'companySize' : string };
+export interface EnrichmentResult {
+  'provider' : string,
+  'errorMessage' : [] | [string],
+  'fields' : Array<EnrichmentField>,
+  'leadId' : string,
+  'success' : boolean,
+  'enrichedAt' : bigint,
+  'failingProvider' : [] | [string],
+}
 export interface EnrollmentResult {
   'errors' : Array<string>,
   'skippedCount' : bigint,
@@ -1682,11 +1737,17 @@ export interface HealthScoreComponent {
   'rawScore' : bigint,
   'factor' : string,
 }
+export interface HttpHeader { 'value' : string, 'name' : string }
 export type HttpMethod = { 'get' : null } |
   { 'put' : null } |
   { 'post' : null } |
   { 'delete' : null } |
   { 'patch' : null };
+export interface HttpRequestResult {
+  'status' : bigint,
+  'body' : Uint8Array,
+  'headers' : Array<HttpHeader>,
+}
 export interface HumanOversightAssignment {
   'id' : string,
   'status' : string,
@@ -1909,10 +1970,89 @@ export interface LeadCampaignStatus {
   'companyName' : string,
   'phone' : [] | [string],
 }
+export interface LeadEngineBatch {
+  'id' : string,
+  'status' : string,
+  'imported' : bigint,
+  'skipped' : bigint,
+  'createdAt' : bigint,
+  'totalRows' : bigint,
+  'tenantId' : string,
+  'sourceTool' : string,
+  'rejected' : Array<RejectedRow>,
+  'flagged' : bigint,
+  'importerName' : string,
+}
+export interface LeadEngineImportResult {
+  'rejectedRows' : Array<RejectedRow>,
+  'imported' : bigint,
+  'skipped' : bigint,
+  'batchId' : string,
+  'flagged' : bigint,
+}
+export interface LeadEngineLead {
+  'id' : string,
+  'provenance' : LeadProvenance,
+  'status' : string,
+  'source' : string,
+  'createdAt' : bigint,
+  'businessName' : string,
+  'email' : string,
+  'enrichmentResult' : [] | [EnrichmentResult],
+  'tenantId' : string,
+  'sourceTags' : Array<string>,
+  'isDuplicate' : boolean,
+  'dedupeResolution' : [] | [DedupeResolution],
+  'linkedLeadIds' : Array<string>,
+  'niche' : string,
+  'phone' : string,
+  'locationTags' : Array<string>,
+  'dedupeFlags' : Array<DedupeFlag>,
+}
+export type LeadEngineLead__1 = any;
 export interface LeadExtractionResult {
   'count' : bigint,
   'sourceUrl' : string,
   'leads' : Array<ScrapedLead>,
+}
+export interface LeadListFilters {
+  'enrichmentStatus' : [] | [
+    { 'any' : null } |
+      { 'enriched' : null } |
+      { 'notEnriched' : null }
+  ],
+  'dedupeStatus' : [] | [
+    { 'any' : null } |
+      { 'resolved' : null } |
+      { 'flagged' : null }
+  ],
+  'batchId' : [] | [string],
+}
+export interface LeadListPage {
+  'total' : bigint,
+  'offset' : bigint,
+  'leads' : Array<LeadEngineLead>,
+  'limit' : bigint,
+}
+export interface LeadProvenance {
+  'originalFormat' : LeadSourceFormat,
+  'importDate' : bigint,
+  'sourceTool' : string,
+  'importerName' : string,
+}
+export type LeadSourceFormat = { 'csv' : null } |
+  { 'omkar' : null } |
+  { 'json' : null } |
+  { 'gosom' : null };
+export type LeadStatus = { 'new' : null } |
+  { 'enriched' : null } |
+  { 'reviewed' : null } |
+  { 'flagged' : null } |
+  { 'ready' : null };
+export interface LiveSendResult {
+  'ok' : boolean,
+  'messageId' : [] | [string],
+  'error' : [] | [string],
 }
 export type LocalSEOHistoryEntry = string;
 export interface LocationProfile {
@@ -2140,6 +2280,14 @@ export interface MultiLocationReportUpdate {
   'brandName' : [] | [string],
   'citationTrend' : [] | [TrendDirection],
 }
+export interface NemotronTestResult {
+  'model' : string,
+  'provider' : string,
+  'errorMessage' : [] | [string],
+  'success' : boolean,
+  'responseText' : string,
+  'timestampNs' : bigint,
+}
 export interface NewsletterCampaign {
   'id' : string,
   'htmlBody' : string,
@@ -2203,6 +2351,22 @@ export interface NicheVoiceAssignment {
   'assignedAt' : bigint,
   'voiceId' : string,
 }
+export interface NormalizedWebhookEvent {
+  'id' : string,
+  'provider' : WebhookInboxProvider,
+  'replySubject' : [] | [string],
+  'leadEmail' : [] | [string],
+  'routedTo' : string,
+  'normalizedEventType' : string,
+  'providerTimestamp' : bigint,
+  'externalLeadId' : [] | [string],
+  'receivedAt' : bigint,
+  'leadPhone' : [] | [string],
+  'internalLeadId' : [] | [string],
+  'replyText' : [] | [string],
+  'rawPayload' : string,
+  'externalCampaignId' : [] | [string],
+}
 export interface Note {
   'id' : string,
   'clientBusinessId' : string,
@@ -2243,6 +2407,7 @@ export interface OAuthInitRequest {
   'toolId' : string,
 }
 export interface OAuthInitResponse { 'state' : string, 'authUrl' : string }
+export interface OpenRouterMessage { 'content' : string, 'role' : string }
 export interface OperatorChatMessage {
   'id' : string,
   'content' : string,
@@ -2558,6 +2723,17 @@ export interface ProviderAdapterConfig {
   'modelId' : [] | [string],
   'adapterType' : AdapterType,
 }
+export interface ProviderHealthSnapshot {
+  'provider' : ProviderId,
+  'isSkipped' : boolean,
+  'skipUntilNs' : bigint,
+  'consecutiveFailures' : bigint,
+}
+export type ProviderId = { 'OpenRouter' : null } |
+  { 'OpenAI' : null } |
+  { 'Anthropic' : null } |
+  { 'Generic' : null } |
+  { 'Nemotron' : null };
 export interface RankedDispatchRoute {
   'id' : string,
   'status' : RankedDispatchStatus,
@@ -2579,6 +2755,15 @@ export type RankedDispatchStatus = { 'pending' : null } |
   { 'completed' : null } |
   { 'routed' : null } |
   { 'failed' : null };
+export interface RawLeadInput {
+  'source' : string,
+  'businessName' : string,
+  'email' : string,
+  'sourceTags' : Array<string>,
+  'niche' : string,
+  'phone' : string,
+  'locationTags' : Array<string>,
+}
 export interface ReadinessBreakdownItem {
   'weight' : bigint,
   'service' : string,
@@ -2589,6 +2774,14 @@ export interface ReadinessScore {
   'score' : bigint,
   'autoBrowserConfigured' : boolean,
 }
+export interface RejectedRow {
+  'raw' : RawLeadInput,
+  'rowIndex' : bigint,
+  'reason' : RejectionReason,
+}
+export type RejectionReason = { 'invalidEmailFormat' : null } |
+  { 'invalidPhoneFormat' : null } |
+  { 'missingRequiredField' : null };
 export interface ReplyAnalysis {
   'suggestedResponse' : string,
   'summary' : string,
@@ -2635,6 +2828,7 @@ export type ReportStatus = { 'pending_review' : null } |
   { 'approved' : null } |
   { 'draft' : null } |
   { 'archived' : null };
+export interface Result { 'hasMore' : boolean, 'rows' : Array<Array<Cell>> }
 export interface Review {
   'id' : string,
   'createdAt' : Time,
@@ -2713,6 +2907,80 @@ export interface RobotsCheckResult {
   'allowed' : boolean,
   'reason' : string,
 }
+export interface RooferCampaignLead {
+  'status' : RooferCampaignLeadStatus,
+  'nextSendAt' : [] | [bigint],
+  'bookedAt' : [] | [bigint],
+  'campaignId' : string,
+  'ctaToken' : string,
+  'bookedSlot' : [] | [string],
+  'currentStep' : bigint,
+  'leadId' : string,
+  'lastEventAt' : [] | [bigint],
+}
+export type RooferCampaignLeadStatus = { 'opened' : null } |
+  { 'pending' : null } |
+  { 'unsubscribed' : null } |
+  { 'sent' : null } |
+  { 'booked' : null } |
+  { 'replied' : null } |
+  { 'bounced' : null };
+export interface RooferCampaignLeadsPage {
+  'total' : bigint,
+  'leads' : Array<RooferCampaignLead>,
+}
+export interface RooferCampaignStats {
+  'opened' : bigint,
+  'unsubscribed' : bigint,
+  'sent' : bigint,
+  'booked' : bigint,
+  'totalLeads' : bigint,
+  'replied' : bigint,
+  'bounced' : bigint,
+}
+export interface RooferCampaignStep {
+  'delayDays' : bigint,
+  'subject' : string,
+  'body' : string,
+  'personalizationTokens' : Array<string>,
+  'enabled' : boolean,
+  'stepNumber' : bigint,
+  'sendTime' : string,
+}
+export interface RooferCampaignSummary {
+  'id' : string,
+  'status' : RooferColdCampaignStatus,
+  'opened' : bigint,
+  'leadCount' : bigint,
+  'name' : string,
+  'sent' : bigint,
+  'booked' : bigint,
+  'replied' : bigint,
+  'bounced' : bigint,
+}
+export interface RooferColdCampaign {
+  'id' : string,
+  'status' : RooferColdCampaignStatus,
+  'name' : string,
+  'createdAt' : bigint,
+  'tenantId' : string,
+  'updatedAt' : bigint,
+  'stats' : RooferCampaignStats,
+  'senderName' : string,
+  'senderEmail' : string,
+  'leadListFilter' : string,
+  'enrolledLeadIds' : Array<string>,
+  'sequence' : Array<RooferCampaignStep>,
+}
+export type RooferColdCampaignStatus = { 'active' : null } |
+  { 'completed' : null } |
+  { 'draft' : null } |
+  { 'paused' : null };
+export interface RooferEnrollResult { 'enrolled' : bigint, 'skipped' : bigint }
+export interface RooferProcessSendsResult {
+  'sent' : bigint,
+  'errors' : Array<string>,
+}
 export interface RoofingLead {
   'city' : string,
   'businessType' : string,
@@ -2721,6 +2989,14 @@ export interface RoofingLead {
   'state' : string,
   'companyName' : string,
   'phone' : [] | [string],
+}
+export interface RouteLogEntry {
+  'model' : string,
+  'provider' : ProviderId,
+  'attempts' : bigint,
+  'success' : boolean,
+  'estimatedCost' : number,
+  'timestampNs' : bigint,
 }
 export type RunStatus = { 'cancelled' : null } |
   { 'completed' : null } |
@@ -3223,6 +3499,11 @@ export interface Task {
   'priority' : TaskPriority,
   'relatedToId' : string,
 }
+export interface TaskCapability {
+  'temperature' : number,
+  'maxTokens' : bigint,
+  'modelFamily' : [] | [string],
+}
 export type TaskPriority = { 'Low' : null } |
   { 'High' : null } |
   { 'Medium' : null } |
@@ -3231,6 +3512,14 @@ export type TaskStatus = { 'Cancelled' : null } |
   { 'InProgress' : null } |
   { 'Completed' : null } |
   { 'NotStarted' : null };
+export type TaskType = { 'ProposalWriting' : null } |
+  { 'EmailGeneration' : null } |
+  { 'FollowUpDraft' : null } |
+  { 'OutreachCopy' : null } |
+  { 'MorningDigest' : null } |
+  { 'RAGAnswer' : null } |
+  { 'ReviewResponse' : null } |
+  { 'Summarization' : null };
 export interface TaskUpdate {
   'status' : [] | [TaskStatus],
   'title' : [] | [string],
@@ -3274,12 +3563,12 @@ export interface ToolkitToggle {
 }
 export interface TransformationInput {
   'context' : Uint8Array,
-  'response' : http_request_result,
+  'response' : HttpRequestResult,
 }
 export interface TransformationOutput {
   'status' : bigint,
   'body' : Uint8Array,
-  'headers' : Array<http_header>,
+  'headers' : Array<HttpHeader>,
 }
 export type TrendDirection = { 'up' : null } |
   { 'down' : null } |
@@ -3349,6 +3638,12 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export type Value = { 'int' : bigint } |
+  { 'nat' : bigint } |
+  { 'float' : number } |
+  { 'bool' : boolean } |
+  { 'null' : null } |
+  { 'text' : string };
 export interface VapiAssistantUpdate {
   'businessName' : [] | [string],
   'niche' : [] | [string],
@@ -3551,6 +3846,28 @@ export interface WebhookExecution {
   'payload' : Array<[string, string]>,
   'contractId' : string,
 }
+export interface WebhookInboxFilters {
+  'toTimestamp' : [] | [bigint],
+  'fromTimestamp' : [] | [bigint],
+  'provider' : [] | [WebhookInboxProvider],
+  'normalizedEventType' : [] | [string],
+  'limit' : bigint,
+  'leadEmailOrPhone' : [] | [string],
+}
+export type WebhookInboxProvider = { 'twilio' : null } |
+  { 'instantly' : null } |
+  { 'smartlead' : null } |
+  { 'sendgrid' : null };
+export interface WebhookInboxStats {
+  'eventsLast24h' : bigint,
+  'totalEvents' : bigint,
+  'eventsByType' : Array<[string, bigint]>,
+  'eventsByProvider' : Array<[string, bigint]>,
+}
+export type WebhookTestPayload = { 'twilio' : null } |
+  { 'instantly' : null } |
+  { 'smartlead' : null } |
+  { 'sendgrid' : null };
 export interface WebsiteAgentScore {
   'id' : string,
   'technicalHealth' : bigint,
@@ -3679,12 +3996,6 @@ export interface WorkflowStatusSnapshot {
   'totalSteps' : bigint,
   'lastAction' : string,
   'workflowId' : string,
-}
-export interface http_header { 'value' : string, 'name' : string }
-export interface http_request_result {
-  'status' : bigint,
-  'body' : Uint8Array,
-  'headers' : Array<http_header>,
 }
 export interface _SERVICE {
   '_initializeAccessControl' : ActorMethod<[], undefined>,
@@ -4161,6 +4472,15 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'deleteWorkflowDef' : ActorMethod<[string], boolean>,
+  'demoBooking_create' : ActorMethod<
+    [string, string, string, string],
+    [] | [DemoBooking]
+  >,
+  'demoBooking_getByCtaToken' : ActorMethod<[string], DemoBookingLookup>,
+  'demoBooking_listByCampaign' : ActorMethod<
+    [string, string],
+    Array<DemoBooking>
+  >,
   'deployAgent' : ActorMethod<
     [string],
     { 'message' : string, 'success' : boolean }
@@ -4200,6 +4520,7 @@ export interface _SERVICE {
     [],
     { 'enrolled' : bigint, 'skipped' : bigint }
   >,
+  'execute' : ActorMethod<[string], Result>,
   'executeAgentAction' : ActorMethod<
     [string],
     { 'ok' : boolean, 'error' : [] | [string], 'logId' : string }
@@ -4689,6 +5010,8 @@ export interface _SERVICE {
       }
     >
   >,
+  'getLLMProviderHealth' : ActorMethod<[], Array<ProviderHealthSnapshot>>,
+  'getLLMRouteLog' : ActorMethod<[bigint], Array<RouteLogEntry>>,
   'getLastDiscoveryJob' : ActorMethod<[], [] | [ScheduledDiscoveryJob]>,
   'getLatestMarketingAudit' : ActorMethod<[string], [] | [MarketingAudit]>,
   'getLatestMultiLocationReport' : ActorMethod<
@@ -5156,6 +5479,12 @@ export interface _SERVICE {
     { 'ok' : Array<WebhookExecution> } |
       { 'err' : string }
   >,
+  'getWebhookInboxEvent' : ActorMethod<[string], [] | [NormalizedWebhookEvent]>,
+  'getWebhookInboxEvents' : ActorMethod<
+    [WebhookInboxFilters],
+    Array<NormalizedWebhookEvent>
+  >,
+  'getWebhookInboxStats' : ActorMethod<[], WebhookInboxStats>,
   'getWebhookLog' : ActorMethod<[string], Array<WebhookEvent>>,
   'getWebhookUrl' : ActorMethod<[], string>,
   'getWebhookUrls' : ActorMethod<
@@ -5310,6 +5639,40 @@ export interface _SERVICE {
   'isComposioRoutingEnabled' : ActorMethod<[], boolean>,
   'isContentEnabledForTier' : ActorMethod<[string], boolean>,
   'isDemoSessionExpired' : ActorMethod<[string], boolean>,
+  'leadEngine_enrichBatch' : ActorMethod<
+    [string, Array<string>],
+    Array<EnrichmentResult>
+  >,
+  'leadEngine_enrichLead' : ActorMethod<
+    [string, string],
+    [] | [EnrichmentResult]
+  >,
+  'leadEngine_getDedupeGroups' : ActorMethod<
+    [string, boolean],
+    Array<DedupeGroup>
+  >,
+  'leadEngine_getImportBatch' : ActorMethod<
+    [string, string],
+    [] | [LeadEngineBatch]
+  >,
+  'leadEngine_getLead' : ActorMethod<[string, string], [] | [LeadEngineLead]>,
+  'leadEngine_importLeads' : ActorMethod<
+    [string, string, string, Array<RawLeadInput>],
+    LeadEngineImportResult
+  >,
+  'leadEngine_listBatches' : ActorMethod<[string], Array<LeadEngineBatch>>,
+  'leadEngine_listLeads' : ActorMethod<
+    [string, LeadListFilters, bigint, bigint],
+    LeadListPage
+  >,
+  'leadEngine_resolveDuplicate' : ActorMethod<
+    [string, string, DedupeResolution],
+    [] | [DedupeGroup]
+  >,
+  'leadEngine_updateLeadStatus' : ActorMethod<
+    [string, string, LeadStatus],
+    [] | [LeadEngineLead]
+  >,
   'linkSocialLeadToCRM' : ActorMethod<[string, string, string], undefined>,
   'listAllRankedDispatchRoutes' : ActorMethod<
     [],
@@ -5521,12 +5884,20 @@ export interface _SERVICE {
       'eventType' : string,
     }
   >,
+  'receiveInstantlyWebhook' : ActorMethod<
+    [string, string, Array<[string, string]>],
+    { 'ok' : boolean, 'eventId' : string }
+  >,
   'receiveN8NWebhook' : ActorMethod<[string, string], undefined>,
   'receiveSendgridEvents' : ActorMethod<
     [string],
     { 'success' : boolean, 'processed' : bigint }
   >,
   'receiveSendgridInbound' : ActorMethod<[Array<[string, string]>], string>,
+  'receiveSmartleadWebhook' : ActorMethod<
+    [string, string, Array<[string, string]>],
+    { 'ok' : boolean, 'eventId' : string }
+  >,
   'receiveStripeWebhook' : ActorMethod<
     [string, string],
     { 'success' : boolean, 'eventType' : string }
@@ -5609,6 +5980,7 @@ export interface _SERVICE {
   'resetDiscoveryTimer' : ActorMethod<[], undefined>,
   'resetDripDailyCap' : ActorMethod<[string], undefined>,
   'resetEmailSchedulerTimer' : ActorMethod<[], undefined>,
+  'resetLLMProviderHealth' : ActorMethod<[ProviderId], undefined>,
   'resetNicheScript' : ActorMethod<[string], undefined>,
   'resetSmsSchedulerTimer' : ActorMethod<[], undefined>,
   'resetToDefaults' : ActorMethod<[], boolean>,
@@ -5628,6 +6000,55 @@ export interface _SERVICE {
   'respondToReview' : ActorMethod<[TenantId, string, string], undefined>,
   'resumeAutopilotEmail' : ActorMethod<[], undefined>,
   'resumeRoofingCampaign' : ActorMethod<[], { 'ok' : null }>,
+  'rooferColdCampaign_create' : ActorMethod<
+    [string, string, string, string, string],
+    RooferColdCampaign
+  >,
+  'rooferColdCampaign_enrollLeads' : ActorMethod<
+    [string, string, Array<string>],
+    RooferEnrollResult
+  >,
+  'rooferColdCampaign_exportLeadsCsv' : ActorMethod<[string, string], string>,
+  'rooferColdCampaign_get' : ActorMethod<
+    [string, string],
+    [] | [RooferColdCampaign]
+  >,
+  'rooferColdCampaign_getLeads' : ActorMethod<
+    [string, string, bigint, bigint],
+    RooferCampaignLeadsPage
+  >,
+  'rooferColdCampaign_getReplies' : ActorMethod<
+    [string, string],
+    Array<NormalizedWebhookEvent>
+  >,
+  'rooferColdCampaign_getStats' : ActorMethod<
+    [string, string],
+    [] | [RooferCampaignStats]
+  >,
+  'rooferColdCampaign_list' : ActorMethod<
+    [string],
+    Array<RooferCampaignSummary>
+  >,
+  'rooferColdCampaign_pauseSending' : ActorMethod<
+    [string, string],
+    [] | [RooferColdCampaign]
+  >,
+  'rooferColdCampaign_processDueSends' : ActorMethod<
+    [string, string],
+    RooferProcessSendsResult
+  >,
+  'rooferColdCampaign_startSending' : ActorMethod<
+    [string, string],
+    [] | [RooferColdCampaign]
+  >,
+  'rooferColdCampaign_updateSequence' : ActorMethod<
+    [string, string, Array<RooferCampaignStep>],
+    [] | [RooferColdCampaign]
+  >,
+  'routeLLMCall' : ActorMethod<
+    [TaskType, Array<OpenRouterMessage>, TaskCapability],
+    string
+  >,
   'routeModelRequest' : ActorMethod<
     [AbacusRouteRequest],
     { 'ok' : AbacusRouteResponse } |
@@ -5809,6 +6230,7 @@ export interface _SERVICE {
     [string, bigint, bigint, string, string, string],
     string
   >,
+  'schema' : ActorMethod<[], string>,
   'scoreLead' : ActorMethod<[string, string, string], LeadAIScore>,
   'scrapeUrl' : ActorMethod<[ScrapeRequest, string], ScrapeResult>,
   'searchLeadsWithLLM' : ActorMethod<
@@ -5843,6 +6265,11 @@ export interface _SERVICE {
     [string, string, string, bigint, bigint, string, string],
     EmailSendResult
   >,
+  'sendLiveEmail' : ActorMethod<
+    [string, string, string, string, string],
+    LiveSendResult
+  >,
+  'sendLiveSms' : ActorMethod<[string, string, string], LiveSendResult>,
   'sendNewsletterCampaign' : ActorMethod<[string, string], bigint>,
   'sendOnboardingEmail' : ActorMethod<
     [string, string, string, string, string, string],
@@ -5851,6 +6278,10 @@ export interface _SERVICE {
   'sendReviewRequestEmail' : ActorMethod<
     [string, string, string, string, string, string],
     EmailSendResult
+  >,
+  'sendTestWebhookEvent' : ActorMethod<
+    [WebhookTestPayload],
+    { 'ok' : boolean, 'eventId' : string }
   >,
   'sendWarmSequenceEmail' : ActorMethod<
     [string, bigint, bigint, string, string, string],
@@ -5938,6 +6369,7 @@ export interface _SERVICE {
   'testIntegration' : ActorMethod<[string, string], ConnectionTestResult>,
   'testLeadFinderDiagnostic' : ActorMethod<[], string>,
   'testN8NConnection' : ActorMethod<[], boolean>,
+  'testNemotronPrompt' : ActorMethod<[], NemotronTestResult>,
   'testNvidiaConnection' : ActorMethod<[], IntegrationTestResult>,
   'testOpenRouterConnection' : ActorMethod<[], boolean>,
   'testServiceConnection' : ActorMethod<[string, string], ConnectionTestResult>,

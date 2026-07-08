@@ -5,18 +5,49 @@ build:
   steps:
     - type: script
       commands:
+        # Rebuild the backend wasm from source and regenerate frontend bindings
+        # BEFORE the frontend bundle is built. Embedding these steps here (rather
+        # than relying on deploy-production.sh) makes the canister.yaml
+        # self-sufficient: a bare `icp deploy frontend backend` cannot ship stale
+        # wasm or stale bindings, because the frontend build hook regenerates both.
+        # mops.toml and the bindgen script live at the project root.
+        - cd ../.. && mops build
+        - cd ../.. && pnpm bindgen
+
         - pnpm install --frozen-lockfile --prefer-offline --child-concurrency 2 --network-concurrency 6
         - node ../../scripts/resize-images.js
         - |
+          : "${BACKEND_CANISTER_ID:?BACKEND_CANISTER_ID must be set before building frontend}"
+          : "${PROJECT_ID:=$(basename $(pwd))}"
+          : "${II_DERIVATION_ORIGIN:=https://${BACKEND_CANISTER_ID}.ic0.app}"
           cat > env.json <<EOF
           {
-            "backend_host": "http://localhost:8081",
-            "backend_canister_id": "$BACKEND_CANISTER_ID",
-            "project_id": "undefined",
-            "ii_derivation_origin": "undefined"
+            "backend_host": "https://${BACKEND_CANISTER_ID}.ic0.app",
+            "backend_canister_id": "${BACKEND_CANISTER_ID}",
+            "project_id": "${PROJECT_ID}",
+            "ii_derivation_origin": "${II_DERIVATION_ORIGIN}"
           }
           EOF
-        - pnpm --filter '@caffeine/template-frontend' build:skip-bindings
+        # Build-time guard: fail the build if env.json backend_host is missing the
+        # https:// scheme or the canister subdomain. A malformed backend_host
+        # (e.g. "icp0.io" without scheme, or empty) breaks the live frontend and
+        # was a recurring source of deploy drift. This guard runs after env.json is
+        # written and before the frontend bundle consumes it.
+        - |
+          BACKEND_HOST="$(grep -oE '"backend_host"[[:space:]]*:[[:space:]]*"[^"]*"' env.json | sed -E 's/.*:[[:space:]]*"([^"]*)".*/\1/')"
+          if [ -z "${BACKEND_HOST}" ]; then
+            echo "BUILD GUARD FAILED: env.json backend_host is missing or empty" >&2
+            exit 1
+          fi
+          case "${BACKEND_HOST}" in
+            https://*.ic0.app|https://*.icp0.io)
+              ;;
+            *)
+              echo "BUILD GUARD FAILED: env.json backend_host must use the https:// scheme and include a canister subdomain (*.ic0.app or *.icp0.io). Got: ${BACKEND_HOST}" >&2
+              exit 1
+              ;;
+          esac
+        - pnpm --filter '@caffeine/template-frontend' build
 
     - type: pre-built
       url: https://github.com/dfinity/sdk/raw/refs/tags/0.27.0/src/distributed/assetstorage.wasm.gz

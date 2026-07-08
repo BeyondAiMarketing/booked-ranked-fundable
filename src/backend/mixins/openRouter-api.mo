@@ -3,6 +3,7 @@ import T             "../types/openRouter";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
 import Map           "mo:core/Map";
+import Text          "mo:core/Text";
 
 mixin (
   openRouterState  : OpenRouterLib.State,

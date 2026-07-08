@@ -82,3 +82,40 @@ Content tabs use full-width flex with 0px gap (tabs touch). Master Agent 2rem pa
 2. **Master Agent god-view** — Top-level orchestrator showing all agents in a grid, each with live status dot and connection to Owl Alpha (invisible wiring)
 3. **Lead scoring animation** — Progress bars fill smoothly from left to right as enrichment happens, creating visual feedback without page reloads
 4. **Cyan verification glow** — AI-verified leads get a subtle cyan dot with glow, signaling Owl Alpha enrichment completed
+
+## LLM Fallback Chain
+
+### Tokens
+
+The fallback chain extends the existing purple command-center palette with health-state and cost-routing tokens (already declared in `:root` and `.dark`):
+
+| Token | OKLCH | Role |
+|-------|-------|------|
+| `--fallback-healthy` | 0.62 0.18 155 | Healthy provider dot (emerald) |
+| `--fallback-cooling` | 0.72 0.18 75 | Cooling-down provider dot (amber, pulses) |
+| `--fallback-disabled` | 0.58 0.22 25 | Skipped / disabled provider dot (rose) |
+| `--fallback-priority-active` | 0.58 0.22 290 | Active priority node accent (purple) |
+| `--fallback-cost-low` | 0.62 0.18 155 | Low-cost route pill (emerald) |
+| `--fallback-cost-mid` | 0.72 0.18 75 | Mid-cost route pill (amber) |
+| `--fallback-cost-high` | 0.62 0.2 15 | High-cost route pill (rose) |
+| `--fallback-chain-connector` | 0.38 0.14 290 | Dim purple connector between priority nodes |
+| `--fallback-panel-bg` | 0.12 0.01 280 | Panel background (deep navy glass) |
+| `--fallback-panel-border` | 0.58 0.22 290 | Panel + reset-button border (purple) |
+
+### Panel Structure
+
+`LLMFallbackChainPanel` renders as a glassmorphic card (`.fallback-panel`) with 12px backdrop blur, dual shadow, and a purple-tinted border — matching the existing `IntegrationHealthPanel` elevation but distinguished by the fallback-chain token palette. Layout:
+
+1. **Header** — title with `Activity` icon, subtitle, and a "Refresh" control that re-pulls health + route log.
+2. **Priority chain** — horizontal row of provider nodes (Nemotron → OpenRouter → OpenAI → Anthropic) connected by `.fallback-priority-connector` arrows. Each node shows a health dot (`.fallback-health-dot.healthy | .cooling | .disabled`), provider label, and consecutive-failure count.
+3. **Provider rows** — one `.fallback-provider-row` per provider with: health dot, label, status text ("Healthy" / "Cooling down — eligible in 2m 14s" / "Skipped (N consecutive failures)"), and a per-provider `.fallback-reset-btn` that calls `resetLLMProviderHealth(provider)`.
+4. **Cost-aware routing indicator** — reads the most recent entry from `getLLMRouteLog(10)` and shows the last-selected provider + model with a `.fallback-cost-pill.low | .mid | .high` derived from `estimatedCost`, plus success/attempts meta.
+
+### Component Patterns
+
+- **Defensive actor calls** — every backend interaction uses `(actor as any)?.method?.()` and degrades gracefully to a local "unavailable" state when the actor or method is absent (matches the existing GoLivePage defensive pattern).
+- **Health state mapping** — `isSkipped === true` → `disabled` (rose); `skipUntilNs > now` → `cooling` (amber, pulses); otherwise `healthy` (emerald). Cooling rows compute remaining time from `skipUntilNs` and re-render every 1s via `setInterval`.
+- **Cost tier mapping** — `estimatedCost < 0.001` → `low`; `< 0.01` → `mid`; else `high`. Static thresholds (no live pricing) per project preference.
+- **Reset feedback** — reset buttons call `resetLLMProviderHealth(provider)`, then re-fetch health and surface a Sonner toast on success/failure.
+- **Motion** — cooling dots pulse at 2s ease-in-out; provider rows and reset buttons transition color/border on hover. All motion is disabled under `prefers-reduced-motion`.
+- **Deterministic markers** — `golive.llm_fallback.panel`, `golive.llm_fallback.refresh_button`, `golive.llm_fallback.provider.row.<n>`, `golive.llm_fallback.provider.reset_button.<n>`, `golive.llm_fallback.route_indicator`, `golive.llm_fallback.empty_state`.

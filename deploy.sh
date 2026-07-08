@@ -20,6 +20,15 @@ export BACKEND_CANISTER_ID=$(icp canister settings show --environment local --id
 export STORAGE_GATEWAY_URL=http://localhost:6188
 export II_URL=http://rdmx6-jaaaa-aaaaa-aaadq-cai.localhost:8000
 
+echo "==> Building backend (mops build)"
+mops build
+
+echo "==> Type-checking backend (mops check --fix)"
+mops check --fix
+
+echo "==> Regenerating frontend bindings (pnpm bindgen)"
+pnpm bindgen
+
 icp deploy --environment local frontend backend
 
 

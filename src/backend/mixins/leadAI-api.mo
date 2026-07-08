@@ -4,6 +4,8 @@ import ORLib         "../lib/openRouter";
 import ORTypes       "../types/openRouter";
 import LeadAILib     "../lib/leadAI";
 import T             "../lead-ai-types";
+import LLMFT         "../types/llm-fallback";
+import LLMFallbackLib "../lib/llm-fallback";
 import Time          "mo:core/Time";
 import Runtime       "mo:core/Runtime";
 import Char "mo:core/Char";
@@ -20,6 +22,7 @@ mixin (
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
   integrationCreds   : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt           : Blob,
+  llmFallbackState   : LLMFallbackLib.State,
 ) {
 
   // Mutable state arrays — mutated in place and read back as arrays
@@ -77,6 +80,58 @@ mixin (
       case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
     };
     await ORLib.callWithFallback(openRouterState, #OutreachCopy, messages, transform, openaiKey, geminiKey)
+  };
+
+  /// Default capability for LLM-routed lead-AI tasks: any model family,
+  /// 2000 max tokens, temperature 0.7.
+  let defaultCapability : LLMFT.TaskCapability = {
+    maxTokens   = 2000;
+    temperature = 0.7;
+    modelFamily = null;
+  };
+
+  /// Route an LLM call through the unified fallback chain.
+  /// Calls LLMFallbackLib.route directly (the same lib function the
+  /// LLMFallbackMixin wraps) to avoid the cross-mixin method-call issue
+  /// where sibling mixins cannot invoke routeLLMCall as an unbound variable.
+  /// The legacy fallback closure delegates to OpenRouterLib.callWithFallback
+  /// for backward compatibility as the Generic tier.
+  private func routeLLM(
+    task     : ORTypes.TaskType,
+    prompt   : Text,
+  ) : async Text {
+    let messages : [ORTypes.OpenRouterMessage] = [
+      { role = "user"; content = prompt }
+    ];
+    let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
+      case (null) ICLib.emptyCredentials();
+      case (?enc) ICLib.decryptAll(enc, credSalt);
+    };
+    let keys = LLMFallbackLib.resolveKeys(creds);
+    let flags : LLMFallbackLib.FeatureFlags = {
+      leadEngineEnabled = true;
+      twilioEnabled      = true;
+      sendgridEnabled    = true;
+    };
+    await LLMFallbackLib.route(
+      llmFallbackState,
+      task,
+      messages,
+      keys,
+      flags,
+      defaultCapability,
+      transform,
+      func(_t : ORTypes.TaskType, msgs : [ORTypes.OpenRouterMessage]) : async Text {
+        await ORLib.callWithFallback(
+          openRouterState,
+          task,
+          msgs,
+          transform,
+          keys.openaiKey,
+          keys.geminiKey,
+        )
+      },
+    )
   };
 
   // ── Enrichment API ─────────────────────────────────────────────────────────
@@ -138,7 +193,7 @@ mixin (
       case null { companyName # " operating in " # niche };
     };
     let promptBody = LeadAILib.buildScoringPrompt(companyName, niche, intel);
-    let raw = await callOwlAlpha(promptBody);
+    let raw = await routeLLM(#OutreachCopy, promptBody);
     // Parse score from JSON response — default to 50 if parsing fails
     let scoreText = parseJsonField(raw, "score");
     let score : Nat = if (scoreText == "") 50 else {
@@ -245,7 +300,7 @@ mixin (
       Runtime.trap("Unauthorized: Users only");
     };
     let promptBody = LeadAILib.buildReplyAnalysisPrompt(replyText, niche);
-    let raw = await callOwlAlpha(promptBody);
+    let raw = await routeLLM(#ReviewResponse, promptBody);
     let classText = parseJsonField(raw, "classification");
     let classification : T.ReplyClassification = if      (classText == "HotLead")       #HotLead
       else if (classText == "Objection")       #Objection

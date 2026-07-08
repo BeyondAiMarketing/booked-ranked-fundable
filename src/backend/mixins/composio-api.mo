@@ -3,6 +3,7 @@ import T           "../types/composio";
 import ICTypes     "../types/integrationCredentials";
 import ICLib       "../lib/integrationCredentials";
 import Map         "mo:core/Map";
+import Text        "mo:core/Text";
 import Time        "mo:core/Time";
 import Outcall     "mo:caffeineai-http-outcalls/outcall";
 

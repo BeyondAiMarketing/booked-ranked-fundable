@@ -9,7 +9,9 @@ export type NicheKey =
   | "med_spa"
   | "restoration"
   | "carpet_cleaning"
-  | "roofing";
+  | "roofing"
+  | "real_estate"
+  | "mortgage";
 
 export type ContentTab =
   | "images"
@@ -1470,6 +1472,468 @@ const roofingTrustBadges: NicheTrustBadge[] = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// REAL ESTATE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const realEstateImages: NicheImage[] = [
+  {
+    id: "re-img-1",
+    label: "Agent With Sold Sign",
+    description:
+      "Confident real estate agent holding a SOLD sign in front of a beautiful listing — success and trust",
+    keywords: "real estate agent sold sign listing success",
+    targetSection: "hero",
+    alt: "Real estate agent celebrating a sold listing",
+    gradient: "linear-gradient(135deg, #0e7490 0%, #047857 100%)",
+  },
+  {
+    id: "re-img-2",
+    label: "Luxury Home Exterior",
+    description:
+      "Stunning luxury home exterior at golden hour — curb appeal and premium positioning",
+    keywords: "luxury home exterior curb appeal premium",
+    targetSection: "hero",
+    alt: "Luxury home exterior showcasing premium real estate",
+    gradient: "linear-gradient(135deg, #064e3b 0%, #0e7490 100%)",
+  },
+  {
+    id: "re-img-3",
+    label: "Open House Welcome",
+    description:
+      "Warm, inviting open house setup with refreshments and signage — community and accessibility",
+    keywords: "open house real estate welcome community",
+    targetSection: "services",
+    alt: "Open house welcome setup for prospective buyers",
+    gradient: "linear-gradient(135deg, #0e7490 0%, #0891b2 100%)",
+  },
+  {
+    id: "re-img-4",
+    label: "Before/After Staging",
+    description:
+      "Empty room transformed by professional staging — before and after split visual",
+    keywords: "home staging before after transformation",
+    targetSection: "before_after",
+    alt: "Before and after home staging transformation",
+    gradient: "linear-gradient(135deg, #78350f 0%, #047857 100%)",
+  },
+  {
+    id: "re-img-5",
+    label: "Agent Consultation",
+    description:
+      "Agent reviewing listing paperwork with sellers at kitchen table — trust and guidance",
+    keywords: "real estate consultation sellers paperwork",
+    targetSection: "process",
+    alt: "Real estate agent consulting with home sellers",
+    gradient: "linear-gradient(135deg, #0f172a 0%, #0e7490 100%)",
+  },
+  {
+    id: "re-img-6",
+    label: "Modern Interior Tour",
+    description:
+      "Bright modern living room interior — the kind of space buyers fall in love with",
+    keywords: "modern living room interior bright",
+    targetSection: "services",
+    alt: "Modern living room interior for property tour",
+    gradient: "linear-gradient(135deg, #047857 0%, #0e7490 100%)",
+  },
+];
+
+const realEstateHeadlines: NicheHeadline[] = [
+  {
+    id: "re-hl-1",
+    headline: "The First Agent to Respond Wins — Be That Agent in [City]",
+    subheadline:
+      "AI-powered lead capture responds in seconds, 24/7. Never lose another deal to a faster competitor.",
+    targetSection: "hero",
+    framework: "Kennedy",
+    frameworkLabel: "Direct Response — Speed + Urgency",
+    conversionScore: 95,
+  },
+  {
+    id: "re-hl-2",
+    headline:
+      "[City]'s Most Trusted Real Estate Agent — 5-Star Reviews, Proven Results",
+    subheadline:
+      "Hundreds of families helped. A reputation built on responsiveness, honesty, and results.",
+    targetSection: "hero",
+    framework: "Abraham",
+    frameworkLabel: "Strategy of Preeminence — Authority",
+    conversionScore: 89,
+  },
+  {
+    id: "re-hl-3",
+    headline:
+      "Selling Your Home Is a Big Decision — Work With an Agent Who Makes It Simple",
+    subheadline:
+      "Clear pricing. Honest guidance. A system that keeps your listing top-of-mind with every buyer.",
+    targetSection: "hero",
+    framework: "Schwartz",
+    frameworkLabel: "Awareness Spectrum — Trust for Cold Traffic",
+    conversionScore: 86,
+  },
+  {
+    id: "re-hl-4",
+    headline:
+      "See the Homes We've Sold in [City] — Real Closings, Real Families",
+    subheadline:
+      "A portfolio of successful closings. Proof that our system works for sellers and buyers alike.",
+    targetSection: "before_after",
+    framework: "Hopkins",
+    frameworkLabel: "Specificity — Local Proof",
+    conversionScore: 88,
+  },
+  {
+    id: "re-hl-5",
+    headline:
+      "78% of Buyers Choose the First Agent Who Responds — Will That Be You?",
+    subheadline:
+      "Our AI lead system ensures you're always first. Book a free strategy session today.",
+    targetSection: "cta_banner",
+    framework: "Suby",
+    frameworkLabel: "PASTOR — Problem Amplification",
+    conversionScore: 93,
+  },
+];
+
+const realEstateTestimonials: NicheTestimonial[] = [
+  {
+    id: "re-t-1",
+    quote:
+      "I inquired about a listing at 10pm and had a showing scheduled by 10:05pm. Found our dream home in 3 weeks. The most responsive agent I've ever worked with.",
+    name: "Lisa T.",
+    role: "Homebuyer",
+    city: "[City]",
+    stars: 5,
+    highlight: "Showing scheduled in 5 minutes at 10pm",
+  },
+  {
+    id: "re-t-2",
+    quote:
+      "Our agent sold our home in 11 days for above asking. The follow-up system kept our listing in front of every serious buyer. Absolutely exceptional.",
+    name: "Michael B.",
+    role: "Home Seller",
+    city: "[City]",
+    stars: 5,
+    highlight: "Sold in 11 days above asking",
+  },
+  {
+    id: "re-t-3",
+    quote:
+      "I've worked with three agents over the years. This is the first one who actually responded every single time, day or night. That responsiveness won us the deal.",
+    name: "Jennifer R.",
+    role: "Investor",
+    city: "[City]",
+    stars: 5,
+    highlight: "Always responsive — won the deal",
+  },
+  {
+    id: "re-t-4",
+    quote:
+      "As a broker with 14 agents, I needed a system that captured every lead. BRF made our whole office faster and more professional. Closings are up 30%.",
+    name: "David K.",
+    role: "Broker",
+    city: "[City]",
+    stars: 5,
+    highlight: "Office closings up 30%",
+  },
+  {
+    id: "re-t-5",
+    quote:
+      "My Google reviews went from 14 to 61 in 4 months. The review automation is incredible — every closed client gets asked, and most of them leave 5 stars.",
+    name: "Priya S.",
+    role: "Solo Agent",
+    city: "[City]",
+    stars: 5,
+    highlight: "Reviews 14 → 61 in 4 months",
+  },
+];
+
+const realEstateTrustBadges: NicheTrustBadge[] = [
+  {
+    id: "re-tb-1",
+    label: "Licensed Real Estate Professional",
+    icon: "🏅",
+    category: "license",
+    description: "State-licensed real estate agent or broker",
+  },
+  {
+    id: "re-tb-2",
+    label: "24/7 Lead Response Guarantee",
+    icon: "⚡",
+    category: "guarantee",
+    description: "Every inquiry answered within seconds — day or night",
+  },
+  {
+    id: "re-tb-3",
+    label: "5-Star Google Rated",
+    icon: "⭐",
+    category: "award",
+    description: "Consistently top-rated by buyers and sellers",
+  },
+  {
+    id: "re-tb-4",
+    label: "AI-Powered Follow-Up System",
+    icon: "🤖",
+    category: "certification",
+    description: "Automated lead nurturing that never lets a lead go cold",
+  },
+  {
+    id: "re-tb-5",
+    label: "Local Market Expert",
+    icon: "📍",
+    category: "certification",
+    description: "Deep expertise in [City] neighborhoods and pricing",
+  },
+  {
+    id: "re-tb-6",
+    label: "Satisfaction Guarantee",
+    icon: "💯",
+    category: "guarantee",
+    description: "We earn your trust before, during, and after every closing",
+  },
+  {
+    id: "re-tb-7",
+    label: "E&O Insured",
+    icon: "🛡️",
+    category: "insurance",
+    description: "Errors and omissions insurance coverage in place",
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MORTGAGE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const mortgageImages: NicheImage[] = [
+  {
+    id: "mort-img-1",
+    label: "Loan Officer Handshake",
+    description:
+      "Professional loan officer shaking hands with happy client after approval — trust and outcome",
+    keywords: "mortgage loan officer handshake approval",
+    targetSection: "hero",
+    alt: "Mortgage loan officer with approved client",
+    gradient: "linear-gradient(135deg, #312e81 0%, #1e40af 100%)",
+  },
+  {
+    id: "mort-img-2",
+    label: "New Home Keys Handoff",
+    description:
+      "Smiling family receiving keys to their new home — the emotional payoff of a closed loan",
+    keywords: "new home keys family mortgage closing",
+    targetSection: "hero",
+    alt: "Family receiving keys to their new home",
+    gradient: "linear-gradient(135deg, #1e40af 0%, #0e7490 100%)",
+  },
+  {
+    id: "mort-img-3",
+    label: "Rate Analysis Consultation",
+    description:
+      "Loan officer reviewing rate options on a tablet with a borrower — clarity and expertise",
+    keywords: "mortgage rate analysis consultation borrower",
+    targetSection: "services",
+    alt: "Mortgage rate analysis consultation",
+    gradient: "linear-gradient(135deg, #0f172a 0%, #312e81 100%)",
+  },
+  {
+    id: "mort-img-4",
+    label: "Pre-Approval Letter",
+    description:
+      "Close-up of a mortgage pre-approval letter being handed to a buyer — competitive advantage",
+    keywords: "mortgage pre approval letter buyer",
+    targetSection: "services",
+    alt: "Mortgage pre-approval letter for homebuyer",
+    gradient: "linear-gradient(135deg, #312e81 0%, #4338ca 100%)",
+  },
+  {
+    id: "mort-img-5",
+    label: "Realtor Partnership Meeting",
+    description:
+      "Mortgage broker meeting with realtor partners — referral pipeline and professional network",
+    keywords: "mortgage broker realtor partnership referral",
+    targetSection: "about",
+    alt: "Mortgage broker and realtor partnership meeting",
+    gradient: "linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)",
+  },
+  {
+    id: "mort-img-6",
+    label: "Closing Day Celebration",
+    description:
+      "Borrower signing final loan documents with a smile — the finish line of the mortgage process",
+    keywords: "mortgage closing day signing documents",
+    targetSection: "before_after",
+    alt: "Mortgage closing day document signing",
+    gradient: "linear-gradient(135deg, #312e81 0%, #0e7490 100%)",
+  },
+];
+
+const mortgageHeadlines: NicheHeadline[] = [
+  {
+    id: "mort-hl-1",
+    headline:
+      "The Broker Who Answers First Wins the Loan — Be That Broker in [City]",
+    subheadline:
+      "AI captures every after-hours inquiry and pre-qualifies borrowers 24/7. Stop losing loans to slower competitors.",
+    targetSection: "hero",
+    framework: "Kennedy",
+    frameworkLabel: "Direct Response — Speed + Urgency",
+    conversionScore: 95,
+  },
+  {
+    id: "mort-hl-2",
+    headline:
+      "[City]'s Most Responsive Mortgage Broker — Pre-Approvals in 24 Hours",
+    subheadline:
+      "Fast, clear, and honest. A mortgage process that closes 22 days faster than the market average.",
+    targetSection: "hero",
+    framework: "Abraham",
+    frameworkLabel: "Strategy of Preeminence — Authority",
+    conversionScore: 90,
+  },
+  {
+    id: "mort-hl-3",
+    headline:
+      "67% of Borrowers Call After 5pm — Most Brokers Miss Them. We Don't.",
+    subheadline:
+      "Our AI front desk captures every inquiry the moment it comes in — evenings, weekends, holidays.",
+    targetSection: "hero",
+    framework: "Suby",
+    frameworkLabel: "PASTOR — Problem Amplification",
+    conversionScore: 92,
+  },
+  {
+    id: "mort-hl-4",
+    headline:
+      "See How Much Faster Our Borrowers Close — Real Loans, Real Families",
+    subheadline:
+      "A track record of speed and clarity that realtors and borrowers trust.",
+    targetSection: "before_after",
+    framework: "Hopkins",
+    frameworkLabel: "Specificity — Proof",
+    conversionScore: 87,
+  },
+  {
+    id: "mort-hl-5",
+    headline:
+      "Realtors: Partner With the Broker Who Actually Picks Up the Phone",
+    subheadline:
+      "Your referrals deserve a broker who responds in seconds, not hours. Let's talk.",
+    targetSection: "cta_banner",
+    framework: "Halbert",
+    frameworkLabel: "PAS — Problem-Agitate-Solve",
+    conversionScore: 89,
+  },
+];
+
+const mortgageTestimonials: NicheTestimonial[] = [
+  {
+    id: "mort-t-1",
+    quote:
+      "Pre-approved in 24 hours and closed 18 days faster than any competing offer. The most responsive broker I've ever worked with.",
+    name: "Tom B.",
+    role: "Homebuyer",
+    city: "[City]",
+    stars: 5,
+    highlight: "Closed 18 days faster than market",
+  },
+  {
+    id: "mort-t-2",
+    quote:
+      "I sent my inquiry at 9pm and had a loan advisor on the phone by 9:05pm. That kind of responsiveness won my business for life.",
+    name: "Sarah K.",
+    role: "First-Time Buyer",
+    city: "[City]",
+    stars: 5,
+    highlight: "5-minute response at 9pm",
+  },
+  {
+    id: "mort-t-3",
+    quote:
+      "As a realtor, I send every client to this broker. They respond faster than anyone in town and my buyers always close on time.",
+    name: "James W.",
+    role: "Realtor Partner",
+    city: "[City]",
+    stars: 5,
+    highlight: "Top referral partner for realtors",
+  },
+  {
+    id: "mort-t-4",
+    quote:
+      "After-hours inquiries used to disappear. Now every call is captured and pre-qualified automatically. My pipeline has never been stronger.",
+    name: "Linda M.",
+    role: "Loan Officer",
+    city: "[City]",
+    stars: 5,
+    highlight: "Pipeline never stronger",
+  },
+  {
+    id: "mort-t-5",
+    quote:
+      "The rate lock timing advice saved us $14,000 in interest. This broker actually understands the market and protects the borrower.",
+    name: "Robert H.",
+    role: "Homebuyer",
+    city: "[City]",
+    stars: 5,
+    highlight: "Saved $14,000 with rate lock timing",
+  },
+];
+
+const mortgageTrustBadges: NicheTrustBadge[] = [
+  {
+    id: "mort-tb-1",
+    label: "Licensed Mortgage Broker",
+    icon: "🏅",
+    category: "license",
+    description: "State-licensed mortgage broker or loan officer",
+  },
+  {
+    id: "mort-tb-2",
+    label: "24/7 Inquiry Response",
+    icon: "⚡",
+    category: "guarantee",
+    description:
+      "Every borrower inquiry answered within seconds — day or night",
+  },
+  {
+    id: "mort-tb-3",
+    label: "NMLS Registered",
+    icon: "🔐",
+    category: "certification",
+    description: "Nationwide Multistate Licensing System registered",
+  },
+  {
+    id: "mort-tb-4",
+    label: "24-Hour Pre-Approval",
+    icon: "⏱️",
+    category: "guarantee",
+    description: "Pre-approval letters ready within 24 hours of application",
+  },
+  {
+    id: "mort-tb-5",
+    label: "AI Pre-Qualification",
+    icon: "🤖",
+    category: "certification",
+    description:
+      "Smart borrower pre-qualification before your first conversation",
+  },
+  {
+    id: "mort-tb-6",
+    label: "Realtor Partner Program",
+    icon: "🤝",
+    category: "award",
+    description: "Trusted referral partner for top-producing realtors",
+  },
+  {
+    id: "mort-tb-7",
+    label: "Satisfaction Guarantee",
+    icon: "💯",
+    category: "guarantee",
+    description:
+      "Clear communication and honest guidance from inquiry to closing",
+  },
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // Unified export
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -1511,6 +1975,18 @@ export const NICHE_CONTENT_LIBRARY: Record<NicheKey, NicheContentLibraryData> =
       testimonials: roofingTestimonials,
       trustBadges: roofingTrustBadges,
     },
+    real_estate: {
+      images: realEstateImages,
+      headlines: realEstateHeadlines,
+      testimonials: realEstateTestimonials,
+      trustBadges: realEstateTrustBadges,
+    },
+    mortgage: {
+      images: mortgageImages,
+      headlines: mortgageHeadlines,
+      testimonials: mortgageTestimonials,
+      trustBadges: mortgageTrustBadges,
+    },
   };
 
 /** Normalize niche string to library key */
@@ -1527,6 +2003,11 @@ export function normalizeNicheKey(niche: string): NicheKey {
     "carpet-cleaning": "carpet_cleaning",
     carpetcleaning: "carpet_cleaning",
     roofing: "roofing",
+    real_estate: "real_estate",
+    "real-estate": "real_estate",
+    realestate: "real_estate",
+    "real estate": "real_estate",
+    mortgage: "mortgage",
   };
   return map[n] ?? "plumbing";
 }

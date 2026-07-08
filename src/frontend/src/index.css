@@ -134,6 +134,41 @@
     --lead-enriched-score: 0.62 0.18 155;
     --lead-scoring-bar: 0.75 0.16 75;
     --lead-verified-badge: 0.62 0.2 200;
+
+    /* Pass 4: LLM Fallback Chain — provider health, priority, cost routing */
+    --fallback-healthy: 0.62 0.18 155;
+    --fallback-cooling: 0.72 0.18 75;
+    --fallback-disabled: 0.58 0.22 25;
+    --fallback-priority-active: 0.58 0.22 290;
+    --fallback-cost-low: 0.62 0.18 155;
+    --fallback-cost-mid: 0.72 0.18 75;
+    --fallback-cost-high: 0.62 0.2 15;
+    --fallback-chain-connector: 0.38 0.14 290;
+    --fallback-panel-bg: 0.12 0.01 280;
+    --fallback-panel-border: 0.58 0.22 290;
+
+    /* Pass 5: Roofer Cold Email Campaign + Public Demo Booking */
+    --campaign-accent: 0.75 0.16 75;
+    --campaign-accent-light: 0.82 0.14 75;
+    --campaign-accent-dim: 0.65 0.12 70;
+    --campaign-surface: 0.13 0.013 280;
+    --campaign-surface-elevated: 0.16 0.015 280;
+    --campaign-border: 0.75 0.16 75;
+    --campaign-step-active: 0.58 0.22 290;
+    --campaign-step-pending: 0.72 0.18 75;
+    --campaign-step-done: 0.62 0.18 155;
+    --lead-status-pending: 0.2 0.018 280;
+    --lead-status-sent: 0.58 0.22 290;
+    --lead-status-opened: 0.62 0.18 180;
+    --lead-status-replied: 0.62 0.18 155;
+    --lead-status-bounced: 0.58 0.22 25;
+    --lead-status-booked: 0.65 0.2 340;
+    --lead-status-unsubscribed: 0.45 0.02 280;
+    --booking-step-active: 0.75 0.16 75;
+    --booking-step-done: 0.62 0.18 155;
+    --booking-slot-available: 0.14 0.014 280;
+    --booking-slot-selected: 0.58 0.22 290;
+    --booking-slot-taken: 0.2 0.018 280;
   }
 
   .dark {
@@ -228,6 +263,41 @@
     --lead-enriched-score: 0.62 0.18 155;
     --lead-scoring-bar: 0.75 0.16 75;
     --lead-verified-badge: 0.62 0.2 200;
+
+    /* Pass 4: LLM Fallback Chain — dark mode tokens */
+    --fallback-healthy: 0.62 0.18 155;
+    --fallback-cooling: 0.72 0.18 75;
+    --fallback-disabled: 0.58 0.22 25;
+    --fallback-priority-active: 0.58 0.22 290;
+    --fallback-cost-low: 0.62 0.18 155;
+    --fallback-cost-mid: 0.72 0.18 75;
+    --fallback-cost-high: 0.62 0.2 15;
+    --fallback-chain-connector: 0.38 0.14 290;
+    --fallback-panel-bg: 0.12 0.01 280;
+    --fallback-panel-border: 0.58 0.22 290;
+
+    /* Pass 5: Roofer Cold Email Campaign + Public Demo Booking — dark mode */
+    --campaign-accent: 0.75 0.16 75;
+    --campaign-accent-light: 0.82 0.14 75;
+    --campaign-accent-dim: 0.65 0.12 70;
+    --campaign-surface: 0.13 0.013 280;
+    --campaign-surface-elevated: 0.16 0.015 280;
+    --campaign-border: 0.75 0.16 75;
+    --campaign-step-active: 0.58 0.22 290;
+    --campaign-step-pending: 0.72 0.18 75;
+    --campaign-step-done: 0.62 0.18 155;
+    --lead-status-pending: 0.18 0.016 280;
+    --lead-status-sent: 0.58 0.22 290;
+    --lead-status-opened: 0.62 0.18 180;
+    --lead-status-replied: 0.62 0.18 155;
+    --lead-status-bounced: 0.58 0.22 25;
+    --lead-status-booked: 0.65 0.2 340;
+    --lead-status-unsubscribed: 0.45 0.02 280;
+    --booking-step-active: 0.75 0.16 75;
+    --booking-step-done: 0.62 0.18 155;
+    --booking-slot-available: 0.14 0.014 280;
+    --booking-slot-selected: 0.58 0.22 290;
+    --booking-slot-taken: 0.2 0.018 280;
   }
 
   * {
@@ -6220,6 +6290,166 @@
     background-color: oklch(0.58 0.22 290 / 15%);
     color: oklch(0.78 0.16 290);
     border: 1px solid oklch(0.58 0.22 290 / 30%);
+  }
+
+  /* ── LLM Fallback Chain ─────────────────────────────────────────────────── */
+
+  .fallback-panel {
+    background-color: oklch(var(--fallback-panel-bg) / 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid oklch(var(--fallback-panel-border) / 0.35);
+    box-shadow: 0 12px 40px oklch(0.04 0.01 280 / 0.6), inset 0 1px 0
+      oklch(1 0 0 / 0.04);
+    border-radius: 1rem;
+  }
+
+  .fallback-provider-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.875rem;
+    border-radius: 0.625rem;
+    background-color: oklch(1 0 0 / 0.025);
+    border: 1px solid oklch(1 0 0 / 0.06);
+    transition: background-color 200ms ease, border-color 200ms ease;
+  }
+
+  .fallback-provider-row:hover {
+    background-color: oklch(1 0 0 / 0.05);
+    border-color: oklch(var(--fallback-panel-border) / 0.25);
+  }
+
+  .fallback-health-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+    box-shadow: 0 0 0 2px oklch(0.12 0.01 280 / 0.6);
+    transition: background-color 250ms ease, box-shadow 250ms ease;
+  }
+
+  .fallback-health-dot.healthy {
+    background-color: oklch(var(--fallback-healthy));
+    box-shadow: 0 0 0 2px oklch(0.12 0.01 280 / 0.6), 0 0 10px
+      oklch(var(--fallback-healthy) / 0.55);
+  }
+
+  .fallback-health-dot.cooling {
+    background-color: oklch(var(--fallback-cooling));
+    animation: fallback-pulse-amber 2s ease-in-out infinite;
+  }
+
+  .fallback-health-dot.disabled {
+    background-color: oklch(var(--fallback-disabled));
+    box-shadow: 0 0 0 2px oklch(0.12 0.01 280 / 0.6), 0 0 8px
+      oklch(var(--fallback-disabled) / 0.4);
+  }
+
+  @keyframes fallback-pulse-amber {
+    0%,
+    100% {
+      box-shadow: 0 0 0 2px oklch(0.12 0.01 280 / 0.6), 0 0 6px
+        oklch(var(--fallback-cooling) / 0.4);
+    }
+    50% {
+      box-shadow: 0 0 0 2px oklch(0.12 0.01 280 / 0.6), 0 0 14px
+        oklch(var(--fallback-cooling) / 0.75);
+    }
+  }
+
+  .fallback-priority-connector {
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1px;
+    background: linear-gradient(
+      to right,
+      oklch(var(--fallback-chain-connector) / 0.5),
+      oklch(var(--fallback-chain-connector) / 0.15)
+    );
+    position: relative;
+  }
+
+  .fallback-priority-connector::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid oklch(var(--fallback-chain-connector) / 0.5);
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+  }
+
+  .fallback-cost-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    border: 1px solid transparent;
+    white-space: nowrap;
+  }
+
+  .fallback-cost-pill.low {
+    background-color: oklch(var(--fallback-cost-low) / 0.15);
+    color: oklch(var(--fallback-cost-low));
+    border-color: oklch(var(--fallback-cost-low) / 0.35);
+  }
+
+  .fallback-cost-pill.mid {
+    background-color: oklch(var(--fallback-cost-mid) / 0.15);
+    color: oklch(var(--fallback-cost-mid));
+    border-color: oklch(var(--fallback-cost-mid) / 0.35);
+  }
+
+  .fallback-cost-pill.high {
+    background-color: oklch(var(--fallback-cost-high) / 0.15);
+    color: oklch(var(--fallback-cost-high));
+    border-color: oklch(var(--fallback-cost-high) / 0.35);
+  }
+
+  .fallback-reset-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3125rem;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.5rem;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    color: oklch(0.78 0.16 290);
+    background-color: oklch(var(--fallback-panel-border) / 0.12);
+    border: 1px solid oklch(var(--fallback-panel-border) / 0.3);
+    transition: background-color 200ms ease, border-color 200ms ease, color
+      200ms ease;
+    cursor: pointer;
+  }
+
+  .fallback-reset-btn:hover:not(:disabled) {
+    background-color: oklch(var(--fallback-panel-border) / 0.22);
+    border-color: oklch(var(--fallback-panel-border) / 0.5);
+    color: oklch(0.88 0.16 290);
+  }
+
+  .fallback-reset-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .fallback-health-dot.cooling {
+      animation: none;
+    }
+    .fallback-provider-row,
+    .fallback-health-dot,
+    .fallback-reset-btn {
+      transition: none;
+    }
   }
 }
 

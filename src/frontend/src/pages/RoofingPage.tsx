@@ -937,10 +937,11 @@ export default function RoofingPage() {
               </span>
             </h1>
             <p className="text-lg text-foreground/70 leading-relaxed max-w-xl">
-              Booked Ranked Fundable helps roofing companies capture more
-              opportunities, follow up faster, improve reviews, strengthen local
-              visibility, and build a stronger funding-readiness foundation from
-              one AI-powered operating system.
+              We stop missed calls, capture roof leads 24/7, follow up
+              automatically, grow your Google Maps presence, and turn reviews
+              into booked inspections — one AI-powered operating system that
+              compounds every dollar of your marketing into booked, ranked, and
+              fundable growth.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <GoldButton
@@ -961,8 +962,9 @@ export default function RoofingPage() {
               </button>
             </div>
             <p className="text-sm text-foreground/40 italic">
-              Built for roofing companies tired of missed calls, lost estimates,
-              weak follow-up, scattered tools, and slow growth.
+              The complete growth engine for roofing companies who refuse to
+              lose another lead to voicemail, weak follow-up, or a competitor
+              ranking above them.
             </p>
           </div>
           <div className="hidden lg:flex justify-center">

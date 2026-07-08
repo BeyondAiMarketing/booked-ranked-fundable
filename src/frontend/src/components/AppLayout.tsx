@@ -73,6 +73,7 @@ import {
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useApp } from "../context/AppContext";
 import type { Notification } from "../context/AppContext";
+import { isIntegrationEnabled } from "../integrations/_shared/env";
 import AiBusinessManagerPanel from "./AiBusinessManagerPanel";
 import {
   DropdownMenu,
@@ -83,7 +84,19 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { ScrollArea } from "./ui/scroll-area";
 
-const NAV_GROUPS = [
+interface NavItem {
+  label: string;
+  path: string;
+  icon: typeof LayoutDashboard;
+  visibleIf?: () => boolean;
+}
+
+interface NavGroup {
+  label: string;
+  items: NavItem[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
   {
     label: "OVERVIEW",
     items: [{ label: "Dashboard", path: "/dashboard", icon: LayoutDashboard }],
@@ -123,6 +136,18 @@ const NAV_GROUPS = [
         label: "Local Rankings",
         path: "/local-ranking-intelligence",
         icon: MapPin,
+      },
+      {
+        label: "Lead Engine",
+        path: "/lead-engine",
+        icon: Zap,
+        visibleIf: () => isIntegrationEnabled("LEAD_ENGINE_ENABLED"),
+      },
+      {
+        label: "Webhook Inbox",
+        path: "/webhook-inbox",
+        icon: Inbox,
+        visibleIf: () => isIntegrationEnabled("WEBHOOK_INBOX_ENABLED"),
       },
     ],
   },
@@ -309,6 +334,8 @@ const PAGE_TITLES: Record<string, string> = {
   "/social-content-calendar": "Social Content Calendar",
   "/platform-content": "Platform Content",
   "/performance-review": "Performance Review",
+  "/lead-engine": "Lead Engine",
+  "/webhook-inbox": "Webhook Inbox",
 };
 
 const TYPE_ICONS: Record<Notification["type"], ReactNode> = {
@@ -858,33 +885,35 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider px-2 mb-1">
               {group.label}
             </p>
-            {group.items.map(({ label, path, icon: Icon }) => {
-              const active = pathname === path;
-              const isSmsInbox = path === "/sms-inbox";
-              return (
-                <Link
-                  key={path}
-                  to={path}
-                  data-ocid={`nav.${label.toLowerCase().replace(/[^a-z0-9]/g, "")}.link`}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
-                    active
-                      ? "bg-indigo-600/80 text-white border border-indigo-500/40"
-                      : "text-slate-300 hover:bg-white/5 hover:text-white"
-                  }`}
-                >
-                  <Icon
-                    size={16}
-                    className={active ? "text-indigo-300" : "text-slate-500"}
-                  />
-                  <span className="flex-1">{label}</span>
-                  {isSmsInbox && smsUnreadCount > 0 && (
-                    <span className="w-4 h-4 bg-indigo-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shrink-0">
-                      {smsUnreadCount > 9 ? "9+" : smsUnreadCount}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
+            {group.items
+              .filter((item) => !item.visibleIf || item.visibleIf())
+              .map(({ label, path, icon: Icon }) => {
+                const active = pathname === path;
+                const isSmsInbox = path === "/sms-inbox";
+                return (
+                  <Link
+                    key={path}
+                    to={path}
+                    data-ocid={`nav.${label.toLowerCase().replace(/[^a-z0-9]/g, "")}.link`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                      active
+                        ? "bg-indigo-600/80 text-white border border-indigo-500/40"
+                        : "text-slate-300 hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    <Icon
+                      size={16}
+                      className={active ? "text-indigo-300" : "text-slate-500"}
+                    />
+                    <span className="flex-1">{label}</span>
+                    {isSmsInbox && smsUnreadCount > 0 && (
+                      <span className="w-4 h-4 bg-indigo-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center shrink-0">
+                        {smsUnreadCount > 9 ? "9+" : smsUnreadCount}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
           </div>
         ))}
 

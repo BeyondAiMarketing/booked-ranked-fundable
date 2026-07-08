@@ -1,4 +1,6 @@
 # yaml-language-server: $schema=https://github.com/dfinity/icp-cli/raw/refs/heads/main/docs/schemas/icp-yaml-schema.json
+# Default (no --environment flag) targets mainnet/production.
+# Use `--environment local` for the local replica (see deploy.sh).
 canisters:
   - src/frontend
   - src/backend

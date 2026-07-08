@@ -2,6 +2,8 @@ import ScheduledWorkflowLib "../lib/scheduledWorkflow";
 import T                      "../types/scheduledWorkflow";
 import Time                   "mo:core/Time";
 import Text                   "mo:core/Text";
+import Nat                   "mo:core/Nat";
+import Int                   "mo:core/Int";
 
 mixin (scheduledWorkflowState : ScheduledWorkflowLib.State) {
 
@@ -10,7 +12,7 @@ mixin (scheduledWorkflowState : ScheduledWorkflowLib.State) {
   /// Generate a unique workflow id.
   func nextWorkflowId() : Text {
     workflowIdCounter += 1;
-    "sw-" # Nat.toText(workflowIdCounter) # "-" # Int.toText(Time.now());
+    "sw-" # workflowIdCounter.toText() # "-" # Time.now().toText();
   };
 
   /// Create a new scheduled workflow.

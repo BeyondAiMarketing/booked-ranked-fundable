@@ -1,8 +1,10 @@
-import Map  "mo:core/Map";
-import List "mo:core/List";
-import Time "mo:core/Time";
-import Text "mo:core/Text";
-import T    "../types/proposal";
+import Map   "mo:core/Map";
+import List  "mo:core/List";
+import Time  "mo:core/Time";
+import Text  "mo:core/Text";
+import Nat   "mo:core/Nat";
+import Array "mo:core/Array";
+import T     "../types/proposal";
 
 module {
 
@@ -93,11 +95,11 @@ module {
     let now = Time.now();
     let id = "prop-" # now.toText() # "-" # clientBusinessId;
 
-    let execSummary = "Based on our comprehensive marketing audit, your business scored " # Nat.toText(auditScore) # "/100. We identified key opportunities to improve your Booked, Ranked, and Funded performance.";
+    let execSummary = "Based on our comprehensive marketing audit, your business scored " # auditScore.toText() # "/100. We identified key opportunities to improve your Booked, Ranked, and Funded performance.";
 
-    let situationText = "Current findings: " # Array.foldLeft(auditFindings, "", func(acc, finding) { if (acc == "") { finding } else { acc # ", " # finding } }) # ".";
+    let situationText = "Current findings: " # auditFindings.foldLeft("", func(acc, finding) { if (acc == "") { finding } else { acc # ", " # finding } }) # ".";
 
-    let strategyText = "Our strategy focuses on: " # Array.foldLeft(auditRecommendations, "", func(acc, rec) { if (acc == "") { rec } else { acc # ", " # rec } }) # ".";
+    let strategyText = "Our strategy focuses on: " # auditRecommendations.foldLeft("", func(acc, rec) { if (acc == "") { rec } else { acc # ", " # rec } }) # ".";
 
     let sections : [T.ProposalSection] = [
       { title = "Executive Summary"; body = execSummary; order = 1 },

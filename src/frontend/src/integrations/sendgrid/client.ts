@@ -5,6 +5,8 @@
  * Feature flag: SENDGRID_INTEGRATION_ENABLED (always false by default)
  */
 
+import type { LiveSendResult } from "@/backend";
+import type { ActorCompat } from "../../hooks/useActor";
 import { areIntegrationsEnabled } from "../_shared/env";
 import { IntegrationError } from "../_shared/types";
 import type {
@@ -89,4 +91,29 @@ export function buildTemplateMailRequest(
     },
     template_id: templateId,
   };
+}
+
+/**
+ * Send a live email via the backend actor.
+ * The backend performs the actual HTTP outcall to SendGrid's API using stored
+ * credentials (never exposed to the frontend).
+ */
+export async function sendLiveEmail(
+  actor: ActorCompat,
+  tenantId: string,
+  to: string,
+  from: string,
+  subject: string,
+  body: string,
+): Promise<LiveSendResult> {
+  if (!areIntegrationsEnabled()) {
+    throw new IntegrationError("Integrations are disabled", PLATFORM);
+  }
+  if (!to || !from || !subject || !body) {
+    throw new IntegrationError(
+      "to, from, subject, and body are required",
+      PLATFORM,
+    );
+  }
+  return actor.sendLiveEmail(tenantId, to, from, subject, body);
 }

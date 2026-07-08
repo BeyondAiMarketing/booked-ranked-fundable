@@ -1,5 +1,6 @@
 import List "mo:core/List";
 import Map "mo:core/Map";
+import Text "mo:core/Text";
 import Float "mo:core/Float";
 import AnalyticsTypes "../types/analytics";
 

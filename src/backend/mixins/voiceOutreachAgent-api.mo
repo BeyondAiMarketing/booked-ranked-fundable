@@ -1,5 +1,6 @@
 import Time   "mo:core/Time";
 import Map    "mo:core/Map";
+import Text   "mo:core/Text";
 import VOALib  "../libraries/voiceOutreachAgent";
 import VOATypes "../types/voiceOutreachAgent";
 import OutreachTypes "../types/outreachPipeline";

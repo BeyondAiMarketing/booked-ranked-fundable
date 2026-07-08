@@ -60,6 +60,11 @@ export interface OperatorChatMessage {
     role: string;
     commandType?: string;
 }
+export interface HttpRequestResult {
+    status: bigint;
+    body: Uint8Array;
+    headers: Array<HttpHeader>;
+}
 export interface CampaignMetrics {
     opened: bigint;
     unsubscribed: bigint;
@@ -222,6 +227,10 @@ export interface WarmSequenceEmailSchedule {
     sendAfter: bigint;
     scheduledAt: bigint;
 }
+export interface RooferCampaignLeadsPage {
+    total: bigint;
+    leads: Array<RooferCampaignLead>;
+}
 export interface LocationSummary {
     city: string;
     score: bigint;
@@ -277,18 +286,20 @@ export interface SenderSubdomainRecord {
     warmupDay: bigint;
     subdomain: string;
 }
-export interface ContractField {
-    name: string;
-    description: string;
-    required: boolean;
-    fieldType: string;
+export interface RooferEnrollResult {
+    enrolled: bigint;
+    skipped: bigint;
 }
-export interface ContentGenerationRequest {
-    accountId: string;
-    contentType: ContentType;
-    additionalContext?: string;
-    niche: string;
-    prompt: string;
+export interface RooferCampaignSummary {
+    id: string;
+    status: RooferColdCampaignStatus;
+    opened: bigint;
+    leadCount: bigint;
+    name: string;
+    sent: bigint;
+    booked: bigint;
+    replied: bigint;
+    bounced: bigint;
 }
 export interface WarmSequenceEmailEvent {
     id: string;
@@ -297,14 +308,20 @@ export interface WarmSequenceEmailEvent {
     touchIndex: bigint;
     eventType: string;
 }
-export interface ComplianceConfig {
-    maxBounceRate: number;
-    businessName: string;
-    unsubscribeBase: string;
-    physicalAddress: string;
-    adminEmail: string;
-    softBounceRetries: bigint;
-    maxComplaintRate: number;
+export interface ContractField {
+    name: string;
+    description: string;
+    required: boolean;
+    fieldType: string;
+}
+export interface DedupeGroup {
+    id: string;
+    leadIds: Array<string>;
+    createdAt: bigint;
+    resolution?: DedupeResolution;
+    tenantId: string;
+    matchedFields: Array<DedupeMatchField>;
+    resolvedAt?: bigint;
 }
 export interface LLMLeadSearchResult {
     totalFound: bigint;
@@ -318,22 +335,21 @@ export interface LLMLeadSearchResult {
     serpApiUsed: boolean;
     serpApiCount: bigint;
 }
-export interface BatchAuditJob {
-    id: string;
-    status: string;
-    completedAt?: bigint;
-    failedLeads: bigint;
-    createdAt: bigint;
-    processedLeads: bigint;
-    tenantId: string;
-    totalLeads: bigint;
-    completedLeads: bigint;
+export interface ContentGenerationRequest {
+    accountId: string;
+    contentType: ContentType;
+    additionalContext?: string;
+    niche: string;
+    prompt: string;
 }
-export interface AuditSnapshot {
-    reputationScore: bigint;
-    overallScore: bigint;
-    websiteScore: bigint;
-    seoScore: bigint;
+export interface ComplianceConfig {
+    maxBounceRate: number;
+    businessName: string;
+    unsubscribeBase: string;
+    physicalAddress: string;
+    adminEmail: string;
+    softBounceRetries: bigint;
+    maxComplaintRate: number;
 }
 export interface SeoGeoIssue {
     id: string;
@@ -364,11 +380,19 @@ export interface Opportunity {
     contactId: string;
     companyId: string;
 }
+export interface HttpHeader {
+    value: string;
+    name: string;
+}
 export interface PlatformFormatting {
     hashtags: Array<string>;
     mediaUrl?: string;
     firstComment?: string;
     altText?: string;
+}
+export interface Result {
+    hasMore: boolean;
+    rows: Array<Array<Cell>>;
 }
 export interface ReportSchedule {
     monthlyEnabled: boolean;
@@ -379,18 +403,6 @@ export interface ReportSchedule {
     lastGeneratedAt?: bigint;
 }
 export type ContentHistoryEntry = string;
-export interface AgentThread {
-    id: string;
-    status: Variant_active_archived_paused;
-    title: string;
-    createdAt: bigint;
-    agentType: string;
-    tenantId: string;
-    summary?: string;
-    updatedAt: bigint;
-    messageCount: bigint;
-    agentNotes?: string;
-}
 export interface WebsitePageQueueItem {
     id: string;
     updateType: string;
@@ -474,6 +486,23 @@ export interface BrfOutboundCallAttempt {
     smsFallbackSentAt?: bigint;
     attemptNumber: bigint;
 }
+export interface BatchAuditJob {
+    id: string;
+    status: string;
+    completedAt?: bigint;
+    failedLeads: bigint;
+    createdAt: bigint;
+    processedLeads: bigint;
+    tenantId: string;
+    totalLeads: bigint;
+    completedLeads: bigint;
+}
+export interface AuditSnapshot {
+    reputationScore: bigint;
+    overallScore: bigint;
+    websiteScore: bigint;
+    seoScore: bigint;
+}
 export interface ApprovalItem {
     id: string;
     status: ApprovalStatus;
@@ -487,35 +516,6 @@ export interface ApprovalItem {
     requestedBy: string;
     resolvedAt?: bigint;
     reason: string;
-}
-export interface ApiPingRecord {
-    status: string;
-    errorMessage?: string;
-    latencyMs: bigint;
-    serviceId: string;
-    lastPingTime: bigint;
-}
-export interface AccountBrief {
-    performanceHistory: Array<string>;
-    doRules: Array<string>;
-    sessionLog: Array<string>;
-    respondTo: Array<string>;
-    accountId: string;
-    ignoreList: Array<string>;
-    differentiators: Array<string>;
-    tone: string;
-    targetAudience: Array<string>;
-    offerSummary: string;
-    doNotRespondList: Array<string>;
-    updatedAt: bigint;
-    updatedBy: string;
-    priorityContacts: Array<string>;
-    flagKeywords: Array<string>;
-    contentHistory: Array<string>;
-    brandVoice: string;
-    services: Array<string>;
-    dontRules: Array<string>;
-    positioning: string;
 }
 export interface GridAuditResult {
     gridPoints: Array<GridPoint>;
@@ -578,6 +578,13 @@ export interface ProposalSection {
     order: bigint;
     body: string;
 }
+export interface ApiPingRecord {
+    status: string;
+    errorMessage?: string;
+    latencyMs: bigint;
+    serviceId: string;
+    lastPingTime: bigint;
+}
 export interface ScrapeResult {
     ok: boolean;
     requestUrl: string;
@@ -612,16 +619,19 @@ export interface ScheduledPost {
     updatedAt: bigint;
     scheduledAt: bigint;
 }
-export interface AgentSessionState {
-    startedAt: bigint;
-    lastSeenAt: bigint;
-    userId: string;
-    isActive: boolean;
-    sessionId: string;
-}
-export interface ApprovalResolution {
-    status: ApprovalStatus;
-    notes?: string;
+export interface RooferColdCampaign {
+    id: string;
+    status: RooferColdCampaignStatus;
+    name: string;
+    createdAt: bigint;
+    tenantId: string;
+    updatedAt: bigint;
+    stats: RooferCampaignStats;
+    senderName: string;
+    senderEmail: string;
+    leadListFilter: string;
+    enrolledLeadIds: Array<string>;
+    sequence: Array<RooferCampaignStep>;
 }
 export interface VapiProvisioningStatus {
     status: Variant_provisioning_active_notConfigured_error;
@@ -631,7 +641,7 @@ export interface VapiProvisioningStatus {
 }
 export interface TransformationInput {
     context: Uint8Array;
-    response: http_request_result;
+    response: HttpRequestResult;
 }
 export interface VapiCallLog {
     id: string;
@@ -646,12 +656,9 @@ export interface VapiCallLog {
     callId: string;
     transcript: string;
 }
-export interface AttributionTouch {
-    utmParams: string;
-    source: string;
-    campaignId: string;
-    timestamp: bigint;
-    channel: string;
+export interface ApprovalResolution {
+    status: ApprovalStatus;
+    notes?: string;
 }
 export interface DualModelSearchJobUpdate {
     status?: Variant_pending_completed_failed_running;
@@ -661,6 +668,20 @@ export interface DualModelSearchJobUpdate {
     totalLeadsStaged?: bigint;
     claudeLeadsFound?: bigint;
     openaiLeadsFound?: bigint;
+}
+export interface AttributionTouch {
+    utmParams: string;
+    source: string;
+    campaignId: string;
+    timestamp: bigint;
+    channel: string;
+}
+export interface AgentSessionState {
+    startedAt: bigint;
+    lastSeenAt: bigint;
+    userId: string;
+    isActive: boolean;
+    sessionId: string;
 }
 export interface AbacusConfig {
     fallbackModels: Array<string>;
@@ -738,13 +759,27 @@ export interface IntegrationTestResult {
     message: string;
     connected: boolean;
 }
-export interface LeadAIEnrichment {
-    model: string;
-    leadId: string;
-    companyIntel: string;
-    decisionMakerInfo: string;
-    enrichedAt: bigint;
-    webPresence: string;
+export interface DemoBookingLookup {
+    campaign?: RooferColdCampaign;
+    lead?: LeadEngineLead__1;
+    existingBooking?: DemoBooking;
+}
+export interface AgentThread {
+    id: string;
+    status: Variant_active_archived_paused;
+    title: string;
+    createdAt: bigint;
+    agentType: string;
+    tenantId: string;
+    summary?: string;
+    updatedAt: bigint;
+    messageCount: bigint;
+    agentNotes?: string;
+}
+export interface LiveSendResult {
+    ok: boolean;
+    messageId?: string;
+    error?: string;
 }
 export interface TrialProvisionRequest {
     city: string;
@@ -755,11 +790,60 @@ export interface TrialProvisionRequest {
     niche: string;
     phone?: string;
 }
+export interface LeadAIEnrichment {
+    model: string;
+    leadId: string;
+    companyIntel: string;
+    decisionMakerInfo: string;
+    enrichedAt: bigint;
+    webPresence: string;
+}
+export interface LeadEngineLead {
+    id: string;
+    provenance: LeadProvenance;
+    status: string;
+    source: string;
+    createdAt: bigint;
+    businessName: string;
+    email: string;
+    enrichmentResult?: EnrichmentResult;
+    tenantId: string;
+    sourceTags: Array<string>;
+    isDuplicate: boolean;
+    dedupeResolution?: DedupeResolution;
+    linkedLeadIds: Array<string>;
+    niche: string;
+    phone: string;
+    locationTags: Array<string>;
+    dedupeFlags: Array<DedupeFlag>;
+}
 export interface DograhCreateAgentRequest {
     nlCommand: string;
     name: string;
     description: string;
     niche: string;
+}
+export interface AccountBrief {
+    performanceHistory: Array<string>;
+    doRules: Array<string>;
+    sessionLog: Array<string>;
+    respondTo: Array<string>;
+    accountId: string;
+    ignoreList: Array<string>;
+    differentiators: Array<string>;
+    tone: string;
+    targetAudience: Array<string>;
+    offerSummary: string;
+    doNotRespondList: Array<string>;
+    updatedAt: bigint;
+    updatedBy: string;
+    priorityContacts: Array<string>;
+    flagKeywords: Array<string>;
+    contentHistory: Array<string>;
+    brandVoice: string;
+    services: Array<string>;
+    dontRules: Array<string>;
+    positioning: string;
 }
 export interface IntegrationCredentials {
     serpApiKey: string;
@@ -822,6 +906,14 @@ export interface ReadinessScore {
     score: bigint;
     autoBrowserConfigured: boolean;
 }
+export interface RouteLogEntry {
+    model: string;
+    provider: ProviderId;
+    attempts: bigint;
+    success: boolean;
+    estimatedCost: number;
+    timestampNs: bigint;
+}
 export interface PaidAdsAudience {
     id: string;
     cpa: string;
@@ -833,31 +925,6 @@ export interface PaidAdsAudience {
     segmentType: string;
     tenantId: TenantId;
     updatedAt: Time;
-}
-export interface BrandKitProspect {
-    id: string;
-    auditScore?: bigint;
-    outreachKitSentAt?: bigint;
-    convertedAt?: bigint;
-    city: string;
-    createdAt: bigint;
-    businessName: string;
-    utmSource?: string;
-    vapiAssistantId?: string;
-    website?: string;
-    kitPageSlug: string;
-    trialDay: bigint;
-    niche: string;
-    activationAction?: string;
-    phone: string;
-    lastActivityAt?: bigint;
-    utmCampaign?: string;
-    trialStartedAt?: bigint;
-    outreachKitOpenedAt?: bigint;
-    trialExpiresAt?: bigint;
-    featuresUsed: Array<string>;
-    trialStatus: TrialStatus__1;
-    firstName: string;
 }
 export interface RankedDispatchRoute {
     id: string;
@@ -897,6 +964,34 @@ export interface ReviewSyncRecord {
     rating: bigint;
     respondedAt?: bigint;
 }
+export interface BrandKitProspect {
+    id: string;
+    auditScore?: bigint;
+    outreachKitSentAt?: bigint;
+    convertedAt?: bigint;
+    city: string;
+    createdAt: bigint;
+    businessName: string;
+    utmSource?: string;
+    vapiAssistantId?: string;
+    website?: string;
+    kitPageSlug: string;
+    trialDay: bigint;
+    niche: string;
+    activationAction?: string;
+    phone: string;
+    lastActivityAt?: bigint;
+    utmCampaign?: string;
+    trialStartedAt?: bigint;
+    outreachKitOpenedAt?: bigint;
+    trialExpiresAt?: bigint;
+    featuresUsed: Array<string>;
+    trialStatus: TrialStatus__1;
+    firstName: string;
+}
+export interface CustomFieldValueUpdate {
+    value?: string;
+}
 export interface AgentTemplateRecord {
     id: string;
     approvalRequired: boolean;
@@ -909,21 +1004,6 @@ export interface AgentTemplateRecord {
     isDefault: boolean;
     defaultWorkflowSteps: Array<string>;
     memoryMode: MemoryMode;
-}
-export interface CustomFieldValueUpdate {
-    value?: string;
-}
-export interface AgentSubscription {
-    id: string;
-    status: string;
-    humanOversightEnabled: boolean;
-    productId: string;
-    tenantId: TenantId;
-    updatedAt: Time;
-    notes: string;
-    price: bigint;
-    assignedStrategist: string;
-    startDate: Time;
 }
 export interface GeneratedLead {
     ownerFirstName: string;
@@ -938,6 +1018,18 @@ export interface GeneratedLead {
     address: string;
     enriched: boolean;
     phone: string;
+}
+export interface AgentSubscription {
+    id: string;
+    status: string;
+    humanOversightEnabled: boolean;
+    productId: string;
+    tenantId: TenantId;
+    updatedAt: Time;
+    notes: string;
+    price: bigint;
+    assignedStrategist: string;
+    startDate: Time;
 }
 export interface NewsletterCampaignStats {
     bounceCount: bigint;
@@ -1042,6 +1134,18 @@ export interface IntegrationHealthSummary {
 export interface BatchScrapeUrlResult {
     url: string;
     result: ScrapeResult;
+}
+export interface ProviderHealthSnapshot {
+    provider: ProviderId;
+    isSkipped: boolean;
+    skipUntilNs: bigint;
+    consecutiveFailures: bigint;
+}
+export interface WebhookInboxStats {
+    eventsLast24h: bigint;
+    totalEvents: bigint;
+    eventsByType: Array<[string, bigint]>;
+    eventsByProvider: Array<[string, bigint]>;
 }
 export interface AgentDeliverable {
     id: string;
@@ -1165,15 +1269,16 @@ export interface TriggerRuleUpdate {
     isEnabled?: boolean;
     condition?: string;
 }
-export interface OpportunityUpdate {
-    probability?: bigint;
-    closeDate?: bigint;
-    title?: string;
-    value?: bigint;
-    stage?: OpportunityStage;
-    notes?: string;
-    contactId?: string;
-    companyId?: string;
+export interface RooferCampaignLead {
+    status: RooferCampaignLeadStatus;
+    nextSendAt?: bigint;
+    bookedAt?: bigint;
+    campaignId: string;
+    ctaToken: string;
+    bookedSlot?: string;
+    currentStep: bigint;
+    leadId: string;
+    lastEventAt?: bigint;
 }
 export interface WebsiteAgentScore {
     id: string;
@@ -1210,6 +1315,26 @@ export interface TriggerRuleInput {
     isEnabled: boolean;
     condition: string;
 }
+export interface OpportunityUpdate {
+    probability?: bigint;
+    closeDate?: bigint;
+    title?: string;
+    value?: bigint;
+    stage?: OpportunityStage;
+    notes?: string;
+    contactId?: string;
+    companyId?: string;
+}
+export type ReviewHistoryEntry = string;
+export interface RoofingLead {
+    city: string;
+    businessType: string;
+    email: string;
+    website?: string;
+    state: string;
+    companyName: string;
+    phone?: string;
+}
 export interface Note {
     id: string;
     clientBusinessId: string;
@@ -1222,27 +1347,17 @@ export interface Note {
     category: NoteCategory;
     relatedToId: string;
 }
-export type ReviewHistoryEntry = string;
-export interface RoofingLead {
-    city: string;
-    businessType: string;
-    email: string;
-    website?: string;
-    state: string;
-    companyName: string;
-    phone?: string;
+export interface RankedDispatchRouteUpdate {
+    status: RankedDispatchStatus;
+    notes: Array<string>;
+    matchedAgent: string;
+    requestText: string;
 }
 export interface MarketingAuditScore {
     weight: bigint;
     score: bigint;
     category: AuditCategory;
     findings: Array<string>;
-}
-export interface RankedDispatchRouteUpdate {
-    status: RankedDispatchStatus;
-    notes: Array<string>;
-    matchedAgent: string;
-    requestText: string;
 }
 export interface MarketingAuditInput {
     serviceArea: string;
@@ -1262,6 +1377,13 @@ export interface OAuthInitRequest {
     redirectUri: string;
     toolId: string;
 }
+export interface LeadEngineImportResult {
+    rejectedRows: Array<RejectedRow>;
+    imported: bigint;
+    skipped: bigint;
+    batchId: string;
+    flagged: bigint;
+}
 export interface CsvImportBatch {
     id: string;
     status: string;
@@ -1274,43 +1396,16 @@ export interface CsvImportBatch {
     flaggedNoEmail: bigint;
     nicheBreakdown: Array<[string, bigint]>;
 }
-export interface BusinessBrief {
-    id: string;
-    criticalFindings: Array<string>;
-    monitorFindings: Array<string>;
-    serviceArea: string;
-    performanceHistory: Array<PerformanceHistoryEntry>;
-    clientBusinessId: string;
-    targetLocations: Array<string>;
-    sessionLog: Array<string>;
-    approvalConfig: string;
-    reviewHistory: Array<ReviewHistoryEntry>;
-    lastUpdated: bigint;
-    businessName: string;
-    verticalProfileId: string;
-    website: string;
-    primaryKeyword: string;
-    currentFindings: Array<string>;
-    importantFindings: Array<string>;
-    localSEOHistory: Array<LocalSEOHistoryEntry>;
-    deliverables: Array<string>;
-    fundingHistory: Array<FundingHistoryEntry>;
-    contentHistory: Array<ContentHistoryEntry>;
-    nextAction: string;
-    locationName: string;
-    toolsRun: Array<string>;
-    services: Array<string>;
-}
-export interface BatchScrapeResult {
-    ok: boolean;
-    count: bigint;
-    results: Array<BatchScrapeUrlResult>;
-}
 export interface NicheVoiceAssignment {
     voiceName: string;
     nicheId: string;
     assignedAt: bigint;
     voiceId: string;
+}
+export interface BatchScrapeResult {
+    ok: boolean;
+    count: bigint;
+    results: Array<BatchScrapeUrlResult>;
 }
 export interface AgentThreadRecord {
     id: string;
@@ -1352,6 +1447,46 @@ export interface LeadCampaignDetails {
     templateVersionUsed?: bigint;
     currentEmailDay: bigint;
     deadZones?: bigint;
+}
+export type EnrichmentField = {
+    __kind__: "inferredNiche";
+    inferredNiche: string;
+} | {
+    __kind__: "websiteSummary";
+    websiteSummary: string;
+} | {
+    __kind__: "suggestedOutreachAngle";
+    suggestedOutreachAngle: string;
+} | {
+    __kind__: "companySize";
+    companySize: string;
+};
+export interface BusinessBrief {
+    id: string;
+    criticalFindings: Array<string>;
+    monitorFindings: Array<string>;
+    serviceArea: string;
+    performanceHistory: Array<PerformanceHistoryEntry>;
+    clientBusinessId: string;
+    targetLocations: Array<string>;
+    sessionLog: Array<string>;
+    approvalConfig: string;
+    reviewHistory: Array<ReviewHistoryEntry>;
+    lastUpdated: bigint;
+    businessName: string;
+    verticalProfileId: string;
+    website: string;
+    primaryKeyword: string;
+    currentFindings: Array<string>;
+    importantFindings: Array<string>;
+    localSEOHistory: Array<LocalSEOHistoryEntry>;
+    deliverables: Array<string>;
+    fundingHistory: Array<FundingHistoryEntry>;
+    contentHistory: Array<ContentHistoryEntry>;
+    nextAction: string;
+    locationName: string;
+    toolsRun: Array<string>;
+    services: Array<string>;
 }
 export interface SocialListeningAlert {
     id: string;
@@ -1429,6 +1564,10 @@ export interface WebhookEvent {
     payload: string;
     eventType: string;
 }
+export interface RooferProcessSendsResult {
+    sent: bigint;
+    errors: Array<string>;
+}
 export interface CompetitorIntelReport {
     id: string;
     weeklyDigest: string;
@@ -1490,6 +1629,11 @@ export interface SeoGeoScore {
     contentHealth: bigint;
     geoScore: bigint;
 }
+export interface ToolActionResponse {
+    result: string;
+    errorMessage?: string;
+    success: boolean;
+}
 export interface OutreachSequence {
     id: string;
     generatedAt: bigint;
@@ -1499,10 +1643,16 @@ export interface OutreachSequence {
     leadId: string;
     niche: string;
 }
-export interface ToolActionResponse {
-    result: string;
-    errorMessage?: string;
-    success: boolean;
+export interface DemoBooking {
+    id: string;
+    rooferEmail: string;
+    bookedAt: bigint;
+    campaignId: string;
+    ctaToken: string;
+    leadId: string;
+    slotTime: string;
+    rooferName: string;
+    confirmed: boolean;
 }
 export interface CompetitorProfile {
     id: string;
@@ -1549,6 +1699,25 @@ export interface WorkflowStatusSnapshot {
     lastAction: string;
     workflowId: string;
 }
+export type Value = {
+    __kind__: "int";
+    int: bigint;
+} | {
+    __kind__: "nat";
+    nat: bigint;
+} | {
+    __kind__: "float";
+    float: number;
+} | {
+    __kind__: "bool";
+    bool: boolean;
+} | {
+    __kind__: "null";
+    null: null;
+} | {
+    __kind__: "text";
+    text: string;
+};
 export interface MarketingAudit {
     id: string;
     serviceArea: string;
@@ -1585,6 +1754,22 @@ export interface DripLeadBounceRecord {
     bouncedAt: bigint;
     reason?: string;
 }
+export type DedupeResolution = {
+    __kind__: "Linked";
+    Linked: null;
+} | {
+    __kind__: "Merged";
+    Merged: {
+        mergedAwayLeadId: string;
+        mergedIntoLeadId: string;
+    };
+} | {
+    __kind__: "Ignored";
+    Ignored: null;
+} | {
+    __kind__: "KeptSeparate";
+    KeptSeparate: null;
+};
 export interface BulkSendJob {
     id: string;
     bounceCount: bigint;
@@ -1598,12 +1783,6 @@ export interface BulkSendJob {
     deliveredCount: bigint;
     scheduledAt: bigint;
 }
-export interface AuditTrailEntry {
-    action: string;
-    actorId: string;
-    notes: string;
-    timestamp: bigint;
-}
 export interface BillingRecord {
     id: string;
     status: string;
@@ -1614,6 +1793,12 @@ export interface BillingRecord {
     periodStart: Time;
     amount: bigint;
     planName: string;
+}
+export interface AuditTrailEntry {
+    action: string;
+    actorId: string;
+    notes: string;
+    timestamp: bigint;
 }
 export interface AgentCommandResult {
     requiresConfirmation: boolean;
@@ -1703,33 +1888,30 @@ export interface ServiceAreaOutline {
     targetKeyword: string;
     suggestedHeadings: Array<string>;
 }
-export interface AccountBriefUpdate {
-    performanceHistory?: Array<string>;
-    doRules?: Array<string>;
-    sessionLog?: Array<string>;
-    respondTo?: Array<string>;
-    ignoreList?: Array<string>;
-    differentiators?: Array<string>;
-    tone?: string;
-    targetAudience?: Array<string>;
-    offerSummary?: string;
-    doNotRespondList?: Array<string>;
-    priorityContacts?: Array<string>;
-    flagKeywords?: Array<string>;
-    contentHistory?: Array<string>;
-    brandVoice?: string;
-    services?: Array<string>;
-    dontRules?: Array<string>;
-    positioning?: string;
+export interface NormalizedWebhookEvent {
+    id: string;
+    provider: WebhookInboxProvider;
+    replySubject?: string;
+    leadEmail?: string;
+    routedTo: string;
+    normalizedEventType: string;
+    providerTimestamp: bigint;
+    externalLeadId?: string;
+    receivedAt: bigint;
+    leadPhone?: string;
+    internalLeadId?: string;
+    replyText?: string;
+    rawPayload: string;
+    externalCampaignId?: string;
 }
-export interface AgentLogEntry {
-    result: string;
-    action: string;
-    actionType: string;
-    agentId: string;
-    logId: string;
-    timestamp: bigint;
-    isSuccess: boolean;
+export interface RooferCampaignStats {
+    opened: bigint;
+    unsubscribed: bigint;
+    sent: bigint;
+    booked: bigint;
+    totalLeads: bigint;
+    replied: bigint;
+    bounced: bigint;
 }
 export interface NewsletterSendLog {
     id: string;
@@ -1747,6 +1929,12 @@ export interface BrfCallConversionStats {
     conversionRate: number;
     totalConverted: bigint;
     smsFallbackCount: bigint;
+}
+export interface LeadListPage {
+    total: bigint;
+    offset: bigint;
+    leads: Array<LeadEngineLead>;
+    limit: bigint;
 }
 export interface BrandKitOutreachJob {
     id: string;
@@ -1783,6 +1971,15 @@ export interface ExtendedLeadInput {
     totalReviews?: string;
     localAds?: string;
 }
+export interface AgentLogEntry {
+    result: string;
+    action: string;
+    actionType: string;
+    agentId: string;
+    logId: string;
+    timestamp: bigint;
+    isSuccess: boolean;
+}
 export interface OutreachQueuedAction {
     id: string;
     status: string;
@@ -1796,7 +1993,7 @@ export interface OutreachQueuedAction {
 export interface TransformationOutput {
     status: bigint;
     body: Uint8Array;
-    headers: Array<http_header>;
+    headers: Array<HttpHeader>;
 }
 export interface ServiceAreaPage {
     id: string;
@@ -1834,20 +2031,11 @@ export interface SeoGeoDeliverable {
     deliverableType: string;
     attachments: Array<string>;
 }
-export interface DualModelSearchJob {
-    id: string;
-    status: Variant_pending_completed_failed_running;
-    completedAt?: bigint;
-    duplicatesRemoved: bigint;
-    cityA: string;
-    cityB: string;
-    createdAt: bigint;
-    errorMessage?: string;
-    tenantId: string;
-    totalLeadsStaged: bigint;
-    niche: string;
-    claudeLeadsFound: bigint;
-    openaiLeadsFound: bigint;
+export interface LeadProvenance {
+    originalFormat: LeadSourceFormat;
+    importDate: bigint;
+    sourceTool: string;
+    importerName: string;
 }
 export interface ExtendedLead {
     id: string;
@@ -1887,6 +2075,21 @@ export interface SeoGeoGbpTask {
     taskType: string;
     updatedAt: Time;
     priority: string;
+}
+export interface DualModelSearchJob {
+    id: string;
+    status: Variant_pending_completed_failed_running;
+    completedAt?: bigint;
+    duplicatesRemoved: bigint;
+    cityA: string;
+    cityB: string;
+    createdAt: bigint;
+    errorMessage?: string;
+    tenantId: string;
+    totalLeadsStaged: bigint;
+    niche: string;
+    claudeLeadsFound: bigint;
+    openaiLeadsFound: bigint;
 }
 export interface BrowserAuditResult {
     websiteScreenshotUrl: string;
@@ -1929,6 +2132,15 @@ export interface AgentRun {
     outputText?: string;
     threadId: string;
 }
+export interface NotificationRecord {
+    id: string;
+    title: string;
+    body: string;
+    notificationType: string;
+    createdAt: Time;
+    read: boolean;
+    tenantId: TenantId;
+}
 export interface AgencySettings {
     serpApiKey: string;
     twilioSid: string;
@@ -1940,24 +2152,7 @@ export interface AgencySettings {
     stripeKey: string;
     openaiKey: string;
 }
-export interface NotificationRecord {
-    id: string;
-    title: string;
-    body: string;
-    notificationType: string;
-    createdAt: Time;
-    read: boolean;
-    tenantId: TenantId;
-}
-export interface ActivityFeedItem {
-    id: string;
-    title: string;
-    description: string;
-    entityId?: string;
-    timestamp: bigint;
-    entityType?: string;
-    eventType: string;
-}
+export type LeadEngineLead__1 = any;
 export interface WebsiteIssue {
     id: string;
     status: string;
@@ -1990,6 +2185,15 @@ export interface AgentServiceRequest {
     priority: string;
     attachments: Array<string>;
 }
+export interface RawLeadInput {
+    source: string;
+    businessName: string;
+    email: string;
+    sourceTags: Array<string>;
+    niche: string;
+    phone: string;
+    locationTags: Array<string>;
+}
 export interface ReportSection {
     metric: string;
     title: string;
@@ -1998,6 +2202,34 @@ export interface ReportSection {
     trendValue: string;
     description: string;
     recommendation: string;
+}
+export interface ActivityFeedItem {
+    id: string;
+    title: string;
+    description: string;
+    entityId?: string;
+    timestamp: bigint;
+    entityType?: string;
+    eventType: string;
+}
+export interface AccountBriefUpdate {
+    performanceHistory?: Array<string>;
+    doRules?: Array<string>;
+    sessionLog?: Array<string>;
+    respondTo?: Array<string>;
+    ignoreList?: Array<string>;
+    differentiators?: Array<string>;
+    tone?: string;
+    targetAudience?: Array<string>;
+    offerSummary?: string;
+    doNotRespondList?: Array<string>;
+    priorityContacts?: Array<string>;
+    flagKeywords?: Array<string>;
+    contentHistory?: Array<string>;
+    brandVoice?: string;
+    services?: Array<string>;
+    dontRules?: Array<string>;
+    positioning?: string;
 }
 export interface AuditScore {
     conversionScore: bigint;
@@ -2095,15 +2327,6 @@ export interface SeoGeoRequest {
     priority: string;
     attachments: Array<string>;
 }
-export interface http_header {
-    value: string;
-    name: string;
-}
-export interface http_request_result {
-    status: bigint;
-    body: Uint8Array;
-    headers: Array<http_header>;
-}
 export interface Proposal {
     id: string;
     status: ProposalStatus;
@@ -2148,16 +2371,6 @@ export interface MasterAgentSession {
     lastActiveAt: bigint;
     platformContext?: string;
     sessionId: string;
-}
-export interface ChatWidgetConfig {
-    faqItems: Array<string>;
-    active: boolean;
-    leadCaptureEnabled: boolean;
-    greeting: string;
-    tenantId: TenantId;
-    niche: string;
-    embedToken: string;
-    bookingEnabled: boolean;
 }
 export interface LeadAttributionRecord {
     id: string;
@@ -2245,6 +2458,27 @@ export interface ScrapeRequest {
     selectorType: SelectorType;
 }
 export type Time = bigint;
+export interface NemotronTestResult {
+    model: string;
+    provider: string;
+    errorMessage?: string;
+    success: boolean;
+    responseText: string;
+    timestampNs: bigint;
+}
+export interface LeadEngineBatch {
+    id: string;
+    status: string;
+    imported: bigint;
+    skipped: bigint;
+    createdAt: bigint;
+    totalRows: bigint;
+    tenantId: string;
+    sourceTool: string;
+    rejected: Array<RejectedRow>;
+    flagged: bigint;
+    importerName: string;
+}
 export interface CampaignInstance {
     id: string;
     status: string;
@@ -2252,16 +2486,6 @@ export interface CampaignInstance {
     metrics: CampaignMetrics;
     templateId: string;
     tenantId: TenantId;
-}
-export interface AuditReport {
-    overallScore: bigint;
-    generatedAt: bigint;
-    businessName: string;
-    email: string;
-    narrative?: string;
-    niche: string;
-    sessionId: string;
-    topGaps: Array<string>;
 }
 export interface Task {
     id: string;
@@ -2277,6 +2501,16 @@ export interface Task {
     updatedAt: bigint;
     priority: TaskPriority;
     relatedToId: string;
+}
+export interface AuditReport {
+    overallScore: bigint;
+    generatedAt: bigint;
+    businessName: string;
+    email: string;
+    narrative?: string;
+    niche: string;
+    sessionId: string;
+    topGaps: Array<string>;
 }
 export interface ScrapedLead {
     businessName?: string;
@@ -2294,10 +2528,25 @@ export interface BRFScore {
     fundedFindings: Array<string>;
     bookedFindings: Array<string>;
 }
+export interface TaskCapability {
+    temperature: number;
+    maxTokens: bigint;
+    modelFamily?: string;
+}
 export interface ReadinessBreakdownItem {
     weight: bigint;
     service: string;
     status: boolean;
+}
+export interface ChatWidgetConfig {
+    faqItems: Array<string>;
+    active: boolean;
+    leadCaptureEnabled: boolean;
+    greeting: string;
+    tenantId: TenantId;
+    niche: string;
+    embedToken: string;
+    bookingEnabled: boolean;
 }
 export interface OAuthInitResponse {
     state: string;
@@ -2314,6 +2563,14 @@ export interface CompetitorEntry {
     avgEngagement?: bigint;
     followersEst?: bigint;
     profileUrl: string;
+}
+export interface WebhookInboxFilters {
+    toTimestamp?: bigint;
+    fromTimestamp?: bigint;
+    provider?: WebhookInboxProvider;
+    normalizedEventType?: string;
+    limit: bigint;
+    leadEmailOrPhone?: string;
 }
 export interface SeoGeoSubscription {
     id: string;
@@ -2527,6 +2784,15 @@ export interface VerticalProfileExt {
     doNotRules: Array<string>;
     positioning: string;
 }
+export interface EnrichmentResult {
+    provider: string;
+    errorMessage?: string;
+    fields: Array<EnrichmentField>;
+    leadId: string;
+    success: boolean;
+    enrichedAt: bigint;
+    failingProvider?: string;
+}
 export interface CompanyUpdate {
     name?: string;
     size?: string;
@@ -2693,6 +2959,14 @@ export interface HumanOversightAssignment {
     priority: string;
     strategist: string;
 }
+export interface Cell {
+    value: Value;
+    name: string;
+}
+export interface OpenRouterMessage {
+    content: string;
+    role: string;
+}
 export interface PipelineActivityEntry {
     action: string;
     timestamp: bigint;
@@ -2728,6 +3002,12 @@ export interface PaidAdsAlert {
     tenantId: TenantId;
     suggestedFix: string;
     severity: string;
+}
+export interface DedupeFlag {
+    matchedFields: Array<DedupeMatchField>;
+    matchedLeadId: string;
+    flaggedAt: bigint;
+    importBatchId: string;
 }
 export interface ToolActionRequest {
     action: string;
@@ -2807,6 +3087,11 @@ export interface SMSMessage {
     tenantId: string;
     threadId: string;
     readAt?: bigint;
+}
+export interface LeadListFilters {
+    enrichmentStatus?: Variant_any_enriched_notEnriched;
+    dedupeStatus?: Variant_any_resolved_flagged;
+    batchId?: string;
 }
 export interface DograhTestResult {
     agentCount: bigint;
@@ -2976,17 +3261,14 @@ export interface AgentTask {
     priority: string;
     attachments: Array<string>;
 }
-export interface LocationProfile {
-    id: string;
-    status: string;
-    timezone: string;
-    city: string;
-    createdAt: bigint;
-    tenantId: string;
-    state: string;
-    address: string;
-    phoneNumber: string;
-    locationName: string;
+export interface RooferCampaignStep {
+    delayDays: bigint;
+    subject: string;
+    body: string;
+    personalizationTokens: Array<string>;
+    enabled: boolean;
+    stepNumber: bigint;
+    sendTime: string;
 }
 export interface ToolDefinition {
     id: string;
@@ -2999,12 +3281,17 @@ export interface ToolDefinition {
     category: string;
     requiresApproval: boolean;
 }
-export interface BatchScrapeRequest {
-    outputFormat: OutputFormat;
-    urls: Array<string>;
-    selector: string;
-    limitPerUrl: bigint;
-    selectorType: SelectorType;
+export interface LocationProfile {
+    id: string;
+    status: string;
+    timezone: string;
+    city: string;
+    createdAt: bigint;
+    tenantId: string;
+    state: string;
+    address: string;
+    phoneNumber: string;
+    locationName: string;
 }
 export type FundingHistoryEntry = string;
 export interface ContractSummary {
@@ -3024,6 +3311,13 @@ export interface ConnectionTestResult {
     quotaInfo?: string;
     lastTestedAt?: bigint;
 }
+export interface BatchScrapeRequest {
+    outputFormat: OutputFormat;
+    urls: Array<string>;
+    selector: string;
+    limitPerUrl: bigint;
+    selectorType: SelectorType;
+}
 export interface AgentArtifactRecord {
     id: string;
     status: string;
@@ -3038,6 +3332,12 @@ export interface AgentArtifactRecord {
     threadId: string;
     runId: string;
 }
+export interface OperatorStats {
+    leads_today: bigint;
+    api_health_summary: string;
+    trials_this_week: bigint;
+    outreach_sent_today: bigint;
+}
 export interface ClientReport {
     id: string;
     deliveredAt?: bigint;
@@ -3050,12 +3350,6 @@ export interface ClientReport {
     sections: Array<ReportSection>;
     aiNarrative: string;
     topWins: Array<string>;
-}
-export interface OperatorStats {
-    leads_today: bigint;
-    api_health_summary: string;
-    trials_this_week: bigint;
-    outreach_sent_today: bigint;
 }
 export interface DemoAuditReport {
     gaps: Array<string>;
@@ -3211,15 +3505,12 @@ export interface Company {
     notes: string;
     phone: string;
 }
-export type LocalSEOHistoryEntry = string;
-export interface FeatureToggle {
-    proEnabled: boolean;
-    agencyEnabled: boolean;
-    basicEnabled: boolean;
-    lastModifiedBy: string;
-    lastModifiedTime: bigint;
-    featureName: string;
+export interface RejectedRow {
+    raw: RawLeadInput;
+    rowIndex: bigint;
+    reason: RejectionReason;
 }
+export type LocalSEOHistoryEntry = string;
 export interface SourceQualityData {
     paid_converted: bigint;
     source: string;
@@ -3260,6 +3551,14 @@ export interface VerticalProfileUpdate {
     services?: Array<string>;
     doNotRules?: Array<string>;
     positioning?: string;
+}
+export interface FeatureToggle {
+    proEnabled: boolean;
+    agencyEnabled: boolean;
+    basicEnabled: boolean;
+    lastModifiedBy: string;
+    lastModifiedTime: bigint;
+    featureName: string;
 }
 export interface GridPoint {
     lat: number;
@@ -3470,6 +3769,14 @@ export enum ContentType {
     AdCopy = "AdCopy",
     Video = "Video"
 }
+export enum DedupeMatchField {
+    domain = "domain",
+    businessName = "businessName",
+    email = "email",
+    website = "website",
+    address = "address",
+    phone = "phone"
+}
 export enum DraftPlatform {
     x = "x",
     linkedin = "linkedin",
@@ -3541,6 +3848,19 @@ export enum HttpMethod {
     post = "post",
     delete_ = "delete",
     patch = "patch"
+}
+export enum LeadSourceFormat {
+    csv = "csv",
+    omkar = "omkar",
+    json = "json",
+    gosom = "gosom"
+}
+export enum LeadStatus {
+    new_ = "new",
+    enriched = "enriched",
+    reviewed = "reviewed",
+    flagged = "flagged",
+    ready = "ready"
 }
 export enum MarketingAuditStatus {
     pending = "pending",
@@ -3616,11 +3936,23 @@ export enum ProposalStatus {
     draft = "draft",
     archived = "archived"
 }
+export enum ProviderId {
+    OpenRouter = "OpenRouter",
+    OpenAI = "OpenAI",
+    Anthropic = "Anthropic",
+    Generic = "Generic",
+    Nemotron = "Nemotron"
+}
 export enum RankedDispatchStatus {
     pending = "pending",
     completed = "completed",
     routed = "routed",
     failed = "failed"
+}
+export enum RejectionReason {
+    invalidEmailFormat = "invalidEmailFormat",
+    invalidPhoneFormat = "invalidPhoneFormat",
+    missingRequiredField = "missingRequiredField"
 }
 export enum ReplyClassification {
     HotLead = "HotLead",
@@ -3663,6 +3995,21 @@ export enum ReviewSentiment {
     negative = "negative",
     positive = "positive",
     neutral = "neutral"
+}
+export enum RooferCampaignLeadStatus {
+    opened = "opened",
+    pending = "pending",
+    unsubscribed = "unsubscribed",
+    sent = "sent",
+    booked = "booked",
+    replied = "replied",
+    bounced = "bounced"
+}
+export enum RooferColdCampaignStatus {
+    active = "active",
+    completed = "completed",
+    draft = "draft",
+    paused = "paused"
 }
 export enum RunStatus {
     cancelled = "cancelled",
@@ -3741,6 +4088,16 @@ export enum TaskStatus {
     Completed = "Completed",
     NotStarted = "NotStarted"
 }
+export enum TaskType {
+    ProposalWriting = "ProposalWriting",
+    EmailGeneration = "EmailGeneration",
+    FollowUpDraft = "FollowUpDraft",
+    OutreachCopy = "OutreachCopy",
+    MorningDigest = "MorningDigest",
+    RAGAnswer = "RAGAnswer",
+    ReviewResponse = "ReviewResponse",
+    Summarization = "Summarization"
+}
 export enum TrendDirection {
     up = "up",
     down = "down",
@@ -3771,6 +4128,16 @@ export enum Variant_active_archived_paused {
     active = "active",
     archived = "archived",
     paused = "paused"
+}
+export enum Variant_any_enriched_notEnriched {
+    any_ = "any",
+    enriched = "enriched",
+    notEnriched = "notEnriched"
+}
+export enum Variant_any_resolved_flagged {
+    any_ = "any",
+    resolved = "resolved",
+    flagged = "flagged"
 }
 export enum Variant_both_gdpr_canSpam {
     both = "both",
@@ -3863,6 +4230,12 @@ export enum WebhookCategory {
     general = "general",
     email_sms = "email_sms",
     funding = "funding"
+}
+export enum WebhookTestPayload {
+    twilio = "twilio",
+    instantly = "instantly",
+    smartlead = "smartlead",
+    sendgrid = "sendgrid"
 }
 export enum WorkflowStatus {
     cancelled = "cancelled",
@@ -4290,6 +4663,9 @@ export interface backendInterface {
         err: string;
     }>;
     deleteWorkflowDef(workflowId: string): Promise<boolean>;
+    demoBooking_create(ctaToken: string, rooferName: string, rooferEmail: string, slotTime: string): Promise<DemoBooking | null>;
+    demoBooking_getByCtaToken(ctaToken: string): Promise<DemoBookingLookup>;
+    demoBooking_listByCampaign(tenantId: string, campaignId: string): Promise<Array<DemoBooking>>;
     deployAgent(agentId: string): Promise<{
         message: string;
         success: boolean;
@@ -4326,6 +4702,7 @@ export interface backendInterface {
         enrolled: bigint;
         skipped: bigint;
     }>;
+    execute(qJson: string): Promise<Result>;
     executeAgentAction(actionId: string): Promise<{
         ok: boolean;
         error?: string;
@@ -4818,6 +5195,8 @@ export interface backendInterface {
         chunkCount: bigint;
         uploadedAt: bigint;
     }>>;
+    getLLMProviderHealth(): Promise<Array<ProviderHealthSnapshot>>;
+    getLLMRouteLog(limit: bigint): Promise<Array<RouteLogEntry>>;
     getLastDiscoveryJob(): Promise<ScheduledDiscoveryJob | null>;
     getLatestMarketingAudit(clientBusinessId: string): Promise<MarketingAudit | null>;
     getLatestMultiLocationReport(clientBusinessId: string): Promise<{
@@ -5257,6 +5636,9 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    getWebhookInboxEvent(id: string): Promise<NormalizedWebhookEvent | null>;
+    getWebhookInboxEvents(filters: WebhookInboxFilters): Promise<Array<NormalizedWebhookEvent>>;
+    getWebhookInboxStats(): Promise<WebhookInboxStats>;
     getWebhookLog(provider: string): Promise<Array<WebhookEvent>>;
     getWebhookUrl(): Promise<string>;
     getWebhookUrls(): Promise<{
@@ -5370,6 +5752,16 @@ export interface backendInterface {
     isComposioRoutingEnabled(): Promise<boolean>;
     isContentEnabledForTier(tier: string): Promise<boolean>;
     isDemoSessionExpired(sessionId: string): Promise<boolean>;
+    leadEngine_enrichBatch(tenantId: string, leadIds: Array<string>): Promise<Array<EnrichmentResult>>;
+    leadEngine_enrichLead(tenantId: string, leadId: string): Promise<EnrichmentResult | null>;
+    leadEngine_getDedupeGroups(tenantId: string, unresolvedOnly: boolean): Promise<Array<DedupeGroup>>;
+    leadEngine_getImportBatch(tenantId: string, batchId: string): Promise<LeadEngineBatch | null>;
+    leadEngine_getLead(tenantId: string, leadId: string): Promise<LeadEngineLead | null>;
+    leadEngine_importLeads(tenantId: string, importerName: string, sourceTool: string, batch: Array<RawLeadInput>): Promise<LeadEngineImportResult>;
+    leadEngine_listBatches(tenantId: string): Promise<Array<LeadEngineBatch>>;
+    leadEngine_listLeads(tenantId: string, filters: LeadListFilters, offset: bigint, limit: bigint): Promise<LeadListPage>;
+    leadEngine_resolveDuplicate(tenantId: string, groupId: string, resolution: DedupeResolution): Promise<DedupeGroup | null>;
+    leadEngine_updateLeadStatus(tenantId: string, leadId: string, status: LeadStatus): Promise<LeadEngineLead | null>;
     linkSocialLeadToCRM(tenantId: string, socialLeadId: string, crmLeadId: string): Promise<void>;
     listAllRankedDispatchRoutes(): Promise<{
         __kind__: "ok";
@@ -5620,12 +6012,20 @@ export interface backendInterface {
         success: boolean;
         eventType: string;
     }>;
+    receiveInstantlyWebhook(path: string, body: string, headers: Array<[string, string]>): Promise<{
+        ok: boolean;
+        eventId: string;
+    }>;
     receiveN8NWebhook(payload: string, executionId: string): Promise<void>;
     receiveSendgridEvents(body: string): Promise<{
         success: boolean;
         processed: bigint;
     }>;
     receiveSendgridInbound(params: Array<[string, string]>): Promise<string>;
+    receiveSmartleadWebhook(path: string, body: string, headers: Array<[string, string]>): Promise<{
+        ok: boolean;
+        eventId: string;
+    }>;
     receiveStripeWebhook(body: string, sigHeader: string): Promise<{
         success: boolean;
         eventType: string;
@@ -5711,6 +6111,7 @@ export interface backendInterface {
     resetDiscoveryTimer(): Promise<void>;
     resetDripDailyCap(queueId: string): Promise<void>;
     resetEmailSchedulerTimer(): Promise<void>;
+    resetLLMProviderHealth(provider: ProviderId): Promise<void>;
     resetNicheScript(nicheId: string): Promise<void>;
     resetSmsSchedulerTimer(): Promise<void>;
     resetToDefaults(): Promise<boolean>;
@@ -5734,6 +6135,19 @@ export interface backendInterface {
     respondToReview(tenantId: TenantId, reviewId: string, response: string): Promise<void>;
     resumeAutopilotEmail(): Promise<void>;
     resumeRoofingCampaign(): Promise<Variant_ok>;
+    rooferColdCampaign_create(tenantId: string, name: string, leadListFilter: string, senderName: string, senderEmail: string): Promise<RooferColdCampaign>;
+    rooferColdCampaign_enrollLeads(tenantId: string, campaignId: string, leadIds: Array<string>): Promise<RooferEnrollResult>;
+    rooferColdCampaign_exportLeadsCsv(tenantId: string, campaignId: string): Promise<string>;
+    rooferColdCampaign_get(tenantId: string, campaignId: string): Promise<RooferColdCampaign | null>;
+    rooferColdCampaign_getLeads(tenantId: string, campaignId: string, offset: bigint, limit: bigint): Promise<RooferCampaignLeadsPage>;
+    rooferColdCampaign_getReplies(tenantId: string, campaignId: string): Promise<Array<NormalizedWebhookEvent>>;
+    rooferColdCampaign_getStats(tenantId: string, campaignId: string): Promise<RooferCampaignStats | null>;
+    rooferColdCampaign_list(tenantId: string): Promise<Array<RooferCampaignSummary>>;
+    rooferColdCampaign_pauseSending(tenantId: string, campaignId: string): Promise<RooferColdCampaign | null>;
+    rooferColdCampaign_processDueSends(tenantId: string, campaignId: string): Promise<RooferProcessSendsResult>;
+    rooferColdCampaign_startSending(tenantId: string, campaignId: string): Promise<RooferColdCampaign | null>;
+    rooferColdCampaign_updateSequence(tenantId: string, campaignId: string, sequence: Array<RooferCampaignStep>): Promise<RooferColdCampaign | null>;
+    routeLLMCall(task: TaskType, messages: Array<OpenRouterMessage>, capability: TaskCapability): Promise<string>;
     routeModelRequest(req: AbacusRouteRequest): Promise<{
         __kind__: "ok";
         ok: AbacusRouteResponse;
@@ -5943,6 +6357,7 @@ export interface backendInterface {
     scheduleCampaign(tenantId: string, campaignId: string, sendAt: bigint | null): Promise<boolean>;
     scheduleTrialNudgeEmails(slug: string): Promise<void>;
     scheduleWarmSequenceEmail(enrollmentId: string, touchIndex: bigint, delayHours: bigint, recipient: string, subject: string, body: string): Promise<string>;
+    schema(): Promise<string>;
     scoreLead(leadId: string, companyName: string, niche: string): Promise<LeadAIScore>;
     scrapeUrl(req: ScrapeRequest, tenantId: string): Promise<ScrapeResult>;
     searchLeadsWithLLM(niche: string, city: string, limit: bigint, includeEnrichment: boolean): Promise<{
@@ -5971,9 +6386,15 @@ export interface backendInterface {
     sendBookingConfirmationEmail(appointmentId: string, customerEmail: string, customerName: string, businessName: string, appointmentDateTime: string, address: string, tenantId: string): Promise<EmailSendResult>;
     sendClientReportEmail(clientId: string, clientEmail: string, clientName: string, reportPeriod: string, reportSummaryHtml: string, tenantId: string): Promise<EmailSendResult>;
     sendHealthScoreAlertEmail(clientId: string, adminEmail: string, clientName: string, healthScore: bigint, previousScore: bigint, topIssue: string, tenantId: string): Promise<EmailSendResult>;
+    sendLiveEmail(tenantId: string, to: string, from: string, subject: string, body: string): Promise<LiveSendResult>;
+    sendLiveSms(tenantId: string, to: string, body: string): Promise<LiveSendResult>;
     sendNewsletterCampaign(tenantId: string, campaignId: string): Promise<bigint>;
     sendOnboardingEmail(userId: string, userEmail: string, userName: string, userRole: string, onboardingStep: string, tenantId: string): Promise<EmailSendResult>;
     sendReviewRequestEmail(leadId: string, clientName: string, businessName: string, reviewPlatformUrl: string, recipient: string, tenantId: string): Promise<EmailSendResult>;
+    sendTestWebhookEvent(provider: WebhookTestPayload): Promise<{
+        ok: boolean;
+        eventId: string;
+    }>;
     sendWarmSequenceEmail(enrollmentId: string, touchIndex: bigint, delayHours: bigint, recipient: string, subject: string, body: string): Promise<EmailSendResult>;
     setAccountToolkit(accountId: string, tools: Array<string>): Promise<{
         __kind__: "ok";
@@ -6057,6 +6478,7 @@ export interface backendInterface {
     testIntegration(tenantId: string, service: string): Promise<ConnectionTestResult>;
     testLeadFinderDiagnostic(): Promise<string>;
     testN8NConnection(): Promise<boolean>;
+    testNemotronPrompt(): Promise<NemotronTestResult>;
     testNvidiaConnection(): Promise<IntegrationTestResult>;
     testOpenRouterConnection(): Promise<boolean>;
     testServiceConnection(tenantId: string, service: string): Promise<ConnectionTestResult>;

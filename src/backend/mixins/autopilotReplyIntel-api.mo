@@ -1,5 +1,6 @@
 import Map           "mo:core/Map";
 import List          "mo:core/List";
+import Array         "mo:core/Array";
 import Time          "mo:core/Time";
 import Text          "mo:core/Text";
 import Runtime       "mo:core/Runtime";
@@ -8,6 +9,9 @@ import Outcall       "mo:caffeineai-http-outcalls/outcall";
 import T             "../types/autopilotEngine";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import ORT           "../types/openRouter";
+import LLMFT         "../types/llm-fallback";
+import LLMFallbackLib "../lib/llm-fallback";
 
 /// Email Reply Intelligence Layer
 ///
@@ -33,6 +37,7 @@ mixin (
     notes : Text; agentSubscriptions : [Text]; createdAt : Time.Time;
   }>>,
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  llmFallbackState   : LLMFallbackLib.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -45,6 +50,14 @@ mixin (
     "Reply with ONLY the classification word. " #
     "Then on a new line, if INTERESTED or REFERRAL, write a 3-sentence follow-up email response. " #
     "Reply body: ";
+
+  /// Default capability for reply-classification LLM calls: any model family,
+  /// 512 max tokens, temperature 0.7.
+  let ri_capability : LLMFT.TaskCapability = {
+    maxTokens   = 512;
+    temperature = 0.7;
+    modelFamily = null;
+  };
 
   // ── Auth helpers ──────────────────────────────────────────────────────────────
 
@@ -60,13 +73,6 @@ mixin (
     switch (integrationCreds.get(RI_PLATFORM_TENANT)) {
       case (null) { null };
       case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
-    };
-  };
-
-  func ri_getClaude() : ?Text {
-    switch (ri_plainCreds()) {
-      case (null) { null };
-      case (?c)   { if (c.claudeKey == "") null else ?c.claudeKey };
     };
   };
 
@@ -168,58 +174,197 @@ mixin (
     leads.add(RI_PLATFORM_TENANT, tenantLeads);
   };
 
-  // ── Claude call ───────────────────────────────────────────────────────────────
+  // ── Routed LLM call ────────────────────────────────────────────────────────
 
-  func ri_callClaude(key : Text, replyBody : Text) : async (Text, ?Text) {
-    // Returns (classification, ?draftFollowUp)
+  /// Parse a raw LLM response into (classification, ?draftFollowUp).
+  /// First line = classification; remaining lines = draft follow-up.
+  func ri_parseClassification(raw : Text) : (Text, ?Text) {
+    let lines = raw.split(#char '\n');
+    var first : ?Text = null;
+    let rest  = List.empty<Text>();
+    for (line in lines) {
+      switch (first) {
+        case (null)  { first := ?line };
+        case (?_)    { rest.add(line) };
+      };
+    };
+    let classification = switch (first) {
+      case (?c) {
+        let up = c.trim(#char ' ').toUpper();
+        if      (up.startsWith(#text "INTERESTED") and not up.startsWith(#text "NOT_INTERESTED") and not up.startsWith(#text "NOT INTERESTED")) "INTERESTED"
+        else if (up.startsWith(#text "NOT_INTERESTED") or up.startsWith(#text "NOT INTERESTED")) "NOT_INTERESTED"
+        else if (up.startsWith(#text "WRONG_PERSON") or up.startsWith(#text "WRONG PERSON")) "WRONG_PERSON"
+        else if (up.startsWith(#text "REFERRAL")) "REFERRAL"
+        else "NOT_INTERESTED"
+      };
+      case (null) "NOT_INTERESTED";
+    };
+    let draftArr = rest.toArray();
+    let draft : ?Text = if (draftArr.size() == 0) null
+      else {
+        var joined = "";
+        var isFirst = true;
+        for (line in draftArr.vals()) {
+          if (not isFirst) { joined #= "\n" };
+          joined #= line;
+          isFirst := false;
+        };
+        if (joined.trim(#char ' ') == "") null else ?joined
+      };
+    (classification, draft)
+  };
+
+  /// Route the reply-classification LLM call through the unified fallback chain.
+  /// Returns (classification, ?draftFollowUp). Falls back gracefully to
+  /// ("NOT_INTERESTED", null) on empty result.
+  /// Calls LLMFallbackLib.route directly (the same lib function the
+  /// LLMFallbackMixin wraps) to avoid the cross-mixin method-call issue
+  /// where sibling mixins cannot invoke routeLLMCall as an unbound variable.
+  /// The legacy fallback closure delegates to OpenRouterLib.callWithFallback
+  /// for backward compatibility as the Generic tier.
+  func ri_routeReply(replyBody : Text) : async (Text, ?Text) {
     let prompt = CLASSIFY_PROMPT # replyBody;
-    let body = "{\"model\":\"claude-3-5-haiku-20241022\","
-      # "\"max_tokens\":512,"
-      # "\"messages\":[{\"role\":\"user\",\"content\":"
-      # ri_jstr(prompt) # "}]}";
-    let headers : [Outcall.Header] = [
-      { name = "x-api-key";         value = key },
-      { name = "anthropic-version"; value = "2023-06-01" },
-      { name = "Content-Type";      value = "application/json" },
+    let messages : [ORT.OpenRouterMessage] = [
+      { role = "user"; content = prompt }
     ];
+    let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get(RI_PLATFORM_TENANT)) {
+      case (null) ICLib.emptyCredentials();
+      case (?enc) ICLib.decryptAll(enc, credSalt);
+    };
+    let keys = LLMFallbackLib.resolveKeys(creds);
+    let flags : LLMFallbackLib.FeatureFlags = {
+      leadEngineEnabled = true;
+      twilioEnabled      = true;
+      sendgridEnabled    = true;
+    };
+    let raw = await LLMFallbackLib.route(
+      llmFallbackState,
+      #ReviewResponse,
+      messages,
+      keys,
+      flags,
+      ri_capability,
+      transform,
+      func(_t : ORT.TaskType, msgs : [ORT.OpenRouterMessage]) : async Text {
+        // Convert to LLMMessage for the adapter
+        let llmMessages = msgs.map(
+          func(m) { { role = m.role; content = m.content } }
+        );
+        // 1. Try OpenRouter adapter directly
+        if (keys.openRouterKey != "") {
+          let r = await LLMFallbackLib.callOpenRouter(
+            keys.openRouterKey, "openai/gpt-4o-mini", llmMessages, transform
+          );
+          if (r != "") return r;
+        };
+        // 2. Try Gemini direct (API key in URL query param)
+        if (keys.geminiKey != "") {
+          let r = await ri_callGeminiDirect(keys.geminiKey, msgs);
+          if (r != "") return r;
+        };
+        ""
+      },
+    );
+    if (raw == "") { ("NOT_INTERESTED", null) }
+    else { ri_parseClassification(raw) }
+  };
+
+  /// Direct Gemini call mirroring the existing callGemini in openRouter.mo.
+  /// Gemini uses API key as URL query param, not Authorization header.
+  func ri_callGeminiDirect(
+    geminiKey : Text,
+    messages  : [ORT.OpenRouterMessage],
+  ) : async Text {
+    var combinedPrompt = "";
+    for (m in messages.vals()) {
+      if (combinedPrompt == "") {
+        combinedPrompt := m.content;
+      } else {
+        combinedPrompt := combinedPrompt # "\n" # m.content;
+      };
+    };
+    let bodyJson = "{\"contents\":[{\"parts\":[{\"text\":\"" # ri_escapeJson(combinedPrompt) # "\"}]}]," #
+                   "\"generationConfig\":{\"maxOutputTokens\":2000}}";
+    let url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" # geminiKey;
     try {
-      let resp = await Outcall.httpPostRequest("https://api.anthropic.com/v1/messages", headers, body, transform);
-      let raw  = switch (ri_naiveField(resp, "text")) { case (?v) v; case (null) resp };
-      // First line = classification; remaining lines = draft follow-up
-      let lines = raw.split(#char '\n');
-      var first : ?Text = null;
-      let rest  = List.empty<Text>();
-      for (line in lines) {
-        switch (first) {
-          case (null)  { first := ?line };
-          case (?_)    { rest.add(line) };
+      let resp = await Outcall.httpPostRequest(
+        url,
+        [{ name = "Content-Type"; value = "application/json" }],
+        bodyJson,
+        transform,
+      );
+      ri_extractGeminiContent(resp)
+    } catch (_) { "" }
+  };
+
+  /// Extract `candidates[0].content.parts[0].text` from a Gemini JSON response.
+  func ri_extractGeminiContent(raw : Text) : Text {
+    let marker      = "\"text\":\"";
+    let markerChars = marker.toArray();
+    let rawChars    = raw.toArray();
+    let mLen        = markerChars.size();
+    let rLen        = rawChars.size();
+
+    var startIdx : ?Nat = null;
+    var i = 0;
+    label findMarker while (i + mLen <= rLen) {
+      var matched = true;
+      var j = 0;
+      label matchLoop while (j < mLen) {
+        if (rawChars[i + j] != markerChars[j]) {
+          matched := false;
+          break matchLoop;
         };
+        j += 1;
       };
-      let classification = switch (first) {
-        case (?c) {
-          let up = c.trim(#char ' ').toUpper();
-          if      (up.startsWith(#text "INTERESTED") and not up.startsWith(#text "NOT_INTERESTED") and not up.startsWith(#text "NOT INTERESTED")) "INTERESTED"
-          else if (up.startsWith(#text "NOT_INTERESTED") or up.startsWith(#text "NOT INTERESTED")) "NOT_INTERESTED"
-          else if (up.startsWith(#text "WRONG_PERSON") or up.startsWith(#text "WRONG PERSON")) "WRONG_PERSON"
-          else if (up.startsWith(#text "REFERRAL")) "REFERRAL"
-          else "NOT_INTERESTED"
-        };
-        case (null) "NOT_INTERESTED";
+      if (matched) {
+        startIdx := ?(i + mLen);
+        break findMarker;
       };
-      let draftArr = rest.toArray();
-      let draft : ?Text = if (draftArr.size() == 0) null
-        else {
-          var joined = "";
-          var isFirst = true;
-          for (line in draftArr.vals()) {
-            if (not isFirst) { joined #= "\n" };
-            joined #= line;
-            isFirst := false;
+      i += 1;
+    };
+
+    switch startIdx {
+      case null "";
+      case (?afterMarker) {
+        var end     = afterMarker;
+        var escaped = false;
+        label scan while (end < rLen) {
+          let c = rawChars[end];
+          if (escaped) {
+            escaped := false;
+          } else if (c == '\\') {
+            escaped := true;
+          } else if (c == '\u{22}') {
+            break scan;
           };
-          if (joined.trim(#char ' ') == "") null else ?joined
+          end += 1;
         };
-      (classification, draft)
-    } catch (_) { ("NOT_INTERESTED", null) };
+        let len : Nat = end - afterMarker;
+        Text.fromIter(Array.tabulate(len, func(k) { rawChars[afterMarker + k] }).vals());
+      };
+    };
+  };
+
+  /// Escape a Text value for safe inclusion in a JSON string literal.
+  func ri_escapeJson(s : Text) : Text {
+    var out = "";
+    for (c in s.chars()) {
+      if (c == '\u{22}') {
+        out #= "\\\"";
+      } else if (c == '\\') {
+        out #= "\\\\";
+      } else if (c == '\n') {
+        out #= "\\n";
+      } else if (c == '\r') {
+        out #= "\\r";
+      } else if (c == '\t') {
+        out #= "\\t";
+      } else {
+        out #= Text.fromChar(c);
+      };
+    };
+    out
   };
 
   // ── SendGrid email send ────────────────────────────────────────────────────────
@@ -250,10 +395,7 @@ mixin (
   ///   NOT_INTERESTED | WRONG_PERSON → updates lead status to "no-contact", no inbox item
   public shared ({ caller }) func processEmailReply(leadId : Text, replyBody : Text) : async Text {
     ri_assertAdmin(caller);
-    let (classification, draftOpt) = switch (ri_getClaude()) {
-      case (null)   { ("NOT_INTERESTED", null) };   // graceful fallback
-      case (?key)   { await ri_callClaude(key, replyBody) };
-    };
+    let (classification, draftOpt) = await ri_routeReply(replyBody);
 
     let now          = Time.now();
     let recordId     = "reply-" # leadId # "-" # now.toText();

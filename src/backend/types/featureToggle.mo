@@ -28,4 +28,21 @@ module {
     modifiedAt       : Int;
   };
 
+  /// Feature flag names used across the platform.
+  /// LEAD_ENGINE_ENABLED gates all Lead Engine importer methods; default false.
+  public let LEAD_ENGINE_ENABLED : Text = "LEAD_ENGINE_ENABLED";
+
+  /// TWILIO_INTEGRATION_ENABLED gates live SMS sending via sendLiveSms;
+  /// default false (disabled) — additive only.
+  public let TWILIO_INTEGRATION_ENABLED : Text = "TWILIO_INTEGRATION_ENABLED";
+
+  /// SENDGRID_INTEGRATION_ENABLED gates live transactional email sending via
+  /// sendLiveEmail; default false (disabled) — additive only.
+  public let SENDGRID_INTEGRATION_ENABLED : Text = "SENDGRID_INTEGRATION_ENABLED";
+
+  /// WEBHOOK_INBOX_ENABLED gates the unified webhook inbox (normalized event
+  /// store + Instantly/Smartlead receivers + stats/test endpoints); default
+  /// false (disabled) — additive only.
+  public let WEBHOOK_INBOX_ENABLED : Text = "WEBHOOK_INBOX_ENABLED";
+
 };

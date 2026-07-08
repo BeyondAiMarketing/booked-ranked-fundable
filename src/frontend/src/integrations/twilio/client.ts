@@ -5,6 +5,8 @@
  * Feature flag: TWILIO_INTEGRATION_ENABLED (always false by default)
  */
 
+import type { LiveSendResult } from "@/backend";
+import type { ActorCompat } from "../../hooks/useActor";
 import { areIntegrationsEnabled } from "../_shared/env";
 import { IntegrationError } from "../_shared/types";
 import type { TwilioIncomingSms, TwilioSendSmsInput } from "./schemas";
@@ -74,4 +76,24 @@ export function getSmsIdempotencyKey(
   sms: TwilioIncomingSms,
 ): string | undefined {
   return sms.MessageSid ?? sms.SmsMessageSid ?? sms.SmsSid;
+}
+
+/**
+ * Send a live SMS via the backend actor.
+ * The backend performs the actual HTTP outcall to Twilio's API using stored
+ * credentials (never exposed to the frontend).
+ */
+export async function sendLiveSms(
+  actor: ActorCompat,
+  tenantId: string,
+  to: string,
+  body: string,
+): Promise<LiveSendResult> {
+  if (!areIntegrationsEnabled()) {
+    throw new IntegrationError("Integrations are disabled", PLATFORM);
+  }
+  if (!to || !body) {
+    throw new IntegrationError("to and body are required", PLATFORM);
+  }
+  return actor.sendLiveSms(tenantId, to, body);
 }

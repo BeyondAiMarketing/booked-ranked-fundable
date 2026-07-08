@@ -1,12 +1,15 @@
 import Map          "mo:core/Map";
 import Text         "mo:core/Text";
 import Array        "mo:core/Array";
+import Int          "mo:core/Int";
 import Time         "mo:core/Time";
 import WebhookState "../types/webhookState";
 import WebhookTypes "../types/webhooks";
 import ICTypes      "../types/integrationCredentials";
 import ICLib        "../lib/integrationCredentials";
 import WHLib        "../lib/webhooksAndIntegrations";
+import WebhookInboxLib "../lib/webhookInbox";
+import WebhookInboxTypes "../types/webhookInbox";
 import Outcall      "mo:caffeineai-http-outcalls/outcall";
 import List "mo:core/List";
 
@@ -29,6 +32,7 @@ mixin (
     recordedAt  : Int;
   }>>,
   postCallFollowUpLog : List.List<(Text, Text, ?Text, Int, Bool, ?Text)>,
+  webhookInboxState : { var s : WebhookInboxTypes.WebhookInboxState },
 ) {
 
   // ---- Internal helpers -------------------------------------------------------
@@ -134,6 +138,22 @@ mixin (
         log("twilio", "unknown_path", path, #failed, ?"Unrecognised webhook path");
         ""
       };
+    };
+    // Also write a normalized event to the unified webhook inbox. Wrapped in
+    // try/ignore so it never breaks the existing Twilio flow.
+    try {
+      // Rebuild a form-encoded body from the parsed params so the normalizer
+      // (which expects a form-encoded string) can parse it.
+      var formBody : Text = "";
+      var first = true;
+      for ((k, v) in params.vals()) {
+        formBody := formBody # (if (first) { first := false; "" } else "&") # k # "=" # v;
+      };
+      let normEvent = WebhookInboxLib.normalizeTwilioEvent(formBody);
+      let eid = Time.now().toText() # "-twilio-" # WHLib.getParamValue(params, "MessageSid");
+      webhookInboxState.s.events.add(eid, { normEvent with id = eid; routedTo = "" });
+    } catch (_e) {
+      // Inbox write is best-effort — never fail the Twilio response.
     };
     response
   };
@@ -418,6 +438,15 @@ mixin (
         };
         count += 1;
       };
+    };
+    // Also write a normalized event (first event in the batch) to the unified
+    // webhook inbox. Wrapped in try/ignore so it never breaks the existing flow.
+    try {
+      let normEvent = WebhookInboxLib.normalizeSendgridEvent(body);
+      let eid = Time.now().toText() # "-sendgrid-" # Int.toText(count);
+      webhookInboxState.s.events.add(eid, { normEvent with id = eid; routedTo = "" });
+    } catch (_e) {
+      // Inbox write is best-effort — never fail the SendGrid response.
     };
     { success = true; processed = count }
   };

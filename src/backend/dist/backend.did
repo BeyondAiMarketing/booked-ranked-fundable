@@ -1,14 +1,3 @@
-type http_request_result = 
- record {
-   body: blob;
-   headers: vec http_header;
-   status: nat;
- };
-type http_header = 
- record {
-   name: text;
-   value: text;
- };
 type WorkflowStatusSnapshot = 
  record {
    currentStep: nat;
@@ -153,6 +142,42 @@ type WebsiteAgentScore =
    tenantId: TenantId;
    trustAuthority: nat;
    trustSignals: nat;
+ };
+type WebhookTestPayload = 
+ variant {
+   instantly;
+   sendgrid;
+   smartlead;
+   twilio;
+ };
+type WebhookInboxStats = 
+ record {
+   eventsByProvider: vec record {
+                           text;
+                           nat;
+                         };
+   eventsByType: vec record {
+                       text;
+                       nat;
+                     };
+   eventsLast24h: nat;
+   totalEvents: nat;
+ };
+type WebhookInboxProvider = 
+ variant {
+   instantly;
+   sendgrid;
+   smartlead;
+   twilio;
+ };
+type WebhookInboxFilters = 
+ record {
+   fromTimestamp: opt int;
+   leadEmailOrPhone: opt text;
+   limit: nat;
+   normalizedEventType: opt text;
+   provider: opt WebhookInboxProvider;
+   toTimestamp: opt int;
  };
 type WebhookExecution = 
  record {
@@ -382,6 +407,15 @@ type VapiAssistantUpdate =
    phone: opt text;
    qualifyingQuestions: opt vec text;
  };
+type Value = 
+ variant {
+   "bool": bool;
+   float: float64;
+   "int": int;
+   "nat": nat;
+   "null";
+   "text": text;
+ };
 type UserRole = 
  variant {
    admin;
@@ -471,13 +505,13 @@ type TrendDirection =
 type TransformationOutput = 
  record {
    body: blob;
-   headers: vec http_header;
+   headers: vec HttpHeader;
    status: nat;
  };
 type TransformationInput = 
  record {
    context: blob;
-   response: http_request_result;
+   response: HttpRequestResult;
  };
 type ToolkitToggle = 
  record {
@@ -528,6 +562,17 @@ type TaskUpdate =
    taskType: opt text;
    title: opt text;
  };
+type TaskType = 
+ variant {
+   EmailGeneration;
+   FollowUpDraft;
+   MorningDigest;
+   OutreachCopy;
+   ProposalWriting;
+   RAGAnswer;
+   ReviewResponse;
+   Summarization;
+ };
 type TaskStatus = 
  variant {
    Cancelled;
@@ -541,6 +586,12 @@ type TaskPriority =
    Low;
    Medium;
    Urgent;
+ };
+type TaskCapability = 
+ record {
+   maxTokens: nat;
+   modelFamily: opt text;
+   temperature: float64;
  };
 type Task = 
  record {
@@ -1117,6 +1168,15 @@ type RunStatus =
    queued;
    running;
  };
+type RouteLogEntry = 
+ record {
+   attempts: nat;
+   estimatedCost: float64;
+   model: text;
+   provider: ProviderId;
+   success: bool;
+   timestampNs: int;
+ };
 type RoofingLead = 
  record {
    businessType: text;
@@ -1126,6 +1186,97 @@ type RoofingLead =
    phone: opt text;
    state: text;
    website: opt text;
+ };
+type RooferProcessSendsResult = 
+ record {
+   errors: vec text;
+   sent: nat;
+ };
+type RooferEnrollResult = 
+ record {
+   enrolled: nat;
+   skipped: nat;
+ };
+type RooferColdCampaignStatus = 
+ variant {
+   active;
+   completed;
+   draft;
+   paused;
+ };
+type RooferColdCampaign = 
+ record {
+   createdAt: int;
+   enrolledLeadIds: vec text;
+   id: text;
+   leadListFilter: text;
+   name: text;
+   senderEmail: text;
+   senderName: text;
+   sequence: vec RooferCampaignStep;
+   stats: RooferCampaignStats;
+   status: RooferColdCampaignStatus;
+   tenantId: text;
+   updatedAt: int;
+ };
+type RooferCampaignSummary = 
+ record {
+   booked: nat;
+   bounced: nat;
+   id: text;
+   leadCount: nat;
+   name: text;
+   opened: nat;
+   replied: nat;
+   sent: nat;
+   status: RooferColdCampaignStatus;
+ };
+type RooferCampaignStep = 
+ record {
+   body: text;
+   delayDays: nat;
+   enabled: bool;
+   personalizationTokens: vec text;
+   sendTime: text;
+   stepNumber: nat;
+   subject: text;
+ };
+type RooferCampaignStats = 
+ record {
+   booked: nat;
+   bounced: nat;
+   opened: nat;
+   replied: nat;
+   sent: nat;
+   totalLeads: nat;
+   unsubscribed: nat;
+ };
+type RooferCampaignLeadsPage = 
+ record {
+   leads: vec RooferCampaignLead;
+   total: nat;
+ };
+type RooferCampaignLeadStatus = 
+ variant {
+   booked;
+   bounced;
+   opened;
+   pending;
+   replied;
+   sent;
+   unsubscribed;
+ };
+type RooferCampaignLead = 
+ record {
+   bookedAt: opt int;
+   bookedSlot: opt text;
+   campaignId: text;
+   ctaToken: text;
+   currentStep: nat;
+   lastEventAt: opt int;
+   leadId: text;
+   nextSendAt: opt int;
+   status: RooferCampaignLeadStatus;
  };
 type RobotsCheckResult = 
  record {
@@ -1225,6 +1376,11 @@ type Review =
    sentiment: text;
    tenantId: TenantId;
  };
+type Result = 
+ record {
+   hasMore: bool;
+   rows: vec vec Cell;
+ };
 type ReportStatus = 
  variant {
    approved;
@@ -1281,6 +1437,18 @@ type ReplyAnalysis =
    suggestedResponse: text;
    summary: text;
  };
+type RejectionReason = 
+ variant {
+   invalidEmailFormat;
+   invalidPhoneFormat;
+   missingRequiredField;
+ };
+type RejectedRow = 
+ record {
+   raw: RawLeadInput;
+   reason: RejectionReason;
+   rowIndex: nat;
+ };
 type ReadinessScore = 
  record {
    autoBrowserConfigured: bool;
@@ -1292,6 +1460,16 @@ type ReadinessBreakdownItem =
    "service": text;
    status: bool;
    weight: nat;
+ };
+type RawLeadInput = 
+ record {
+   businessName: text;
+   email: text;
+   locationTags: vec text;
+   niche: text;
+   phone: text;
+   source: text;
+   sourceTags: vec text;
  };
 type RankedDispatchStatus = 
  variant {
@@ -1318,6 +1496,21 @@ type RankedDispatchRoute =
    status: RankedDispatchStatus;
    updatedAt: int;
    verticalProfileId: text;
+ };
+type ProviderId = 
+ variant {
+   Anthropic;
+   Generic;
+   Nemotron;
+   OpenAI;
+   OpenRouter;
+ };
+type ProviderHealthSnapshot = 
+ record {
+   consecutiveFailures: nat;
+   isSkipped: bool;
+   provider: ProviderId;
+   skipUntilNs: int;
  };
 type ProviderAdapterConfig = 
  record {
@@ -1683,6 +1876,11 @@ type OperatorChatMessage =
    id: text;
    role: text;
  };
+type OpenRouterMessage = 
+ record {
+   content: text;
+   role: text;
+ };
 type OAuthInitResponse = 
  record {
    authUrl: text;
@@ -1733,6 +1931,23 @@ type Note =
    relatedToType: text;
    title: text;
    updatedAt: int;
+ };
+type NormalizedWebhookEvent = 
+ record {
+   externalCampaignId: opt text;
+   externalLeadId: opt text;
+   id: text;
+   internalLeadId: opt text;
+   leadEmail: opt text;
+   leadPhone: opt text;
+   normalizedEventType: text;
+   provider: WebhookInboxProvider;
+   providerTimestamp: int;
+   rawPayload: text;
+   receivedAt: int;
+   replySubject: opt text;
+   replyText: opt text;
+   routedTo: text;
  };
 type NicheVoiceAssignment = 
  record {
@@ -1806,6 +2021,15 @@ type NewsletterCampaign =
    subject: text;
    tags: vec text;
    tenantId: text;
+ };
+type NemotronTestResult = 
+ record {
+   errorMessage: opt text;
+   model: text;
+   provider: text;
+   responseText: text;
+   success: bool;
+   timestampNs: nat;
  };
 type MultiLocationReportUpdate = 
  record {
@@ -2059,11 +2283,103 @@ type LocationProfile =
    timezone: text;
  };
 type LocalSEOHistoryEntry = text;
+type LiveSendResult = 
+ record {
+   error: opt text;
+   messageId: opt text;
+   ok: bool;
+ };
+type LeadStatus = 
+ variant {
+   enriched;
+   flagged;
+   new;
+   ready;
+   reviewed;
+ };
+type LeadSourceFormat = 
+ variant {
+   csv;
+   gosom;
+   json;
+   omkar;
+ };
+type LeadProvenance = 
+ record {
+   importDate: int;
+   importerName: text;
+   originalFormat: LeadSourceFormat;
+   sourceTool: text;
+ };
+type LeadListPage = 
+ record {
+   leads: vec LeadEngineLead;
+   limit: nat;
+   offset: nat;
+   total: nat;
+ };
+type LeadListFilters = 
+ record {
+   batchId: opt text;
+   dedupeStatus: opt variant {
+                       any;
+                       flagged;
+                       resolved;
+                     };
+   enrichmentStatus: opt variant {
+                           any;
+                           enriched;
+                           notEnriched;
+                         };
+ };
 type LeadExtractionResult = 
  record {
    count: nat;
    leads: vec ScrapedLead;
    sourceUrl: text;
+ };
+type LeadEngineLead__1 = reserved;
+type LeadEngineLead = 
+ record {
+   businessName: text;
+   createdAt: int;
+   dedupeFlags: vec DedupeFlag;
+   dedupeResolution: opt DedupeResolution;
+   email: text;
+   enrichmentResult: opt EnrichmentResult;
+   id: text;
+   isDuplicate: bool;
+   linkedLeadIds: vec text;
+   locationTags: vec text;
+   niche: text;
+   phone: text;
+   provenance: LeadProvenance;
+   source: text;
+   sourceTags: vec text;
+   status: text;
+   tenantId: text;
+ };
+type LeadEngineImportResult = 
+ record {
+   batchId: text;
+   flagged: nat;
+   imported: nat;
+   rejectedRows: vec RejectedRow;
+   skipped: nat;
+ };
+type LeadEngineBatch = 
+ record {
+   createdAt: int;
+   flagged: nat;
+   id: text;
+   imported: nat;
+   importerName: text;
+   rejected: vec RejectedRow;
+   skipped: nat;
+   sourceTool: text;
+   status: text;
+   tenantId: text;
+   totalRows: nat;
  };
 type LeadCampaignStatus = 
  record {
@@ -2306,6 +2622,12 @@ type HumanOversightAssignment =
    subscriptionId: text;
    tenantId: TenantId;
  };
+type HttpRequestResult = 
+ record {
+   body: blob;
+   headers: vec HttpHeader;
+   status: nat;
+ };
 type HttpMethod = 
  variant {
    delete;
@@ -2313,6 +2635,11 @@ type HttpMethod =
    patch;
    post;
    put;
+ };
+type HttpHeader = 
+ record {
+   name: text;
+   value: text;
  };
 type HealthScoreComponent = 
  record {
@@ -2591,6 +2918,23 @@ type EnrollmentResult =
    enrolledCount: nat;
    errors: vec text;
    skippedCount: nat;
+ };
+type EnrichmentResult = 
+ record {
+   enrichedAt: int;
+   errorMessage: opt text;
+   failingProvider: opt text;
+   fields: vec EnrichmentField;
+   leadId: text;
+   provider: text;
+   success: bool;
+ };
+type EnrichmentField = 
+ variant {
+   companySize: text;
+   inferredNiche: text;
+   suggestedOutreachAngle: text;
+   websiteSummary: text;
  };
 type EngagementApprovalStatus = 
  variant {
@@ -2884,6 +3228,24 @@ type DemoFunnelEntry =
    trialActivated: bool;
    trialActivatedAt: opt int;
  };
+type DemoBookingLookup = 
+ record {
+   campaign: opt RooferColdCampaign;
+   existingBooking: opt DemoBooking;
+   lead: opt LeadEngineLead__1;
+ };
+type DemoBooking = 
+ record {
+   bookedAt: int;
+   campaignId: text;
+   confirmed: bool;
+   ctaToken: text;
+   id: text;
+   leadId: text;
+   rooferEmail: text;
+   rooferName: text;
+   slotTime: text;
+ };
 type DemoAuditReport = 
  record {
    businessName: text;
@@ -2908,6 +3270,42 @@ type DeliverabilityEvent =
    leadId: text;
    occurredAt: int;
    senderSubdomain: text;
+ };
+type DedupeResolution = 
+ variant {
+   Ignored;
+   KeptSeparate;
+   Linked;
+   Merged: record {
+             mergedAwayLeadId: text;
+             mergedIntoLeadId: text;
+           };
+ };
+type DedupeMatchField = 
+ variant {
+   address;
+   businessName;
+   domain;
+   email;
+   phone;
+   website;
+ };
+type DedupeGroup = 
+ record {
+   createdAt: int;
+   id: text;
+   leadIds: vec text;
+   matchedFields: vec DedupeMatchField;
+   resolution: opt DedupeResolution;
+   resolvedAt: opt int;
+   tenantId: text;
+ };
+type DedupeFlag = 
+ record {
+   flaggedAt: int;
+   importBatchId: text;
+   matchedFields: vec DedupeMatchField;
+   matchedLeadId: text;
  };
 type CustomFieldValueUpdate = record {value: opt text;};
 type CustomFieldValue = 
@@ -3255,6 +3653,11 @@ type ChatWidgetConfig =
    leadCaptureEnabled: bool;
    niche: text;
    tenantId: TenantId;
+ };
+type Cell = 
+ record {
+   name: text;
+   value: Value;
  };
 type CampaignType = 
  variant {
@@ -4617,6 +5020,11 @@ service : {
                                           ok: text;
                                         });
   deleteWorkflowDef: (workflowId: text) -> (bool);
+  demoBooking_create: (ctaToken: text, rooferName: text, rooferEmail: 
+   text, slotTime: text) -> (opt DemoBooking);
+  demoBooking_getByCtaToken: (ctaToken: text) -> (DemoBookingLookup) query;
+  demoBooking_listByCampaign: (tenantId: text, campaignId: text) ->
+   (vec DemoBooking) query;
   deployAgent: (agentId: text) -> (record {
                                      message: text;
                                      success: bool;
@@ -4652,6 +5060,7 @@ service : {
       enrolled: nat;
       skipped: nat;
     });
+  execute: (qJson: text) -> (Result) query;
   executeAgentAction: (actionId: text) ->
    (record {
       error: opt text;
@@ -5097,6 +5506,8 @@ service : {
           title: text;
           uploadedAt: int;
         }) query;
+  getLLMProviderHealth: () -> (vec ProviderHealthSnapshot);
+  getLLMRouteLog: (limit: nat) -> (vec RouteLogEntry);
   getLastDiscoveryJob: () -> (opt ScheduledDiscoveryJob) query;
   getLatestMarketingAudit: (clientBusinessId: text) ->
    (opt MarketingAudit) query;
@@ -5509,6 +5920,10 @@ service : {
       err: text;
       ok: vec WebhookExecution;
     });
+  getWebhookInboxEvent: (id: text) -> (opt NormalizedWebhookEvent) query;
+  getWebhookInboxEvents: (filters: WebhookInboxFilters) ->
+   (vec NormalizedWebhookEvent) query;
+  getWebhookInboxStats: () -> (WebhookInboxStats) query;
   getWebhookLog: (provider: text) -> (vec WebhookEvent) query;
   getWebhookUrl: () -> (text) query;
   getWebhookUrls: () ->
@@ -5643,6 +6058,25 @@ service : {
   isComposioRoutingEnabled: () -> (bool) query;
   isContentEnabledForTier: (tier: text) -> (bool) query;
   isDemoSessionExpired: (sessionId: text) -> (bool) query;
+  leadEngine_enrichBatch: (tenantId: text, leadIds: vec text) ->
+   (vec EnrichmentResult);
+  leadEngine_enrichLead: (tenantId: text, leadId: text) ->
+   (opt EnrichmentResult);
+  leadEngine_getDedupeGroups: (tenantId: text, unresolvedOnly: bool) ->
+   (vec DedupeGroup) query;
+  leadEngine_getImportBatch: (tenantId: text, batchId: text) ->
+   (opt LeadEngineBatch) query;
+  leadEngine_getLead: (tenantId: text, leadId: text) ->
+   (opt LeadEngineLead) query;
+  leadEngine_importLeads: (tenantId: text, importerName: text, sourceTool:
+   text, batch: vec RawLeadInput) -> (LeadEngineImportResult);
+  leadEngine_listBatches: (tenantId: text) -> (vec LeadEngineBatch) query;
+  leadEngine_listLeads: (tenantId: text, filters: LeadListFilters, offset:
+   nat, limit: nat) -> (LeadListPage) query;
+  leadEngine_resolveDuplicate: (tenantId: text, groupId: text, resolution:
+   DedupeResolution) -> (opt DedupeGroup);
+  leadEngine_updateLeadStatus: (tenantId: text, leadId: text, status:
+   LeadStatus) -> (opt LeadEngineLead);
   linkSocialLeadToCRM: (tenantId: text, socialLeadId: text, crmLeadId:
    text) -> ();
   listAllRankedDispatchRoutes: () ->
@@ -5853,6 +6287,14 @@ service : {
       statusCode: nat;
       success: bool;
     });
+  receiveInstantlyWebhook: (path: text, body: text, headers:
+   vec record {
+         text;
+         text;
+       }) -> (record {
+                eventId: text;
+                ok: bool;
+              });
   receiveN8NWebhook: (payload: text, executionId: text) -> ();
   receiveSendgridEvents: (body: text) ->
    (record {
@@ -5863,6 +6305,14 @@ service : {
                                          text;
                                          text;
                                        }) -> (text);
+  receiveSmartleadWebhook: (path: text, body: text, headers:
+   vec record {
+         text;
+         text;
+       }) -> (record {
+                eventId: text;
+                ok: bool;
+              });
   receiveStripeWebhook: (body: text, sigHeader: text) ->
    (record {
       eventType: text;
@@ -5939,6 +6389,7 @@ service : {
   resetDiscoveryTimer: () -> ();
   resetDripDailyCap: (queueId: text) -> ();
   resetEmailSchedulerTimer: () -> ();
+  resetLLMProviderHealth: (provider: ProviderId) -> ();
   resetNicheScript: (nicheId: text) -> ();
   resetSmsSchedulerTimer: () -> ();
   resetToDefaults: () -> (bool);
@@ -5956,6 +6407,32 @@ service : {
   respondToReview: (tenantId: TenantId, reviewId: text, response: text) -> ();
   resumeAutopilotEmail: () -> ();
   resumeRoofingCampaign: () -> (variant {ok;});
+  rooferColdCampaign_create: (tenantId: text, name: text, leadListFilter:
+   text, senderName: text, senderEmail: text) -> (RooferColdCampaign);
+  rooferColdCampaign_enrollLeads: (tenantId: text, campaignId: text, leadIds:
+   vec text) -> (RooferEnrollResult);
+  rooferColdCampaign_exportLeadsCsv: (tenantId: text, campaignId: text) ->
+   (text) query;
+  rooferColdCampaign_get: (tenantId: text, campaignId: text) ->
+   (opt RooferColdCampaign) query;
+  rooferColdCampaign_getLeads: (tenantId: text, campaignId: text, offset:
+   nat, limit: nat) -> (RooferCampaignLeadsPage) query;
+  rooferColdCampaign_getReplies: (tenantId: text, campaignId: text) ->
+   (vec NormalizedWebhookEvent) query;
+  rooferColdCampaign_getStats: (tenantId: text, campaignId: text) ->
+   (opt RooferCampaignStats) query;
+  rooferColdCampaign_list: (tenantId: text) ->
+   (vec RooferCampaignSummary) query;
+  rooferColdCampaign_pauseSending: (tenantId: text, campaignId: text) ->
+   (opt RooferColdCampaign);
+  rooferColdCampaign_processDueSends: (tenantId: text, campaignId: text) ->
+   (RooferProcessSendsResult);
+  rooferColdCampaign_startSending: (tenantId: text, campaignId: text) ->
+   (opt RooferColdCampaign);
+  rooferColdCampaign_updateSequence: (tenantId: text, campaignId: text,
+   sequence: vec RooferCampaignStep) -> (opt RooferColdCampaign);
+  routeLLMCall: (task: TaskType, messages: vec OpenRouterMessage, capability:
+   TaskCapability) -> (text);
   routeModelRequest: (req: AbacusRouteRequest) ->
    (variant {
       err: text;
@@ -6116,6 +6593,7 @@ service : {
   scheduleTrialNudgeEmails: (slug: text) -> ();
   scheduleWarmSequenceEmail: (enrollmentId: text, touchIndex: nat,
    delayHours: nat, recipient: text, subject: text, body: text) -> (text);
+  schema: () -> (text) query;
   scoreLead: (leadId: text, companyName: text, niche: text) -> (LeadAIScore);
   scrapeUrl: (req: ScrapeRequest, tenantId: text) -> (ScrapeResult);
   searchLeadsWithLLM: (niche: text, city: text, limit: nat,
@@ -6144,12 +6622,20 @@ service : {
   sendHealthScoreAlertEmail: (clientId: text, adminEmail: text, clientName:
    text, healthScore: nat, previousScore: nat, topIssue: text, tenantId:
    text) -> (EmailSendResult);
+  sendLiveEmail: (tenantId: text, to: text, from: text, subject: text, body:
+   text) -> (LiveSendResult);
+  sendLiveSms: (tenantId: text, to: text, body: text) -> (LiveSendResult);
   sendNewsletterCampaign: (tenantId: text, campaignId: text) -> (nat);
   sendOnboardingEmail: (userId: text, userEmail: text, userName: text,
    userRole: text, onboardingStep: text, tenantId: text) -> (EmailSendResult);
   sendReviewRequestEmail: (leadId: text, clientName: text, businessName:
    text, reviewPlatformUrl: text, recipient: text, tenantId: text) ->
    (EmailSendResult);
+  sendTestWebhookEvent: (provider: WebhookTestPayload) ->
+   (record {
+      eventId: text;
+      ok: bool;
+    });
   sendWarmSequenceEmail: (enrollmentId: text, touchIndex: nat, delayHours:
    nat, recipient: text, subject: text, body: text) -> (EmailSendResult);
   setAccountToolkit: (accountId: text, tools: vec text) ->
@@ -6228,6 +6714,7 @@ service : {
    (ConnectionTestResult);
   testLeadFinderDiagnostic: () -> (text) query;
   testN8NConnection: () -> (bool);
+  testNemotronPrompt: () -> (NemotronTestResult);
   testNvidiaConnection: () -> (IntegrationTestResult);
   testOpenRouterConnection: () -> (bool);
   testServiceConnection: (tenantId: text, "service": text) ->

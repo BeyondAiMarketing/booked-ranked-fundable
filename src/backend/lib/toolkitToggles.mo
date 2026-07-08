@@ -1,6 +1,7 @@
 import List "mo:core/List";
 import Map  "mo:core/Map";
 import Time "mo:core/Time";
+import Text "mo:core/Text";
 import T    "../types/toolkitToggles";
 
 module {

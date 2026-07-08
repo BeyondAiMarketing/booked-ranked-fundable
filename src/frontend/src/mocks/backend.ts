@@ -660,4 +660,42 @@ export const mockBackend: backendInterface = {
   upsertCampaignInstance: async () => undefined,
   upsertVoiceAgentConfig: async () => undefined,
   upsertWhiteLabelConfig: async () => undefined,
+  leadEngine_getImportBatch: async (_tenantId: string, _batchId: string) => null,
+  leadEngine_getLead: async (_tenantId: string, _leadId: string) => null,
+  leadEngine_importLeads: async (_tenantId: string, _importerName: string, _sourceTool: string, batch: any[]) => ({
+    rejectedRows: [],
+    imported: BigInt(batch.length),
+    skipped: BigInt(0),
+    batchId: 'mock-batch-' + Date.now(),
+    flagged: BigInt(0),
+  }),
+  leadEngine_listBatches: async (_tenantId: string) => [],
+  sendLiveEmail: async (_tenantId: string, _to: string, _from: string, _subject: string, _body: string) => ({
+    ok: true,
+    messageId: 'mock-email-' + Date.now(),
+    error: null,
+  }),
+  sendLiveSms: async (_tenantId: string, _to: string, _body: string) => ({
+    ok: true,
+    messageId: 'mock-sms-' + Date.now(),
+    error: null,
+  }),
+  testNvidiaConnection: async () => ({
+    provider: 'NVIDIA Nemotron',
+    testedAt: BigInt(Date.now()),
+    latencyMs: BigInt(312),
+    message: 'Connection successful — nvidia/llama-3.1-nemotron-70b-instruct reachable.',
+    connected: true,
+  }),
+  routeLLMCall: async () => 'Mock Nemotron response: The roofing contractor should focus on review velocity and GBP optimization to improve local search visibility.',
+  getLLMRouteLog: async (_limit: bigint) => [
+    {
+      model: 'nvidia/llama-3.1-nemotron-70b-instruct',
+      provider: 'Nemotron' as any,
+      attempts: BigInt(1),
+      success: true,
+      estimatedCost: 0.0021,
+      timestampNs: BigInt(Date.now()) * BigInt(1_000_000),
+    },
+  ],
 } as unknown as backendInterface;

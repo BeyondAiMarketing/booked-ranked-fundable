@@ -3,6 +3,7 @@ import Map          "mo:core/Map";
 import Set          "mo:core/Set";
 import Text         "mo:core/Text";
 import Nat          "mo:core/Nat";
+import Int          "mo:core/Int";
 import Float        "mo:core/Float";
 import Time         "mo:core/Time";
 import Runtime      "mo:core/Runtime";

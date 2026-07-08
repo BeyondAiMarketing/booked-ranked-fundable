@@ -1,5 +1,6 @@
 import Map  "mo:core/Map";
 import List "mo:core/List";
+import Text "mo:core/Text";
 import Time "mo:core/Time";
 import T    "../types/monthlyReport";
 

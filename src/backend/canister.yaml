@@ -4,5 +4,14 @@ build:
   steps:
     - type: script
       commands:
-        - $MOC_PATH --implicit-package core --default-persistent-actors -no-check-ir -E M0236 -E M0235 -E M0223 -E M0237 --actor-idl system-idl --package base $MOTOKO_BASE --package core $MOTOKO_CORE main.mo -o backend.wasm
-        - mv backend.wasm "$ICP_WASM_OUTPUT_PATH"
+        # Build the backend canister from source via mops so the deployed wasm
+        # always reflects current Motoko source. mops build resolves dependencies
+        # (mo:core, caffeineai-*) and produces dist/backend.wasm + dist/backend.did.
+        # This makes the canister.yaml self-sufficient — a bare `icp deploy backend`
+        # rebuilds from source instead of shipping stale artifacts.
+        # mops.toml lives at the project root, so run mops from there.
+        - cd ../.. && mops build
+        # mops build writes src/backend/dist/backend.wasm (per mops.toml
+        # outputDir, which is relative to the project root). Move it into the
+        # icp-cli expected output path.
+        - mv src/backend/dist/backend.wasm "$ICP_WASM_OUTPUT_PATH"
