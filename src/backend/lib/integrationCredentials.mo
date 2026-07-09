@@ -3,20 +3,125 @@ import Nat "mo:core/Nat";
 import Blob "mo:core/Blob";
 import Array "mo:core/Array";
 import Nat8 "mo:core/Nat8";
+import Debug "mo:core/Debug";
+import SecretManager "./secretManager";
 import T "../types/integrationCredentials";
 
 module {
 
   // ---------------------------------------------------------------------------
-  // XOR obfuscation helpers
+  // Secret manager integration
+  //
+  // obfuscate()/deobfuscate() use the legacy XOR-with-salt path. Call sites
+  // that have access to the actor's SecretManager.State should use the
+  // *WithSecret variants, which delegate to the managed secretManager when
+  // secretState is non-null and fall back to XOR-with-salt when null.
+  //
+  // This module is a stateless `module {}` (not an actor or mixin), so it
+  // holds no module-level mutable state — the secret state is threaded
+  // through the *WithSecret parameters by the caller (main.mo).
+  // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // Obfuscation helpers
+  //
+  // Primary path (WithSecret variants): secretManager.encrypt() /
+  // secretManager.decrypt() using the managed, rotatable secret. Fallback path:
+  // legacy XOR-with-salt (below) for backward compatibility and for decrypting
+  // legacy ciphertext that predates the secretManager.
+  // ---------------------------------------------------------------------------
+
+  /// Encode `text` using the managed secretManager when `secretState` is
+  /// non-null and initialized; otherwise fall back to XOR-with-salt.
+  public func obfuscateWithSecret(text : Text, salt : Blob, secretState : ?SecretManager.State) : Text {
+    if (text == "") return "";
+    switch (secretState) {
+      case (?state) {
+        if (state.initialized and state.currentSecretId != "") {
+          return SecretManager.encrypt(state, text, state.currentSecretId);
+        };
+      };
+      case null {};
+    };
+    xorObfuscate(text, salt);
+  };
+
+  /// Inverse of `obfuscateWithSecret`. Tries the managed secretManager first
+  /// (when `secretState` is non-null and initialized); on any decryption
+  /// failure (legacy ciphertext, corrupt value, secret-id mismatch) falls back
+  /// to XOR-with-salt and logs the failure to the debug trail.
+  public func deobfuscateWithSecret(stored : Text, salt : Blob, secretState : ?SecretManager.State) : Text {
+    if (stored == "") return "";
+    // secretManager ciphertext is tagged "v1:<id>:<hex>"; legacy XOR values
+    // are not. Only attempt secretManager decryption on tagged values.
+    if (stored.startsWith(#text "v1:")) {
+      switch (secretState) {
+        case (?state) {
+          if (state.initialized and state.currentSecretId != "") {
+            // Extract the embedded secret id from "v1:<id>:<hex>" so we decrypt
+            // with the secret that actually encrypted it (current or retired).
+            let embeddedId : Text = extractSecretId(stored);
+            switch (SecretManager.decrypt(state, stored, embeddedId)) {
+              case (#ok plain) { return plain };
+              case (#err msg) {
+                Debug.print("integrationCredentials.deobfuscateWithSecret: secretManager decrypt failed (" # msg # "); falling back to XOR");
+              };
+            };
+          };
+        };
+        case null {};
+      };
+    };
+    xorDeobfuscate(stored, salt);
+  };
+
+  /// Encode `text` using the legacy XOR-with-salt path. Signature preserved
+  /// for backward compatibility with the ~100 existing call sites.
+  public func obfuscate(text : Text, salt : Blob) : Text {
+    xorObfuscate(text, salt);
+  };
+
+  /// Inverse of `obfuscate`. Uses the legacy XOR-with-salt path. Signature
+  /// preserved for backward compatibility with the ~100 existing call sites.
+  public func deobfuscate(stored : Text, salt : Blob) : Text {
+    xorDeobfuscate(stored, salt);
+  };
+
+  /// Extract the <secretId> segment from a "v1:<secretId>:<hex>" ciphertext.
+  /// Returns "" if the format is unexpected (caller will then fail decrypt).
+  private func extractSecretId(stored : Text) : Text {
+    // stored = "v1:<id>:<hex>" — strip "v1:" then take everything up to next ":".
+    let afterPrefix = switch (stored.stripStart(#text "v1:")) {
+      case (?rest) rest;
+      case null { return "" };
+    };
+    let chars = afterPrefix.toArray();
+    var i = 0;
+    while (i < chars.size()) {
+      if (chars[i] == ':') {
+        var id = "";
+        var j = 0;
+        while (j < i) {
+          id := id # Text.fromChar(chars[j]);
+          j += 1;
+        };
+        return id;
+      };
+      i += 1;
+    };
+    "";
+  };
+
+  // ---------------------------------------------------------------------------
+  // Legacy XOR-with-salt helpers (fallback path)
   //
   // Prevents plaintext secrets from appearing in stable memory dumps.
   // The salt is injected from the canister so it is unique per deployment and
   // stored only in canister memory, never hard-coded here.
   // ---------------------------------------------------------------------------
 
-  /// Encode `text` by XOR-ing each UTF-8 byte against the cycling salt bytes.
-  public func obfuscate(text : Text, salt : Blob) : Text {
+  /// Legacy XOR-with-salt encode. Kept as the fallback for the transition window.
+  func xorObfuscate(text : Text, salt : Blob) : Text {
     if (text == "") return "";
     let input   : Blob = text.encodeUtf8();
     let saltArr : [Nat8] = salt.toArray();
@@ -39,8 +144,8 @@ module {
     };
   };
 
-  /// Inverse of `obfuscate` – XOR is its own inverse, so the operation is identical.
-  public func deobfuscate(stored : Text, salt : Blob) : Text {
+  /// Legacy XOR-with-salt decode (inverse of `xorObfuscate`).
+  func xorDeobfuscate(stored : Text, salt : Blob) : Text {
     if (stored == "") return "";
     // Handle the hex-encoded fallback path
     if (stored.startsWith(#text "HEX:")) {
@@ -66,7 +171,7 @@ module {
       };
     } else {
       // Regular path — XOR is self-inverse
-      obfuscate(stored, salt);
+      xorObfuscate(stored, salt);
     };
   };
 
@@ -583,6 +688,150 @@ module {
       sendgridInboundParseDomain = deobfuscate(c.sendgridInboundParseDomain, salt);
       composioWebhookSecret = deobfuscate(c.composioWebhookSecret, salt);
     }
+  };
+
+  // ---------------------------------------------------------------------------
+  // SecretManager-aware variants of encryptAll / decryptAll
+  //
+  // These follow the exact same delegation pattern as
+  // obfuscateWithSecret / deobfuscateWithSecret (lines 36-76): when
+  // `secretState` is present and initialized, each field is routed through
+  // SecretManager (producing v1:<secretId>:<hex> ciphertext); otherwise the
+  // legacy XOR-with-salt path is used. The non-secret fields
+  // (nvidiaApiKey, n8nApiKey, n8nInstanceUrl) are passed through unchanged,
+  // matching encryptAll / decryptAll.
+  // ---------------------------------------------------------------------------
+
+  /// Encrypt every field of `c` using the managed SecretManager when
+  /// `secretState` is non-null and initialized (producing v1:<secretId>:<hex>
+  /// ciphertext per field); otherwise fall back to the legacy XOR-with-salt
+  /// `encryptAll` behavior. Non-secret fields are passed through unchanged.
+  public func encryptAllWithSecret(c : T.IntegrationCredentials, salt : Blob, secretState : ?SecretManager.State) : T.IntegrationCredentials {
+    {
+      openaiKey           = obfuscateWithSecret(c.openaiKey,           salt, secretState);
+      claudeKey           = obfuscateWithSecret(c.claudeKey,           salt, secretState);
+      litellmUrl          = obfuscateWithSecret(c.litellmUrl,          salt, secretState);
+      litellmKey          = obfuscateWithSecret(c.litellmKey,          salt, secretState);
+      ollamaUrl           = obfuscateWithSecret(c.ollamaUrl,           salt, secretState);
+      twilioSid           = obfuscateWithSecret(c.twilioSid,           salt, secretState);
+      twilioAuth          = obfuscateWithSecret(c.twilioAuth,          salt, secretState);
+      twilioNumber        = obfuscateWithSecret(c.twilioNumber,        salt, secretState);
+      vapiKey             = obfuscateWithSecret(c.vapiKey,             salt, secretState);
+      stripeKey           = obfuscateWithSecret(c.stripeKey,           salt, secretState);
+      stripeWebhookSecret = obfuscateWithSecret(c.stripeWebhookSecret, salt, secretState);
+      googleClientId      = obfuscateWithSecret(c.googleClientId,      salt, secretState);
+      googleClientSecret  = obfuscateWithSecret(c.googleClientSecret,  salt, secretState);
+      yelpApiKey          = obfuscateWithSecret(c.yelpApiKey,          salt, secretState);
+      facebookAppId       = obfuscateWithSecret(c.facebookAppId,       salt, secretState);
+      facebookAppSecret   = obfuscateWithSecret(c.facebookAppSecret,   salt, secretState);
+      emailSmtpHost       = obfuscateWithSecret(c.emailSmtpHost,       salt, secretState);
+      emailSmtpPort       = obfuscateWithSecret(c.emailSmtpPort,       salt, secretState);
+      emailSmtpUser       = obfuscateWithSecret(c.emailSmtpUser,       salt, secretState);
+      emailSmtpPass       = obfuscateWithSecret(c.emailSmtpPass,       salt, secretState);
+      hunterApiKey        = obfuscateWithSecret(c.hunterApiKey,        salt, secretState);
+      neverBounceKey      = obfuscateWithSecret(c.neverBounceKey,      salt, secretState);
+      listmonkUrl         = obfuscateWithSecret(c.listmonkUrl,         salt, secretState);
+      listmonkUser        = obfuscateWithSecret(c.listmonkUser,        salt, secretState);
+      listmonkPass        = obfuscateWithSecret(c.listmonkPass,        salt, secretState);
+      searxngUrl          = obfuscateWithSecret(c.searxngUrl,          salt, secretState);
+      elevenLabsKey       = obfuscateWithSecret(c.elevenLabsKey,       salt, secretState);
+      elevenLabsVoiceId   = obfuscateWithSecret(c.elevenLabsVoiceId,   salt, secretState);
+      perplexityApiKey    = obfuscateWithSecret(c.perplexityApiKey,    salt, secretState);
+      autoBrowserUrl      = obfuscateWithSecret(c.autoBrowserUrl,      salt, secretState);
+      serpApiKey          = obfuscateWithSecret(c.serpApiKey,          salt, secretState);
+      serpApiDevKey       = obfuscateWithSecret(c.serpApiDevKey,       salt, secretState);
+      tinyFishKey         = obfuscateWithSecret(c.tinyFishKey,         salt, secretState);
+      sendgridKey         = obfuscateWithSecret(c.sendgridKey,         salt, secretState);
+      nvidiaApiKey        = c.nvidiaApiKey;
+      n8nApiKey           = c.n8nApiKey;
+      n8nInstanceUrl      = c.n8nInstanceUrl;
+      abacusApiKey        = obfuscateWithSecret(c.abacusApiKey,        salt, secretState);
+      composioApiKey      = obfuscateWithSecret(c.composioApiKey,      salt, secretState);
+      dograhApiKey        = obfuscateWithSecret(c.dograhApiKey,        salt, secretState);
+      openRouterApiKey    = obfuscateWithSecret(c.openRouterApiKey,    salt, secretState);
+      nvidiaNimApiKey     = obfuscateWithSecret(c.nvidiaNimApiKey,     salt, secretState);
+      geminiApiKey        = obfuscateWithSecret(c.geminiApiKey,         salt, secretState);
+      vapiWebhookSecret   = obfuscateWithSecret(c.vapiWebhookSecret,   salt, secretState);
+      sendgridInboundParseDomain = obfuscateWithSecret(c.sendgridInboundParseDomain, salt, secretState);
+      composioWebhookSecret = obfuscateWithSecret(c.composioWebhookSecret, salt, secretState);
+    }
+  };
+
+  /// Decrypt every field of `c` using the managed SecretManager when
+  /// `secretState` is non-null and initialized (extracting the secretId from
+  /// the v1: prefix); otherwise fall back to the legacy XOR-with-salt
+  /// `decryptAll` behavior for untagged/HEX: ciphertext. Non-secret fields are
+  /// passed through unchanged.
+  public func decryptAllWithSecret(c : T.IntegrationCredentials, salt : Blob, secretState : ?SecretManager.State) : T.IntegrationCredentials {
+    {
+      openaiKey           = deobfuscateWithSecret(c.openaiKey,           salt, secretState);
+      claudeKey           = deobfuscateWithSecret(c.claudeKey,           salt, secretState);
+      litellmUrl          = deobfuscateWithSecret(c.litellmUrl,          salt, secretState);
+      litellmKey          = deobfuscateWithSecret(c.litellmKey,          salt, secretState);
+      ollamaUrl           = deobfuscateWithSecret(c.ollamaUrl,           salt, secretState);
+      twilioSid           = deobfuscateWithSecret(c.twilioSid,           salt, secretState);
+      twilioAuth          = deobfuscateWithSecret(c.twilioAuth,          salt, secretState);
+      twilioNumber        = deobfuscateWithSecret(c.twilioNumber,        salt, secretState);
+      vapiKey             = deobfuscateWithSecret(c.vapiKey,             salt, secretState);
+      stripeKey           = deobfuscateWithSecret(c.stripeKey,           salt, secretState);
+      stripeWebhookSecret = deobfuscateWithSecret(c.stripeWebhookSecret, salt, secretState);
+      googleClientId      = deobfuscateWithSecret(c.googleClientId,      salt, secretState);
+      googleClientSecret  = deobfuscateWithSecret(c.googleClientSecret,  salt, secretState);
+      yelpApiKey          = deobfuscateWithSecret(c.yelpApiKey,          salt, secretState);
+      facebookAppId       = deobfuscateWithSecret(c.facebookAppId,       salt, secretState);
+      facebookAppSecret   = deobfuscateWithSecret(c.facebookAppSecret,   salt, secretState);
+      emailSmtpHost       = deobfuscateWithSecret(c.emailSmtpHost,       salt, secretState);
+      emailSmtpPort       = deobfuscateWithSecret(c.emailSmtpPort,       salt, secretState);
+      emailSmtpUser       = deobfuscateWithSecret(c.emailSmtpUser,       salt, secretState);
+      emailSmtpPass       = deobfuscateWithSecret(c.emailSmtpPass,       salt, secretState);
+      hunterApiKey        = deobfuscateWithSecret(c.hunterApiKey,        salt, secretState);
+      neverBounceKey      = deobfuscateWithSecret(c.neverBounceKey,      salt, secretState);
+      listmonkUrl         = deobfuscateWithSecret(c.listmonkUrl,         salt, secretState);
+      listmonkUser        = deobfuscateWithSecret(c.listmonkUser,        salt, secretState);
+      listmonkPass        = deobfuscateWithSecret(c.listmonkPass,        salt, secretState);
+      searxngUrl          = deobfuscateWithSecret(c.searxngUrl,          salt, secretState);
+      elevenLabsKey       = deobfuscateWithSecret(c.elevenLabsKey,       salt, secretState);
+      elevenLabsVoiceId   = deobfuscateWithSecret(c.elevenLabsVoiceId,   salt, secretState);
+      perplexityApiKey    = deobfuscateWithSecret(c.perplexityApiKey,    salt, secretState);
+      autoBrowserUrl      = deobfuscateWithSecret(c.autoBrowserUrl,      salt, secretState);
+      serpApiKey          = deobfuscateWithSecret(c.serpApiKey,          salt, secretState);
+      serpApiDevKey       = deobfuscateWithSecret(c.serpApiDevKey,       salt, secretState);
+      tinyFishKey         = deobfuscateWithSecret(c.tinyFishKey,         salt, secretState);
+      sendgridKey         = deobfuscateWithSecret(c.sendgridKey,         salt, secretState);
+      nvidiaApiKey        = c.nvidiaApiKey;
+      n8nApiKey           = c.n8nApiKey;
+      n8nInstanceUrl      = c.n8nInstanceUrl;
+      abacusApiKey        = deobfuscateWithSecret(c.abacusApiKey,        salt, secretState);
+      composioApiKey      = deobfuscateWithSecret(c.composioApiKey,      salt, secretState);
+      dograhApiKey        = deobfuscateWithSecret(c.dograhApiKey,        salt, secretState);
+      openRouterApiKey    = deobfuscateWithSecret(c.openRouterApiKey,    salt, secretState);
+      nvidiaNimApiKey     = deobfuscateWithSecret(c.nvidiaNimApiKey,     salt, secretState);
+      geminiApiKey        = deobfuscateWithSecret(c.geminiApiKey,         salt, secretState);
+      vapiWebhookSecret   = deobfuscateWithSecret(c.vapiWebhookSecret,   salt, secretState);
+      sendgridInboundParseDomain = deobfuscateWithSecret(c.sendgridInboundParseDomain, salt, secretState);
+      composioWebhookSecret = deobfuscateWithSecret(c.composioWebhookSecret, salt, secretState);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Idempotent credential migration helper
+  //
+  // Decrypts each field using decryptAllWithSecret (which transparently
+  // handles both v1:<secretId>:<hex> and legacy XOR/HEX: formats), then
+  // re-encrypts using encryptAllWithSecret (producing v1: format when the
+  // secret is initialized). Entries already in v1: format are effectively
+  // no-ops (decrypt v1 then re-encrypt v1). The IntegrationCredentials record
+  // shape and all field values are preserved.
+  // ---------------------------------------------------------------------------
+
+  /// Idempotently migrate `c` from legacy XOR-with-salt ciphertext to the
+  /// managed SecretManager v1:<secretId>:<hex> format. When `secretState` is
+  /// null or not initialized, this is a pass-through (decrypt-then-encrypt
+  /// both fall back to XOR-with-salt, leaving the values unchanged). Safe to
+  /// call repeatedly — already-migrated v1: entries round-trip cleanly.
+  public func migrateCredentialsWithSecret(c : T.IntegrationCredentials, salt : Blob, secretState : ?SecretManager.State) : T.IntegrationCredentials {
+    let plain : T.IntegrationCredentials = decryptAllWithSecret(c, salt, secretState);
+    encryptAllWithSecret(plain, salt, secretState);
   };
 
   // ---------------------------------------------------------------------------

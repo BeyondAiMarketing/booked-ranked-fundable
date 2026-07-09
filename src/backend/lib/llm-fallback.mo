@@ -29,13 +29,9 @@ module {
   public type Transform = query (Outcall.TransformationInput) -> async Outcall.TransformationOutput;
 
   /// Provider keys resolved from the credentials store for a single call.
-  public type ProviderKeys = {
-    nemotronKey    : Text;
-    openRouterKey  : Text;
-    openaiKey      : Text;
-    anthropicKey   : Text;
-    geminiKey      : Text;
-  };
+  /// Aliased from the types module so callers can use either
+  /// `LLMFallbackLib.ProviderKeys` or `LLMFallbackTypes.ProviderKeys`.
+  public type ProviderKeys = T.ProviderKeys;
 
   /// Feature flags that gate providers (empty-string key check is the primary
   /// gate; flags here are the existing app-level toggles).

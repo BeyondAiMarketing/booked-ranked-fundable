@@ -8,6 +8,7 @@ import Outcall       "mo:caffeineai-http-outcalls/outcall";
 import ABT           "../types/autoBrowser";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import ALT           "../types/aiLeadAudit";
 
 mixin (
@@ -18,6 +19,7 @@ mixin (
   leadAuditResults   : Map.Map<Text, ALT.LeadAuditResult>,
   leadAuditJobs      : Map.Map<Text, ALT.LeadAuditJob>,
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ── Access helpers ──────────────────────────────────────────────────────────
@@ -57,7 +59,7 @@ mixin (
       switch (integrationCreds.get(t)) {
         case (null) { null };
         case (?enc) {
-          let plain = ICLib.decryptAll(enc, credSalt);
+          let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
           if (plain.autoBrowserUrl == "") null else ?plain.autoBrowserUrl
         };
       }

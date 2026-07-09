@@ -13,6 +13,7 @@ import T            "../types/autopilotCompliance";
 import EngineTypes  "../types/autopilotEngine";
 import ICTypes      "../types/integrationCredentials";
 import ICLib        "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 /// Autopilot Compliance & Deliverability Engine
 ///
@@ -36,6 +37,7 @@ mixin (
   /// Soft-bounce retry counter — keyed by email address.
   softBounceCounters  : Map.Map<Text, Nat>,
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState         : ?SecretManager.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -61,7 +63,7 @@ mixin (
   func ac_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(AC_PLATFORM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     }
   };
 

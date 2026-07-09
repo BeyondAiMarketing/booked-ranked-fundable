@@ -1,15 +1,49 @@
-import Map     "mo:core/Map";
-import List    "mo:core/List";
-import Text    "mo:core/Text";
-import FTTypes "../types/featureToggle";
-import Time "mo:core/Time";
-import Nat "mo:core/Nat";
+import Map      "mo:core/Map";
+import List     "mo:core/List";
+import Text     "mo:core/Text";
+import Time     "mo:core/Time";
+import Nat      "mo:core/Nat";
+import Principal "mo:core/Principal";
 
+import FTTypes   "../types/featureToggle";
+import SJS       "../lib/StableJsonStore";
+import AuditLog  "../lib/auditLog";
+import AuditT    "../types/auditLog";
+
+/// Feature Toggle mixin.
+///
+/// Admin actions that mutate feature flags are recorded in the centralized
+/// admin audit trail via `AuditLog.appendAdminAudit` (actionType
+/// `#featureFlagChange`). The audit store and nonce are injected from
+/// `main.mo` alongside the toggle state.
 mixin (
   featureToggles    : Map.Map<Text, FTTypes.FeatureToggle>,
   featureToggleLogs : List.List<FTTypes.FeatureToggleLog>,
   ftLogIdCounter    : { var value : Nat },
+  /// Centralized admin audit trail store (existing StableJsonStore state).
+  adminAuditStore   : SJS.State,
+  /// Per-canister nonce for audit-entry key uniqueness.
+  adminAuditNonce   : { var n : Nat },
 ) {
+
+  /// Default tenant id used when no tenant context is available for a flag change.
+  let DEFAULT_FLAG_TENANT : Text = "system";
+
+  /// Append a `#featureFlagChange` audit entry. Records the caller principal,
+  /// a default tenant, the current timestamp, and a redacted payload describing
+  /// the flag name and new value. Best-effort: never traps the calling flow.
+  func auditFlagChange(caller : Principal, payload : Text) {
+    let entry : AuditT.AdminAuditEntry = {
+      actorPrincipal  = caller;
+      tenantId        = DEFAULT_FLAG_TENANT;
+      actionType      = #featureFlagChange;
+      timestamp       = Time.now();
+      redactedPayload = AuditLog.redactSecrets(payload);
+    };
+    let nonce = adminAuditNonce.n;
+    adminAuditNonce.n := nonce + 1;
+    AuditLog.appendAdminAudit(adminAuditStore, entry, nonce);
+  };
 
   /// Returns all feature toggles.
   public query func getFeatureToggles() : async [FTTypes.FeatureToggle] {
@@ -18,7 +52,7 @@ mixin (
 
   /// Sets the enabled state for a single feature + tier.
   /// Returns true on success.
-  public shared func setFeatureToggle(
+  public shared ({ caller }) func setFeatureToggle(
     featureName : Text,
     tier        : Text,
     isEnabled   : Bool,
@@ -62,12 +96,13 @@ mixin (
       modifiedBy;
       modifiedAt    = now;
     });
+    auditFlagChange(caller, "setFeatureToggle feature=" # featureName # " tier=" # tier # " newValue=" # (if (isEnabled) "true" else "false") # " by=" # modifiedBy);
     true
   };
 
   /// Bulk-sets multiple feature toggles for a single tier.
   /// Returns true when all updates succeed.
-  public shared func bulkSetFeatureToggles(
+  public shared ({ caller }) func bulkSetFeatureToggles(
     tier       : Text,
     updates    : [(Text, Bool)],
     modifiedBy : Text,
@@ -111,13 +146,14 @@ mixin (
         modifiedBy;
         modifiedAt    = now;
       });
+      auditFlagChange(caller, "bulkSetFeatureToggles feature=" # featureName # " tier=" # tier # " newValue=" # (if (isEnabled) "true" else "false") # " by=" # modifiedBy);
     };
     true
   };
 
   /// Resets all feature toggles to platform defaults (all enabled for all tiers).
   /// Returns true on success.
-  public shared func resetToDefaults() : async Bool {
+  public shared ({ caller }) func resetToDefaults() : async Bool {
     let now = Time.now();
     let keys = List.empty<Text>();
     for ((k, _) in featureToggles.entries()) { keys.add(k) };
@@ -136,6 +172,7 @@ mixin (
         case (null) {};
       };
     };
+    auditFlagChange(caller, "resetToDefaults: all feature toggles reset to platform defaults (all enabled)");
     true
   };
 

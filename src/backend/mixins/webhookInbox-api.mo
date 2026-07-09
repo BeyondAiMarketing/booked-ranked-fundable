@@ -10,6 +10,7 @@ import Runtime        "mo:core/Runtime";
 import WebhookInbox   "../types/webhookInbox";
 import WebhookInboxLib "../lib/webhookInbox";
 import FTTypes        "../types/featureToggle";
+import RateLimiter    "../lib/rateLimiter";
 
 /// Mixin that owns the unified webhook inbox API endpoints.
 /// State slices injected (mirrors the leadEngine-api.mo pattern):
@@ -20,6 +21,7 @@ mixin (
   webhookInboxState : { var s : WebhookInbox.WebhookInboxState },
   featureToggles    : Map.Map<Text, FTTypes.FeatureToggle>,
   optedOutEmails    : Set.Set<Text>,
+  rateLimiterState  : RateLimiter.State,
 ) {
 
   /// Returns true when the WEBHOOK_INBOX_ENABLED feature flag is on for any tier.
@@ -52,6 +54,10 @@ mixin (
     headers : [(Text, Text)],
   ) : async { ok : Bool; eventId : Text } {
     ignore (path, headers);
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:instantly", 100, 60_000)) {
+      return { ok = false; eventId = "" };
+    };
     if (not webhookInboxEnabled()) {
       Runtime.trap("Webhook Inbox is not enabled");
     };
@@ -100,6 +106,10 @@ mixin (
     headers : [(Text, Text)],
   ) : async { ok : Bool; eventId : Text } {
     ignore (path, headers);
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:smartlead", 100, 60_000)) {
+      return { ok = false; eventId = "" };
+    };
     if (not webhookInboxEnabled()) {
       Runtime.trap("Webhook Inbox is not enabled");
     };

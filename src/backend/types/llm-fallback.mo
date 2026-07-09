@@ -23,6 +23,18 @@ module {
     content : Text;
   };
 
+  /// Provider keys resolved from the credentials store for a single call.
+  /// Defined in the types module so both the lib (LLMFallbackLib.ProviderKeys)
+  /// and the orchestrator (LLMFallbackTypes.ProviderKeys) share one canonical
+  /// type without a duplicate record definition.
+  public type ProviderKeys = {
+    nemotronKey    : Text;
+    openRouterKey  : Text;
+    openaiKey      : Text;
+    anthropicKey   : Text;
+    geminiKey      : Text;
+  };
+
   /// Capability requirements a task imposes on a candidate model.
   /// Used by cost-aware routing to filter before price comparison.
   public type TaskCapability = {

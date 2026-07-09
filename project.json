@@ -1,22 +1,17 @@
 {
-  "overview": "A multi-niche business app platform with lead engine, LLM fallback, cold email campaigns, and trial activation deployed on the Internet Computer.",
+  "overview": "Booked Ranked Fundable — a productivity platform with secure, encrypted credential management for all connected integrations.",
   "features": [
-    "Multi-niche marketing pages (Real Estate, Plumbing, Roofer, etc.)",
-    "Lead Engine with import and enrichment steps",
-    "LLM fallback chain with Test Nemotron",
-    "4-tier pricing",
-    "Webhook inbox",
-    "Roofer cold email campaign with native email and Instantly swap",
-    "Trial activation with demo sessions",
-    "Integration credentials management"
+    "Secure encrypted storage for all API keys via a managed secret",
+    "Runtime key resolution for OpenAI, Claude, OpenRouter, Gemini, ElevenLabs, Twilio, and SendGrid",
+    "Automatic migration of existing credentials to the new encrypted format",
+    "Go Live dashboard for entering and testing integration keys"
   ],
   "category": "productivity",
   "tags": [
-    "lead-generation",
-    "multi-niche",
-    "llm",
-    "email-campaigns",
-    "internet-computer"
+    "security",
+    "credentials",
+    "integrations",
+    "encryption"
   ],
-  "last_updated": "2026-07-05T16:03:05.023Z"
+  "last_updated": "2026-07-09T19:04:33.728Z"
 }

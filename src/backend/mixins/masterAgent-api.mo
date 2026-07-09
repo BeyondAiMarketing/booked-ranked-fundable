@@ -10,6 +10,7 @@ import Map              "mo:core/Map";
 import List             "mo:core/List";
 import ICTypes "../types/integrationCredentials";
 import ICLib "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 /// Master Agent API — full Super Admin omniscient view across all accounts.
 /// Owl Alpha is the primary model. All AI calls go through OpenRouter HTTP outcall.
@@ -23,6 +24,7 @@ mixin (
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
   integrationCreds   : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt           : Blob,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ── Private helpers ───────────────────────────────────────────────────────
@@ -192,11 +194,11 @@ mixin (
     // Resolve provider keys from stable storage for the fallback chain
     let geminiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey;
     };
     let openaiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openaiKey;
     };
 
     // Call Owl Alpha via OpenRouter with fallback chain: OpenRouter → OpenAI → Gemini

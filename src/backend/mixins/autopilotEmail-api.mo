@@ -13,6 +13,7 @@ import T             "../types/autopilotEngine";
 import WS            "../types/warmSequences";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 /// Autopilot Bulk Email Engine
 ///
@@ -53,6 +54,7 @@ mixin (
   // Warm sequences library: niche → sequence
   warmSequenceLib    : Map.Map<Text, WS.WarmSequenceExt>,
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -88,7 +90,7 @@ mixin (
   func ape_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(APE_PLATFORM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     };
   };
 

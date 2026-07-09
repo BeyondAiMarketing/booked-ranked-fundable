@@ -4,6 +4,7 @@ import DograhLib "../lib/dograh";
 import T         "../types/dograh";
 import ICTypes   "../types/integrationCredentials";
 import ICLib     "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Map       "mo:core/Map";
 import Text "mo:core/Text";
 import Iter "mo:core/Iter";
@@ -12,6 +13,7 @@ mixin (
   dograhState      : DograhLib.State,
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
+  secretState      : ?SecretManager.State,
 ) {
 
   // ── HTTP transform (strips response headers for determinism) ────────────────
@@ -49,10 +51,10 @@ mixin (
     // Write to stable integrationCreds so key survives upgrades
     let tid = "platform";
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case (null) ICLib.emptyCredentials();
     };
-    integrationCreds.add(tid, ICLib.encryptAll({ existing with dograhApiKey = apiKey }, credSalt));
+    integrationCreds.add(tid, ICLib.encryptAllWithSecret({ existing with dograhApiKey = apiKey }, credSalt, secretState));
     { success = true; message = "API key saved" };
   };
 
@@ -227,7 +229,7 @@ mixin (
     let tid = "platform";
     let stableKey = switch (integrationCreds.get(tid)) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).dograhApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).dograhApiKey;
     };
     let configured = stableKey != "";
     // Restore in-memory state from stable store if it was lost after upgrade

@@ -11,6 +11,7 @@ import LLMFT         "../types/llm-fallback";
 import LLMFallbackLib "../lib/llm-fallback";
 import ICTypes "../types/integrationCredentials";
 import ICLib "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 mixin (
   abacusState      : AbacusLib.State,
@@ -22,6 +23,7 @@ mixin (
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
   llmFallbackState : LLMFallbackLib.State,
+  secretState      : ?SecretManager.State,
 ) {
 
   /// Default capability for email-generation LLM calls: any model family,
@@ -44,7 +46,7 @@ mixin (
   ) : async Text {
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFallbackLib.resolveKeys(creds);
     let flags : LLMFallbackLib.FeatureFlags = {

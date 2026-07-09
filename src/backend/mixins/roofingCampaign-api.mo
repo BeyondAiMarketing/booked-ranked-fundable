@@ -11,6 +11,7 @@ import RC      "../lib/roofingCampaign";
 import LRA     "../lib/localRankingAudit";
 import ICTypes "../types/integrationCredentials";
 import ICLib   "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import CsvTypes "../types/csvImport";
 import ET "../types/emailTemplate";
 import ETL "../lib/emailTemplates";
@@ -40,6 +41,7 @@ mixin (
   emailTemplates      : Map.Map<Nat, ET.EmailTemplateExt>,
   templateInitialized : { var v : Bool },
   sendLogs            : Map.Map<Text, List.List<ET.SendLogEntry>>,
+  secretState         : ?SecretManager.State,
 ) {
 
   // ── Internal helpers ──────────────────────────────────────────────────────
@@ -63,7 +65,7 @@ mixin (
     switch (integrationCreds.get(RC_LLM_TENANT)) {
       case (null) null;
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         if (plain.serpApiDevKey != "") ?plain.serpApiDevKey
         else if (plain.serpApiKey != "") ?plain.serpApiKey
         else null;

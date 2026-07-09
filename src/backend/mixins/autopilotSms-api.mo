@@ -14,6 +14,7 @@ import Outcall       "mo:caffeineai-http-outcalls/outcall";
 import T             "../types/autopilotEngine";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 /// SMS Autopilot Rules Engine
 ///
@@ -40,6 +41,7 @@ mixin (
   smsSentToday        : { var n : Nat },
   smsLastReset        : { var t : Int },
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState         : ?SecretManager.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -90,7 +92,7 @@ mixin (
   func sms_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(SMS_PLATFORM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     };
   };
 

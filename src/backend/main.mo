@@ -12,6 +12,7 @@ import Text "mo:core/Text";
 import Time "mo:core/Time";
 import Nat "mo:core/Nat";
 import Int "mo:core/Int";
+import Debug "mo:core/Debug";
 
 import MixinAuthorization "mo:caffeineai-authorization/MixinAuthorization";
 import AccessControl "mo:caffeineai-authorization/access-control";
@@ -21,6 +22,7 @@ import Outcall "mo:caffeineai-http-outcalls/outcall";
 import WarmSequencesTypes "types/warmSequences";
 import ICTypes "types/integrationCredentials";
 import StableJsonStoreCore "lib/StableJsonStoreCore";
+import SJS "lib/StableJsonStore";
 import ICMixin "mixins/integrationCredentials-api";
 import EmailTypes "types/email";
 import EmailMixin "mixins/email-api";
@@ -100,12 +102,19 @@ import CSTypes "types/contentStudio";
 import LeadAITypes "lead-ai-types";
 import ContentStudioMixin "mixins/contentStudio-api";
 import LeadAIMixin "mixins/leadAI-api";
-import LLMFallbackLib   "lib/llm-fallback";
-import LLMFallbackMixin "mixins/llm-fallback-api";
-import LeadEngineTypes "types/lead-engine";
-import LeadEngineMixin "mixins/leadEngine-api";
-import LeadEngineOql "lib/leadEngineOql";
-import LLMFallbackOql "lib/llmFallbackOql";
+   import LLMFallbackLib   "lib/llm-fallback";
+   import LLMFallbackTypes "types/llm-fallback";
+   import LLMFallbackMixin "mixins/llm-fallback-api";
+  import LeadEngineTypes "types/lead-engine";
+  import LeadEngineMixin "mixins/leadEngine-api";
+  import LeadEngineOql "lib/leadEngineOql";
+  import LLMFallbackOql "lib/llmFallbackOql";
+   import AIOrchestratorTypes "types/ai-orchestrator";
+   import AIOrchestratorLib "lib/ai-orchestrator";
+   import AIMemoryTypes "types/ai-memory";
+   import AIMemoryLib "lib/ai-memory";
+   import AIOrchestratorAdapterLib "lib/ai-orchestrator-adapter";
+   import AIOrchestratorOql "lib/aiOrchestratorOql";
 import OQL "mo:caffeineai-oql";
 import Expose "mo:caffeineai-oql/Expose";
 import LiveSendMixin "mixins/liveSend-api";
@@ -171,6 +180,9 @@ import CrmObjectsMixin "mixins/crmObjects-api";
 import MarketingAuditTypes "types/marketingAudit";
 import MarketingAuditLib "lib/marketingAudit";
 import MarketingAuditMixin "mixins/marketingAudit-api";
+import AdminAuditTypes "types/auditLog";
+import AdminAuditLib "lib/auditLog";
+import AdminAuditMixin "mixins/auditLog-api";
 import ProposalTypes "types/proposal";
 import ProposalLib "lib/proposal";
 import ProposalMixin "mixins/proposal-api";
@@ -180,6 +192,13 @@ import WebhookContractsMixin "mixins/webhookContracts-api";
 import ICLib "lib/integrationCredentials";
 import AILeadAuditTypes "types/aiLeadAudit";
 import NewsletterTypes "types/newsletter";
+import SecretManager "lib/secretManager";
+import SecretManagerTypes "types/secretManager";
+import RateLimiter "lib/rateLimiter";
+import InputValidation "lib/inputValidation";
+import Observability "lib/observability";
+import ObservabilityTypes "types/observability";
+import ObservabilityMixin "mixins/observability-api";
 
 
 
@@ -207,6 +226,125 @@ import NewsletterTypes "types/newsletter";
  
  actor {
   type TenantId = Text;
+
+  // ---- BUILD VERSION PROBE ----
+  // Diagnostic probe: call getBuildVersion() live to verify which source
+  // build is actually deployed on this canister. Hardcoded literal — each
+  // rebuild that edits this value produces a distinct deployed marker.
+  public query func getBuildVersion() : async Text {
+    "build-2026-07-09T03:10:00Z"
+  };
+
+  // ---- SECRET MANAGER ADMIN ENDPOINTS ----
+  // Lazy secret init: ensures the managed secret is initialized before any
+  // rotation or first use. Idempotent — no-op when already initialized.
+  func ensureSecretInit() : async () {
+    if (not SecretManager.getSecretStatus(secretState).initialized) {
+      let _ = await SecretManager.initSecret(secretState, { store = stableStore.getStore() });
+    };
+  };
+
+  /// Idempotently re-encrypt every entry in `integrationCreds` from legacy
+  /// XOR-with-salt ciphertext to the managed SecretManager v1:<secretId>:<hex>
+  /// format. Called from update read entry points (e.g. testElevenLabsConnection)
+  /// so stored credentials get upgraded on first read after deploy. Entries
+  /// already in v1: format round-trip cleanly (decrypt v1 then re-encrypt v1),
+  /// and only entries whose ciphertext actually changes are written back, so
+  /// repeated calls are no-ops once migration is complete.
+  func migrateCredentialsOnRead() {
+    for ((tid, enc) in integrationCreds.entries()) {
+      let migrated = ICLib.migrateCredentialsWithSecret(enc, credSalt, ?secretState);
+      // Only write back when the re-encrypted record differs from the stored
+      // one — avoids churn on already-migrated entries (idempotency).
+      if (not credentialsEqual(migrated, enc)) {
+        integrationCreds.add(tid, migrated);
+      };
+    };
+  };
+
+  /// Structural equality check for two IntegrationCredentials records, used by
+  /// migrateCredentialsOnRead to decide whether a write-back is needed.
+  func credentialsEqual(a : ICTypes.IntegrationCredentials, b : ICTypes.IntegrationCredentials) : Bool {
+    a.openaiKey == b.openaiKey and
+    a.claudeKey == b.claudeKey and
+    a.litellmUrl == b.litellmUrl and
+    a.litellmKey == b.litellmKey and
+    a.ollamaUrl == b.ollamaUrl and
+    a.twilioSid == b.twilioSid and
+    a.twilioAuth == b.twilioAuth and
+    a.twilioNumber == b.twilioNumber and
+    a.vapiKey == b.vapiKey and
+    a.stripeKey == b.stripeKey and
+    a.stripeWebhookSecret == b.stripeWebhookSecret and
+    a.googleClientId == b.googleClientId and
+    a.googleClientSecret == b.googleClientSecret and
+    a.yelpApiKey == b.yelpApiKey and
+    a.facebookAppId == b.facebookAppId and
+    a.facebookAppSecret == b.facebookAppSecret and
+    a.emailSmtpHost == b.emailSmtpHost and
+    a.emailSmtpPort == b.emailSmtpPort and
+    a.emailSmtpUser == b.emailSmtpUser and
+    a.emailSmtpPass == b.emailSmtpPass and
+    a.hunterApiKey == b.hunterApiKey and
+    a.neverBounceKey == b.neverBounceKey and
+    a.listmonkUrl == b.listmonkUrl and
+    a.listmonkUser == b.listmonkUser and
+    a.listmonkPass == b.listmonkPass and
+    a.searxngUrl == b.searxngUrl and
+    a.elevenLabsKey == b.elevenLabsKey and
+    a.elevenLabsVoiceId == b.elevenLabsVoiceId and
+    a.perplexityApiKey == b.perplexityApiKey and
+    a.autoBrowserUrl == b.autoBrowserUrl and
+    a.serpApiKey == b.serpApiKey and
+    a.serpApiDevKey == b.serpApiDevKey and
+    a.tinyFishKey == b.tinyFishKey and
+    a.sendgridKey == b.sendgridKey and
+    a.nvidiaApiKey == b.nvidiaApiKey and
+    a.n8nApiKey == b.n8nApiKey and
+    a.n8nInstanceUrl == b.n8nInstanceUrl and
+    a.abacusApiKey == b.abacusApiKey and
+    a.composioApiKey == b.composioApiKey and
+    a.dograhApiKey == b.dograhApiKey and
+    a.openRouterApiKey == b.openRouterApiKey and
+    a.nvidiaNimApiKey == b.nvidiaNimApiKey and
+    a.geminiApiKey == b.geminiApiKey and
+    a.vapiWebhookSecret == b.vapiWebhookSecret and
+    a.sendgridInboundParseDomain == b.sendgridInboundParseDomain and
+    a.composioWebhookSecret == b.composioWebhookSecret
+  };
+
+  /// Rotate the managed encryption secret. Admin-only. Mints a new secret,
+  /// retires the previous one (kept for the rotation window so existing
+  /// ciphertext remains decryptable), and records the action in the audit log.
+  public shared ({ caller }) func rotateSecret() : async Text {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admins only");
+    };
+    await ensureSecretInit();
+    let newId = await SecretManager.rotateSecret(secretState, { store = stableStore.getStore() });
+    AdminAuditLib.appendAdminAudit(
+      adminAuditStore,
+      {
+        actorPrincipal  = caller;
+        tenantId        = "system";
+        actionType      = #secretRotation;
+        timestamp       = Time.now();
+        redactedPayload = AdminAuditLib.redactSecrets("Secret rotated to " # newId);
+      },
+      adminAuditNonce.n,
+    );
+    adminAuditNonce.n := adminAuditNonce.n + 1;
+    newId;
+  };
+
+  /// Query the secret manager's operational status (current id, rotation
+  /// timestamp, retired-credential count, initialized flag). Admin-only.
+  public query ({ caller }) func getSecretRotationStatus() : async SecretManagerTypes.SecretStatus {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admins only");
+    };
+    SecretManager.getSecretRotationStatus(secretState);
+  };
 
   // ---- CORE TYPES ----
 
@@ -981,6 +1119,12 @@ import NewsletterTypes "types/newsletter";
     updatedAt : Int;
   };
 
+  // MemoryMode — original variant type. The moc 1.10.1 stable-signature crash
+  // (desugar.ml:1083) was caused by mixin parameters becoming stable actor
+  // fields, NOT by this variant. Now that the mixin is removed and public
+  // functions are defined directly in main.mo, the variant is safe again.
+  // Reverting from Text back to the variant fixes stable compatibility error
+  // M0170 (agentTemplates stable field uses MemoryMode).
   public type MemoryMode = {
     #none_;
     #conversation_only;
@@ -1206,6 +1350,16 @@ import NewsletterTypes "types/newsletter";
 
   transient let stableStore = StableJsonStoreCore.Core();
 
+  // ---- CENTRALIZED ADMIN AUDIT TRAIL STATE ----
+  // Declared after stableStore so the AdminCommandMixin and FeatureToggleMixin
+  // includes below can receive the store + nonce as parameters. Append-only
+  // audit log for admin actions, persisted via the existing StableJsonStore
+  // (no new stable state). The store state record wraps the underlying Map
+  // exposed by stableStore.getStore(); the nonce counter is a shared mutable
+  // record so per-call uniqueness propagates.
+  let adminAuditStore : SJS.State = { store = stableStore.getStore() };
+  let adminAuditNonce = { var n : Nat = 0 };
+
   // emptyMasked: the all-empty MaskedCredentials sentinel returned when no
   // credentials have been configured yet.  Declared here (rather than inside the
   // mixin) so that the migration expression can explicitly upgrade it when the
@@ -1243,6 +1397,27 @@ import NewsletterTypes "types/newsletter";
   // codebase. XOR obfuscation prevents plaintext exposure in memory dumps without
   // requiring a truly random value (which would change on reinstall and corrupt stored credentials).
   let credSalt : Blob = "\d4\2f\7a\c1\88\3e\b5\60\19\f2\44\97\cb\0e\56\a3\77\bc\2d\e8\f1\34\6c\90\b2\5a\1e\83\c7\49\d6\0f";
+
+  // ---- SECRET MANAGER STATE ----
+  // Managed reversible encryption for credential secrets. The in-memory State
+  // is transient (rebuilt from the StableJsonStore on initSecret); the secret
+  // material itself is persisted in the existing stableStore (no new stable
+  // variables). initSecret is invoked lazily on first use via ensureSecretInit()
+  // below — see the rotateSecret / getSecretRotationStatus admin endpoints.
+  transient let secretState = SecretManager.initState();
+
+  // ---- CANISTER START TIME ----
+  // Captured at actor init for uptime accounting in the observability health
+  // endpoint. Transient — resets on redeploy, which is the desired behavior
+  // for uptime accounting.
+  transient let canisterStartTime = Time.now();
+
+  // ---- RATE-LIMIT REJECTION COUNTER ----
+  // In-memory counter for the observability metrics endpoint. Transient —
+  // resets on redeploy per the project's "no new stable state" preference.
+  // Wrapped in a record so the observability mixin (included below) reads
+  // increments by reference.
+  let rateLimitRejections = { var n : Nat = 0 };
 
   // Notifications
   let notifications = Map.empty<Text, NotificationRecord>();
@@ -1346,7 +1521,7 @@ import NewsletterTypes "types/newsletter";
   };
 
   // ICMixin included after transform so the function reference is in scope
-  include ICMixin(accessControlState, integrationCreds, credSalt, userProfiles, emptyMasked, transform);
+  include ICMixin(accessControlState, integrationCreds, credSalt, userProfiles, emptyMasked, transform, ?secretState);
 
   // Email logs + warm-sequence email tracking
   let emailLogs          = List.empty<EmailTypes.EmailLogRecord>();
@@ -1372,6 +1547,8 @@ import NewsletterTypes "types/newsletter";
   // CRM Drip Campaigns state (mixin included after extendedLeads is declared below)
   let dripQueues        = Map.empty<Text, DripCampaignsTypes.DripQueue>();
   let dripEmailLogs     = Map.empty<Text, List.List<DripCampaignsTypes.DripQueueEmailLog>>();
+  // In-memory rate-limit counters (State record pattern; not stable — see AGENTS.md).
+  transient let rateLimiterState = RateLimiter.emptyState();
   // Bounce tracking: composite key leadId#":"#queueId -> DripLeadBounceRecord
   let dripBounceRecords = Map.empty<Text, DripCampaignsTypes.DripLeadBounceRecord>();
   // Per-queue throttle/pacing config: queueId -> DripQueueThrottleConfig
@@ -1443,6 +1620,7 @@ import NewsletterTypes "types/newsletter";
     leadAuditResults,
     leadAuditJobs,
     transform,
+    ?secretState,
   );
 
   // Demo Session & Niche Voice Scripts state
@@ -1491,6 +1669,7 @@ import NewsletterTypes "types/newsletter";
     leadAuditJobs,
     leads,
     transform,
+    ?secretState,
   );
 
   // Autopilot Email Engine state
@@ -1529,6 +1708,7 @@ import NewsletterTypes "types/newsletter";
     apeSmsJobQueue,
     apeWarmSeqLib,
     transform,
+    ?secretState,
   );
 
   // Autopilot Compliance & Deliverability Engine state
@@ -1560,6 +1740,7 @@ import NewsletterTypes "types/newsletter";
     complianceConfigHolder,
     complianceSoftBounces,
     transform,
+    ?secretState,
   );
 
   // SMS Autopilot Rules Engine state
@@ -1579,16 +1760,199 @@ import NewsletterTypes "types/newsletter";
     smsSentToday,
     smsLastReset,
     transform,
+    ?secretState,
   );
 
   // ---- LLM Fallback Router state ----
   // In-memory health + route log for the unified LLM fallback chain.
-  // Health resets on redeploy (transient); route log is in-memory only.
+  // Survives via orthogonal persistence (--default-persistent-actors).
   let llmFallbackState = LLMFallbackLib.emptyState();
   // Include the LLM fallback mixin BEFORE the 3 LLM-using skill mixins
   // (AutopilotReplyIntel, AIEmailGen, LeadAI) so routeLLMCall is in scope
   // for all of them. This becomes the single LLM entry point.
-  include LLMFallbackMixin(llmFallbackState, integrationCreds, credSalt, transform);
+  include LLMFallbackMixin(llmFallbackState, integrationCreds, credSalt, transform, ?secretState);
+
+  // ---- AI Orchestrator state ----
+  // The orchestrator sits ABOVE the LLM fallback chain: it decomposes a
+  // goal into sub-tasks, routes each through the existing routeLLMCall path,
+  // validates outputs, retries on failure, stores memory via the memory
+  // layer, emits an audit-trail entry, and returns a structured result.
+  // Included AFTER LLMFallbackMixin (so routeLLMCall is in scope) and BEFORE
+  // the LLM-using mixins (AutopilotReplyIntel, AIEmailGen, LeadAI,
+  // LeadEngine) so the orchestrator's memory API surface is available to
+  // them if needed.
+  //
+  // AIMemoryMixin is included SEPARATELY here (not inside AIOrchestratorMixin)
+  // because passing inline function closures as the `assertAdmin` /
+  // `assertTenantAccess` parameters of a nested include caused the moc 1.10.1
+  // stable-signature crash (desugar.ml:1083): non-shared local function types
+  // are not stabilizable. At the actor level the closures stabilize fine.
+  let orchestratorState = AIOrchestratorLib.emptyState();
+  let aiMemoryState = AIMemoryLib.emptyState();
+
+  // ── AI Orchestrator + Memory public API ─────────────────────────────────
+  //
+  // These public functions are defined DIRECTLY in main.mo (not via a mixin)
+  // to avoid the moc 1.10.1 stable-signature crash (desugar.ml:1083). Mixin
+  // parameters become stable actor fields, and non-stabilizable types in
+  // those parameters (non-shared function closures, complex nested types)
+  // crash the compiler's stable-signature generation. By defining the public
+  // functions directly on the actor, the state (orchestratorState,
+  // aiMemoryState, stableStore, etc.) is accessed directly from the actor's
+  // scope — it is NOT passed as a mixin parameter, so it does not become a
+  // separate stable field. The state declarations above are already stable
+  // fields (via --default-persistent-actors); these public functions just
+  // reference them directly.
+
+  /// Run the orchestrator on a goal. Sits ABOVE the LLM fallback chain:
+  /// decomposes the goal into sub-tasks, routes each through the existing
+  /// routeLLMCall path, validates outputs, retries on failure, stores memory
+  /// via the memory layer, emits an audit-trail entry, and returns a
+  /// structured result with a correlation id.
+  public shared ({ caller = _ }) func runOrchestrator(
+    goal         : Text,
+    scopeContext : AIOrchestratorTypes.ScopeContext,
+    capability   : ?LLMFallbackTypes.TaskCapability,
+  ) : async AIOrchestratorTypes.OrchestratorResult {
+    // Placeholder: returns a valid OrchestratorResult without trapping so the
+    // canister installs. Full callback wiring (routeLLMCallback,
+    // resolveKeysCallback, memoryReadCallback, memoryWriteCallback,
+    // auditCallback, rateLimitCallback, correlationIdCallback) into
+    // AIOrchestratorLib.orchestrate is deferred to a follow-up.
+    ignore (goal, scopeContext, capability);
+    {
+      output           = "";
+      provider         = null;
+      model            = null;
+      attempts         = 0;
+      validationStatus = "skipped";
+      memoryRefs       = [];
+      correlationId    = "";
+      errorMessage     = ?"Orchestrator not yet wired — placeholder result";
+    };
+  };
+
+  /// Read a single memory entry by scope + key.
+  public shared ({ caller = _ }) func getOrchestratorMemory(
+    scope   : Text,
+    scopeId : Text,
+    key     : Text,
+  ) : async ?AIMemoryTypes.MemoryEntry {
+    AIMemoryLib.readMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, key);
+  };
+
+  /// Write (or overwrite) a memory entry. Returns the generated entry id.
+  public shared ({ caller = _ }) func writeOrchestratorMemory(
+    scope      : Text,
+    scopeId    : Text,
+    key        : Text,
+    content    : Text,
+    metadata   : [(Text, Text)],
+    importance : Nat,
+    tags       : [Text],
+  ) : async Text {
+    AIMemoryLib.writeMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, key, content, metadata, importance, tags);
+  };
+
+  /// List memory entries for a scope, optionally filtered.
+  public shared ({ caller = _ }) func listOrchestratorMemory(
+    scope   : Text,
+    scopeId : Text,
+    filter  : AIMemoryTypes.MemoryFilter,
+  ) : async [AIMemoryTypes.MemoryEntry] {
+    AIMemoryLib.listMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, filter);
+  };
+
+  /// Admin-only orchestrator health snapshot, including memory-tier counts.
+  public shared ({ caller }) func getOrchestratorHealth() : async AIOrchestratorTypes.OrchestratorHealth {
+    if (not AccessControl.isAdmin(accessControlState, caller)) {
+      Runtime.trap("Unauthorized: Admins only");
+    };
+    let snap = AIOrchestratorLib.healthSnapshot(orchestratorState);
+    {
+      runCount           = snap.runCount;
+      failureCount       = snap.failureCount;
+      successRate        = snap.successRate;
+      inFlightCount      = snap.inFlightCount;
+      memoryEntryCount   = AIMemoryLib.entryCount(aiMemoryState, { store = stableStore.getStore() });
+      memoryHotTierCount = AIMemoryLib.hotTierCount(aiMemoryState);
+    };
+  };
+
+  // ── Memory API (canonical surface) ──────────────────────────────────────
+
+  /// Write (or overwrite) a memory entry. Returns the generated entry id.
+  public shared ({ caller = _ }) func writeMemory(
+    scope      : Text,
+    scopeId    : Text,
+    key        : Text,
+    content    : Text,
+    metadata   : [(Text, Text)],
+    importance : Nat,
+    tags       : [Text],
+  ) : async Text {
+    AIMemoryLib.writeMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, key, content, metadata, importance, tags);
+  };
+
+  /// Read a single memory entry by scope + key.
+  public shared ({ caller = _ }) func readMemory(
+    scope   : Text,
+    scopeId : Text,
+    key     : Text,
+  ) : async ?AIMemoryTypes.MemoryEntry {
+    AIMemoryLib.readMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, key);
+  };
+
+  /// List memory entries for a scope, optionally filtered.
+  public shared ({ caller = _ }) func listMemory(
+    scope   : Text,
+    scopeId : Text,
+    filter  : AIMemoryTypes.MemoryFilter,
+  ) : async [AIMemoryTypes.MemoryEntry] {
+    AIMemoryLib.listMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, filter);
+  };
+
+  /// Delete a memory entry by scope + key. Returns true if an entry was
+  /// removed.
+  public shared ({ caller = _ }) func deleteMemory(
+    scope   : Text,
+    scopeId : Text,
+    key     : Text,
+  ) : async Bool {
+    AIMemoryLib.deleteMemory(aiMemoryState, { store = stableStore.getStore() }, scope, scopeId, key);
+  };
+
+  /// Build merged context blocks for a set of scopes, ready for prompt
+  /// injection.
+  public shared ({ caller = _ }) func buildMemoryContext(
+    scopes   : [Text],
+    scopeIds : [Text],
+  ) : async [AIMemoryTypes.MemoryContextBlock] {
+    AIMemoryLib.buildContext(aiMemoryState, { store = stableStore.getStore() }, scopes, scopeIds);
+  };
+
+  /// Convenience wrapper around buildMemoryContext returning assembled Text.
+  public shared ({ caller = _ }) func buildMemoryContextText(
+    scopes   : [Text],
+    scopeIds : [Text],
+  ) : async Text {
+    AIMemoryLib.buildContextText(aiMemoryState, { store = stableStore.getStore() }, scopes, scopeIds);
+  };
+
+  /// Total number of memory entries across both tiers.
+  public shared ({ caller = _ }) func memoryEntryCount() : async Nat {
+    AIMemoryLib.entryCount(aiMemoryState, { store = stableStore.getStore() });
+  };
+
+  /// Number of entries in the hot (in-memory) tier.
+  public shared ({ caller = _ }) func memoryHotTierCount() : async Nat {
+    AIMemoryLib.hotTierCount(aiMemoryState);
+  };
+
+  /// Number of durable-tier entries whose key starts with `prefix`.
+  public shared ({ caller = _ }) func memoryDurableTierCount(prefix : Text) : async Nat {
+    AIMemoryLib.durableTierCount({ store = stableStore.getStore() }, prefix);
+  };
 
   // Email Reply Intelligence state
   let emailReplyRecords = List.empty<AutopilotEngineTypes.EmailReplyRecord>();
@@ -1602,6 +1966,7 @@ import NewsletterTypes "types/newsletter";
     leads,
     transform,
     llmFallbackState,
+    ?secretState,
   );
 
   // 3D Scanner — feature flags, audit log, and model/photo storage
@@ -1657,14 +2022,14 @@ import NewsletterTypes "types/newsletter";
   );
 
   // LLM Lead Generation Engine — direct frontend endpoint using Claude + OpenAI GPT-4o
-  include LLMLeadGenMixin(integrationCreds, credSalt, transform);
+  include LLMLeadGenMixin(integrationCreds, credSalt, transform, ?secretState);
   // Admin Command Centre — Unified Command Center + Agent Orchestration Panel
   let commandCenterFeed    = List.empty<AdminCommandTypes.ActivityFeedItem>();
   let commandCenterMetrics = { var leadsToday : Nat = 0; var demosRunning : Nat = 0; var trialsActive : Nat = 0; var outreachSent : Nat = 0; var apiStatus : Bool = true };
   let commandCenterAgents  = Map.empty<Text, AdminCommandTypes.AgentStatus>();
   let commandCenterLogs    = List.empty<AdminCommandTypes.AgentLogEntry>();
   let commandCenterRules   = Map.empty<Text, AdminCommandTypes.TriggerRule>();
-  include AdminCommandMixin(commandCenterFeed, commandCenterMetrics, commandCenterAgents, commandCenterLogs, commandCenterRules);
+  include AdminCommandMixin(commandCenterFeed, commandCenterMetrics, commandCenterAgents, commandCenterLogs, commandCenterRules, adminAuditStore, adminAuditNonce);
   include OutreachPipelineMixin(pipelineLeadsStore, inboundRepliesStore, trialActivityEventsStore, queuedActionsStore);
 
   // ---- INTEGRATION HEALTH MONITOR state ----
@@ -1675,7 +2040,7 @@ import NewsletterTypes "types/newsletter";
   let featureToggles    = Map.empty<Text, FTTypes.FeatureToggle>();
   let featureToggleLogs = List.empty<FTTypes.FeatureToggleLog>();
   let ftLogIdCounter    = { var value : Nat = 0 };
-  include FeatureToggleMixin(featureToggles, featureToggleLogs, ftLogIdCounter);
+  include FeatureToggleMixin(featureToggles, featureToggleLogs, ftLogIdCounter, adminAuditStore, adminAuditNonce);
   // ---- NICHE ANALYTICS & OPERATOR CHAT state ----
   var operatorChatMessages : List.List<OperatorChatTypes.OperatorChatMessage> = List.empty();
   let operatorChatState = { var nextMsgId : Nat = 0 };
@@ -1694,8 +2059,8 @@ import NewsletterTypes "types/newsletter";
   let composioState       = ComposioLib.emptyState();
   let accountBriefState   = AccountBriefLib.emptyState();
   let toolkitTogglesState = ToolkitTogglesLib.emptyState();
-  include AbacusMixin(abacusState, integrationCreds, credSalt, transform);
-  include ComposioMixin(composioState, integrationCreds, credSalt, transform);
+  include AbacusMixin(abacusState, integrationCreds, credSalt, transform, ?secretState);
+  include ComposioMixin(composioState, integrationCreds, credSalt, transform, ?secretState);
   include AccountBriefMixin(accountBriefState);
   include ToolkitTogglesMixin(toolkitTogglesState);
 
@@ -1743,17 +2108,23 @@ import NewsletterTypes "types/newsletter";
   include BusinessBriefMixin(businessBriefState);
   include CrmObjectsMixin(crmObjectsState);
   include MarketingAuditMixin(marketingAuditState);
+
+  // ---- CENTRALIZED ADMIN AUDIT TRAIL ----
+  // adminAuditStore / adminAuditNonce are declared after stableStore so the
+  // AdminCommandMixin and FeatureToggleMixin includes below can receive them
+  // as parameters. See the declaration block after stableStore for details.
+  include AdminAuditMixin(accessControlState, adminAuditStore, adminAuditNonce);
   include ProposalMixin(proposalState);
   include WebhookContractsMixin(webhookContractsState);
   include RankedDispatchMixin(rankedDispatchState);
   include MultiLocationRollupMixin(multiLocationRollupState);
 
   let dograhState = DograhLib.emptyState();
-  include DograhMixin(dograhState, integrationCreds, credSalt);
+  include DograhMixin(dograhState, integrationCreds, credSalt, ?secretState);
 
   // ---- OpenRouter AI Router ----
   let openRouterState = OpenRouterLib.emptyState();
-  include OpenRouterMixin(openRouterState, integrationCreds, credSalt, transform);
+  include OpenRouterMixin(openRouterState, integrationCreds, credSalt, transform, ?secretState);
 
   // ---- Funnel Tracking ----
   let funnelTrackingState = FunnelTrackingLib.emptyState();
@@ -1761,7 +2132,7 @@ import NewsletterTypes "types/newsletter";
 
   // ---- Email Open/Click Tracking ----
   let emailTrackingIdx = EmailTrackingLib.emptyIndex();
-  include EmailTrackingMixin(emailTrackingIdx, dripEmailLogs, funnelTrackingState);
+  include EmailTrackingMixin(emailTrackingIdx, dripEmailLogs, funnelTrackingState, rateLimiterState);
 
   // ---- Trial Provisioning ----
   let trialProvState = TrialProvLib.emptyState();
@@ -1772,7 +2143,7 @@ import NewsletterTypes "types/newsletter";
   include LeadEnrollMixin(leadEnrollState, extendedLeads, dripQueues, funnelTrackingState);
 
   // ---- AI Email Generation ----
-  include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt, llmFallbackState);
+  include AIEmailGenMixin(abacusState, openRouterState, extendedLeads, dripQueues, dripEmailLogs, transform, integrationCreds, credSalt, llmFallbackState, ?secretState);
   // ---- Master Agent state ----
   let masterAgentState : MasterAgentTypes.MasterAgentState = {
     sessions        = List.empty();
@@ -1788,18 +2159,19 @@ import NewsletterTypes "types/newsletter";
     transform,
     integrationCreds,
     credSalt,
+    ?secretState,
   );
 
   // ---- Content Studio state ----
   let contentStudioState : CSTypes.ContentStudioState = CSTypes.emptyState();
-  include ContentStudioMixin(contentStudioState, openRouterState, transform, integrationCreds, credSalt);
+  include ContentStudioMixin(contentStudioState, openRouterState, transform, integrationCreds, credSalt, ?secretState);
 
   // ---- Lead AI state ----
   let leadAIState : LeadAITypes.LeadAIState = LeadAITypes.emptyLeadAIState();
-  include LeadAIMixin(accessControlState, leadAIState, openRouterState, transform, integrationCreds, credSalt, llmFallbackState);
+  include LeadAIMixin(accessControlState, leadAIState, openRouterState, transform, integrationCreds, credSalt, llmFallbackState, ?secretState);
   // ---- Lead Engine state (additive — gated by LEAD_ENGINE_ENABLED feature flag) ----
   let leadEngineState : LeadEngineTypes.LeadEngineState = LeadEngineTypes.emptyLeadEngineState();
-  include LeadEngineMixin(accessControlState, leadEngineState, featureToggles, transform, integrationCreds, credSalt, llmFallbackState, openRouterState);
+  include LeadEngineMixin(accessControlState, leadEngineState, featureToggles, transform, integrationCreds, credSalt, llmFallbackState, openRouterState, ?secretState);
   // ---- Lead Engine OQL (additive — exposes leadEngineLead & leadEngineBatch
   // entities to the Data Intelligence agent; controller-only, no new public
   // API surface beyond the OQL schema()/execute() endpoints) ----
@@ -1812,10 +2184,12 @@ import NewsletterTypes "types/newsletter";
   include Expose({
     entities = LeadEngineOql.entities(leadEngineState).concat(
       LLMFallbackOql.entities(llmFallbackState),
+    ).concat([AdminAuditLib.oqlEntity(adminAuditStore)]).concat(
+      AIOrchestratorOql.entities(orchestratorState),
     );
   });
   // ---- Live Send state (additive — gated by TWILIO_INTEGRATION_ENABLED / SENDGRID_INTEGRATION_ENABLED feature flags) ----
-  include LiveSendMixin(accessControlState, integrationCreds, credSalt, featureToggles, transform);
+  include LiveSendMixin(accessControlState, integrationCreds, credSalt, featureToggles, transform, ?secretState);
   // ---- Webhooks & Integrations state ----
   let webhookStateRef : { var s : WebhookState.WebhookState } = { var s = WebhookState.empty() };
   let vapiCallLogs = Map.empty<Text, List.List<VapiCallLog>>();
@@ -1824,8 +2198,9 @@ import NewsletterTypes "types/newsletter";
   // Unified webhook inbox state (normalized event store). Additive — gated by
   // the WEBHOOK_INBOX_ENABLED feature flag inside the mixin.
   let webhookInboxState : { var s : WebhookInboxTypes.WebhookInboxState } = { var s = WebhookInboxTypes.empty() };
-  include WebhooksAndIntegrationsMixin(webhookStateRef, integrationCreds, credSalt, transform, vapiCallLogs, postCallFollowUpLog, webhookInboxState);
-  include WebhookInboxMixin(webhookInboxState, featureToggles, optedOutEmails);
+  include WebhooksAndIntegrationsMixin(webhookStateRef, integrationCreds, credSalt, transform, vapiCallLogs, postCallFollowUpLog, webhookInboxState, rateLimiterState, ?secretState);
+  include WebhookInboxMixin(webhookInboxState, featureToggles, optedOutEmails, rateLimiterState);
+  include ObservabilityMixin(accessControlState, func() : Text { "build-2026-07-08T20:00:00Z" }, canisterStartTime, apiPingState, llmFallbackState, func() : [(Text, Nat)] { let r = List.empty<(Text, Nat)>(); for ((tenantId, tenantLeads) in leads.entries()) { r.add((tenantId, tenantLeads.size())) }; r.toArray() }, webhookInboxState, emailLogs, rateLimitRejections);
 
   // ---- Roofing Outreach Campaign state ----
   // roofingLeadStatuses: email -> LeadCampaignStatus (enrollment & step tracking)
@@ -1866,6 +2241,7 @@ import NewsletterTypes "types/newsletter";
     emailTemplatesExt,
     templateInitialized,
     sendLogs,
+    ?secretState,
   );
 
   // (duplicate block removed — states and mixins consolidated above)
@@ -1925,7 +2301,7 @@ import NewsletterTypes "types/newsletter";
 
   // ---- FREE AUDIT LEADS ----
 
-  public func saveFreeAuditLead(
+  public shared ({ caller }) func saveFreeAuditLead(
     businessName : Text,
     websiteUrl : Text,
     location : Text,
@@ -1933,6 +2309,11 @@ import NewsletterTypes "types/newsletter";
     phone : Text,
     overallScore : Nat
   ) : async () {
+    // Rate limit: 10 free-audit submissions per caller per 60s window.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "free-audit:" # caller.toText(), 10, 60_000)) {
+      rateLimitRejections.n += 1;
+      Runtime.trap("Rate limit exceeded: too many free-audit submissions. Please retry shortly.");
+    };
     let now = Time.now();
     let id = "fal-" # now.toText();
     let lead : FreeAuditLead = {
@@ -2438,6 +2819,7 @@ import NewsletterTypes "types/newsletter";
     if (not AccessControl.isAdmin(accessControlState, caller)) {
       Runtime.trap("Unauthorized: Only admins can update agency settings");
     };
+    await ensureSecretInit();
     agencySettings := ?settings;
     // Backward-compat migration: if serpApiKey is set in AgencySettings and
     // the unified IntegrationCredentials for "platform" does not yet have it,
@@ -2445,7 +2827,7 @@ import NewsletterTypes "types/newsletter";
     if (settings.serpApiKey != "") {
       let tid = "platform";
       let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-        case (?enc) { ICLib.decryptAll(enc, credSalt) };
+        case (?enc) { ICLib.decryptAllWithSecret(enc, credSalt, ?secretState) };
         case (null) {
           {
             openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
@@ -2485,7 +2867,7 @@ import NewsletterTypes "types/newsletter";
           serpApiKey  = settings.serpApiKey;
           sendgridKey = if (existing.sendgridKey == "") settings.sendgridKey else existing.sendgridKey;
         };
-        integrationCreds.add(tid, ICLib.encryptAll(migrated, credSalt));
+        integrationCreds.add(tid, ICLib.encryptAllWithSecret(migrated, credSalt, ?secretState));
       };
     };
   };
@@ -4881,7 +5263,7 @@ import NewsletterTypes "types/newsletter";
   func getVapiKey(tenantId : Text) : ?Text {
     switch (integrationCreds.get(tenantId)) {
       case (null) { null };
-      case (?enc) { ICLib.getField("vapiKey", enc, credSalt) };
+      case (?enc) { ?ICLib.deobfuscateWithSecret(enc.vapiKey, credSalt, ?secretState) };
     };
   };
 
@@ -5483,11 +5865,12 @@ import NewsletterTypes "types/newsletter";
     if (caller.isAnonymous()) {
       return { ok = false; error = ?"Unauthorized: please log in to save credentials" };
     };
+    await ensureSecretInit();
     let tid = if (tenantId == "" or tenantId == "demo" or tenantId == "default") "platform" else tenantId;
 
     // Merge new Vapi key/assistantId into existing credentials (preserve all other fields)
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) { ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ICLib.decryptAllWithSecret(enc, credSalt, ?secretState) };
       case (null) {
         {
           openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
@@ -5523,7 +5906,7 @@ import NewsletterTypes "types/newsletter";
     };
 
     let updated : ICTypes.IntegrationCredentials = { existing with vapiKey };
-    integrationCreds.add(tid, ICLib.encryptAll(updated, credSalt));
+    integrationCreds.add(tid, ICLib.encryptAllWithSecret(updated, credSalt, ?secretState));
 
     // If assistantId provided, store it in voiceAgentConfig
     if (vapiAssistantId != "") {
@@ -5570,8 +5953,8 @@ import NewsletterTypes "types/newsletter";
     let configured = switch (integrationCreds.get(tid)) {
       case (null) { false };
       case (?enc) {
-        let raw = ICLib.getField("vapiKey", enc, credSalt);
-        switch (raw) { case (?k) { k != "" }; case (null) { false } };
+        let raw = ICLib.deobfuscateWithSecret(enc.vapiKey, credSalt, ?secretState);
+        raw != ""
       };
     };
 
@@ -5648,7 +6031,8 @@ import NewsletterTypes "types/newsletter";
     if (caller.isAnonymous()) {
       return #err "Unauthorized: please log in to save credentials";
     };
-    let obfKey = ICLib.obfuscate(apiKey, credSalt);
+    await ensureSecretInit();
+    let obfKey = ICLib.obfuscateWithSecret(apiKey, credSalt, ?secretState);
     let emptyIC : ICTypes.IntegrationCredentials = {
       openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
       twilioSid = ""; twilioAuth = ""; twilioNumber = ""; vapiKey = "";
@@ -5697,10 +6081,11 @@ import NewsletterTypes "types/newsletter";
     if (caller.isAnonymous()) {
       return #err "Unauthorized: please log in to save credentials";
     };
+    await ensureSecretInit();
     let tid = if (tenantId == "") "platform" else tenantId;
-    let obfSid = ICLib.obfuscate(twilioSid, credSalt);
-    let obfAuth = ICLib.obfuscate(twilioAuth, credSalt);
-    let obfNumber = ICLib.obfuscate(twilioNumber, credSalt);
+    let obfSid = ICLib.obfuscateWithSecret(twilioSid, credSalt, ?secretState);
+    let obfAuth = ICLib.obfuscateWithSecret(twilioAuth, credSalt, ?secretState);
+    let obfNumber = ICLib.obfuscateWithSecret(twilioNumber, credSalt, ?secretState);
     let emptyIC : ICTypes.IntegrationCredentials = {
       openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
       twilioSid = ""; twilioAuth = ""; twilioNumber = ""; vapiKey = "";
@@ -5741,7 +6126,7 @@ import NewsletterTypes "types/newsletter";
       twilioAuth = obfAuth;
       twilioNumber = obfNumber;
     };
-    let encrypted = ICLib.encryptAll(updated, credSalt);
+    let encrypted = ICLib.encryptAllWithSecret(updated, credSalt, ?secretState);
     integrationCreds.add(tid, encrypted);
     switch (integrationCreds.get(tid)) {
       case (null) { #err "Save verification failed — Twilio credentials were not persisted." };
@@ -5755,8 +6140,9 @@ import NewsletterTypes "types/newsletter";
     if (caller.isAnonymous()) {
       return #err "Unauthorized: please log in to save credentials";
     };
+    await ensureSecretInit();
     let tid = if (tenantId == "") "platform" else tenantId;
-    let obfKey = ICLib.obfuscate(sendgridKey, credSalt);
+    let obfKey = ICLib.obfuscateWithSecret(sendgridKey, credSalt, ?secretState);
     let emptyIC : ICTypes.IntegrationCredentials = {
       openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
       twilioSid = ""; twilioAuth = ""; twilioNumber = ""; vapiKey = "";
@@ -5792,7 +6178,7 @@ import NewsletterTypes "types/newsletter";
       case (null) { emptyIC };
     };
     let updated = { existing with sendgridKey = obfKey };
-    let encrypted = ICLib.encryptAll(updated, credSalt);
+    let encrypted = ICLib.encryptAllWithSecret(updated, credSalt, ?secretState);
     integrationCreds.add(tid, encrypted);
     switch (integrationCreds.get(tid)) {
       case (null) { #err "Save verification failed — SendGrid key was not persisted." };
@@ -5809,7 +6195,7 @@ import NewsletterTypes "types/newsletter";
       case (null) { null };
       case (?ic) {
         if (ic.elevenLabsKey == "") return null;
-        let plain = ICLib.deobfuscate(ic.elevenLabsKey, credSalt);
+        let plain = ICLib.deobfuscateWithSecret(ic.elevenLabsKey, credSalt, ?secretState);
         if (plain == "") { null } else { ?ICLib.maskField(plain) };
       };
     };
@@ -5821,6 +6207,10 @@ import NewsletterTypes "types/newsletter";
     if (caller.isAnonymous()) {
       return { success = false; message = "Unauthorized: please log in"; voiceCount = 0 };
     };
+    await ensureSecretInit();
+    // Lazily re-encrypt any legacy XOR-with-salt credentials to the managed
+    // SecretManager v1: format on first read after deploy. Idempotent.
+    migrateCredentialsOnRead();
     // Resolve the API key from the single source of truth: integrationCreds["platform"].
     let apiKey = switch (integrationCreds.get("platform")) {
       case (null) { return { success = false; message = "ElevenLabs API key is not configured. Add it in Go Live Dashboard."; voiceCount = 0 } };
@@ -5828,7 +6218,7 @@ import NewsletterTypes "types/newsletter";
         if (ic.elevenLabsKey == "") {
           return { success = false; message = "ElevenLabs API key is not configured. Add it in Go Live Dashboard."; voiceCount = 0 }
         };
-        let plain = ICLib.deobfuscate(ic.elevenLabsKey, credSalt);
+        let plain = ICLib.deobfuscateWithSecret(ic.elevenLabsKey, credSalt, ?secretState);
         if (plain == "") { return { success = false; message = "ElevenLabs API key is empty."; voiceCount = 0 } };
         plain;
       };
@@ -5977,6 +6367,24 @@ import NewsletterTypes "types/newsletter";
       { status_code = code; headers = [("Content-Type", "application/json")]; body = body.encodeUtf8() }
     };
 
+    // Rate limit: 100 requests per URL per 60s window (in-memory counter).
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "http:" # req.url, 100, 60_000)) {
+      rateLimitRejections.n += 1;
+      return {
+        status_code = 429;
+        headers     = [("Content-Type", "application/json"), ("Retry-After", "60")];
+        body        = "{\"success\":false,\"error\":\"Rate limit exceeded\"}".encodeUtf8();
+      };
+    };
+
+    // Input validation: reject bodies larger than 1MB.
+    switch (InputValidation.validateMaxBodySize(req.body.size(), 1_000_000)) {
+      case (#err(_)) {
+        return jsonResp(413, "{\"success\":false,\"error\":\"Request body too large\"}");
+      };
+      case (#ok) {};
+    };
+
     // Only handle /api/book-appointment POST
     let isBooking = req.url == "/api/book-appointment" or
       req.url.startsWith(#text "/api/book-appointment?");
@@ -6092,7 +6500,7 @@ import NewsletterTypes "types/newsletter";
         // Attempt admin SMS notification (non-fatal)
         switch (integrationCreds.get(tenantId)) {
           case (?enc) {
-            let plain = ICLib.decryptAll(enc, credSalt);
+            let plain = ICLib.decryptAllWithSecret(enc, credSalt, ?secretState);
             if (plain.twilioSid != "" and plain.twilioAuth != "" and plain.twilioNumber != "") {
               let adminAlertBody = "BRF Alert: Voice agent booking FAILED. Caller: " # callerName # " " # callerPhone # ". Error: " # errMsg # ". Check CRM.";
               let formEncoded = "To=" # plain.twilioNumber # "&From=" # plain.twilioNumber # "&Body=" # adminAlertBody;
@@ -6114,7 +6522,7 @@ import NewsletterTypes "types/newsletter";
     // --- Fire Twilio SMS confirmation with retry ---
     switch (integrationCreds.get(tenantId)) {
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, ?secretState);
         if (plain.twilioSid != "" and plain.twilioAuth != "" and plain.twilioNumber != "" and callerPhone != "") {
           let smsBody = "Hi " # callerName # ", your " # serviceNeeded # " appointment with " # businessNameReq # " is confirmed for " # appointmentDate # " at " # appointmentTime # ". Reply STOP to opt out.";
           let formEncoded = "To=" # callerPhone # "&From=" # plain.twilioNumber # "&Body=" # smsBody;

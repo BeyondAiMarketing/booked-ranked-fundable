@@ -97,6 +97,13 @@ export type AdapterType = { 'native' : null } |
   { 'openai_compatible' : null } |
   { 'deerflow_bridge' : null } |
   { 'abacus_adapter' : null };
+export interface AdminAuditEntry {
+  'actionType' : AuditAction,
+  'tenantId' : string,
+  'redactedPayload' : string,
+  'timestamp' : bigint,
+  'actorPrincipal' : Principal,
+}
 export interface AgencySettings {
   'serpApiKey' : string,
   'twilioSid' : string,
@@ -463,6 +470,13 @@ export interface AudioCacheStats {
   'entryCount' : bigint,
   'estimatedSizeKB' : bigint,
 }
+export type AuditAction = { 'leadEdit' : null } |
+  { 'secretRotation' : null } |
+  { 'other' : string } |
+  { 'featureFlagChange' : null } |
+  { 'credentialUpdate' : null } |
+  { 'adminCommand' : null } |
+  { 'webhookConfigChange' : null };
 export type AuditCategory = { 'ContentMessaging' : null } |
   { 'GrowthStrategy' : null } |
   { 'BrandTrust' : null } |
@@ -1737,6 +1751,13 @@ export interface HealthScoreComponent {
   'rawScore' : bigint,
   'factor' : string,
 }
+export interface HealthStatus {
+  'status' : string,
+  'uptimeMs' : bigint,
+  'buildVersion' : string,
+  'timestamp' : bigint,
+  'providers' : Array<ProviderHealth>,
+}
 export interface HttpHeader { 'value' : string, 'name' : string }
 export type HttpMethod = { 'get' : null } |
   { 'put' : null } |
@@ -2228,13 +2249,45 @@ export interface MasterAgentSession {
   'platformContext' : [] | [string],
   'sessionId' : string,
 }
+export interface MemoryContextBlock {
+  'assembledText' : string,
+  'scopeId' : string,
+  'scope' : MemoryScope,
+  'entries' : Array<MemoryEntry>,
+}
+export interface MemoryEntry {
+  'id' : string,
+  'key' : string,
+  'content' : string,
+  'metadata' : Array<[string, string]>,
+  'createdAt' : bigint,
+  'tags' : Array<string>,
+  'importance' : bigint,
+  'scopeId' : string,
+  'scope' : MemoryScope,
+  'updatedAt' : bigint,
+}
+export interface MemoryFilter {
+  'tags' : [] | [Array<string>],
+  'minImportance' : [] | [bigint],
+  'limit' : [] | [bigint],
+}
 export type MemoryMode = { 'none' : null } |
   { 'with_notes' : null } |
   { 'conversation_only' : null } |
   { 'with_summary' : null };
+export type MemoryScope = string;
 export type MessageRole = { 'System' : null } |
   { 'User' : null } |
   { 'Assistant' : null };
+export interface MetricsSnapshot {
+  'webhookReceiptsBySource' : Array<[string, bigint]>,
+  'leadsByTenant' : Array<[string, bigint]>,
+  'emailSends' : bigint,
+  'timestamp' : bigint,
+  'rateLimitRejections' : bigint,
+  'llmFallbackOutcomes' : Array<[string, bigint]>,
+}
 export interface MonthlyReport {
   'id' : string,
   'status' : ReportStatus,
@@ -2462,6 +2515,24 @@ export interface OpportunityUpdate {
   'notes' : [] | [string],
   'contactId' : [] | [string],
   'companyId' : [] | [string],
+}
+export interface OrchestratorHealth {
+  'memoryEntryCount' : bigint,
+  'successRate' : number,
+  'runCount' : bigint,
+  'memoryHotTierCount' : bigint,
+  'failureCount' : bigint,
+  'inFlightCount' : bigint,
+}
+export interface OrchestratorResult {
+  'model' : [] | [string],
+  'output' : string,
+  'validationStatus' : ValidationStatus,
+  'provider' : [] | [ProviderId],
+  'errorMessage' : [] | [string],
+  'attempts' : bigint,
+  'correlationId' : string,
+  'memoryRefs' : Array<string>,
 }
 export type OutputFormat = { 'both' : null } |
   { 'html' : null } |
@@ -2722,6 +2793,12 @@ export interface ProviderAdapterConfig {
   'priority' : bigint,
   'modelId' : [] | [string],
   'adapterType' : AdapterType,
+}
+export interface ProviderHealth {
+  'provider' : string,
+  'healthy' : boolean,
+  'details' : [] | [string],
+  'lastChecked' : bigint,
 }
 export interface ProviderHealthSnapshot {
   'provider' : ProviderId,
@@ -3070,6 +3147,14 @@ export type ScheduledPostStatus = { 'cancelled' : null } |
   { 'pending' : null } |
   { 'published' : null } |
   { 'failed' : null };
+export interface ScopeContext {
+  'organizationId' : [] | [string],
+  'campaignId' : [] | [string],
+  'agentId' : [] | [string],
+  'tenantId' : [] | [string],
+  'conversationId' : [] | [string],
+  'leadId' : [] | [string],
+}
 export type ScrapeError = { 'networkError' : null } |
   { 'dynamicContent' : null } |
   { 'invalidUrl' : null } |
@@ -3125,6 +3210,13 @@ export interface ScriptLine {
   'pauseAfterMs' : bigint,
   'text' : string,
   'speaker' : string,
+}
+export type SecretId = string;
+export interface SecretStatus {
+  'initialized' : boolean,
+  'rotationTimestamp' : bigint,
+  'currentSecretId' : SecretId,
+  'credentialCount' : bigint,
 }
 export type SelectorType = { 'css' : null } |
   { 'xpath' : null };
@@ -3638,6 +3730,7 @@ export interface UserProfile {
 export type UserRole = { 'admin' : null } |
   { 'user' : null } |
   { 'guest' : null };
+export type ValidationStatus = string;
 export type Value = { 'int' : bigint } |
   { 'nat' : bigint } |
   { 'float' : number } |
@@ -4052,6 +4145,7 @@ export interface _SERVICE {
   'addWebsiteAgentScore' : ActorMethod<[WebsiteAgentScore], undefined>,
   'advanceWarmupDay' : ActorMethod<[], undefined>,
   'analyzeReply' : ActorMethod<[string, string, string, string], ReplyAnalysis>,
+  'appendAdminAudit' : ActorMethod<[AdminAuditEntry], undefined>,
   'appendAuditLog' : ActorMethod<[AuditLogEntry], undefined>,
   'approveAndPushToCrm' : ActorMethod<[string, string], boolean>,
   'approveBrowserAudit' : ActorMethod<
@@ -4078,6 +4172,21 @@ export interface _SERVICE {
   'autoEnrollOnInit' : ActorMethod<[], undefined>,
   'batchScrape' : ActorMethod<[BatchScrapeRequest, string], BatchScrapeResult>,
   'buildComplianceFooter' : ActorMethod<[string], string>,
+  /**
+   * / Build merged context blocks for a set of scopes, ready for prompt
+   * / injection.
+   */
+  'buildMemoryContext' : ActorMethod<
+    [Array<string>, Array<string>],
+    Array<MemoryContextBlock>
+  >,
+  /**
+   * / Convenience wrapper around buildMemoryContext returning assembled Text.
+   */
+  'buildMemoryContextText' : ActorMethod<
+    [Array<string>, Array<string>],
+    string
+  >,
   'bulkApplyToggleToTier' : ActorMethod<
     [BulkToggleRequest],
     { 'ok' : bigint } |
@@ -4440,6 +4549,11 @@ export interface _SERVICE {
   'deleteLeadAttribution' : ActorMethod<[string], undefined>,
   'deleteLocationProfile' : ActorMethod<[string], undefined>,
   'deleteMarketingAudit' : ActorMethod<[string], boolean>,
+  /**
+   * / Delete a memory entry by scope + key. Returns true if an entry was
+   * / removed.
+   */
+  'deleteMemory' : ActorMethod<[string, string, string], boolean>,
   'deleteNewsletterCampaign' : ActorMethod<[string, string], boolean>,
   'deleteNewsletterSubscriber' : ActorMethod<[string, string], boolean>,
   'deleteNote' : ActorMethod<[string], { 'ok' : string } | { 'err' : string }>,
@@ -4603,6 +4717,11 @@ export interface _SERVICE {
     [string],
     Array<NewsletterSubscriber>
   >,
+  'getAdminAuditCount' : ActorMethod<[string, [] | [AuditAction]], bigint>,
+  'getAdminAuditLog' : ActorMethod<
+    [string, [] | [AuditAction], bigint, bigint],
+    Array<AdminAuditEntry>
+  >,
   'getAgencySettings' : ActorMethod<[], [] | [AgencySettings]>,
   'getAgentDeliverablesByTenant' : ActorMethod<
     [TenantId],
@@ -4751,6 +4870,10 @@ export interface _SERVICE {
   'getBillingRecordsByTenant' : ActorMethod<[TenantId], Array<BillingRecord>>,
   'getBookingsByTenant' : ActorMethod<[string], Array<Booking>>,
   'getBouncesByQueue' : ActorMethod<[string], Array<DripLeadBounceRecord>>,
+  /**
+   * / Query the secret manager's operational status (current id, rotation
+   * / timestamp, retired-credential count, initialized flag). Admin-only.
+   */
   'getBrandKitFunnelStats' : ActorMethod<
     [],
     {
@@ -4794,6 +4917,7 @@ export interface _SERVICE {
     { 'ok' : BrowserAuditResult } |
       { 'err' : string }
   >,
+  'getBuildVersion' : ActorMethod<[], string>,
   'getBulkSendJobs' : ActorMethod<[], Array<BulkSendJob>>,
   'getBusinessBrief' : ActorMethod<
     [string],
@@ -4991,6 +5115,7 @@ export interface _SERVICE {
   'getGridAudit' : ActorMethod<[string], [] | [GridAuditResult]>,
   'getGridHistory' : ActorMethod<[string], Array<GridAuditSnapshot>>,
   'getHealthMetrics' : ActorMethod<[], HealthMetrics>,
+  'getHealthStatus' : ActorMethod<[], HealthStatus>,
   'getHumanOversightAssignmentsByTenant' : ActorMethod<
     [TenantId],
     Array<HumanOversightAssignment>
@@ -5053,6 +5178,7 @@ export interface _SERVICE {
   'getLocationProfilesByTenant' : ActorMethod<[string], Array<LocationProfile>>,
   'getMarketingAudit' : ActorMethod<[string], [] | [MarketingAudit]>,
   'getMemory' : ActorMethod<[string], [] | [AgentMemory]>,
+  'getMetrics' : ActorMethod<[], MetricsSnapshot>,
   'getMonthlyReport' : ActorMethod<
     [string],
     { 'ok' : MonthlyReport } |
@@ -5141,6 +5267,17 @@ export interface _SERVICE {
   >,
   'getOptedOutEmails' : ActorMethod<[], Array<string>>,
   'getOptedOutPhones' : ActorMethod<[], Array<string>>,
+  /**
+   * / Admin-only orchestrator health snapshot, including memory-tier counts.
+   */
+  'getOrchestratorHealth' : ActorMethod<[], OrchestratorHealth>,
+  /**
+   * / Read a single memory entry by scope + key.
+   */
+  'getOrchestratorMemory' : ActorMethod<
+    [string, string, string],
+    [] | [MemoryEntry]
+  >,
   'getOutreachEvents' : ActorMethod<[string], Array<OutreachEvent>>,
   'getOutreachOverview' : ActorMethod<
     [string],
@@ -5279,6 +5416,11 @@ export interface _SERVICE {
   'getScheduledPosts' : ActorMethod<[string], Array<ScheduledPost>>,
   'getScrapeHistory' : ActorMethod<[string, bigint], Array<ScrapeRecord>>,
   'getScrapeHistoryCount' : ActorMethod<[string], bigint>,
+  /**
+   * / Query the secret manager's operational status (current id, rotation
+   * / timestamp, retired-credential count, initialized flag). Admin-only.
+   */
+  'getSecretRotationStatus' : ActorMethod<[], SecretStatus>,
   'getSenderSubdomainStats' : ActorMethod<[], Array<SenderSubdomainRecord>>,
   'getSeoGeoContentItemsByTenant' : ActorMethod<
     [TenantId],
@@ -5637,6 +5779,11 @@ export interface _SERVICE {
   >,
   'isCallerAdmin' : ActorMethod<[], boolean>,
   'isComposioRoutingEnabled' : ActorMethod<[], boolean>,
+  /**
+   * / Rotate the managed encryption secret. Admin-only. Mints a new secret,
+   * / retires the previous one (kept for the rotation window so existing
+   * / ciphertext remains decryptable), and records the action in the audit log.
+   */
   'isContentEnabledForTier' : ActorMethod<[string], boolean>,
   'isDemoSessionExpired' : ActorMethod<[string], boolean>,
   'leadEngine_enrichBatch' : ActorMethod<
@@ -5713,6 +5860,13 @@ export interface _SERVICE {
   'listLeadEnrichments' : ActorMethod<[], Array<LeadAIEnrichment>>,
   'listLeadScores' : ActorMethod<[], Array<LeadAIScore>>,
   'listMarketingAuditsByClient' : ActorMethod<[string], Array<MarketingAudit>>,
+  /**
+   * / List memory entries for a scope, optionally filtered.
+   */
+  'listMemory' : ActorMethod<
+    [string, string, MemoryFilter],
+    Array<MemoryEntry>
+  >,
   'listNotesByClient' : ActorMethod<
     [string],
     { 'ok' : Array<Note> } |
@@ -5722,6 +5876,13 @@ export interface _SERVICE {
     [string],
     { 'ok' : Array<Opportunity> } |
       { 'err' : string }
+  >,
+  /**
+   * / List memory entries for a scope, optionally filtered.
+   */
+  'listOrchestratorMemory' : ActorMethod<
+    [string, string, MemoryFilter],
+    Array<MemoryEntry>
   >,
   'listOutreachSequences' : ActorMethod<[], Array<OutreachSequence>>,
   'listProposalsByClient' : ActorMethod<
@@ -5802,6 +5963,18 @@ export interface _SERVICE {
     { 'ok' : string } |
       { 'err' : string }
   >,
+  /**
+   * / Number of durable-tier entries whose key starts with `prefix`.
+   */
+  'memoryDurableTierCount' : ActorMethod<[string], bigint>,
+  /**
+   * / Total number of memory entries across both tiers.
+   */
+  'memoryEntryCount' : ActorMethod<[], bigint>,
+  /**
+   * / Number of entries in the hot (in-memory) tier.
+   */
+  'memoryHotTierCount' : ActorMethod<[], bigint>,
   'mergeBrowserScoresIntoAuditResult' : ActorMethod<
     [string, string],
     { 'ok' : null } |
@@ -5875,6 +6048,10 @@ export interface _SERVICE {
     string
   >,
   'reEnrollLead' : ActorMethod<[string], { 'ok' : null } | { 'err' : string }>,
+  /**
+   * / Read a single memory entry by scope + key.
+   */
+  'readMemory' : ActorMethod<[string, string, string], [] | [MemoryEntry]>,
   'receiveComposioWebhook' : ActorMethod<
     [string, string, string, string],
     {
@@ -5931,6 +6108,7 @@ export interface _SERVICE {
   >,
   'recordTrialActivity' : ActorMethod<[string, string], bigint>,
   'recordWarmLeadHandoff' : ActorMethod<[WarmLeadHandoff], undefined>,
+  'redactSecrets' : ActorMethod<[string], string>,
   'refreshCompetitorIntel' : ActorMethod<[CompetitorIntelReport], undefined>,
   'registerSubdomain' : ActorMethod<[string], undefined>,
   'rejectBrowserAudit' : ActorMethod<
@@ -6045,6 +6223,12 @@ export interface _SERVICE {
     [string, string, Array<RooferCampaignStep>],
     [] | [RooferColdCampaign]
   >,
+  /**
+   * / Rotate the managed encryption secret. Admin-only. Mints a new secret,
+   * / retires the previous one (kept for the rotation window so existing
+   * / ciphertext remains decryptable), and records the action in the audit log.
+   */
+  'rotateSecret' : ActorMethod<[], string>,
   'routeLLMCall' : ActorMethod<
     [TaskType, Array<OpenRouterMessage>, TaskCapability],
     string
@@ -6067,6 +6251,17 @@ export interface _SERVICE {
       'runAt' : bigint,
       'nodeType' : string,
     }
+  >,
+  /**
+   * / Run the orchestrator on a goal. Sits ABOVE the LLM fallback chain:
+   * / decomposes the goal into sub-tasks, routes each through the existing
+   * / routeLLMCall path, validates outputs, retries on failure, stores memory
+   * / via the memory layer, emits an audit-trail entry, and returns a
+   * / structured result with a correlation id.
+   */
+  'runOrchestrator' : ActorMethod<
+    [string, ScopeContext, [] | [TaskCapability]],
+    OrchestratorResult
   >,
   'runPageSpeedAudit' : ActorMethod<[string], string>,
   'runPageSpeedAuditPublic' : ActorMethod<[string], string>,
@@ -6746,6 +6941,36 @@ export interface _SERVICE {
   'upsertWebsiteIssue' : ActorMethod<[WebsiteIssue], undefined>,
   'upsertWebsitePageQueueItem' : ActorMethod<[WebsitePageQueueItem], undefined>,
   'upsertWhiteLabelConfig' : ActorMethod<[WhiteLabelConfig], undefined>,
+  /**
+   * / Write (or overwrite) a memory entry. Returns the generated entry id.
+   */
+  'writeMemory' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      Array<[string, string]>,
+      bigint,
+      Array<string>,
+    ],
+    string
+  >,
+  /**
+   * / Write (or overwrite) a memory entry. Returns the generated entry id.
+   */
+  'writeOrchestratorMemory' : ActorMethod<
+    [
+      string,
+      string,
+      string,
+      string,
+      Array<[string, string]>,
+      bigint,
+      Array<string>,
+    ],
+    string
+  >,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

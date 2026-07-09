@@ -47,8 +47,12 @@ export function useWorkflowLog() {
       if (!actor) return;
       setLoading(true);
       try {
-        const result = await actor.listWorkflowLogsByWorkflow(workflowId);
-        setLogs(result as WorkflowLog[]);
+        const result = await actor.getWorkflowLogsByWorkflow(workflowId);
+        if ("ok" in result) {
+          setLogs(result.ok as WorkflowLog[]);
+        } else {
+          setError(result.err);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -78,8 +82,14 @@ export function useWorkflowLog() {
     if (!actor) return;
     setLoading(true);
     actor
-      .listWorkflowLogsByWorkflow("all")
-      .then((result) => setLogs(result as WorkflowLog[]))
+      .getWorkflowLogsByWorkflow("all")
+      .then((result) => {
+        if ("ok" in result) {
+          setLogs(result.ok as WorkflowLog[]);
+        } else {
+          setError(result.err);
+        }
+      })
       .catch((err) =>
         setError(err instanceof Error ? err.message : "Unknown error"),
       )

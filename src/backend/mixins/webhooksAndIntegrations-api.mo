@@ -12,6 +12,8 @@ import WebhookInboxLib "../lib/webhookInbox";
 import WebhookInboxTypes "../types/webhookInbox";
 import Outcall      "mo:caffeineai-http-outcalls/outcall";
 import List "mo:core/List";
+import RateLimiter  "../lib/rateLimiter";
+import SecretManager "../lib/secretManager";
 
 mixin (
   webhookStateRef  : { var s : WebhookState.WebhookState },
@@ -33,6 +35,8 @@ mixin (
   }>>,
   postCallFollowUpLog : List.List<(Text, Text, ?Text, Int, Bool, ?Text)>,
   webhookInboxState : { var s : WebhookInboxTypes.WebhookInboxState },
+  rateLimiterState  : RateLimiter.State,
+  secretState       : ?SecretManager.State,
 ) {
 
   // ---- Internal helpers -------------------------------------------------------
@@ -40,7 +44,7 @@ mixin (
   /// Get the decrypted platform credentials record (tenant "platform").
   func getPlatformCreds() : ICTypes.IntegrationCredentials {
     switch (integrationCreds.get("platform")) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case null {
         { openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = "";
           ollamaUrl = ""; twilioSid = ""; twilioAuth = ""; twilioNumber = "";
@@ -86,6 +90,11 @@ mixin (
     params    : [(Text, Text)],
     signature : Text,
   ) : async Text {
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:twilio", 100, 60_000)) {
+      log("twilio", "rate_limited", path, #failed, ?"Rate limit exceeded");
+      return "<?xml version=\"1.0\"?><Response><Reject/></Response>";
+    };
     let creds = getPlatformCreds();
     // Verify signature (HMAC-SHA1 not available in Motoko — always passes with warning)
     let valid = WHLib.verifyTwilioSignature(creds.twilioAuth, "https://bookedrankedfunded.org" # path, params, signature);
@@ -163,6 +172,11 @@ mixin (
     body       : Text,
     vapiSecret : Text,
   ) : async Text {
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:vapi", 100, 60_000)) {
+      log("vapi", "rate_limited", "vapi_webhook", #failed, ?"Rate limit exceeded");
+      return "{\"error\":\"Rate limit exceeded\"}";
+    };
     let creds = getPlatformCreds();
     // Verify secret: simple equality check
     if (creds.vapiWebhookSecret != "" and vapiSecret != creds.vapiWebhookSecret) {
@@ -315,6 +329,11 @@ mixin (
     body      : Text,
     sigHeader : Text,
   ) : async { success : Bool; eventType : Text } {
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:stripe", 100, 60_000)) {
+      log("stripe", "rate_limited", "stripe_webhook", #failed, ?"Rate limit exceeded");
+      return { success = false; eventType = "" };
+    };
     let creds = getPlatformCreds();
     // Basic validation: call the verifier (structurally checks fields, not crypto)
     let valid = WHLib.verifyStripeSignature(creds.stripeWebhookSecret, body, sigHeader);
@@ -805,7 +824,7 @@ mixin (
   ) : async { #ok; #err : Text } {
     // Read existing credentials and merge
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case null {
         { openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = "";
           ollamaUrl = ""; twilioSid = ""; twilioAuth = ""; twilioNumber = "";
@@ -833,7 +852,7 @@ mixin (
       vapiWebhookSecret         = if (vapiSecret != "") vapiSecret else existing.vapiWebhookSecret;
       sendgridInboundParseDomain = if (sgDomain != "") sgDomain else existing.sendgridInboundParseDomain;
     };
-    let encrypted = ICLib.encryptAll(merged, credSalt);
+    let encrypted = ICLib.encryptAllWithSecret(merged, credSalt, secretState);
     integrationCreds.add("platform", encrypted);
     #ok
   };
@@ -844,7 +863,7 @@ mixin (
   ) : async { #ok; #err : Text } {
     if (secret == "") return #err("Secret must not be empty");
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case null {
         { openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = "";
           ollamaUrl = ""; twilioSid = ""; twilioAuth = ""; twilioNumber = "";
@@ -867,25 +886,25 @@ mixin (
       };
     };
     let merged : ICTypes.IntegrationCredentials = { existing with composioWebhookSecret = secret };
-    integrationCreds.add("platform", ICLib.encryptAll(merged, credSalt));
+    integrationCreds.add("platform", ICLib.encryptAllWithSecret(merged, credSalt, secretState));
     #ok
   };
 
   /// Clear (erase) the stored Composio webhook signing secret.
   public shared ({ caller = _ }) func clearComposioWebhookSecret() : async { #ok; #err : Text } {
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case null return #ok;
     };
     let merged : ICTypes.IntegrationCredentials = { existing with composioWebhookSecret = "" };
-    integrationCreds.add("platform", ICLib.encryptAll(merged, credSalt));
+    integrationCreds.add("platform", ICLib.encryptAllWithSecret(merged, credSalt, secretState));
     #ok
   };
 
   /// Return whether the Composio webhook signing secret is configured.
   public query func getComposioWebhookSecretStatus() : async { configured : Bool } {
     let raw = switch (integrationCreds.get("platform")) {
-      case (?enc) ICLib.decryptAll(enc, credSalt).composioWebhookSecret;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).composioWebhookSecret;
       case null "";
     };
     { configured = raw != "" }
@@ -901,6 +920,11 @@ mixin (
     webhookId : Text,
     timestamp : Text,
   ) : async { statusCode : Nat; body : Text; eventType : Text; success : Bool } {
+    // Rate limit: 100 requests per 60 seconds per webhook source.
+    if (not RateLimiter.checkRateLimit(rateLimiterState, "webhook:composio", 100, 60_000)) {
+      log("composio", "rate_limited", webhookId, #failed, ?"Rate limit exceeded");
+      return { statusCode = 429; body = "{\"success\":false,\"error\":\"Rate limit exceeded\"}"; eventType = ""; success = false };
+    };
     let creds = getPlatformCreds();
     let secret = creds.composioWebhookSecret;
 

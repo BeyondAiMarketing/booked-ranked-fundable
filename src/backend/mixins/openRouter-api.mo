@@ -2,6 +2,7 @@ import OpenRouterLib "../lib/openRouter";
 import T             "../types/openRouter";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Map           "mo:core/Map";
 import Text          "mo:core/Text";
 
@@ -10,6 +11,7 @@ mixin (
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
   transform        : OpenRouterLib.Transform,
+  secretState      : ?SecretManager.State,
 ) {
 
   /// Persist the OpenRouter API key into stable canister storage.
@@ -18,10 +20,10 @@ mixin (
     // Persist in stable integrationCreds so the key survives canister upgrades
     let tid = "platform";
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case (null) ICLib.emptyCredentials();
     };
-    integrationCreds.add(tid, ICLib.encryptAll({ existing with openRouterApiKey = key }, credSalt));
+    integrationCreds.add(tid, ICLib.encryptAllWithSecret({ existing with openRouterApiKey = key }, credSalt, secretState));
   };
 
   /// Ping the OpenRouter /models endpoint and update connection status.
@@ -40,7 +42,7 @@ mixin (
     // Restore in-memory state from stable store if lost after upgrade
     let stableKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openRouterApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openRouterApiKey;
     };
     if (stableKey != "") {
       let cfg = OpenRouterLib.getConfig(openRouterState);
@@ -86,11 +88,11 @@ mixin (
     };
     let geminiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey;
     };
     let openaiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openaiKey;
     };
     await OpenRouterLib.callWithFallback(openRouterState, taskType, messages, transform, openaiKey, geminiKey);
   };
@@ -99,17 +101,17 @@ mixin (
   public shared ({ caller = _ }) func setGeminiApiKey(key : Text) : async () {
     let tid = "platform";
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case (null) ICLib.emptyCredentials();
     };
-    integrationCreds.add(tid, ICLib.encryptAll({ existing with geminiApiKey = key }, credSalt));
+    integrationCreds.add(tid, ICLib.encryptAllWithSecret({ existing with geminiApiKey = key }, credSalt, secretState));
   };
 
   /// Return whether the Google Gemini API key has been configured.
   public query ({ caller = _ }) func getGeminiKeyStatus() : async { configured : Bool } {
     let configured = switch (integrationCreds.get("platform")) {
       case (null) false;
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey != "";
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey != "";
     };
     { configured };
   };

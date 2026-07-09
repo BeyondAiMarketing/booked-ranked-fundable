@@ -86,6 +86,13 @@ export interface AbacusRouteResponse {
     routingReason: string;
     response: string;
 }
+export interface HealthStatus {
+    status: string;
+    uptimeMs: bigint;
+    buildVersion: string;
+    timestamp: bigint;
+    providers: Array<ProviderHealth>;
+}
 export interface WhiteLabelConfig {
     emailSenderName: string;
     active: boolean;
@@ -308,11 +315,10 @@ export interface WarmSequenceEmailEvent {
     touchIndex: bigint;
     eventType: string;
 }
-export interface ContractField {
-    name: string;
-    description: string;
-    required: boolean;
-    fieldType: string;
+export interface MemoryFilter {
+    tags?: Array<string>;
+    minImportance?: bigint;
+    limit?: bigint;
 }
 export interface DedupeGroup {
     id: string;
@@ -335,21 +341,18 @@ export interface LLMLeadSearchResult {
     serpApiUsed: boolean;
     serpApiCount: bigint;
 }
+export interface ContractField {
+    name: string;
+    description: string;
+    required: boolean;
+    fieldType: string;
+}
 export interface ContentGenerationRequest {
     accountId: string;
     contentType: ContentType;
     additionalContext?: string;
     niche: string;
     prompt: string;
-}
-export interface ComplianceConfig {
-    maxBounceRate: number;
-    businessName: string;
-    unsubscribeBase: string;
-    physicalAddress: string;
-    adminEmail: string;
-    softBounceRetries: bigint;
-    maxComplaintRate: number;
 }
 export interface SeoGeoIssue {
     id: string;
@@ -476,6 +479,15 @@ export interface EmailTemplateExt {
     complianceNotes?: string;
     fallbackSubject: string;
 }
+export interface ComplianceConfig {
+    maxBounceRate: number;
+    businessName: string;
+    unsubscribeBase: string;
+    physicalAddress: string;
+    adminEmail: string;
+    softBounceRetries: bigint;
+    maxComplaintRate: number;
+}
 export interface BrfOutboundCallAttempt {
     id: string;
     convertedToTrial: boolean;
@@ -502,20 +514,6 @@ export interface AuditSnapshot {
     overallScore: bigint;
     websiteScore: bigint;
     seoScore: bigint;
-}
-export interface ApprovalItem {
-    id: string;
-    status: ApprovalStatus;
-    action: string;
-    approverNotes?: string;
-    tier: ApprovalTier;
-    tenantId: string;
-    threadId: string;
-    runId: string;
-    requestedAt: bigint;
-    requestedBy: string;
-    resolvedAt?: bigint;
-    reason: string;
 }
 export interface GridAuditResult {
     gridPoints: Array<GridPoint>;
@@ -752,6 +750,14 @@ export interface SeoGeoVisibilitySnapshot {
     brandConsistency: bigint;
     entityClarity: bigint;
 }
+export interface MetricsSnapshot {
+    webhookReceiptsBySource: Array<[string, bigint]>;
+    leadsByTenant: Array<[string, bigint]>;
+    emailSends: bigint;
+    timestamp: bigint;
+    rateLimitRejections: bigint;
+    llmFallbackOutcomes: Array<[string, bigint]>;
+}
 export interface IntegrationTestResult {
     provider: string;
     testedAt: bigint;
@@ -763,18 +769,6 @@ export interface DemoBookingLookup {
     campaign?: RooferColdCampaign;
     lead?: LeadEngineLead__1;
     existingBooking?: DemoBooking;
-}
-export interface AgentThread {
-    id: string;
-    status: Variant_active_archived_paused;
-    title: string;
-    createdAt: bigint;
-    agentType: string;
-    tenantId: string;
-    summary?: string;
-    updatedAt: bigint;
-    messageCount: bigint;
-    agentNotes?: string;
 }
 export interface LiveSendResult {
     ok: boolean;
@@ -823,27 +817,19 @@ export interface DograhCreateAgentRequest {
     description: string;
     niche: string;
 }
-export interface AccountBrief {
-    performanceHistory: Array<string>;
-    doRules: Array<string>;
-    sessionLog: Array<string>;
-    respondTo: Array<string>;
-    accountId: string;
-    ignoreList: Array<string>;
-    differentiators: Array<string>;
-    tone: string;
-    targetAudience: Array<string>;
-    offerSummary: string;
-    doNotRespondList: Array<string>;
-    updatedAt: bigint;
-    updatedBy: string;
-    priorityContacts: Array<string>;
-    flagKeywords: Array<string>;
-    contentHistory: Array<string>;
-    brandVoice: string;
-    services: Array<string>;
-    dontRules: Array<string>;
-    positioning: string;
+export interface ApprovalItem {
+    id: string;
+    status: ApprovalStatus;
+    action: string;
+    approverNotes?: string;
+    tier: ApprovalTier;
+    tenantId: string;
+    threadId: string;
+    runId: string;
+    requestedAt: bigint;
+    requestedBy: string;
+    resolvedAt?: bigint;
+    reason: string;
 }
 export interface IntegrationCredentials {
     serpApiKey: string;
@@ -943,11 +929,13 @@ export interface ToolkitToggle {
     enabled: boolean;
     toolkitName: string;
 }
-export interface FunnelEvent {
-    metadata?: string;
-    step: FunnelStepType;
-    leadId: string;
-    timestamp: bigint;
+export interface OrchestratorHealth {
+    memoryEntryCount: bigint;
+    successRate: number;
+    runCount: bigint;
+    memoryHotTierCount: bigint;
+    failureCount: bigint;
+    inFlightCount: bigint;
 }
 export interface ReviewSyncRecord {
     id: string;
@@ -963,6 +951,15 @@ export interface ReviewSyncRecord {
     lastSyncAt: bigint;
     rating: bigint;
     respondedAt?: bigint;
+}
+export interface FunnelEvent {
+    metadata?: string;
+    step: FunnelStepType;
+    leadId: string;
+    timestamp: bigint;
+}
+export interface CustomFieldValueUpdate {
+    value?: string;
 }
 export interface BrandKitProspect {
     id: string;
@@ -989,22 +986,6 @@ export interface BrandKitProspect {
     trialStatus: TrialStatus__1;
     firstName: string;
 }
-export interface CustomFieldValueUpdate {
-    value?: string;
-}
-export interface AgentTemplateRecord {
-    id: string;
-    approvalRequired: boolean;
-    name: string;
-    createdAt: bigint;
-    role: string;
-    tenantId: string;
-    allowedTools: Array<string>;
-    systemPrompt: string;
-    isDefault: boolean;
-    defaultWorkflowSteps: Array<string>;
-    memoryMode: MemoryMode;
-}
 export interface GeneratedLead {
     ownerFirstName: string;
     source: string;
@@ -1019,6 +1000,27 @@ export interface GeneratedLead {
     enriched: boolean;
     phone: string;
 }
+export interface AgentTemplateRecord {
+    id: string;
+    approvalRequired: boolean;
+    name: string;
+    createdAt: bigint;
+    role: string;
+    tenantId: string;
+    allowedTools: Array<string>;
+    systemPrompt: string;
+    isDefault: boolean;
+    defaultWorkflowSteps: Array<string>;
+    memoryMode: MemoryMode;
+}
+export interface NewsletterCampaignStats {
+    bounceCount: bigint;
+    unsubscribeCount: bigint;
+    sentCount: bigint;
+    complaintCount: bigint;
+    clickCount: bigint;
+    openCount: bigint;
+}
 export interface AgentSubscription {
     id: string;
     status: string;
@@ -1030,14 +1032,6 @@ export interface AgentSubscription {
     price: bigint;
     assignedStrategist: string;
     startDate: Time;
-}
-export interface NewsletterCampaignStats {
-    bounceCount: bigint;
-    unsubscribeCount: bigint;
-    sentCount: bigint;
-    complaintCount: bigint;
-    clickCount: bigint;
-    openCount: bigint;
 }
 export interface WorkflowLogEntry {
     id: string;
@@ -1126,6 +1120,12 @@ export interface ContentCalendarEntry {
     calendarId: string;
     format: PostFormat;
 }
+export interface SecretStatus {
+    initialized: boolean;
+    rotationTimestamp: bigint;
+    currentSecretId: SecretId;
+    credentialCount: bigint;
+}
 export interface IntegrationHealthSummary {
     failedWebhookCounts: Array<[string, bigint]>;
     secondary: Array<IntegrationTestResult>;
@@ -1146,20 +1146,6 @@ export interface WebhookInboxStats {
     totalEvents: bigint;
     eventsByType: Array<[string, bigint]>;
     eventsByProvider: Array<[string, bigint]>;
-}
-export interface AgentDeliverable {
-    id: string;
-    status: string;
-    month: string;
-    title: string;
-    deliveredAt: Time;
-    tenantId: TenantId;
-    subscriptionId: string;
-    summary: string;
-    notes: string;
-    deliverableType: string;
-    scoreImpact?: bigint;
-    attachments: Array<string>;
 }
 export interface SeoGeoOpportunity {
     id: string;
@@ -1182,6 +1168,20 @@ export interface SocialLead {
     tenantId: string;
     crmLeadId?: string;
     sourcePostId: string;
+}
+export interface AgentDeliverable {
+    id: string;
+    status: string;
+    month: string;
+    title: string;
+    deliveredAt: Time;
+    tenantId: TenantId;
+    subscriptionId: string;
+    summary: string;
+    notes: string;
+    deliverableType: string;
+    scoreImpact?: bigint;
+    attachments: Array<string>;
 }
 export interface MultiLocationReportUpdate {
     rankingTrend?: TrendDirection;
@@ -1421,15 +1421,17 @@ export interface AgentThreadRecord {
     updatedAt: bigint;
     messageCount: bigint;
 }
-export interface AgentStatus {
-    status: string;
-    nextScheduledAt?: bigint;
-    lastRunAt?: bigint;
-    agentName: string;
-    agentId: string;
-    isEnabled: boolean;
-    lastError?: string;
-    config: string;
+export interface AgentThread {
+    id: string;
+    status: Variant_active_archived_paused;
+    title: string;
+    createdAt: bigint;
+    agentType: string;
+    tenantId: string;
+    summary?: string;
+    updatedAt: bigint;
+    messageCount: bigint;
+    agentNotes?: string;
 }
 export interface VapiAssistantUpdate {
     businessName?: string;
@@ -1488,6 +1490,16 @@ export interface BusinessBrief {
     toolsRun: Array<string>;
     services: Array<string>;
 }
+export interface AgentStatus {
+    status: string;
+    nextScheduledAt?: bigint;
+    lastRunAt?: bigint;
+    agentName: string;
+    agentId: string;
+    isEnabled: boolean;
+    lastError?: string;
+    config: string;
+}
 export interface SocialListeningAlert {
     id: string;
     alertType: AlertType;
@@ -1508,6 +1520,28 @@ export interface CampaignStats {
     emailsSentToday: bigint;
     openRate: number;
 }
+export type AuditAction = {
+    __kind__: "leadEdit";
+    leadEdit: null;
+} | {
+    __kind__: "secretRotation";
+    secretRotation: null;
+} | {
+    __kind__: "other";
+    other: string;
+} | {
+    __kind__: "featureFlagChange";
+    featureFlagChange: null;
+} | {
+    __kind__: "credentialUpdate";
+    credentialUpdate: null;
+} | {
+    __kind__: "adminCommand";
+    adminCommand: null;
+} | {
+    __kind__: "webhookConfigChange";
+    webhookConfigChange: null;
+};
 export interface CustomField {
     id: string;
     clientBusinessId: string;
@@ -1718,6 +1752,7 @@ export type Value = {
     __kind__: "text";
     text: string;
 };
+export type MemoryScope = string;
 export interface MarketingAudit {
     id: string;
     serviceArea: string;
@@ -1806,11 +1841,27 @@ export interface AgentCommandResult {
     error?: string;
     actionId: string;
 }
-export interface AbacusRouteRequest {
-    temperature?: number;
-    taskType: string;
-    prompt: string;
-    maxTokens?: bigint;
+export interface AccountBrief {
+    performanceHistory: Array<string>;
+    doRules: Array<string>;
+    sessionLog: Array<string>;
+    respondTo: Array<string>;
+    accountId: string;
+    ignoreList: Array<string>;
+    differentiators: Array<string>;
+    tone: string;
+    targetAudience: Array<string>;
+    offerSummary: string;
+    doNotRespondList: Array<string>;
+    updatedAt: bigint;
+    updatedBy: string;
+    priorityContacts: Array<string>;
+    flagKeywords: Array<string>;
+    contentHistory: Array<string>;
+    brandVoice: string;
+    services: Array<string>;
+    dontRules: Array<string>;
+    positioning: string;
 }
 export interface HealthMetrics {
     trialsActive: bigint;
@@ -1834,6 +1885,12 @@ export interface BulkImportResult {
     skipped: bigint;
     batchId: string;
     flagged: bigint;
+}
+export interface AbacusRouteRequest {
+    temperature?: number;
+    taskType: string;
+    prompt: string;
+    maxTokens?: bigint;
 }
 export interface SMSThread {
     id: string;
@@ -2203,6 +2260,13 @@ export interface ReportSection {
     description: string;
     recommendation: string;
 }
+export interface AdminAuditEntry {
+    actionType: AuditAction;
+    tenantId: string;
+    redactedPayload: string;
+    timestamp: bigint;
+    actorPrincipal: Principal;
+}
 export interface ActivityFeedItem {
     id: string;
     title: string;
@@ -2272,6 +2336,12 @@ export interface LeadCampaignStatus {
     companyName: string;
     phone?: string;
 }
+export interface ProviderHealth {
+    provider: string;
+    healthy: boolean;
+    details?: string;
+    lastChecked: bigint;
+}
 export interface FeatureToggleLog {
     id: string;
     modifiedAt: bigint;
@@ -2296,6 +2366,12 @@ export interface ExecutionResponse {
     executionId: string;
     errorMsg?: string;
 }
+export interface MemoryContextBlock {
+    assembledText: string;
+    scopeId: string;
+    scope: MemoryScope;
+    entries: Array<MemoryEntry>;
+}
 export interface CompetitorAlert {
     id: string;
     alertType: string;
@@ -2304,15 +2380,6 @@ export interface CompetitorAlert {
     severity: string;
     dismissed: boolean;
     competitorId: string;
-}
-export interface AgentLogEntryInput {
-    result: string;
-    action: string;
-    actionType: string;
-    agentId: string;
-    logId: string;
-    timestamp: bigint;
-    isSuccess: boolean;
 }
 export interface SeoGeoRequest {
     id: string;
@@ -2365,6 +2432,15 @@ export interface ClientHealthScore {
     websiteScore: bigint;
     agentScore: bigint;
 }
+export interface AgentLogEntryInput {
+    result: string;
+    action: string;
+    actionType: string;
+    agentId: string;
+    logId: string;
+    timestamp: bigint;
+    isSuccess: boolean;
+}
 export interface MasterAgentSession {
     startedAt: bigint;
     messages: Array<MasterAgentMessage>;
@@ -2414,21 +2490,20 @@ export interface SmsAutopilotRule {
     triggerType: Variant_twoOpens_manualTrigger_noOpenFortyEightHours;
     delayMinutes: bigint;
 }
+export interface OrchestratorResult {
+    model?: string;
+    output: string;
+    validationStatus: ValidationStatus;
+    provider?: ProviderId;
+    errorMessage?: string;
+    attempts: bigint;
+    correlationId: string;
+    memoryRefs: Array<string>;
+}
 export interface LeadExtractionResult {
     count: bigint;
     sourceUrl: string;
     leads: Array<ScrapedLead>;
-}
-export interface EngagementApproval {
-    id: string;
-    draftResponse: string;
-    commentId: string;
-    flagReason?: string;
-    createdAt: bigint;
-    tenantId: string;
-    approvalStatus: EngagementApprovalStatus;
-    flagged: boolean;
-    resolvedAt?: bigint;
 }
 export interface TriggerRule {
     action: string;
@@ -2458,6 +2533,17 @@ export interface ScrapeRequest {
     selectorType: SelectorType;
 }
 export type Time = bigint;
+export interface EngagementApproval {
+    id: string;
+    draftResponse: string;
+    commentId: string;
+    flagReason?: string;
+    createdAt: bigint;
+    tenantId: string;
+    approvalStatus: EngagementApprovalStatus;
+    flagged: boolean;
+    resolvedAt?: bigint;
+}
 export interface NemotronTestResult {
     model: string;
     provider: string;
@@ -2478,14 +2564,6 @@ export interface LeadEngineBatch {
     rejected: Array<RejectedRow>;
     flagged: bigint;
     importerName: string;
-}
-export interface CampaignInstance {
-    id: string;
-    status: string;
-    startedAt: Time;
-    metrics: CampaignMetrics;
-    templateId: string;
-    tenantId: TenantId;
 }
 export interface Task {
     id: string;
@@ -2547,6 +2625,14 @@ export interface ChatWidgetConfig {
     niche: string;
     embedToken: string;
     bookingEnabled: boolean;
+}
+export interface CampaignInstance {
+    id: string;
+    status: string;
+    startedAt: Time;
+    metrics: CampaignMetrics;
+    templateId: string;
+    tenantId: TenantId;
 }
 export interface OAuthInitResponse {
     state: string;
@@ -2908,6 +2994,7 @@ export interface WebsiteContentBrief {
     targetKeywords: Array<string>;
     pageTitle: string;
 }
+export type ValidationStatus = string;
 export interface DripQueueEmailLog {
     id: string;
     status: string;
@@ -3047,6 +3134,7 @@ export interface AutopilotConfig {
     dailySmsCap: bigint;
     targetDailyVolume: bigint;
 }
+export type SecretId = string;
 export interface AuditLogEntry {
     id: string;
     senderSubdomain: string;
@@ -3192,6 +3280,14 @@ export interface MaskedCredentials {
     nvidiaNimApiKey: string;
     openaiKey: string;
 }
+export interface ScopeContext {
+    organizationId?: string;
+    campaignId?: string;
+    agentId?: string;
+    tenantId?: string;
+    conversationId?: string;
+    leadId?: string;
+}
 export interface PaidAdsCampaign {
     id: string;
     ctr: string;
@@ -3244,6 +3340,18 @@ export interface BrandVoiceProfile {
     vocabulary: Array<string>;
     emojiUsage: EmojiUsage;
     nicheTerminology: Array<string>;
+}
+export interface MemoryEntry {
+    id: string;
+    key: string;
+    content: string;
+    metadata: Array<[string, string]>;
+    createdAt: bigint;
+    tags: Array<string>;
+    importance: bigint;
+    scopeId: string;
+    scope: MemoryScope;
+    updatedAt: bigint;
 }
 export interface AgentTask {
     id: string;
@@ -4305,6 +4413,7 @@ export interface backendInterface {
     addWebsiteAgentScore(score: WebsiteAgentScore): Promise<void>;
     advanceWarmupDay(): Promise<void>;
     analyzeReply(replyId: string, leadId: string, replyText: string, niche: string): Promise<ReplyAnalysis>;
+    appendAdminAudit(entry: AdminAuditEntry): Promise<void>;
     appendAuditLog(entry: AuditLogEntry): Promise<void>;
     approveAndPushToCrm(jobId: string, tenantId: string): Promise<boolean>;
     approveBrowserAudit(jobId: string, tenantId: string, actorName: string): Promise<{
@@ -4337,6 +4446,15 @@ export interface backendInterface {
     autoEnrollOnInit(): Promise<void>;
     batchScrape(req: BatchScrapeRequest, tenantId: string): Promise<BatchScrapeResult>;
     buildComplianceFooter(leadId: string): Promise<string>;
+    /**
+     * / Build merged context blocks for a set of scopes, ready for prompt
+     * / injection.
+     */
+    buildMemoryContext(scopes: Array<string>, scopeIds: Array<string>): Promise<Array<MemoryContextBlock>>;
+    /**
+     * / Convenience wrapper around buildMemoryContext returning assembled Text.
+     */
+    buildMemoryContextText(scopes: Array<string>, scopeIds: Array<string>): Promise<string>;
     bulkApplyToggleToTier(req: BulkToggleRequest): Promise<{
         __kind__: "ok";
         ok: bigint;
@@ -4611,6 +4729,11 @@ export interface backendInterface {
     deleteLeadAttribution(id: string): Promise<void>;
     deleteLocationProfile(id: string): Promise<void>;
     deleteMarketingAudit(id: string): Promise<boolean>;
+    /**
+     * / Delete a memory entry by scope + key. Returns true if an entry was
+     * / removed.
+     */
+    deleteMemory(scope: string, scopeId: string, key: string): Promise<boolean>;
     deleteNewsletterCampaign(tenantId: string, campaignId: string): Promise<boolean>;
     deleteNewsletterSubscriber(tenantId: string, email: string): Promise<boolean>;
     deleteNote(id: string): Promise<{
@@ -4793,6 +4916,8 @@ export interface backendInterface {
     getActiveAdapter(tenantId: string): Promise<ProviderAdapterConfig | null>;
     getActiveChatWidgetConfigs(): Promise<Array<ChatWidgetConfig>>;
     getActiveNewsletterSubscribers(tenantId: string): Promise<Array<NewsletterSubscriber>>;
+    getAdminAuditCount(tenantId: string, actionFilter: AuditAction | null): Promise<bigint>;
+    getAdminAuditLog(tenantId: string, actionFilter: AuditAction | null, offset: bigint, limit: bigint): Promise<Array<AdminAuditEntry>>;
     getAgencySettings(): Promise<AgencySettings | null>;
     getAgentDeliverablesByTenant(tenantId: TenantId): Promise<Array<AgentDeliverable>>;
     getAgentLogs(agentId: string, limit: bigint): Promise<Array<AgentLogEntry>>;
@@ -4934,6 +5059,10 @@ export interface backendInterface {
     getBillingRecordsByTenant(tenantId: TenantId): Promise<Array<BillingRecord>>;
     getBookingsByTenant(tenantId: string): Promise<Array<Booking>>;
     getBouncesByQueue(queueId: string): Promise<Array<DripLeadBounceRecord>>;
+    /**
+     * / Query the secret manager's operational status (current id, rotation
+     * / timestamp, retired-credential count, initialized flag). Admin-only.
+     */
     getBrandKitFunnelStats(): Promise<{
         activated: bigint;
         expired: bigint;
@@ -4964,6 +5093,7 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    getBuildVersion(): Promise<string>;
     getBulkSendJobs(): Promise<Array<BulkSendJob>>;
     getBusinessBrief(id: string): Promise<{
         __kind__: "ok";
@@ -5184,6 +5314,7 @@ export interface backendInterface {
     getGridAudit(email: string): Promise<GridAuditResult | null>;
     getGridHistory(email: string): Promise<Array<GridAuditSnapshot>>;
     getHealthMetrics(): Promise<HealthMetrics>;
+    getHealthStatus(): Promise<HealthStatus>;
     getHumanOversightAssignmentsByTenant(tenantId: TenantId): Promise<Array<HumanOversightAssignment>>;
     getInboundReplies(leadId: string | null): Promise<Array<InboundReply>>;
     getIntegrationCredentials(tenantId: string): Promise<MaskedCredentials>;
@@ -5237,6 +5368,7 @@ export interface backendInterface {
     getLocationProfilesByTenant(tenantId: string): Promise<Array<LocationProfile>>;
     getMarketingAudit(id: string): Promise<MarketingAudit | null>;
     getMemory(threadId: string): Promise<AgentMemory | null>;
+    getMetrics(): Promise<MetricsSnapshot>;
     getMonthlyReport(id: string): Promise<{
         __kind__: "ok";
         ok: MonthlyReport;
@@ -5322,6 +5454,14 @@ export interface backendInterface {
     }>;
     getOptedOutEmails(): Promise<Array<string>>;
     getOptedOutPhones(): Promise<Array<string>>;
+    /**
+     * / Admin-only orchestrator health snapshot, including memory-tier counts.
+     */
+    getOrchestratorHealth(): Promise<OrchestratorHealth>;
+    /**
+     * / Read a single memory entry by scope + key.
+     */
+    getOrchestratorMemory(scope: string, scopeId: string, key: string): Promise<MemoryEntry | null>;
     getOutreachEvents(leadId: string): Promise<Array<OutreachEvent>>;
     getOutreachOverview(tenantId: string): Promise<{
         totalSentThisMonth: bigint;
@@ -5434,6 +5574,11 @@ export interface backendInterface {
     getScheduledPosts(tenantId: string): Promise<Array<ScheduledPost>>;
     getScrapeHistory(tenantId: string, limit: bigint): Promise<Array<ScrapeRecord>>;
     getScrapeHistoryCount(tenantId: string): Promise<bigint>;
+    /**
+     * / Query the secret manager's operational status (current id, rotation
+     * / timestamp, retired-credential count, initialized flag). Admin-only.
+     */
+    getSecretRotationStatus(): Promise<SecretStatus>;
     getSenderSubdomainStats(): Promise<Array<SenderSubdomainRecord>>;
     getSeoGeoContentItemsByTenant(tenantId: TenantId): Promise<Array<SeoGeoContentItem>>;
     getSeoGeoDeliverablesByTenant(tenantId: TenantId): Promise<Array<SeoGeoDeliverable>>;
@@ -5750,6 +5895,11 @@ export interface backendInterface {
     }>;
     isCallerAdmin(): Promise<boolean>;
     isComposioRoutingEnabled(): Promise<boolean>;
+    /**
+     * / Rotate the managed encryption secret. Admin-only. Mints a new secret,
+     * / retires the previous one (kept for the rotation window so existing
+     * / ciphertext remains decryptable), and records the action in the audit log.
+     */
     isContentEnabledForTier(tier: string): Promise<boolean>;
     isDemoSessionExpired(sessionId: string): Promise<boolean>;
     leadEngine_enrichBatch(tenantId: string, leadIds: Array<string>): Promise<Array<EnrichmentResult>>;
@@ -5816,6 +5966,10 @@ export interface backendInterface {
     listLeadEnrichments(): Promise<Array<LeadAIEnrichment>>;
     listLeadScores(): Promise<Array<LeadAIScore>>;
     listMarketingAuditsByClient(clientBusinessId: string): Promise<Array<MarketingAudit>>;
+    /**
+     * / List memory entries for a scope, optionally filtered.
+     */
+    listMemory(scope: string, scopeId: string, filter: MemoryFilter): Promise<Array<MemoryEntry>>;
     listNotesByClient(clientBusinessId: string): Promise<{
         __kind__: "ok";
         ok: Array<Note>;
@@ -5830,6 +5984,10 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    /**
+     * / List memory entries for a scope, optionally filtered.
+     */
+    listOrchestratorMemory(scope: string, scopeId: string, filter: MemoryFilter): Promise<Array<MemoryEntry>>;
     listOutreachSequences(): Promise<Array<OutreachSequence>>;
     listProposalsByClient(clientBusinessId: string): Promise<{
         __kind__: "ok";
@@ -5925,6 +6083,18 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    /**
+     * / Number of durable-tier entries whose key starts with `prefix`.
+     */
+    memoryDurableTierCount(prefix: string): Promise<bigint>;
+    /**
+     * / Total number of memory entries across both tiers.
+     */
+    memoryEntryCount(): Promise<bigint>;
+    /**
+     * / Number of entries in the hot (in-memory) tier.
+     */
+    memoryHotTierCount(): Promise<bigint>;
     mergeBrowserScoresIntoAuditResult(jobId: string, tenantId: string): Promise<{
         __kind__: "ok";
         ok: null;
@@ -6006,6 +6176,10 @@ export interface backendInterface {
         __kind__: "err";
         err: string;
     }>;
+    /**
+     * / Read a single memory entry by scope + key.
+     */
+    readMemory(scope: string, scopeId: string, key: string): Promise<MemoryEntry | null>;
     receiveComposioWebhook(body: string, signature: string, webhookId: string, timestamp: string): Promise<{
         body: string;
         statusCode: bigint;
@@ -6046,6 +6220,7 @@ export interface backendInterface {
     recordPingResult(serviceId: string, status: string, latencyMs: bigint, errorMessage: string | null): Promise<void>;
     recordTrialActivity(trialId: string, eventType: string): Promise<bigint>;
     recordWarmLeadHandoff(handoff: WarmLeadHandoff): Promise<void>;
+    redactSecrets(text: string): Promise<string>;
     refreshCompetitorIntel(report: CompetitorIntelReport): Promise<void>;
     registerSubdomain(subdomain: string): Promise<void>;
     rejectBrowserAudit(jobId: string, tenantId: string, actorName: string, reason: string): Promise<{
@@ -6147,6 +6322,12 @@ export interface backendInterface {
     rooferColdCampaign_processDueSends(tenantId: string, campaignId: string): Promise<RooferProcessSendsResult>;
     rooferColdCampaign_startSending(tenantId: string, campaignId: string): Promise<RooferColdCampaign | null>;
     rooferColdCampaign_updateSequence(tenantId: string, campaignId: string, sequence: Array<RooferCampaignStep>): Promise<RooferColdCampaign | null>;
+    /**
+     * / Rotate the managed encryption secret. Admin-only. Mints a new secret,
+     * / retires the previous one (kept for the rotation window so existing
+     * / ciphertext remains decryptable), and records the action in the audit log.
+     */
+    rotateSecret(): Promise<string>;
     routeLLMCall(task: TaskType, messages: Array<OpenRouterMessage>, capability: TaskCapability): Promise<string>;
     routeModelRequest(req: AbacusRouteRequest): Promise<{
         __kind__: "ok";
@@ -6168,6 +6349,14 @@ export interface backendInterface {
         runAt: bigint;
         nodeType: string;
     }>;
+    /**
+     * / Run the orchestrator on a goal. Sits ABOVE the LLM fallback chain:
+     * / decomposes the goal into sub-tasks, routes each through the existing
+     * / routeLLMCall path, validates outputs, retries on failure, stores memory
+     * / via the memory layer, emits an audit-trail entry, and returns a
+     * / structured result with a correlation id.
+     */
+    runOrchestrator(goal: string, scopeContext: ScopeContext, capability: TaskCapability | null): Promise<OrchestratorResult>;
     runPageSpeedAudit(url: string): Promise<string>;
     runPageSpeedAuditPublic(url: string): Promise<string>;
     saveAbacusApiKey(apiKey: string): Promise<{
@@ -6821,4 +7010,12 @@ export interface backendInterface {
     upsertWebsiteIssue(issue: WebsiteIssue): Promise<void>;
     upsertWebsitePageQueueItem(item: WebsitePageQueueItem): Promise<void>;
     upsertWhiteLabelConfig(config: WhiteLabelConfig): Promise<void>;
+    /**
+     * / Write (or overwrite) a memory entry. Returns the generated entry id.
+     */
+    writeMemory(scope: string, scopeId: string, key: string, content: string, metadata: Array<[string, string]>, importance: bigint, tags: Array<string>): Promise<string>;
+    /**
+     * / Write (or overwrite) a memory entry. Returns the generated entry id.
+     */
+    writeOrchestratorMemory(scope: string, scopeId: string, key: string, content: string, metadata: Array<[string, string]>, importance: bigint, tags: Array<string>): Promise<string>;
 }

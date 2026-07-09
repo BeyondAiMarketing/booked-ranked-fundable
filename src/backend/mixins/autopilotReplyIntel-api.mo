@@ -12,6 +12,7 @@ import ICLib         "../lib/integrationCredentials";
 import ORT           "../types/openRouter";
 import LLMFT         "../types/llm-fallback";
 import LLMFallbackLib "../lib/llm-fallback";
+import SecretManager "../lib/secretManager";
 
 /// Email Reply Intelligence Layer
 ///
@@ -38,6 +39,7 @@ mixin (
   }>>,
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
   llmFallbackState   : LLMFallbackLib.State,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -72,7 +74,7 @@ mixin (
   func ri_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(RI_PLATFORM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     };
   };
 
@@ -229,7 +231,7 @@ mixin (
     ];
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get(RI_PLATFORM_TENANT)) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFallbackLib.resolveKeys(creds);
     let flags : LLMFallbackLib.FeatureFlags = {

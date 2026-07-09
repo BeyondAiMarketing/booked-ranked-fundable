@@ -8,6 +8,7 @@ import ICLib "../lib/integrationCredentials";
 import FTTypes "../types/featureToggle";
 import LiveSendLib "../lib/liveSend";
 import T "../types/liveSend";
+import SecretManager "../lib/secretManager";
 
 /// Live Send API
 ///
@@ -35,6 +36,7 @@ mixin (
   credSalt           : Blob,
   featureToggles    : Map.Map<Text, FTTypes.FeatureToggle>,
   transform          : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState        : ?SecretManager.State,
 ) {
 
   /// Send a live SMS via Twilio.
@@ -70,7 +72,7 @@ mixin (
     // Read + deobfuscate stored credentials (secrets never leave the backend)
     let credsOpt = switch (integrationCreds.get(tenant)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     };
     let resolved = switch (credsOpt) {
       case (null) { null };
@@ -137,7 +139,7 @@ mixin (
     // Read + deobfuscate stored credentials (secrets never leave the backend)
     let credsOpt = switch (integrationCreds.get(tenant)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     };
     let apiKey = switch (credsOpt) {
       case (null) { null };

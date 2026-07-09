@@ -9,6 +9,7 @@ import Outcall "mo:caffeineai-http-outcalls/outcall";
 import T       "../types/llmLeadGeneration";
 import ICTypes "../types/integrationCredentials";
 import ICLib   "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 
 /// LLM Lead Generation Engine
 ///
@@ -20,6 +21,7 @@ mixin (
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
   transform        : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState      : ?SecretManager.State,
 ) {
 
   // ── Credential helpers ────────────────────────────────────────────────────
@@ -29,7 +31,7 @@ mixin (
   func llg_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(LLM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     }
   };
 

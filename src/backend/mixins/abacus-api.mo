@@ -2,6 +2,7 @@ import AbacusLib "../lib/abacus";
 import T         "../types/abacus";
 import ICTypes   "../types/integrationCredentials";
 import ICLib     "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Map       "mo:core/Map";
 import Time      "mo:core/Time";
 import Text      "mo:core/Text";
@@ -12,6 +13,7 @@ mixin (
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt       : Blob,
   transform      : query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState    : ?SecretManager.State,
 ) {
 
   /// Save the Abacus.AI API key — persists in stable integrationCreds.
@@ -36,10 +38,10 @@ mixin (
     // Write to stable integrationCreds so key survives upgrades
     let tid = "platform";
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
       case (null) ICLib.emptyCredentials();
     };
-    integrationCreds.add(tid, ICLib.encryptAll({ existing with abacusApiKey = apiKey }, credSalt));
+    integrationCreds.add(tid, ICLib.encryptAllWithSecret({ existing with abacusApiKey = apiKey }, credSalt, secretState));
     #ok "Abacus API key saved.";
   };
 
@@ -49,7 +51,7 @@ mixin (
     switch (integrationCreds.get(tid)) {
       case (null) { { configured = false; maskedKey = "" } };
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         let key = plain.abacusApiKey;
         if (key == "") {
           { configured = false; maskedKey = "" }

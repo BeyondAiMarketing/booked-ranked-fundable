@@ -8,6 +8,7 @@ import Text         "mo:core/Text";
 import Array        "mo:core/Array";
 import ICTypes "../types/integrationCredentials";
 import ICLib "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Map "mo:core/Map";
 
 mixin (
@@ -16,6 +17,7 @@ mixin (
   transform          : ORLib.Transform,
   integrationCreds   : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt           : Blob,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ── Mutable working collections ───────────────────────────────────────────
@@ -141,11 +143,11 @@ mixin (
     ];
     let geminiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey;
     };
     let openaiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openaiKey;
     };
     await ORLib.callWithFallback(openRouterState, #OutreachCopy, messages, transform, openaiKey, geminiKey);
   };
@@ -186,11 +188,11 @@ mixin (
     ];
     let geminiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey;
     };
     let openaiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openaiKey;
     };
     let storyboard = await ORLib.callWithFallback(
       openRouterState, #OutreachCopy, sbMessages, transform, openaiKey, geminiKey,

@@ -416,6 +416,7 @@ type Value =
    "null";
    "text": text;
  };
+type ValidationStatus = text;
 type UserRole = 
  variant {
    admin;
@@ -1017,6 +1018,14 @@ type SelectorType =
    css;
    xpath;
  };
+type SecretStatus = 
+ record {
+   credentialCount: nat;
+   currentSecretId: SecretId;
+   initialized: bool;
+   rotationTimestamp: int;
+ };
+type SecretId = text;
 type ScriptLine = 
  record {
    pauseAfterMs: nat;
@@ -1084,6 +1093,15 @@ type ScrapeError =
    robotsBlocked;
    timeout;
    tooManyRequests;
+ };
+type ScopeContext = 
+ record {
+   agentId: opt text;
+   campaignId: opt text;
+   conversationId: opt text;
+   leadId: opt text;
+   organizationId: opt text;
+   tenantId: opt text;
  };
 type ScheduledPostStatus = 
  variant {
@@ -1512,6 +1530,13 @@ type ProviderHealthSnapshot =
    provider: ProviderId;
    skipUntilNs: int;
  };
+type ProviderHealth = 
+ record {
+   details: opt text;
+   healthy: bool;
+   lastChecked: int;
+   provider: text;
+ };
 type ProviderAdapterConfig = 
  record {
    adapterType: AdapterType;
@@ -1809,6 +1834,26 @@ type OutputFormat =
    html;
    "text";
  };
+type OrchestratorResult = 
+ record {
+   attempts: nat;
+   correlationId: text;
+   errorMessage: opt text;
+   memoryRefs: vec text;
+   model: opt text;
+   output: text;
+   provider: opt ProviderId;
+   validationStatus: ValidationStatus;
+ };
+type OrchestratorHealth = 
+ record {
+   failureCount: nat;
+   inFlightCount: nat;
+   memoryEntryCount: nat;
+   memoryHotTierCount: nat;
+   runCount: nat;
+   successRate: float64;
+ };
 type OpportunityUpdate = 
  record {
    closeDate: opt int;
@@ -2080,18 +2125,66 @@ type MonthlyReport =
    updatedAt: int;
    year: nat;
  };
+type MetricsSnapshot = 
+ record {
+   emailSends: nat;
+   leadsByTenant: vec record {
+                        text;
+                        nat;
+                      };
+   llmFallbackOutcomes: vec record {
+                              text;
+                              nat;
+                            };
+   rateLimitRejections: nat;
+   timestamp: int;
+   webhookReceiptsBySource: vec record {
+                                  text;
+                                  nat;
+                                };
+ };
 type MessageRole = 
  variant {
    Assistant;
    System;
    User;
  };
+type MemoryScope = text;
 type MemoryMode = 
  variant {
    conversation_only;
    none;
    with_notes;
    with_summary;
+ };
+type MemoryFilter = 
+ record {
+   limit: opt nat;
+   minImportance: opt nat;
+   tags: opt vec text;
+ };
+type MemoryEntry = 
+ record {
+   content: text;
+   createdAt: int;
+   id: text;
+   importance: nat;
+   key: text;
+   metadata: vec record {
+                   text;
+                   text;
+                 };
+   scope: MemoryScope;
+   scopeId: text;
+   tags: vec text;
+   updatedAt: int;
+ };
+type MemoryContextBlock = 
+ record {
+   assembledText: text;
+   entries: vec MemoryEntry;
+   scope: MemoryScope;
+   scopeId: text;
  };
 type MasterAgentSession = 
  record {
@@ -2640,6 +2733,14 @@ type HttpHeader =
  record {
    name: text;
    value: text;
+ };
+type HealthStatus = 
+ record {
+   buildVersion: text;
+   providers: vec ProviderHealth;
+   status: text;
+   timestamp: int;
+   uptimeMs: int;
  };
 type HealthScoreComponent = 
  record {
@@ -4136,6 +4237,16 @@ type AuditCategory =
    GrowthStrategy;
    SEODiscoverability;
  };
+type AuditAction = 
+ variant {
+   adminCommand;
+   credentialUpdate;
+   featureFlagChange;
+   leadEdit;
+   other: text;
+   secretRotation;
+   webhookConfigChange;
+ };
 type AudioCacheStats = 
  record {
    entryCount: nat;
@@ -4556,6 +4667,14 @@ type AgencySettings =
    twilioSid: text;
    vapiKey: text;
  };
+type AdminAuditEntry = 
+ record {
+   actionType: AuditAction;
+   actorPrincipal: principal;
+   redactedPayload: text;
+   tenantId: text;
+   timestamp: int;
+ };
 type AdapterType = 
  variant {
    abacus_adapter;
@@ -4705,6 +4824,7 @@ service : {
   advanceWarmupDay: () -> ();
   analyzeReply: (replyId: text, leadId: text, replyText: text, niche:
    text) -> (ReplyAnalysis);
+  appendAdminAudit: (entry: AdminAuditEntry) -> ();
   appendAuditLog: (entry: AuditLogEntry) -> ();
   approveAndPushToCrm: (jobId: text, tenantId: text) -> (bool);
   approveBrowserAudit: (jobId: text, tenantId: text, actorName: text) ->
@@ -4731,6 +4851,12 @@ service : {
   batchScrape: (req: BatchScrapeRequest, tenantId: text) ->
    (BatchScrapeResult);
   buildComplianceFooter: (leadId: text) -> (text) query;
+  /// Build merged context blocks for a set of scopes, ready for prompt
+  /// injection.
+  buildMemoryContext: (scopes: vec text, scopeIds: vec text) ->
+   (vec MemoryContextBlock);
+  /// Convenience wrapper around buildMemoryContext returning assembled Text.
+  buildMemoryContextText: (scopes: vec text, scopeIds: vec text) -> (text);
   bulkApplyToggleToTier: (req: BulkToggleRequest) ->
    (variant {
       err: text;
@@ -4986,6 +5112,9 @@ service : {
   deleteLeadAttribution: (id: text) -> ();
   deleteLocationProfile: (id: text) -> ();
   deleteMarketingAudit: (id: text) -> (bool);
+  /// Delete a memory entry by scope + key. Returns true if an entry was
+  /// removed.
+  deleteMemory: (scope: text, scopeId: text, key: text) -> (bool);
   deleteNewsletterCampaign: (tenantId: text, campaignId: text) -> (bool);
   deleteNewsletterSubscriber: (tenantId: text, email: text) -> (bool);
   deleteNote: (id: text) -> (variant {
@@ -5139,6 +5268,10 @@ service : {
   getActiveChatWidgetConfigs: () -> (vec ChatWidgetConfig) query;
   getActiveNewsletterSubscribers: (tenantId: text) ->
    (vec NewsletterSubscriber) query;
+  getAdminAuditCount: (tenantId: text, actionFilter: opt AuditAction) ->
+   (nat) query;
+  getAdminAuditLog: (tenantId: text, actionFilter: opt AuditAction, offset:
+   nat, limit: nat) -> (vec AdminAuditEntry) query;
   getAgencySettings: () -> (opt AgencySettings) query;
   getAgentDeliverablesByTenant: (tenantId: TenantId) ->
    (vec AgentDeliverable) query;
@@ -5267,6 +5400,8 @@ service : {
    (vec BillingRecord) query;
   getBookingsByTenant: (tenantId: text) -> (vec Booking) query;
   getBouncesByQueue: (queueId: text) -> (vec DripLeadBounceRecord) query;
+  /// Query the secret manager's operational status (current id, rotation
+  /// timestamp, retired-credential count, initialized flag). Admin-only.
   getBrandKitFunnelStats: () ->
    (record {
       activated: nat;
@@ -5306,6 +5441,7 @@ service : {
       err: text;
       ok: BrowserAuditResult;
     });
+  getBuildVersion: () -> (text) query;
   getBulkSendJobs: () -> (vec BulkSendJob) query;
   getBusinessBrief: (id: text) ->
    (variant {
@@ -5493,6 +5629,7 @@ service : {
   getGridAudit: (email: text) -> (opt GridAuditResult) query;
   getGridHistory: (email: text) -> (vec GridAuditSnapshot) query;
   getHealthMetrics: () -> (HealthMetrics) query;
+  getHealthStatus: () -> (HealthStatus) query;
   getHumanOversightAssignmentsByTenant: (tenantId: TenantId) ->
    (vec HumanOversightAssignment) query;
   getInboundReplies: (leadId: opt text) -> (vec InboundReply);
@@ -5552,6 +5689,7 @@ service : {
    (vec LocationProfile) query;
   getMarketingAudit: (id: text) -> (opt MarketingAudit) query;
   getMemory: (threadId: text) -> (opt AgentMemory) query;
+  getMetrics: () -> (MetricsSnapshot) query;
   getMonthlyReport: (id: text) -> (variant {
                                      err: text;
                                      ok: MonthlyReport;
@@ -5628,6 +5766,11 @@ service : {
                                  }) query;
   getOptedOutEmails: () -> (vec text) query;
   getOptedOutPhones: () -> (vec text) query;
+  /// Admin-only orchestrator health snapshot, including memory-tier counts.
+  getOrchestratorHealth: () -> (OrchestratorHealth);
+  /// Read a single memory entry by scope + key.
+  getOrchestratorMemory: (scope: text, scopeId: text, key: text) ->
+   (opt MemoryEntry);
   getOutreachEvents: (leadId: text) -> (vec OutreachEvent) query;
   getOutreachOverview: (tenantId: text) ->
    (record {
@@ -5744,6 +5887,9 @@ service : {
   getScheduledPosts: (tenantId: text) -> (vec ScheduledPost) query;
   getScrapeHistory: (tenantId: text, limit: nat) -> (vec ScrapeRecord) query;
   getScrapeHistoryCount: (tenantId: text) -> (nat) query;
+  /// Query the secret manager's operational status (current id, rotation
+  /// timestamp, retired-credential count, initialized flag). Admin-only.
+  getSecretRotationStatus: () -> (SecretStatus) query;
   getSenderSubdomainStats: () -> (vec SenderSubdomainRecord) query;
   getSeoGeoContentItemsByTenant: (tenantId: TenantId) ->
    (vec SeoGeoContentItem) query;
@@ -6056,6 +6202,9 @@ service : {
     });
   isCallerAdmin: () -> (bool) query;
   isComposioRoutingEnabled: () -> (bool) query;
+  /// Rotate the managed encryption secret. Admin-only. Mints a new secret,
+  /// retires the previous one (kept for the rotation window so existing
+  /// ciphertext remains decryptable), and records the action in the audit log.
   isContentEnabledForTier: (tier: text) -> (bool) query;
   isDemoSessionExpired: (sessionId: text) -> (bool) query;
   leadEngine_enrichBatch: (tenantId: text, leadIds: vec text) ->
@@ -6119,6 +6268,9 @@ service : {
   listLeadScores: () -> (vec LeadAIScore) query;
   listMarketingAuditsByClient: (clientBusinessId: text) ->
    (vec MarketingAudit) query;
+  /// List memory entries for a scope, optionally filtered.
+  listMemory: (scope: text, scopeId: text, filter: MemoryFilter) ->
+   (vec MemoryEntry);
   listNotesByClient: (clientBusinessId: text) ->
    (variant {
       err: text;
@@ -6129,6 +6281,9 @@ service : {
       err: text;
       ok: vec Opportunity;
     }) query;
+  /// List memory entries for a scope, optionally filtered.
+  listOrchestratorMemory: (scope: text, scopeId: text, filter:
+   MemoryFilter) -> (vec MemoryEntry);
   listOutreachSequences: () -> (vec OutreachSequence) query;
   listProposalsByClient: (clientBusinessId: text) ->
    (variant {
@@ -6202,6 +6357,12 @@ service : {
       err: text;
       ok: text;
     }) query;
+  /// Number of durable-tier entries whose key starts with `prefix`.
+  memoryDurableTierCount: (prefix: text) -> (nat);
+  /// Total number of memory entries across both tiers.
+  memoryEntryCount: () -> (nat);
+  /// Number of entries in the hot (in-memory) tier.
+  memoryHotTierCount: () -> (nat);
   mergeBrowserScoresIntoAuditResult: (jobId: text, tenantId: text) ->
    (variant {
       err: text;
@@ -6279,6 +6440,8 @@ service : {
                                     err: text;
                                     ok;
                                   });
+  /// Read a single memory entry by scope + key.
+  readMemory: (scope: text, scopeId: text, key: text) -> (opt MemoryEntry);
   receiveComposioWebhook: (body: text, signature: text, webhookId: text,
    timestamp: text) ->
    (record {
@@ -6346,6 +6509,7 @@ service : {
    errorMessage: opt text) -> ();
   recordTrialActivity: (trialId: text, eventType: text) -> (nat);
   recordWarmLeadHandoff: (handoff: WarmLeadHandoff) -> ();
+  redactSecrets: ("text": text) -> (text) query;
   refreshCompetitorIntel: (report: CompetitorIntelReport) -> ();
   registerSubdomain: (subdomain: text) -> ();
   rejectBrowserAudit: (jobId: text, tenantId: text, actorName: text, reason:
@@ -6431,6 +6595,10 @@ service : {
    (opt RooferColdCampaign);
   rooferColdCampaign_updateSequence: (tenantId: text, campaignId: text,
    sequence: vec RooferCampaignStep) -> (opt RooferColdCampaign);
+  /// Rotate the managed encryption secret. Admin-only. Mints a new secret,
+  /// retires the previous one (kept for the rotation window so existing
+  /// ciphertext remains decryptable), and records the action in the audit log.
+  rotateSecret: () -> (text);
   routeLLMCall: (task: TaskType, messages: vec OpenRouterMessage, capability:
    TaskCapability) -> (text);
   routeModelRequest: (req: AbacusRouteRequest) ->
@@ -6453,6 +6621,13 @@ service : {
       outputData: text;
       runAt: int;
     });
+  /// Run the orchestrator on a goal. Sits ABOVE the LLM fallback chain:
+  /// decomposes the goal into sub-tasks, routes each through the existing
+  /// routeLLMCall path, validates outputs, retries on failure, stores memory
+  /// via the memory layer, emits an audit-trail entry, and returns a
+  /// structured result with a correlation id.
+  runOrchestrator: (goal: text, scopeContext: ScopeContext, capability:
+   opt TaskCapability) -> (OrchestratorResult);
   runPageSpeedAudit: (url: text) -> (text);
   runPageSpeedAuditPublic: (url: text) -> (text);
   saveAbacusApiKey: (apiKey: text) -> (variant {
@@ -7035,4 +7210,16 @@ service : {
   upsertWebsiteIssue: (issue: WebsiteIssue) -> ();
   upsertWebsitePageQueueItem: (item: WebsitePageQueueItem) -> ();
   upsertWhiteLabelConfig: (config: WhiteLabelConfig) -> ();
+  /// Write (or overwrite) a memory entry. Returns the generated entry id.
+  writeMemory: (scope: text, scopeId: text, key: text, content: text,
+   metadata: vec record {
+                   text;
+                   text;
+                 }, importance: nat, tags: vec text) -> (text);
+  /// Write (or overwrite) a memory entry. Returns the generated entry id.
+  writeOrchestratorMemory: (scope: text, scopeId: text, key: text, content:
+   text, metadata: vec record {
+                         text;
+                         text;
+                       }, importance: nat, tags: vec text) -> (text);
 }

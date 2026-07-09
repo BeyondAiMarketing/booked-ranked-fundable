@@ -3595,7 +3595,9 @@ actor {
   stable B64_CHARS : Text;
   stable CLASSIFY_PROMPT : Text;
   stable DEFAULT_DAILY_CAP : Nat;
+  stable DEFAULT_FLAG_TENANT : Text;
   stable DEFAULT_RULES : [SmsAutopilotRule__932974502];
+  stable DEFAULT_TENANT : Text;
   stable LLM_TENANT : Text;
   stable NS_PER_DAY : Int;
   stable RC_LLM_TENANT : Text;
@@ -3708,6 +3710,8 @@ actor {
     };
   stable accountBriefState :
     {briefs : Map__246123559<Text, AccountBrief__971078431>};
+  stable adminAuditNonce : {var n : Nat};
+  stable adminAuditStore : {store : Map__246123559<Text, Text>};
   stable var agencySettings : ?AgencySettings__425490167;
   stable agentArtifactRecords :
     {
@@ -3796,6 +3800,7 @@ actor {
       var root : Node__279997185<Text, AgentThread__238664703>;
       var size : Nat__93962160
     };
+  stable aiMemoryState : {var entryCount : Nat};
   stable apd_timerId : {var v : ?Nat};
   stable apeEmailQueue :
     {
@@ -4358,6 +4363,7 @@ actor {
     {var root : Node__656343714<Text>; var size : Nat__93962160};
   stable optedOutPhones :
     {var root : Node__656343714<Text>; var size : Nat__93962160};
+  stable orchestratorState : {var runCount : Nat};
   stable outreachEvents :
     {
       var root : Node__279997185<Text, OutreachEvent__845747933>;
@@ -4450,6 +4456,7 @@ actor {
     };
   stable rankedDispatchState :
     {routes : Map__246123559<Text, RankedDispatchRoute__495286538>};
+  stable rateLimitRejections : {var n : Nat};
   stable rc_ctaLink : Text;
   stable replyInboxItems :
     {

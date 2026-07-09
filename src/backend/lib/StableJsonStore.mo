@@ -10,7 +10,7 @@ module {
   };
 
   public func init() : State = {
-    store = Map.empty<Text, Text>();
+    store = Map.empty();
   };
 
   /// Save a JSON string value under a key.
@@ -33,8 +33,8 @@ module {
     let all = state.store.entries();
     var result : [Text] = [];
     for ((k, v) in all) {
-      if (Text.startsWith(k, #text(prefix))) {
-        result := Array.concat(result, [k]);
+      if (k.startsWith(#text(prefix))) {
+        result := result.concat([k]);
       };
     };
     result;
@@ -42,7 +42,7 @@ module {
 
   /// List all entries as (key, value) pairs.
   public func listAll(state : State) : [(Text, Text)] {
-    Iter.toArray(state.store.entries());
+    state.store.entries().toArray();
   };
 
   /// Count total entries.

@@ -3,6 +3,7 @@ import T       "../types/llm-fallback";
 import ORT     "../types/openRouter";
 import ICTypes "../types/integrationCredentials";
 import ICLib   "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Outcall "mo:caffeineai-http-outcalls/outcall";
 import Map     "mo:core/Map";
 import Array   "mo:core/Array";
@@ -16,6 +17,7 @@ mixin (
   integrationCreds : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt         : Blob,
   transform        : LLMFb.Transform,
+  secretState      : ?SecretManager.State,
 ) {
 
   /// Return health snapshots for all providers in the chain.
@@ -46,7 +48,7 @@ mixin (
     // Resolve keys from the platform credentials store
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFb.resolveKeys(creds);
 
@@ -88,7 +90,7 @@ mixin (
     // routeLLMCall.
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFb.resolveKeys(creds);
 

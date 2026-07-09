@@ -5,6 +5,7 @@ import AccessControl "mo:caffeineai-authorization/access-control";
 import Outcall   "mo:caffeineai-http-outcalls/outcall";
 import ICTypes   "../types/integrationCredentials";
 import ICLib     "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Time "mo:core/Time";
 
 mixin (
@@ -14,6 +15,7 @@ mixin (
   userProfiles       : Map.Map<Principal, { tenantId : Text; role : Text; name : Text }>,
   emptyMasked        : ICTypes.MaskedCredentials,
   transform          : query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState        : ?SecretManager.State,
 ) {
 
   // ---- Authorisation helpers (private to this mixin) ----------------------
@@ -90,7 +92,7 @@ mixin (
     // accidentally wiping previously-saved credentials that were not displayed in
     // plain text (they come back as masked values and are re-sent as "" on save).
     let existing : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) { ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
       case (null) {
         {
           openaiKey = ""; claudeKey = ""; litellmUrl = ""; litellmKey = ""; ollamaUrl = "";
@@ -167,7 +169,7 @@ mixin (
       composioWebhookSecret      = pick(creds.composioWebhookSecret,     existing.composioWebhookSecret);
       geminiApiKey               = pick(creds.geminiApiKey,              existing.geminiApiKey);
     };
-    let encrypted = ICLib.encryptAll(merged, credSalt);
+    let encrypted = ICLib.encryptAllWithSecret(merged, credSalt, secretState);
     integrationCreds.add(tid, encrypted);
     // Read-back verification: confirm the value was actually written
     switch (integrationCreds.get(tid)) {
@@ -187,7 +189,7 @@ mixin (
     let tid = normaliseTenantId(tenantId);
     switch (integrationCreds.get(tid)) {
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         ICLib.maskCredentials(plain)
       };
       case (null) { emptyMasked };
@@ -222,7 +224,7 @@ mixin (
     let tid = normaliseTenantId(tenantId);
     switch (integrationCreds.get(tid)) {
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         { connected = false; message = "Use testAllConnections() for live API tests"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = null }
       };
       case (null) {
@@ -250,7 +252,7 @@ mixin (
     let tid = normaliseTenantId(tenantId);
     switch (integrationCreds.get(tid)) {
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         ICLib.computeReadiness(plain)
       };
       case (null) {
@@ -290,7 +292,7 @@ mixin (
     };
     let tid = normaliseTenantId(tenantId);
     let plain : ICTypes.IntegrationCredentials = switch (integrationCreds.get(tid)) {
-      case (?enc) { ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
       case (null) {
         return { connected = false; message = "No credentials configured"; statusCode = 0; quotaInfo = null; lastTestedAt = null; lastTestError = ?"No credentials configured" };
       };
@@ -455,7 +457,7 @@ mixin (
     switch (integrationCreds.get(tid)) {
       case (null) { return { ok = false; message = "No credentials found for tenant" } };
       case (?enc) {
-        let plain = ICLib.decryptAll(enc, credSalt);
+        let plain = ICLib.decryptAllWithSecret(enc, credSalt, secretState);
         let updated : ?ICTypes.IntegrationCredentials = switch (fieldName) {
           case ("openaiKey")                 ?{ plain with openaiKey = "" };
           case ("claudeKey")                 ?{ plain with claudeKey = "" };
@@ -504,7 +506,7 @@ mixin (
         switch (updated) {
           case (null) { { ok = false; message = "Unknown field: " # fieldName } };
           case (?u) {
-            integrationCreds.add(tid, ICLib.encryptAll(u, credSalt));
+            integrationCreds.add(tid, ICLib.encryptAllWithSecret(u, credSalt, secretState));
             { ok = true; message = "Key deleted" };
           };
         };

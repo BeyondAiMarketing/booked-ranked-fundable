@@ -5,6 +5,7 @@ import T             "../types/lead-engine";
 import FTTypes       "../types/featureToggle";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import LLMFallbackLib "../lib/llm-fallback";
 import ORLib         "../lib/openRouter";
 import ORTypes       "../types/openRouter";
@@ -34,6 +35,7 @@ mixin (
   credSalt           : Blob,
   llmFallbackState   : LLMFallbackLib.State,
   openRouterState    : ORLib.State,
+  secretState        : ?SecretManager.State,
 ) {
 
   /// Returns true when the LEAD_ENGINE_ENABLED feature flag is on for any tier.
@@ -196,7 +198,7 @@ mixin (
     ];
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFallbackLib.resolveKeys(creds);
     let flags : LLMFallbackLib.FeatureFlags = {

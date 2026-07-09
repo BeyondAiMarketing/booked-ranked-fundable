@@ -13,6 +13,7 @@ import T             "../types/autopilotDiscovery";
 import ICTypes       "../types/integrationCredentials";
 import ICLib         "../lib/integrationCredentials";
 import ALT           "../types/aiLeadAudit";
+import SecretManager "../lib/secretManager";
 
 /// Autopilot Daily Discovery Engine
 ///
@@ -39,6 +40,7 @@ mixin (
     notes : Text; agentSubscriptions : [Text]; createdAt : Time.Time;
   }>>,
   transform           : shared query Outcall.TransformationInput -> async Outcall.TransformationOutput,
+  secretState         : ?SecretManager.State,
 ) {
 
   // ── Constants ─────────────────────────────────────────────────────────────────
@@ -82,7 +84,7 @@ mixin (
   func apd_plainCreds() : ?ICTypes.IntegrationCredentials {
     switch (integrationCreds.get(APD_PLATFORM_TENANT)) {
       case (null) { null };
-      case (?enc) { ?ICLib.decryptAll(enc, credSalt) };
+      case (?enc) { ?ICLib.decryptAllWithSecret(enc, credSalt, secretState) };
     }
   };
 

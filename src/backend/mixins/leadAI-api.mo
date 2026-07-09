@@ -13,6 +13,7 @@ import Nat32 "mo:core/Nat32";
 import Text "mo:core/Text";
 import ICTypes "../types/integrationCredentials";
 import ICLib "../lib/integrationCredentials";
+import SecretManager "../lib/secretManager";
 import Map "mo:core/Map";
 
 mixin (
@@ -23,6 +24,7 @@ mixin (
   integrationCreds   : Map.Map<Text, ICTypes.IntegrationCredentials>,
   credSalt           : Blob,
   llmFallbackState   : LLMFallbackLib.State,
+  secretState        : ?SecretManager.State,
 ) {
 
   // Mutable state arrays — mutated in place and read back as arrays
@@ -73,11 +75,11 @@ mixin (
     ];
     let geminiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).geminiApiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).geminiApiKey;
     };
     let openaiKey = switch (integrationCreds.get("platform")) {
       case (null) "";
-      case (?enc) ICLib.decryptAll(enc, credSalt).openaiKey;
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState).openaiKey;
     };
     await ORLib.callWithFallback(openRouterState, #OutreachCopy, messages, transform, openaiKey, geminiKey)
   };
@@ -105,7 +107,7 @@ mixin (
     ];
     let creds : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
       case (null) ICLib.emptyCredentials();
-      case (?enc) ICLib.decryptAll(enc, credSalt);
+      case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, secretState);
     };
     let keys = LLMFallbackLib.resolveKeys(creds);
     let flags : LLMFallbackLib.FeatureFlags = {
