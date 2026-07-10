@@ -10,6 +10,10 @@ const BRAND_KIT_NICHE: Record<string, string> = {
   restoration: "restoration",
   "carpet-cleaning": "carpet-cleaning",
   roofing: "roofing",
+  "real-estate": "real-estate",
+  mortgage: "mortgage",
+  chiropractor: "chiropractor",
+  dental: "dental",
 };
 
 const PULSE_COLORS: Record<string, string> = {
@@ -19,6 +23,10 @@ const PULSE_COLORS: Record<string, string> = {
   restoration: "bg-emerald-500",
   "carpet-cleaning": "bg-teal-500",
   roofing: "bg-red-500",
+  "real-estate": "bg-sky-500",
+  mortgage: "bg-indigo-500",
+  chiropractor: "bg-violet-500",
+  dental: "bg-cyan-500",
 };
 
 const STAT_ACCENT: Record<string, string> = {
@@ -28,6 +36,10 @@ const STAT_ACCENT: Record<string, string> = {
   restoration: "text-emerald-400",
   "carpet-cleaning": "text-teal-400",
   roofing: "text-red-400",
+  "real-estate": "text-sky-400",
+  mortgage: "text-indigo-400",
+  chiropractor: "text-violet-400",
+  dental: "text-cyan-400",
 };
 
 const BORDER_GLOW: Record<string, string> = {
@@ -37,6 +49,10 @@ const BORDER_GLOW: Record<string, string> = {
   restoration: "border-emerald-500/30 shadow-emerald-900/20",
   "carpet-cleaning": "border-teal-500/30 shadow-teal-900/20",
   roofing: "border-red-500/30 shadow-red-900/20",
+  "real-estate": "border-sky-500/30 shadow-sky-900/20",
+  mortgage: "border-indigo-500/30 shadow-indigo-900/20",
+  chiropractor: "border-violet-500/30 shadow-violet-900/20",
+  dental: "border-cyan-500/30 shadow-cyan-900/20",
 };
 
 const UPCOMING_JOBS: Record<
@@ -80,6 +96,26 @@ const UPCOMING_JOBS: Record<
     { service: "Storm damage inspect", customer: "F. Harris", time: "8:30 AM" },
     { service: "Full replacement", customer: "G. Clark", time: "10:00 AM" },
     { service: "Estimate — hail", customer: "E. Lewis", time: "1:30 PM" },
+  ],
+  "real-estate": [
+    { service: "Buyer consultation", customer: "A. Rivera", time: "9:00 AM" },
+    { service: "Listing showing", customer: "K. Nguyen", time: "11:30 AM" },
+    { service: "Offer review call", customer: "M. Patel", time: "2:00 PM" },
+  ],
+  mortgage: [
+    { service: "Pre-qual call", customer: "T. Brooks", time: "8:30 AM" },
+    { service: "Loan estimate review", customer: "L. Santos", time: "11:00 AM" },
+    { service: "Closing disclosure", customer: "D. Kim", time: "1:30 PM" },
+  ],
+  chiropractor: [
+    { service: "New patient intake", customer: "R. Adams", time: "9:00 AM" },
+    { service: "Adjustment & therapy", customer: "C. Turner", time: "10:30 AM" },
+    { service: "Progress evaluation", customer: "J. Flores", time: "1:00 PM" },
+  ],
+  dental: [
+    { service: "Cleaning & X-rays", customer: "B. Evans", time: "8:00 AM" },
+    { service: "Whitening consult", customer: "S. Reyes", time: "10:30 AM" },
+    { service: "Crown prep", customer: "N. Hughes", time: "1:00 PM" },
   ],
 };
 
