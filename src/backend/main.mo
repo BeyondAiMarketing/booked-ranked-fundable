@@ -87,6 +87,7 @@ import DograhMixin       "mixins/dograh-api";
 import DograhLib         "lib/dograh";
 import OpenRouterLib     "lib/openRouter";
 import OpenRouterMixin   "mixins/openRouter-api";
+import OpenRouterTypes   "types/openRouter";
 import FunnelTrackingLib   "lib/funnelTracking";
 import FunnelTrackingMixin "mixins/funnelTracking-api";
 import EmailTrackingLib    "lib/emailTracking";
@@ -105,6 +106,8 @@ import LeadAIMixin "mixins/leadAI-api";
    import LLMFallbackLib   "lib/llm-fallback";
    import LLMFallbackTypes "types/llm-fallback";
    import LLMFallbackMixin "mixins/llm-fallback-api";
+   import OmniRouterLib    "lib/omniRouter";
+   import OmniRouterMixin  "mixins/omniRouter-api";
   import LeadEngineTypes "types/lead-engine";
   import LeadEngineMixin "mixins/leadEngine-api";
   import LeadEngineOql "lib/leadEngineOql";
@@ -1772,6 +1775,16 @@ import ObservabilityMixin "mixins/observability-api";
   // for all of them. This becomes the single LLM entry point.
   include LLMFallbackMixin(llmFallbackState, integrationCreds, credSalt, transform, ?secretState);
 
+  // ---- OmniRouter state + API ----
+  // The OmniRouter is the universal AI dispatch layer that sits ABOVE both
+  // the LLM fallback chain and the AI Orchestrator.  It classifies intent,
+  // selects the optimal routing target (llm_direct | orchestrator), maps
+  // intent to the best TaskType, builds BRF-branded system prompts, executes
+  // via the existing LLMFallbackLib.route path, and records metrics for the
+  // OmniRouter dashboard.
+  let omniRouterState = OmniRouterLib.emptyState();
+  include OmniRouterMixin(omniRouterState, llmFallbackState, integrationCreds, credSalt, transform, ?secretState);
+
   // ---- AI Orchestrator state ----
   // The orchestrator sits ABOVE the LLM fallback chain: it decomposes a
   // goal into sub-tasks, routes each through the existing routeLLMCall path,
@@ -1809,27 +1822,150 @@ import ObservabilityMixin "mixins/observability-api";
   /// routeLLMCall path, validates outputs, retries on failure, stores memory
   /// via the memory layer, emits an audit-trail entry, and returns a
   /// structured result with a correlation id.
-  public shared ({ caller = _ }) func runOrchestrator(
+  public shared ({ caller }) func runOrchestrator(
     goal         : Text,
     scopeContext : AIOrchestratorTypes.ScopeContext,
     capability   : ?LLMFallbackTypes.TaskCapability,
   ) : async AIOrchestratorTypes.OrchestratorResult {
-    // Placeholder: returns a valid OrchestratorResult without trapping so the
-    // canister installs. Full callback wiring (routeLLMCallback,
-    // resolveKeysCallback, memoryReadCallback, memoryWriteCallback,
-    // auditCallback, rateLimitCallback, correlationIdCallback) into
-    // AIOrchestratorLib.orchestrate is deferred to a follow-up.
-    ignore (goal, scopeContext, capability);
-    {
-      output           = "";
-      provider         = null;
-      model            = null;
-      attempts         = 0;
-      validationStatus = "skipped";
-      memoryRefs       = [];
-      correlationId    = "";
-      errorMessage     = ?"Orchestrator not yet wired — placeholder result";
+    // Build the OrchestratorRequest from the public function arguments.
+    let tenantId : Text = switch (scopeContext.tenantId) {
+      case (?t) t;
+      case null "default";
     };
+    let request : AIOrchestratorTypes.OrchestratorRequest = {
+      goal;
+      tenantId;
+      scopeContext;
+      capabilityHint = capability;
+      memoryScopes   = ["tenant"];
+      legacyFallback = ?{ enabled = true; provider = null };
+    };
+
+    // ── Callbacks ────────────────────────────────────────────────────────
+    //
+    // All callbacks are local async closures. They are NOT mixin parameters,
+    // so they do not become stable actor fields and cannot trigger the
+    // moc 1.10.1 stable-signature crash (desugar.ml:1083).
+
+    // Route a sub-task through the existing LLM fallback chain.
+    let routeLLMCb = func(
+      subTask  : AIOrchestratorTypes.SubTask,
+      messages : [LLMFallbackTypes.LLMMessage],
+    ) : async Text {
+      let creds2 : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
+        case (null) ICLib.emptyCredentials();
+        case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, ?secretState);
+      };
+      let keys2  = LLMFallbackLib.resolveKeys(creds2);
+      let flags2 : LLMFallbackLib.FeatureFlags = {
+        leadEngineEnabled = true;
+        twilioEnabled      = true;
+        sendgridEnabled    = true;
+      };
+      let cap2 = AIOrchestratorLib.selectCapability(subTask, capability);
+      let orMsgs : [OpenRouterTypes.OpenRouterMessage] =
+        Array.tabulate(messages.size(), func(i : Nat) {
+          { role = messages[i].role; content = messages[i].content }
+        });
+      await LLMFallbackLib.route(
+        llmFallbackState,
+        #Summarization,
+        orMsgs,
+        keys2,
+        flags2,
+        cap2,
+        transform,
+        func(_t : OpenRouterTypes.TaskType, _m : [OpenRouterTypes.OpenRouterMessage]) : async Text { "" },
+      )
+    };
+
+    // Resolve provider keys (used by retry path in orchestrate).
+    let resolveKeysCb = func() : async LLMFallbackTypes.ProviderKeys {
+      let creds3 : ICTypes.IntegrationCredentials = switch (integrationCreds.get("platform")) {
+        case (null) ICLib.emptyCredentials();
+        case (?enc) ICLib.decryptAllWithSecret(enc, credSalt, ?secretState);
+      };
+      LLMFallbackLib.resolveKeys(creds3)
+    };
+
+    // Read memory context for the first scope (supplies prior context to LLM).
+    let memReadCb = func(
+      scope : AIOrchestratorTypes.MemoryScope,
+      ctx   : AIOrchestratorTypes.ScopeContext,
+    ) : async [LLMFallbackTypes.LLMMessage] {
+      let sid = switch (ctx.tenantId) { case (?t) t; case null "" };
+      let txt = AIMemoryLib.buildContextText(
+        aiMemoryState, { store = stableStore.getStore() }, scope, sid, 10,
+      );
+      if (txt == "") { [] }
+      else { [{ role = "system"; content = "Prior context:\n" # txt }] }
+    };
+
+    // Write a memory entry for each sub-task output.
+    let memWriteCb = func(
+      scope   : AIOrchestratorTypes.MemoryScope,
+      ctx     : AIOrchestratorTypes.ScopeContext,
+      content : Text,
+    ) : async Text {
+      let sid = switch (ctx.tenantId) { case (?t) t; case null "" };
+      let key = "orch-" # Int.toText(Time.now());
+      AIMemoryLib.writeMemory(
+        aiMemoryState, { store = stableStore.getStore() },
+        scope, sid, key, content, [], 5, [],
+      )
+    };
+
+    // Emit an audit trail entry for admin visibility.
+    let auditCb = func(corrId : Text, msg : Text) : async () {
+      AdminAuditLib.appendAdminAudit(
+        adminAuditStore,
+        {
+          actorPrincipal  = caller;
+          tenantId;
+          actionType      = #other("orchestrator");
+          timestamp       = Time.now();
+          redactedPayload = corrId # ": " # AdminAuditLib.redactSecrets(msg);
+        },
+        adminAuditNonce.n,
+      );
+      adminAuditNonce.n += 1;
+    };
+
+    // Rate-limit check: 100 orchestrator calls per tenant per minute.
+    let rateLimitCb = func(tid : Text, maxReqs : Nat, windowMs : Nat) : async Bool {
+      RateLimiter.checkRateLimit(rateLimiterState, "orch:" # tid, maxReqs, Int.fromNat(windowMs))
+    };
+
+    // Monotonic correlation ID for end-to-end tracing.
+    let corrIdCb = func() : Text {
+      "orch-" # tenantId # "-" # Int.toText(Time.now())
+    };
+
+    // ── Execute ──────────────────────────────────────────────────────────
+    try {
+      await AIOrchestratorLib.orchestrate(
+        orchestratorState,
+        request,
+        routeLLMCb,
+        resolveKeysCb,
+        memReadCb,
+        memWriteCb,
+        auditCb,
+        rateLimitCb,
+        corrIdCb,
+      )
+    } catch (e) {
+      {
+        output           = "";
+        provider         = null;
+        model            = null;
+        attempts         = 0;
+        validationStatus = "skipped";
+        memoryRefs       = [];
+        correlationId    = "";
+        errorMessage     = ?("runOrchestrator error: " # e.message());
+      }
+    }
   };
 
   /// Read a single memory entry by scope + key.

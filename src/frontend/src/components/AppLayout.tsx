@@ -279,6 +279,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/csv-lead-import": "Lead Import & Campaign Assignment",
   "/ai-lead-intelligence": "AI Lead Intelligence",
   "/agent-orchestration": "Agent Orchestration",
+  "/omni-router": "OmniRouter",
   "/landing-pages": "Landing Page Builder",
   "/website-studio": "Niche Website Studio",
   "/my-website": "My Website",
@@ -738,6 +739,18 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             >
               <Cpu size={16} />
               <span className="flex-1">Agent Orchestration</span>
+            </Link>
+            <Link
+              to="/omni-router"
+              data-ocid="nav.omnirouter.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-0.5 transition-colors ${
+                pathname === "/omni-router"
+                  ? "bg-violet-500/20 text-violet-300 border border-violet-500/30"
+                  : "text-violet-400 hover:bg-violet-500/10 hover:text-violet-300"
+              }`}
+            >
+              <Sparkles size={16} />
+              <span className="flex-1">OmniRouter</span>
             </Link>
 
             <Link
