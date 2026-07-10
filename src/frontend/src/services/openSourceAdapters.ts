@@ -2584,7 +2584,7 @@ export async function testServiceConnection(
 
 /**
  * Routes AI calls for the Master Agent through the priority fallback chain:
- * 1. OpenRouter (Owl Alpha) → 2. OpenAI (gpt-4o) → 3. Google Gemini (free tier) → 4. NVIDIA NIM
+ * 1. OmniRouter (OpenRouter) → 2. OpenAI (gpt-4o) → 3. Google Gemini (free tier) → 4. NVIDIA NIM
  * Each provider is attempted with a 15-second timeout; on failure the next is tried silently.
  */
 export async function routeMasterAgentCall(
@@ -2611,7 +2611,7 @@ export async function routeMasterAgentCall(
     return controller.signal;
   }
 
-  // 1. OpenRouter — Owl Alpha
+  // 1. OmniRouter (OpenRouter)
   if (keys.openRouterKey) {
     try {
       const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -2636,7 +2636,7 @@ export async function routeMasterAgentCall(
           return {
             success: true,
             content,
-            provider: "OpenRouter (Owl Alpha)",
+            provider: "OmniRouter (OpenRouter)",
             fallbackUsed: attemptIndex > 0,
           };
         }

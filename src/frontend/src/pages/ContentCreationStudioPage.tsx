@@ -232,7 +232,7 @@ function VideoTab() {
         >
           <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-cyan-400" />
           <span className="text-sm text-cyan-300">
-            Generating video via Owl Alpha…
+            Generating video via OmniRouter…
           </span>
         </div>
       )}
@@ -572,7 +572,7 @@ function AdCopyTab() {
         >
           <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-purple-400" />
           <span className="text-sm text-purple-300">
-            Writing copy with Owl Alpha…
+            Writing copy with OmniRouter…
           </span>
         </div>
       )}
@@ -752,7 +752,7 @@ function BlogTab() {
         >
           <span className="inline-flex h-2.5 w-2.5 animate-pulse rounded-full bg-emerald-400" />
           <span className="text-sm text-emerald-300">
-            Writing with Owl Alpha…
+            Writing with OmniRouter…
           </span>
         </div>
       )}
@@ -839,7 +839,7 @@ export default function ContentCreationStudioPage() {
             Content Creation Studio
           </h1>
           <p className="text-sm text-white/50">
-            Powered by Owl Alpha via OpenRouter
+            Powered by OmniRouter
           </p>
         </div>
       </div>

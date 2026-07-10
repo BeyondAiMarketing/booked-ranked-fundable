@@ -133,7 +133,7 @@ type LlmStatus =
 
 function getPrimaryLlm(creds: any) {
   if (creds?.openRouterApiKey?.trim())
-    return { provider: "OpenRouter", model: "Owl Alpha" };
+    return { provider: "OpenRouter", model: "OmniRouter" };
   if (creds?.openaiKey?.trim()) return { provider: "OpenAI", model: "GPT-4o" };
   return { provider: "Not Configured", model: "—" };
 }

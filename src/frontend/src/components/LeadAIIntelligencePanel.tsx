@@ -69,7 +69,7 @@ function SectionHeader({
         {title}
       </span>
       <span className="ml-auto text-[9px] font-bold text-violet-400 bg-violet-900/30 px-1.5 py-0.5 rounded">
-        Owl Alpha
+        OmniRouter
       </span>
     </div>
   );
@@ -173,7 +173,7 @@ export default function LeadAIIntelligencePanel({
       await actor.scoreLead(leadId, enrichText, niche, city);
       const res = (await actor.getLeadScore(leadId)) as [LeadAIScore] | [];
       if (res?.length) setScoreData(res[0]);
-      toast.success("Lead scored by Owl Alpha");
+      toast.success("Lead scored by OmniRouter");
     } catch {
       toast.error("Scoring failed");
     } finally {
@@ -190,7 +190,7 @@ export default function LeadAIIntelligencePanel({
         | [LeadAIEnrichment]
         | [];
       if (res?.length) setEnrichData(res[0]);
-      toast.success("Enriched by Owl Alpha");
+      toast.success("Enriched by OmniRouter");
     } catch {
       toast.error("Enrichment failed");
     } finally {
@@ -254,7 +254,7 @@ export default function LeadAIIntelligencePanel({
         | [ReplyAnalysis]
         | [];
       if (res?.length) setReplyData(res[0]);
-      toast.success("Reply analyzed by Owl Alpha");
+      toast.success("Reply analyzed by OmniRouter");
     } catch {
       toast.error("Reply analysis failed");
     } finally {
@@ -333,7 +333,7 @@ export default function LeadAIIntelligencePanel({
           </div>
         ) : (
           <p className="text-xs text-slate-500 mb-3">
-            No enrichment data — run Owl Alpha enrichment
+            No enrichment data — run OmniRouter enrichment
           </p>
         )}
         <button
@@ -344,7 +344,7 @@ export default function LeadAIIntelligencePanel({
           data-ocid={`lead-ai-enrich-button-${leadId}`}
         >
           {enrichLoad ? <Spinner /> : <Zap className="w-3 h-3" />}
-          Enrich with Owl Alpha
+          Enrich with OmniRouter
         </button>
       </div>
 

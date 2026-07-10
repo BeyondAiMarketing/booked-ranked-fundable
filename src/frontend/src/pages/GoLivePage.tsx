@@ -1101,7 +1101,7 @@ function OpenRouterSection() {
             OpenRouter AI Router
           </h2>
           <p className="text-xs text-slate-400 mt-0.5">
-            Route AI tasks across 400+ models with one API key — Owl Alpha,
+            Route AI tasks across 400+ models with one API key — OmniRouter,
             GPT-4o, Claude, Gemini &amp; more
           </p>
         </div>
@@ -1280,7 +1280,7 @@ function ContentCreationCapabilities({
     },
     {
       title: "Text & Ad Copy",
-      models: "Owl Alpha",
+      models: "OmniRouter",
       description: "Ad campaigns, blogs, landing pages",
       icon: "✍️",
     },
@@ -2522,7 +2522,7 @@ function IntegrationHealthPanel({
   actor: ReturnType<typeof useActor>["actor"] | null;
 }) {
   const SERVICES = [
-    { key: "openrouter", label: "OpenRouter / Owl Alpha", critical: true },
+    { key: "openrouter", label: "OpenRouter / OmniRouter", critical: true },
     { key: "nvidia", label: "NVIDIA NIM", critical: true },
     { key: "serpapidev", label: "SerpApi.dev", critical: false },
     { key: "serpapi", label: "SerpApi (Legacy)", critical: false },
@@ -2859,7 +2859,7 @@ interface NemotronTestResult {
 
 const LLM_FALLBACK_ORDER: { tag: string; label: string }[] = [
   { tag: "Nemotron", label: "Nemotron (NVIDIA NIM)" },
-  { tag: "OpenRouter", label: "OpenRouter / Owl Alpha" },
+  { tag: "OpenRouter", label: "OpenRouter / OmniRouter" },
   { tag: "OpenAI", label: "OpenAI" },
   { tag: "Anthropic", label: "Anthropic Claude" },
 ];
@@ -6951,17 +6951,17 @@ function SystemHealthCheck({ actor }: { actor: any }) {
     const tests = [
       {
         service: "OpenRouter",
-        testDesc: "Owl Alpha connection",
+        testDesc: "OmniRouter connection",
         run: async () => {
           const r = await actor?.testOpenRouterConnection?.();
           return {
             status: r === true ? ("pass" as const) : ("fail" as const),
-            preview: r === true ? "Owl Alpha connected" : "Connection failed",
+            preview: r === true ? "OmniRouter connected" : "Connection failed",
           };
         },
       },
       {
-        service: "Owl Alpha",
+        service: "OmniRouter",
         testDesc: "Content generation test",
         run: async () => {
           const r = await actor?.callOpenRouterForTask?.(
