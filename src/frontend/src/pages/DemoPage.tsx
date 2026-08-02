@@ -6,7 +6,7 @@ import DemoStep4Calendar from "@/components/demo/DemoStep4Calendar";
 import DemoStep5OneApp from "@/components/demo/DemoStep5OneApp";
 import DemoStep6BackOffice from "@/components/demo/DemoStep6BackOffice";
 import DemoStep7Credit from "@/components/demo/DemoStep7Credit";
-import DemoStep8Trial from "@/components/demo/DemoStep8Trial";
+import DemoStep8Launch from "@/components/demo/DemoStep8Launch";
 import { DemoFlowProvider, useDemoFlow } from "@/hooks/useDemoFlow";
 import { RotateCcw, ShieldCheck } from "lucide-react";
 import { useEffect, useRef } from "react";
@@ -108,7 +108,7 @@ function DemoPageContent() {
         {currentStep === 5 && <DemoStep5OneApp {...stepProps} />}
         {currentStep === 6 && <DemoStep6BackOffice {...stepProps} />}
         {currentStep === 7 && <DemoStep7Credit {...stepProps} />}
-        {currentStep === 8 && <DemoStep8Trial />}
+        {currentStep === 8 && <DemoStep8Launch />}
       </main>
     </div>
   );
