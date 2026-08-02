@@ -45,33 +45,28 @@ interface Props {
 export default function DemoStep6BackOffice({ onNext }: Props) {
   const { sessionData } = useDemoFlow();
   const nicheContent = getDemoContent(sessionData.niche);
-  const [activeTip, setActiveTip] = useState<number | null>(null);
+  const [activeTip, setActiveTip] = useState<number | null>(1);
 
   useEffect(() => {
-    let i = 0;
-    const cycle = () => {
-      setActiveTip(SECTIONS[i].id);
-      i = (i + 1) % SECTIONS.length;
-    };
-    cycle();
-    const timer = setInterval(cycle, 1500);
-    return () => clearInterval(timer);
+    let index = 0;
+    const timer = window.setInterval(() => {
+      index = (index + 1) % SECTIONS.length;
+      setActiveTip(SECTIONS[index].id);
+    }, 2400);
+    return () => window.clearInterval(timer);
   }, []);
 
   const businessName = sessionData.businessName || "Your Business";
-
-  // Build niche-specific section data
   const crmLeads = nicheContent?.crmLeads?.slice(0, 3) ?? [];
   const reviews = nicheContent?.reviews?.slice(0, 2) ?? [];
   const backOfficeTip =
     nicheContent?.coachTips?.backOffice ??
-    SECTIONS.find((s) => s.id === 1)?.tip ??
+    SECTIONS.find((section) => section.id === 1)?.tip ??
     "Your leads live here.";
 
-  // Build sections with niche content injected
   const nicheSections = SECTIONS.map((section) => {
     if (section.id === 1) {
-      const leadNames = crmLeads.map((l) => l.name).join(", ");
+      const leadNames = crmLeads.map((lead) => lead.name).join(", ");
       return {
         ...section,
         desc: crmLeads.length > 0 ? `${leadNames} + more` : section.desc,
@@ -87,51 +82,52 @@ export default function DemoStep6BackOffice({ onNext }: Props) {
     return section;
   });
 
+  const activeMessage =
+    activeTip === 1 || activeTip === 3
+      ? backOfficeTip
+      : nicheSections.find((section) => section.id === activeTip)?.tip;
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
-        <div className="inline-block px-3 py-1 rounded-full bg-indigo-900/30 border border-indigo-700/40 text-indigo-300 text-xs font-semibold uppercase tracking-widest mb-4">
+    <div className="mx-auto max-w-2xl px-4 py-8 pb-10">
+      <div className="mb-8 text-center">
+        <div className="mb-4 inline-block rounded-full border border-indigo-700/40 bg-indigo-900/30 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-indigo-300">
           Command Center
         </div>
-        <h2 className="text-2xl md:text-3xl font-bold text-white">
+        <h2 className="text-2xl font-bold text-white md:text-3xl">
           Everything in One Place — Easy as Your Phone
         </h2>
-        <p className="text-gray-400 mt-2 text-sm">
+        <p className="mt-2 text-sm text-gray-400">
           {businessName}'s dashboard — tap any section to explore.
         </p>
       </div>
 
-      {/* Dashboard mock */}
-      <div className="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden mb-4">
-        {/* Topbar */}
-        <div className="bg-gray-800/80 px-4 py-2 flex items-center gap-2 border-b border-gray-700">
+      <div className="mb-4 overflow-hidden rounded-2xl border border-gray-800 bg-gray-900">
+        <div className="flex items-center gap-2 border-b border-gray-700 bg-gray-800/80 px-4 py-2">
           <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/60" />
-            <div className="w-3 h-3 rounded-full bg-amber-500/60" />
-            <div className="w-3 h-3 rounded-full bg-green-500/60" />
+            <div className="h-3 w-3 rounded-full bg-red-500/60" />
+            <div className="h-3 w-3 rounded-full bg-amber-500/60" />
+            <div className="h-3 w-3 rounded-full bg-green-500/60" />
           </div>
-          <span className="text-gray-400 text-xs ml-2">
+          <span className="ml-2 truncate text-xs text-gray-400">
             bookedrankedfunded.org / dashboard
           </span>
         </div>
 
-        <div className="p-4 grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 p-4">
           {nicheSections.map((section) => (
             <button
               key={section.id}
               type="button"
-              className={`border rounded-xl p-4 cursor-pointer transition-all duration-300 text-left w-full ${
+              className={`w-full rounded-xl border p-4 text-left transition-all duration-300 ${
                 activeTip === section.id
-                  ? `${section.color} bg-gray-800/60 scale-[1.02]`
+                  ? `${section.color} scale-[1.02] bg-gray-800/60`
                   : "border-gray-700/40 bg-gray-800/20"
               }`}
               onClick={() => setActiveTip(section.id)}
             >
-              <div className="text-2xl mb-2">{section.icon}</div>
-              <p className="text-white text-xs font-semibold">
-                {section.title}
-              </p>
-              <p className="text-gray-400 text-xs mt-1 line-clamp-2">
+              <div className="mb-2 text-2xl">{section.icon}</div>
+              <p className="text-xs font-semibold text-white">{section.title}</p>
+              <p className="mt-1 line-clamp-2 text-xs text-gray-400">
                 {section.desc}
               </p>
             </button>
@@ -139,32 +135,25 @@ export default function DemoStep6BackOffice({ onNext }: Props) {
         </div>
       </div>
 
-      {/* Sliding tip banner — always uses niche-specific backOffice tip */}
-      {activeTip && (
-        <div className="fixed bottom-24 left-0 right-0 px-4 z-40 animate-fade-in">
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-purple-900 border border-purple-600/60 rounded-2xl px-4 py-3 flex items-center gap-3 shadow-lg shadow-purple-900/40">
-              <span className="text-purple-300 text-lg">💡</span>
-              <p className="text-purple-100 text-sm font-medium">
-                {activeTip === 1 || activeTip === 3
-                  ? backOfficeTip
-                  : nicheSections.find((s) => s.id === activeTip)?.tip}
-              </p>
-            </div>
+      {activeMessage && (
+        <div className="mb-5 rounded-2xl border border-purple-600/50 bg-purple-950/70 px-4 py-3 shadow-lg shadow-purple-950/30">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 text-lg text-purple-300">💡</span>
+            <p className="text-sm font-medium leading-6 text-purple-100">
+              {activeMessage}
+            </p>
           </div>
         </div>
       )}
 
-      <div className="mt-4">
-        <button
-          data-ocid="demo.step6.next_button"
-          type="button"
-          onClick={onNext}
-          className="w-full py-4 px-8 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-200"
-        >
-          Next: Business Credit Builder →
-        </button>
-      </div>
+      <button
+        data-ocid="demo.step6.next_button"
+        type="button"
+        onClick={onNext}
+        className="w-full rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-4 text-lg font-bold text-white transition-all duration-200 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25"
+      >
+        Next: Business Credit Builder →
+      </button>
     </div>
   );
 }
