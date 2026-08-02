@@ -187,7 +187,7 @@ export default function MasterAgentPage() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessions, setSessions] = useState<MasterAgentSession[]>([]);
   const [showHistory, setShowHistory] = useState(false);
-  const [activeProvider, setActiveProvider] = useState<string>("Owl Alpha");
+  const [activeProvider, setActiveProvider] = useState<string>("OmniRouter");
   const [selectedProvider, setSelectedProvider] = useState<string>("auto");
   const [messages, setMessages] = useState<
     { role: MessageRole; content: string }[]
@@ -554,7 +554,7 @@ export default function MasterAgentPage() {
               <h1 className="text-xl font-bold text-white">Master Agent</h1>
               <Badge className="bg-amber-500/15 text-amber-300 border border-amber-500/30 text-[10px] px-2 py-0">
                 <Sparkles size={9} className="mr-1" />
-                Powered by Owl Alpha
+                Powered by OmniRouter
               </Badge>
               {/* Provider status badge */}
               <div className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-2.5 py-1">
@@ -628,7 +628,7 @@ export default function MasterAgentPage() {
               </span>
               <span className="text-xs text-slate-200 font-medium">
                 {creds?.openRouterApiKey
-                  ? "OpenRouter Owl Alpha"
+                  ? "OpenRouter via OmniRouter"
                   : creds?.openaiKey
                     ? "OpenAI"
                     : "Needs Setup"}
@@ -851,7 +851,7 @@ export default function MasterAgentPage() {
                 <div className="flex items-center gap-2 text-xs text-slate-500">
                   <RefreshCw size={11} className="text-amber-500" />
                   <span>
-                    Session active — powered by Owl Alpha (openrouter/owl-alpha)
+                    Session active — powered by OmniRouter
                   </span>
                 </div>
               </div>

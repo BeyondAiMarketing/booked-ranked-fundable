@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import AIChatWidget from "../components/AIChatWidget";
+import { EmptyState } from "../components/shared";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -884,21 +885,14 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               {recentLeads.length === 0 ? (
-                <div
-                  className="py-6 text-center"
+                <EmptyState
+                  icon={Users}
+                  title="No leads yet"
+                  description="Add your first lead to start building your pipeline."
+                  actionLabel="Add First Lead"
+                  onAction={() => { window.location.href = "/leads"; }}
                   data-ocid="dashboard.leads.empty"
-                >
-                  <Users size={28} className="text-gray-600 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">No leads yet</p>
-                  <Link to="/leads">
-                    <Button
-                      size="sm"
-                      className="mt-3 bg-indigo-600 hover:bg-indigo-700 text-white"
-                    >
-                      <Plus size={13} className="mr-1" /> Add First Lead
-                    </Button>
-                  </Link>
-                </div>
+                />
               ) : (
                 <div className="space-y-2">
                   {recentLeads.map((lead) => (
@@ -945,13 +939,12 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="px-4 pb-4">
               {recentReviews.length === 0 ? (
-                <div
-                  className="py-6 text-center"
+                <EmptyState
+                  icon={Star}
+                  title="No reviews yet"
+                  description="Reviews from Google and Yelp will appear here once synced."
                   data-ocid="dashboard.reviews.empty"
-                >
-                  <Star size={28} className="text-gray-600 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">No reviews yet</p>
-                </div>
+                />
               ) : (
                 <div className="space-y-3">
                   {recentReviews.map((review) => (

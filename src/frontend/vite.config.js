@@ -2,6 +2,7 @@ import { fileURLToPath, URL } from "url";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import environment from "vite-plugin-environment";
+import { sentryVitePlugin } from "@sentry/vite-plugin";
 
 const ii_url =
   process.env.DFX_NETWORK === "local"
@@ -16,7 +17,7 @@ export default defineConfig({
   logLevel: "error",
   build: {
     emptyOutDir: true,
-    sourcemap: false,
+    sourcemap: true,
     minify: false,
   },
   css: {
@@ -43,6 +44,13 @@ export default defineConfig({
     environment(["II_URL"]),
     environment(["STORAGE_GATEWAY_URL"]),
     react(),
+    sentryVitePlugin({
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      silent: true,
+      disable: !process.env.SENTRY_AUTH_TOKEN,
+    }),
   ],
   resolve: {
     alias: [
@@ -61,5 +69,6 @@ export default defineConfig({
     environment: "jsdom",
     globals: true,
     setupFiles: ["./src/__tests__/setup.ts"],
+    exclude: ["**/node_modules/**", "**/e2e/**"],
   },
 });

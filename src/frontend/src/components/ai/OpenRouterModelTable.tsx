@@ -17,7 +17,7 @@ const TASKS = [
 ];
 
 const MODELS = [
-  { id: "openrouter/owl-alpha", label: "Owl Alpha" },
+  { id: "openrouter/owl-alpha", label: "OmniRouter (Owl Alpha)" },
   { id: "openai/gpt-4o", label: "GPT-4o" },
   { id: "anthropic/claude-sonnet-4-5", label: "Claude Sonnet" },
   { id: "google/gemini-2.0-flash-001", label: "Gemini 2.0 Flash" },

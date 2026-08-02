@@ -32,6 +32,7 @@ import AgencyPartnersPage from "./pages/AgencyPartnersPage";
 import AgentOrchestrationPage from "./pages/AgentOrchestrationPage";
 import AgentServicesPage from "./pages/AgentServicesPage";
 import AgentWorkflowOSPage from "./pages/AgentWorkflowOSPage";
+import OmniRouterPage from "./pages/OmniRouterPage";
 import AnalyticsPage from "./pages/AnalyticsPage";
 import AppointmentsPage from "./pages/AppointmentsPage";
 import ApprovalQueuePage from "./pages/ApprovalQueuePage";
@@ -1033,6 +1034,16 @@ const agentOrchestrationRoute = createRoute({
   ),
 });
 
+const omniRouterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/omni-router",
+  component: () => (
+    <ProtectedRoute adminOnly>
+      <OmniRouterPage />
+    </ProtectedRoute>
+  ),
+});
+
 const adminChatAgentRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/admin-chat-agent",
@@ -1672,6 +1683,7 @@ const routeTree = rootRoute.addChildren([
   agencyPartnersRoute,
   aiLeadIntelligenceRoute,
   agentOrchestrationRoute,
+  omniRouterRoute,
   adminChatAgentRoute,
   adminVoicePreviewRoute,
   domainSetupRoute,

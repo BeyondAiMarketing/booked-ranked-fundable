@@ -279,6 +279,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/csv-lead-import": "Lead Import & Campaign Assignment",
   "/ai-lead-intelligence": "AI Lead Intelligence",
   "/agent-orchestration": "Agent Orchestration",
+  "/omni-router": "OmniRouter",
   "/landing-pages": "Landing Page Builder",
   "/website-studio": "Niche Website Studio",
   "/my-website": "My Website",
@@ -769,6 +770,22 @@ export default function AppLayout({ children }: { children: ReactNode }) {
             <p className="text-[10px] font-semibold text-violet-500/80 uppercase tracking-wider px-2 mt-3 mb-1">
               AI BRAIN
             </p>
+            {/* OmniRouter — primary AI engine, listed first */}
+            <Link
+              to="/omni-router"
+              data-ocid="nav.omnirouter.link"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm mb-1 transition-colors border ${
+                pathname === "/omni-router"
+                  ? "bg-violet-500/20 text-violet-300 border-violet-500/30"
+                  : "text-violet-300 hover:bg-violet-500/10 hover:text-violet-200 border-violet-500/20"
+              }`}
+            >
+              <Sparkles size={16} className="shrink-0" />
+              <span className="flex-1 font-semibold">OmniRouter</span>
+              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-violet-500/20 text-violet-400 border border-violet-500/30 hidden group-hover:block">
+                PRIMARY
+              </span>
+            </Link>
             <Link
               to="/admin/ai-providers"
               data-ocid="nav.aiproviders.link"

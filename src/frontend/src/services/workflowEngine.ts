@@ -260,7 +260,7 @@ export class WorkflowEngine {
       }
     }
 
-    // Attempt routeMasterAgentCall (Owl Alpha → OpenAI → Gemini → NVIDIA fallback chain)
+    // Attempt routeMasterAgentCall (OmniRouter → OpenAI → Gemini → NVIDIA fallback chain)
     // Keys are injected via setApiKeys() — passing {} silently skips OpenRouter/OpenAI/NVIDIA.
     try {
       const masterResult = await routeMasterAgentCall(prompt, this._apiKeys);

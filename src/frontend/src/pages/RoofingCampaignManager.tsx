@@ -308,7 +308,7 @@ export default function RoofingCampaignManager() {
             Roofing Outreach Campaign
           </h1>
           <p className="text-slate-400 mt-1">
-            7-email sequence &bull; Local ranking audit hook &bull; Owl Alpha AI
+            7-email sequence &bull; Local ranking audit hook &bull; OmniRouter AI
             copy
           </p>
         </div>

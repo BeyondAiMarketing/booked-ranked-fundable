@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import type { WorkflowLogEntry, WorkflowStatus } from "../backend";
 import type { WorkflowLog } from "../types/socialContent";
 import { useActor } from "./useActor";
 
@@ -13,8 +14,23 @@ export function useWorkflowLog() {
       if (!actor) return;
       setLoading(true);
       try {
-        const result = await actor.createWorkflowLog(data);
-        setLogs((prev) => [result as WorkflowLog, ...prev]);
+        const entry: WorkflowLogEntry = {
+          id: crypto.randomUUID(),
+          workflowId: data.workflowId,
+          tenantId: data.agentId,
+          agentType: data.agentName,
+          action: data.action,
+          status: data.status as WorkflowStatus,
+          notes: data.details,
+          stepIndex: BigInt(0),
+          createdAt: BigInt(Date.now()),
+        };
+        const result = await actor.logWorkflowEntry(entry);
+        if ("ok" in result) {
+          setLogs((prev) => [{ ...data, id: entry.id, createdAt: data.timestamp } as WorkflowLog, ...prev]);
+        } else {
+          setError(result.err);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -29,10 +45,25 @@ export function useWorkflowLog() {
       if (!actor) return;
       setLoading(true);
       try {
-        const result = await actor.updateWorkflowLog(id, updates);
-        setLogs((prev) =>
-          prev.map((l) => (l.id === id ? (result as WorkflowLog) : l)),
-        );
+        const entry: WorkflowLogEntry = {
+          id,
+          workflowId: updates.workflowId ?? "",
+          tenantId: updates.agentId ?? "",
+          agentType: updates.agentName ?? "",
+          action: updates.action ?? "",
+          status: (updates.status ?? "pending") as WorkflowStatus,
+          notes: updates.details ?? "",
+          stepIndex: BigInt(0),
+          createdAt: BigInt(Date.now()),
+        };
+        const result = await actor.logWorkflowEntry(entry);
+        if ("ok" in result) {
+          setLogs((prev) =>
+            prev.map((l) => (l.id === id ? { ...l, ...updates } : l)),
+          );
+        } else {
+          setError(result.err);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
@@ -63,12 +94,16 @@ export function useWorkflowLog() {
   );
 
   const listByAgent = useCallback(
-    async (agentId: string) => {
+    async (tenantId: string) => {
       if (!actor) return;
       setLoading(true);
       try {
-        const result = await actor.listWorkflowLogsByAgent(agentId);
-        setLogs(result as WorkflowLog[]);
+        const result = await actor.getWorkflowLogsByTenant(tenantId);
+        if ("ok" in result) {
+          setLogs(result.ok as WorkflowLog[]);
+        } else {
+          setError(result.err);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {

@@ -3,6 +3,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import AILeadSearchPanel from "../components/leads/AILeadSearchPanel";
 import type { GeneratedLeadUI } from "../components/leads/LeadCard";
+import { EmptyState } from "../components/shared";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -294,24 +295,18 @@ export default function LeadsPage() {
           {/* Leads Table */}
           <div className="bg-card border border-gray-800 rounded-xl overflow-hidden">
             {filtered.length === 0 ? (
-              <div className="py-16 text-center" data-ocid="leads.empty_state">
-                <Users size={36} className="text-gray-600 mx-auto mb-3" />
-                <p className="text-gray-400 font-medium">No leads found</p>
-                <p className="text-gray-500 text-sm mt-1">
-                  {searchQuery || filterStatus !== "all"
-                    ? "Try adjusting your filters"
-                    : "Add your first lead to get started"}
-                </p>
-                {!searchQuery && filterStatus === "all" && (
-                  <Button
-                    size="sm"
-                    className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white"
-                    onClick={() => setOpen(true)}
-                  >
-                    <Plus size={13} className="mr-1" /> Add Lead
-                  </Button>
-                )}
-              </div>
+              <EmptyState
+                icon={Users}
+                title={searchQuery || filterStatus !== "all" ? "No leads match your filters" : "No leads yet"}
+                description={
+                  searchQuery || filterStatus !== "all"
+                    ? "Try adjusting your search or filter criteria."
+                    : "Add your first lead manually or use AI Lead Search to discover prospects."
+                }
+                actionLabel={!searchQuery && filterStatus === "all" ? "Add Lead" : undefined}
+                onAction={!searchQuery && filterStatus === "all" ? () => setOpen(true) : undefined}
+                data-ocid="leads.empty_state"
+              />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
