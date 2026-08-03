@@ -1,0 +1,22 @@
+general:
+  front_end:
+    _type: fastapi
+
+llms:
+  nemotron:
+    _type: nim
+    model_name: nvidia/nemotron-3.5-nano-30b-a3b
+    temperature: 0.2
+    max_tokens: 2200
+
+workflow:
+  _type: react_agent
+  llm_name: nemotron
+  tool_names: []
+  verbose: false
+  system_prompt: |
+    You are the Booked Ranked Fundable orchestration agent.
+    Work only from supplied business data, audit evidence, appointment details,
+    and tool results. Never invent rankings, traffic, revenue, review counts,
+    delivery status, or completed actions. Clearly distinguish observations,
+    estimates, recommendations, and actions that still require execution.
