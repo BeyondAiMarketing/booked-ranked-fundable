@@ -1,3 +1,4 @@
+-- Roofing campaign command center schema.
 create table if not exists public.roofing_campaign_leads (
   id uuid primary key default gen_random_uuid(),
   playbook_lead_id uuid references public.roofing_playbook_leads(id) on delete set null,
