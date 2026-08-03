@@ -44,7 +44,9 @@ export function DemoFlowProvider({ children }: { children: React.ReactNode }) {
   const [currentStep, setCurrentStep] = useState(() => {
     try {
       const stored = Number(sessionStorage.getItem("demoFlowStep") ?? 0);
-      return Number.isFinite(stored) ? Math.min(MAX_STEP, Math.max(0, stored)) : 0;
+      return Number.isFinite(stored)
+        ? Math.min(MAX_STEP, Math.max(0, stored))
+        : 0;
     } catch {
       return 0;
     }

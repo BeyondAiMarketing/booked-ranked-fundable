@@ -1,7 +1,7 @@
-import { useActor } from "@/hooks/useActor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useActor } from "@/hooks/useActor";
 import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
@@ -115,7 +115,10 @@ export default function AuditFormSection({
                   data-ocid="audit_form.error_state"
                   className="flex items-start gap-3 rounded-xl bg-rose-500/10 border border-rose-500/30 px-4 py-3"
                 >
-                  <AlertCircle size={16} className="text-rose-400 mt-0.5 flex-shrink-0" />
+                  <AlertCircle
+                    size={16}
+                    className="text-rose-400 mt-0.5 flex-shrink-0"
+                  />
                   <p className="text-rose-300 text-sm">{error}</p>
                 </div>
               )}

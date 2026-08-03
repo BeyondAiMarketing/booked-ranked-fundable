@@ -1,4 +1,3 @@
-import { useActor } from "@/hooks/useActor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useActor } from "@/hooks/useActor";
 import {
   AlertCircle,
   Calendar,
@@ -28,11 +28,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
 /** Limit launch-facing niche picker to the three MVP niches */
-const NICHES = [
-  "Roofing",
-  "HVAC",
-  "Plumbing",
-];
+const NICHES = ["Roofing", "HVAC", "Plumbing"];
 
 const TIME_SLOTS = [
   "9:00 AM",
@@ -435,9 +431,14 @@ export function BookDemoModal({
                     disabled={!canProceedStep2 || bookingLoading}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
                   >
-                    {bookingLoading
-                      ? "Saving..."
-                      : <>Confirm Booking <ChevronRight size={16} className="ml-1" /></>}
+                    {bookingLoading ? (
+                      "Saving..."
+                    ) : (
+                      <>
+                        Confirm Booking{" "}
+                        <ChevronRight size={16} className="ml-1" />
+                      </>
+                    )}
                   </Button>
                 </div>
                 {bookingError && (
@@ -445,7 +446,10 @@ export function BookDemoModal({
                     data-ocid="book_demo.error_state"
                     className="flex items-start gap-2 mt-3 rounded-xl bg-rose-500/10 border border-rose-500/30 px-3 py-2"
                   >
-                    <AlertCircle size={14} className="text-rose-400 mt-0.5 flex-shrink-0" />
+                    <AlertCircle
+                      size={14}
+                      className="text-rose-400 mt-0.5 flex-shrink-0"
+                    />
                     <p className="text-rose-300 text-xs">{bookingError}</p>
                   </div>
                 )}

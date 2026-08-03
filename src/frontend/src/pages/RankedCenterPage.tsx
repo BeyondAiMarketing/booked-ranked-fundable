@@ -38,7 +38,9 @@ const REVIEWS = [
 export default function RankedCenterPage() {
   const navigate = useNavigate();
   const { demoInfo } = useApp();
-  const [tab, setTab] = useState<"overview" | "posts" | "reviews" | "actions">("overview");
+  const [tab, setTab] = useState<"overview" | "posts" | "reviews" | "actions">(
+    "overview",
+  );
 
   const nicheKey = demoInfo?.niche ?? "roofing";
   const nicheConfig = getHomeServiceNicheConfig(nicheKey);
@@ -47,52 +49,160 @@ export default function RankedCenterPage() {
   // Generate niche-weighted estimated scores
   const scorecards = useMemo(() => {
     const weights = nicheConfig?.rankedScoringWeights ?? {
-      gbpHealth: 0.25, reviewVelocity: 0.25, localCitations: 0.15,
-      seoScore: 0.15, contentFreshness: 0.1, competitorGap: 0.1,
+      gbpHealth: 0.25,
+      reviewVelocity: 0.25,
+      localCitations: 0.15,
+      seoScore: 0.15,
+      contentFreshness: 0.1,
+      competitorGap: 0.1,
     };
     // Base scores — vary by niche to reflect different market dynamics
-    const bases = nicheKey === "hvac"
-      ? { gbpHealth: 70, reviewVelocity: 50, localCitations: 65, seoScore: 78, contentFreshness: 45, competitorGap: 55 }
-      : nicheKey === "plumbing"
-      ? { gbpHealth: 68, reviewVelocity: 55, localCitations: 62, seoScore: 75, contentFreshness: 50, competitorGap: 58 }
-      : { gbpHealth: 72, reviewVelocity: 45, localCitations: 68, seoScore: 81, contentFreshness: 55, competitorGap: 60 };
+    const bases =
+      nicheKey === "hvac"
+        ? {
+            gbpHealth: 70,
+            reviewVelocity: 50,
+            localCitations: 65,
+            seoScore: 78,
+            contentFreshness: 45,
+            competitorGap: 55,
+          }
+        : nicheKey === "plumbing"
+          ? {
+              gbpHealth: 68,
+              reviewVelocity: 55,
+              localCitations: 62,
+              seoScore: 75,
+              contentFreshness: 50,
+              competitorGap: 58,
+            }
+          : {
+              gbpHealth: 72,
+              reviewVelocity: 45,
+              localCitations: 68,
+              seoScore: 81,
+              contentFreshness: 55,
+              competitorGap: 60,
+            };
 
     return [
-      { label: "GBP Health", score: bases.gbpHealth, icon: Building2, color: "text-[#FFD700]", weight: weights.gbpHealth },
-      { label: "Review Velocity", score: bases.reviewVelocity, icon: Star, color: "text-rose-400", weight: weights.reviewVelocity },
-      { label: "Local Citations", score: bases.localCitations, icon: MapPin, color: "text-[#00BFFF]", weight: weights.localCitations },
-      { label: "SEO Score", score: bases.seoScore, icon: Search, color: "text-emerald-400", weight: weights.seoScore },
-      { label: "Content Freshness", score: bases.contentFreshness, icon: FileText, color: "text-[#00BFFF]", weight: weights.contentFreshness },
-      { label: "Competitor Gap", score: bases.competitorGap, icon: TrendingUp, color: "text-[#FFD700]", weight: weights.competitorGap },
+      {
+        label: "GBP Health",
+        score: bases.gbpHealth,
+        icon: Building2,
+        color: "text-[#FFD700]",
+        weight: weights.gbpHealth,
+      },
+      {
+        label: "Review Velocity",
+        score: bases.reviewVelocity,
+        icon: Star,
+        color: "text-rose-400",
+        weight: weights.reviewVelocity,
+      },
+      {
+        label: "Local Citations",
+        score: bases.localCitations,
+        icon: MapPin,
+        color: "text-[#00BFFF]",
+        weight: weights.localCitations,
+      },
+      {
+        label: "SEO Score",
+        score: bases.seoScore,
+        icon: Search,
+        color: "text-emerald-400",
+        weight: weights.seoScore,
+      },
+      {
+        label: "Content Freshness",
+        score: bases.contentFreshness,
+        icon: FileText,
+        color: "text-[#00BFFF]",
+        weight: weights.contentFreshness,
+      },
+      {
+        label: "Competitor Gap",
+        score: bases.competitorGap,
+        icon: TrendingUp,
+        color: "text-[#FFD700]",
+        weight: weights.competitorGap,
+      },
     ];
   }, [nicheKey, nicheConfig]);
 
   // Niche-aware GBP post samples
   const gbpPosts = useMemo(() => {
-    if (nicheKey === "hvac") return [
-      { id: "gp1", title: "Spring AC Tune-Up — Limited Spots Available", type: "offer", status: "draft" },
-      { id: "gp2", title: "Emergency HVAC Response — We're Available 24/7", type: "update", status: "approved" },
-      { id: "gp3", title: "Customer Story: Garcia Family Replacement", type: "story", status: "pending_approval" },
-    ];
-    if (nicheKey === "plumbing") return [
-      { id: "gp1", title: "Winter Pipe Freeze Prevention — Free Inspection", type: "offer", status: "draft" },
-      { id: "gp2", title: "Emergency Plumbing — We Answer 24/7", type: "update", status: "approved" },
-      { id: "gp3", title: "Customer Story: Martinez Sewer Line Repair", type: "story", status: "pending_approval" },
-    ];
+    if (nicheKey === "hvac")
+      return [
+        {
+          id: "gp1",
+          title: "Spring AC Tune-Up — Limited Spots Available",
+          type: "offer",
+          status: "draft",
+        },
+        {
+          id: "gp2",
+          title: "Emergency HVAC Response — We're Available 24/7",
+          type: "update",
+          status: "approved",
+        },
+        {
+          id: "gp3",
+          title: "Customer Story: Garcia Family Replacement",
+          type: "story",
+          status: "pending_approval",
+        },
+      ];
+    if (nicheKey === "plumbing")
+      return [
+        {
+          id: "gp1",
+          title: "Winter Pipe Freeze Prevention — Free Inspection",
+          type: "offer",
+          status: "draft",
+        },
+        {
+          id: "gp2",
+          title: "Emergency Plumbing — We Answer 24/7",
+          type: "update",
+          status: "approved",
+        },
+        {
+          id: "gp3",
+          title: "Customer Story: Martinez Sewer Line Repair",
+          type: "story",
+          status: "pending_approval",
+        },
+      ];
     return [
-      { id: "gp1", title: "Spring Roof Inspection Special", type: "offer", status: "draft" },
-      { id: "gp2", title: "Customer Story: The Martinez Family", type: "story", status: "pending_approval" },
-      { id: "gp3", title: "Hail Damage? We Can Help", type: "update", status: "approved" },
+      {
+        id: "gp1",
+        title: "Spring Roof Inspection Special",
+        type: "offer",
+        status: "draft",
+      },
+      {
+        id: "gp2",
+        title: "Customer Story: The Martinez Family",
+        type: "story",
+        status: "pending_approval",
+      },
+      {
+        id: "gp3",
+        title: "Hail Damage? We Can Help",
+        type: "update",
+        status: "approved",
+      },
     ];
   }, [nicheKey]);
 
   const overallScore = Math.round(
     scorecards.reduce((a, s) => a + s.score * s.weight, 0) /
-    scorecards.reduce((a, s) => a + s.weight, 0),
+      scorecards.reduce((a, s) => a + s.weight, 0),
   );
 
   const topActions = nicheConfig?.topRecommendedActions ?? [];
-
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -131,7 +241,8 @@ export default function RankedCenterPage() {
       <div className="flex items-center gap-2 text-xs text-white/40 bg-white/3 border border-white/8 rounded-xl px-4 py-2">
         <TrendingUp size={12} className="flex-shrink-0" />
         <span>
-          Estimated scores based on typical {nicheName} businesses in your area. Connect live Google data to see your actual numbers.
+          Estimated scores based on typical {nicheName} businesses in your area.
+          Connect live Google data to see your actual numbers.
         </span>
       </div>
 
@@ -307,7 +418,8 @@ export default function RankedCenterPage() {
       {tab === "actions" && (
         <div className="space-y-3" data-ocid="ranked.actions.list">
           <p className="text-xs text-white/50 mb-4">
-            Top 5 recommended actions for {nicheName} businesses to improve local visibility.
+            Top 5 recommended actions for {nicheName} businesses to improve
+            local visibility.
           </p>
           {topActions.map((action, i) => (
             <Card

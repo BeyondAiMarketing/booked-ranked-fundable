@@ -126,7 +126,9 @@ export default function DemoStep6BackOffice({ onNext }: Props) {
               onClick={() => setActiveTip(section.id)}
             >
               <div className="mb-2 text-2xl">{section.icon}</div>
-              <p className="text-xs font-semibold text-white">{section.title}</p>
+              <p className="text-xs font-semibold text-white">
+                {section.title}
+              </p>
               <p className="mt-1 line-clamp-2 text-xs text-gray-400">
                 {section.desc}
               </p>

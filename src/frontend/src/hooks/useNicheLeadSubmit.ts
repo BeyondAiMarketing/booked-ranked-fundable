@@ -160,7 +160,16 @@ export function useNicheLeadSubmit({
         } as never,
       });
     },
-    [actor, navigate, nicheKey, nicheName, source, loadingItems, onLoadingStep, redirectTo],
+    [
+      actor,
+      navigate,
+      nicheKey,
+      nicheName,
+      source,
+      loadingItems,
+      onLoadingStep,
+      redirectTo,
+    ],
   );
 
   return { loading, submit };

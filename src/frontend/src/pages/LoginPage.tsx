@@ -11,7 +11,9 @@ export default function LoginPage() {
         </div>
 
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-white">Booked Ranked Fundable</h1>
+          <h1 className="text-3xl font-bold text-white">
+            Booked Ranked Fundable
+          </h1>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-300">
             Secure account access is being connected to the new BRF identity and
             database system. The previous browser-stored credentials have been
@@ -37,20 +39,28 @@ export default function LoginPage() {
               <h2 className="font-semibold text-white">Client onboarding</h2>
             </div>
             <p className="mt-3 text-sm leading-6 text-slate-300">
-              New organizations will receive isolated workspaces for their leads,
-              bookings, ranked assessments, and funding-readiness workflows.
+              New organizations will receive isolated workspaces for their
+              leads, bookings, ranked assessments, and funding-readiness
+              workflows.
             </p>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Button asChild className="w-full bg-indigo-600 hover:bg-indigo-500 sm:w-auto">
+          <Button
+            asChild
+            className="w-full bg-indigo-600 hover:bg-indigo-500 sm:w-auto"
+          >
             <Link to="/demo">
               <PlayCircle className="mr-2" size={18} />
               Try the live demo
             </Link>
           </Button>
-          <Button asChild variant="outline" className="w-full border-slate-600 text-slate-200 sm:w-auto">
+          <Button
+            asChild
+            variant="outline"
+            className="w-full border-slate-600 text-slate-200 sm:w-auto"
+          >
             <Link to="/">
               <LockKeyhole className="mr-2" size={18} />
               Return to website
