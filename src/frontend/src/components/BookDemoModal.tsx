@@ -1,3 +1,4 @@
+import { useActor } from "@/hooks/useActor";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  AlertCircle,
   Calendar,
   CheckCircle2,
   ChevronLeft,
@@ -25,13 +27,11 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 
+/** Limit launch-facing niche picker to the three MVP niches */
 const NICHES = [
-  "Plumbing",
-  "Med Spa",
-  "HVAC",
-  "Restoration",
   "Roofing",
-  "Carpet Cleaning",
+  "HVAC",
+  "Plumbing",
 ];
 
 const TIME_SLOTS = [
@@ -95,6 +95,7 @@ export function BookDemoModal({
   onOpenChange,
   defaultNiche,
 }: BookDemoModalProps) {
+  const { actor } = useActor();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<FormState>({
     firstName: "",
@@ -105,6 +106,8 @@ export function BookDemoModal({
   });
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingLoading, setBookingLoading] = useState(false);
 
   const availableDates = getAvailableDates();
 
@@ -121,6 +124,7 @@ export function BookDemoModal({
       });
       setSelectedDate(null);
       setSelectedTime(null);
+      setBookingError(null);
     }, 300);
   };
 
@@ -138,6 +142,42 @@ export function BookDemoModal({
     const month = MONTHS[selectedDate.getMonth()];
     const day = selectedDate.getDate();
     return `${dayName}, ${month} ${day}`;
+  };
+
+  const handleConfirmBooking = async () => {
+    if (!selectedDate || !selectedTime) return;
+    setBookingLoading(true);
+    setBookingError(null);
+    const slotLabel = `${formatConfirmDate()} at ${selectedTime}`;
+    try {
+      if (actor) {
+        await actor.createLead({
+          id: "",
+          tenantId: "strategy_call_booking",
+          name: form.firstName,
+          email: form.email,
+          phone: form.phone || "",
+          niche: (form.niche || "general").toLowerCase(),
+          status: "appointment_scheduled",
+          source: "book_demo_modal",
+          notes: JSON.stringify({
+            businessName: form.businessName,
+            niche: form.niche,
+            slotTime: slotLabel,
+            bookingType: "strategy_call",
+          }),
+          agentSubscriptions: [],
+          createdAt: BigInt(Date.now()) * BigInt(1_000_000),
+        });
+      }
+      setStep(3);
+    } catch {
+      setBookingError(
+        "We couldn't save your booking right now. Please try again or contact us directly.",
+      );
+    } finally {
+      setBookingLoading(false);
+    }
   };
 
   return (
@@ -391,13 +431,24 @@ export function BookDemoModal({
                   </Button>
                   <Button
                     data-ocid="book_demo.confirm.primary_button"
-                    onClick={() => setStep(3)}
-                    disabled={!canProceedStep2}
+                    onClick={handleConfirmBooking}
+                    disabled={!canProceedStep2 || bookingLoading}
                     className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
                   >
-                    Confirm Booking <ChevronRight size={16} className="ml-1" />
+                    {bookingLoading
+                      ? "Saving..."
+                      : <>Confirm Booking <ChevronRight size={16} className="ml-1" /></>}
                   </Button>
                 </div>
+                {bookingError && (
+                  <div
+                    data-ocid="book_demo.error_state"
+                    className="flex items-start gap-2 mt-3 rounded-xl bg-rose-500/10 border border-rose-500/30 px-3 py-2"
+                  >
+                    <AlertCircle size={14} className="text-rose-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-rose-300 text-xs">{bookingError}</p>
+                  </div>
+                )}
               </motion.div>
             )}
 

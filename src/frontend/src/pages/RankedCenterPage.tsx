@@ -1,10 +1,13 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useApp } from "@/context/AppContext";
+import { getHomeServiceNicheConfig } from "@/data/homeServiceNicheConfig";
 import { useNavigate } from "@tanstack/react-router";
 import {
   Building2,
+  CheckCircle2,
   FileText,
   Globe,
   MapPin,
@@ -13,52 +16,7 @@ import {
   Star,
   TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
-
-const SCORECARDS = [
-  { label: "GBP Health", score: 72, icon: Building2, color: "text-[#FFD700]" },
-  { label: "Review Velocity", score: 45, icon: Star, color: "text-rose-400" },
-  {
-    label: "Local Citations",
-    score: 68,
-    icon: MapPin,
-    color: "text-[#00BFFF]",
-  },
-  { label: "SEO Score", score: 81, icon: Search, color: "text-emerald-400" },
-  {
-    label: "Content Freshness",
-    score: 55,
-    icon: FileText,
-    color: "text-[#00BFFF]",
-  },
-  {
-    label: "Competitor Gap",
-    score: 60,
-    icon: TrendingUp,
-    color: "text-[#FFD700]",
-  },
-];
-
-const GBP_POSTS = [
-  {
-    id: "gp1",
-    title: "Spring Roof Inspection Special",
-    type: "offer",
-    status: "draft",
-  },
-  {
-    id: "gp2",
-    title: "Customer Story: The Martinez Family",
-    type: "story",
-    status: "pending_approval",
-  },
-  {
-    id: "gp3",
-    title: "Hail Damage? We Can Help",
-    type: "update",
-    status: "approved",
-  },
-];
+import { useMemo, useState } from "react";
 
 const REVIEWS = [
   {
@@ -79,11 +37,62 @@ const REVIEWS = [
 
 export default function RankedCenterPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"overview" | "posts" | "reviews">("overview");
+  const { demoInfo } = useApp();
+  const [tab, setTab] = useState<"overview" | "posts" | "reviews" | "actions">("overview");
+
+  const nicheKey = demoInfo?.niche ?? "roofing";
+  const nicheConfig = getHomeServiceNicheConfig(nicheKey);
+  const nicheName = nicheConfig?.name ?? "Business";
+
+  // Generate niche-weighted estimated scores
+  const scorecards = useMemo(() => {
+    const weights = nicheConfig?.rankedScoringWeights ?? {
+      gbpHealth: 0.25, reviewVelocity: 0.25, localCitations: 0.15,
+      seoScore: 0.15, contentFreshness: 0.1, competitorGap: 0.1,
+    };
+    // Base scores — vary by niche to reflect different market dynamics
+    const bases = nicheKey === "hvac"
+      ? { gbpHealth: 70, reviewVelocity: 50, localCitations: 65, seoScore: 78, contentFreshness: 45, competitorGap: 55 }
+      : nicheKey === "plumbing"
+      ? { gbpHealth: 68, reviewVelocity: 55, localCitations: 62, seoScore: 75, contentFreshness: 50, competitorGap: 58 }
+      : { gbpHealth: 72, reviewVelocity: 45, localCitations: 68, seoScore: 81, contentFreshness: 55, competitorGap: 60 };
+
+    return [
+      { label: "GBP Health", score: bases.gbpHealth, icon: Building2, color: "text-[#FFD700]", weight: weights.gbpHealth },
+      { label: "Review Velocity", score: bases.reviewVelocity, icon: Star, color: "text-rose-400", weight: weights.reviewVelocity },
+      { label: "Local Citations", score: bases.localCitations, icon: MapPin, color: "text-[#00BFFF]", weight: weights.localCitations },
+      { label: "SEO Score", score: bases.seoScore, icon: Search, color: "text-emerald-400", weight: weights.seoScore },
+      { label: "Content Freshness", score: bases.contentFreshness, icon: FileText, color: "text-[#00BFFF]", weight: weights.contentFreshness },
+      { label: "Competitor Gap", score: bases.competitorGap, icon: TrendingUp, color: "text-[#FFD700]", weight: weights.competitorGap },
+    ];
+  }, [nicheKey, nicheConfig]);
+
+  // Niche-aware GBP post samples
+  const gbpPosts = useMemo(() => {
+    if (nicheKey === "hvac") return [
+      { id: "gp1", title: "Spring AC Tune-Up — Limited Spots Available", type: "offer", status: "draft" },
+      { id: "gp2", title: "Emergency HVAC Response — We're Available 24/7", type: "update", status: "approved" },
+      { id: "gp3", title: "Customer Story: Garcia Family Replacement", type: "story", status: "pending_approval" },
+    ];
+    if (nicheKey === "plumbing") return [
+      { id: "gp1", title: "Winter Pipe Freeze Prevention — Free Inspection", type: "offer", status: "draft" },
+      { id: "gp2", title: "Emergency Plumbing — We Answer 24/7", type: "update", status: "approved" },
+      { id: "gp3", title: "Customer Story: Martinez Sewer Line Repair", type: "story", status: "pending_approval" },
+    ];
+    return [
+      { id: "gp1", title: "Spring Roof Inspection Special", type: "offer", status: "draft" },
+      { id: "gp2", title: "Customer Story: The Martinez Family", type: "story", status: "pending_approval" },
+      { id: "gp3", title: "Hail Damage? We Can Help", type: "update", status: "approved" },
+    ];
+  }, [nicheKey]);
 
   const overallScore = Math.round(
-    SCORECARDS.reduce((a, s) => a + s.score, 0) / SCORECARDS.length,
+    scorecards.reduce((a, s) => a + s.score * s.weight, 0) /
+    scorecards.reduce((a, s) => a + s.weight, 0),
   );
+
+  const topActions = nicheConfig?.topRecommendedActions ?? [];
+
 
   return (
     <div className="space-y-6 p-4 md:p-6">
@@ -91,7 +100,7 @@ export default function RankedCenterPage() {
         <div>
           <h1 className="text-3xl font-bold text-white">Ranked Center</h1>
           <p className="text-sm text-white/70">
-            Local SEO, GBP, reviews, and citations
+            {nicheName} — Local SEO, GBP, reviews, and citations
           </p>
         </div>
         <div className="flex gap-2">
@@ -116,6 +125,14 @@ export default function RankedCenterPage() {
             GBP Posts
           </Button>
         </div>
+      </div>
+
+      {/* Estimated score notice */}
+      <div className="flex items-center gap-2 text-xs text-white/40 bg-white/3 border border-white/8 rounded-xl px-4 py-2">
+        <TrendingUp size={12} className="flex-shrink-0" />
+        <span>
+          Estimated scores based on typical {nicheName} businesses in your area. Connect live Google data to see your actual numbers.
+        </span>
       </div>
 
       {/* Overall Score */}
@@ -145,7 +162,7 @@ export default function RankedCenterPage() {
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-white/10 pb-2">
-        {(["overview", "posts", "reviews"] as const).map((t) => (
+        {(["overview", "posts", "reviews", "actions"] as const).map((t) => (
           <button
             key={t}
             type="button"
@@ -164,7 +181,7 @@ export default function RankedCenterPage() {
 
       {tab === "overview" && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {SCORECARDS.map((s) => (
+          {scorecards.map((s) => (
             <Card
               key={s.label}
               className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 rounded-2xl transition-all duration-200"
@@ -190,7 +207,7 @@ export default function RankedCenterPage() {
 
       {tab === "posts" && (
         <div className="space-y-3">
-          {GBP_POSTS.map((post) => (
+          {gbpPosts.map((post) => (
             <Card
               key={post.id}
               className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 rounded-2xl transition-all duration-200"
@@ -220,7 +237,7 @@ export default function RankedCenterPage() {
               </CardContent>
             </Card>
           ))}
-          {GBP_POSTS.length === 0 && (
+          {gbpPosts.length === 0 && (
             <div
               className="text-center py-8"
               data-ocid="ranked.posts.empty_state"
@@ -284,6 +301,35 @@ export default function RankedCenterPage() {
               <p className="text-white/50 text-sm">No reviews to display.</p>
             </div>
           )}
+        </div>
+      )}
+
+      {tab === "actions" && (
+        <div className="space-y-3" data-ocid="ranked.actions.list">
+          <p className="text-xs text-white/50 mb-4">
+            Top 5 recommended actions for {nicheName} businesses to improve local visibility.
+          </p>
+          {topActions.map((action, i) => (
+            <Card
+              key={action.title}
+              className="bg-white/5 backdrop-blur-xl border-white/10 hover:bg-white/10 rounded-2xl transition-all duration-200"
+              data-ocid={`ranked.action.${i + 1}.card`}
+            >
+              <CardContent className="p-4 flex items-start gap-4">
+                <div className="w-7 h-7 rounded-full bg-[#00BFFF]/15 border border-[#00BFFF]/30 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <CheckCircle2 size={14} className="text-[#00BFFF]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white/90 mb-1">
+                    {i + 1}. {action.title}
+                  </p>
+                  <p className="text-xs text-white/60 leading-relaxed">
+                    {action.description}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       )}
     </div>

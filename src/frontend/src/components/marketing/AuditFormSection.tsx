@@ -1,7 +1,8 @@
+import { useActor } from "@/hooks/useActor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
 interface AuditFormSectionProps {
@@ -17,9 +18,12 @@ export default function AuditFormSection({
   nicheKey,
   nicheName,
 }: AuditFormSectionProps) {
+  const { actor } = useActor();
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState({
+    contactName: "",
     businessName: "",
     website: "",
     email: "",
@@ -30,10 +34,37 @@ export default function AuditFormSection({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    // Simulate brief processing
-    await new Promise((r) => setTimeout(r, 1200));
-    setLoading(false);
-    setSubmitted(true);
+    setError(null);
+
+    try {
+      if (actor) {
+        await actor.createLead({
+          id: "",
+          tenantId: `${nicheKey}_audit`,
+          name: form.contactName || form.businessName,
+          email: form.email,
+          phone: form.phone || "",
+          niche: nicheKey,
+          status: "new_lead",
+          source: "audit_form",
+          notes: JSON.stringify({
+            businessName: form.businessName,
+            website: form.website,
+            serviceArea: form.serviceArea,
+            formType: "free_audit",
+          }),
+          agentSubscriptions: [],
+          createdAt: BigInt(Date.now()) * BigInt(1_000_000),
+        });
+      }
+      setSubmitted(true);
+    } catch {
+      setError(
+        "Something went wrong saving your request. Please try again or email us directly.",
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const buttonLabel = nicheName
@@ -79,7 +110,36 @@ export default function AuditFormSection({
               {/* Hidden niche field */}
               <input type="hidden" name="niche" value={nicheKey} />
 
+              {error && (
+                <div
+                  data-ocid="audit_form.error_state"
+                  className="flex items-start gap-3 rounded-xl bg-rose-500/10 border border-rose-500/30 px-4 py-3"
+                >
+                  <AlertCircle size={16} className="text-rose-400 mt-0.5 flex-shrink-0" />
+                  <p className="text-rose-300 text-sm">{error}</p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label
+                    htmlFor="audit-contact"
+                    className="text-slate-200 text-sm"
+                  >
+                    Your Name *
+                  </Label>
+                  <Input
+                    id="audit-contact"
+                    data-ocid="audit_form.input"
+                    placeholder="First Last"
+                    value={form.contactName}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, contactName: e.target.value }))
+                    }
+                    required
+                    className="bg-slate-800 border-white/10 text-white placeholder:text-slate-200"
+                  />
+                </div>
                 <div className="space-y-1.5">
                   <Label
                     htmlFor="audit-business"
@@ -99,26 +159,27 @@ export default function AuditFormSection({
                     className="bg-slate-800 border-white/10 text-white placeholder:text-slate-200"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="audit-website"
-                    className="text-slate-200 text-sm"
-                  >
-                    Website URL *
-                  </Label>
-                  <Input
-                    id="audit-website"
-                    data-ocid="audit_form.input"
-                    type="url"
-                    placeholder="https://yourbusiness.com"
-                    value={form.website}
-                    onChange={(e) =>
-                      setForm((p) => ({ ...p, website: e.target.value }))
-                    }
-                    required
-                    className="bg-slate-800 border-white/10 text-white placeholder:text-slate-200"
-                  />
-                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="audit-website"
+                  className="text-slate-200 text-sm"
+                >
+                  Website URL *
+                </Label>
+                <Input
+                  id="audit-website"
+                  data-ocid="audit_form.input"
+                  type="url"
+                  placeholder="https://yourbusiness.com"
+                  value={form.website}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, website: e.target.value }))
+                  }
+                  required
+                  className="bg-slate-800 border-white/10 text-white placeholder:text-slate-200"
+                />
               </div>
 
               <div className="space-y-1.5">
@@ -186,7 +247,7 @@ export default function AuditFormSection({
                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-12 text-base font-semibold"
               >
                 {loading ? (
-                  "Preparing your audit..."
+                  "Saving your request..."
                 ) : (
                   <>
                     {buttonLabel} <ArrowRight size={16} className="ml-2" />

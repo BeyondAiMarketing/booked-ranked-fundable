@@ -2,6 +2,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { useApp } from "@/context/AppContext";
+import { getHomeServiceNicheConfig } from "@/data/homeServiceNicheConfig";
 import {
   AlertTriangle,
   Award,
@@ -74,6 +76,11 @@ const CATEGORIES = [
 ];
 
 export default function FundedCenterPage() {
+  const { demoInfo } = useApp();
+  const nicheKey = demoInfo?.niche ?? "roofing";
+  const nicheConfig = getHomeServiceNicheConfig(nicheKey);
+  const nicheName = nicheConfig?.name ?? "Business";
+
   const completeCount = READINESS_ITEMS.filter(
     (i) => i.status === "complete",
   ).length;
@@ -94,7 +101,7 @@ export default function FundedCenterPage() {
         <div>
           <h1 className="text-3xl font-bold text-white">Funded Center</h1>
           <p className="text-sm text-white/70">
-            Funding readiness, business credit, and capital planning
+            {nicheName} — funding readiness, business credit, and capital planning
           </p>
         </div>
         <Button
@@ -839,6 +846,77 @@ export default function FundedCenterPage() {
           </Button>
         </CardContent>
       </Card>
+
+      {/* Niche-Specific Capital Goals */}
+      {nicheConfig && (
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10 rounded-2xl overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Landmark size={18} className="text-[#FFD700]" />
+              <CardTitle className="text-lg font-semibold text-white/90">
+                {nicheName} Capital Goals
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <p className="text-xs text-white/50 mb-3">
+              Common capital goals for {nicheName} businesses at your growth stage.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {nicheConfig.capitalGoals.map((goal) => (
+                <div
+                  key={goal}
+                  className="flex items-center gap-2 bg-[#FFD700]/5 border border-[#FFD700]/15 rounded-xl px-3 py-2"
+                  data-ocid="funded.capital_goal.item"
+                >
+                  <CheckCircle size={13} className="text-[#FFD700] flex-shrink-0" />
+                  <span className="text-xs text-white/80">{goal}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 30/60/90-Day Action Plan */}
+      {nicheConfig && (
+        <Card className="bg-white/5 backdrop-blur-xl border-white/10 rounded-2xl overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <TrendingUp size={18} className="text-emerald-400" />
+              <CardTitle className="text-lg font-semibold text-white/90">
+                30 / 60 / 90-Day Funding Readiness Plan
+              </CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <p className="text-xs text-white/50">
+              A step-by-step roadmap to make your {nicheName} business fundable.
+            </p>
+            {(
+              [
+                { label: "First 30 Days", days: nicheConfig.fundingActionPlan.day30, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/25" },
+                { label: "Days 31–60", days: nicheConfig.fundingActionPlan.day60, color: "text-[#00BFFF]", bg: "bg-[#00BFFF]/10", border: "border-[#00BFFF]/25" },
+                { label: "Days 61–90", days: nicheConfig.fundingActionPlan.day90, color: "text-[#FFD700]", bg: "bg-[#FFD700]/10", border: "border-[#FFD700]/25" },
+              ] as const
+            ).map((phase) => (
+              <div key={phase.label} className={`rounded-xl p-4 ${phase.bg} border ${phase.border}`}>
+                <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${phase.color}`}>
+                  {phase.label}
+                </p>
+                <ul className="space-y-2">
+                  {phase.days.map((step) => (
+                    <li key={step} className="flex items-start gap-2">
+                      <CheckSquare size={13} className="text-white/30 mt-0.5 flex-shrink-0" />
+                      <span className="text-xs text-white/80">{step}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
