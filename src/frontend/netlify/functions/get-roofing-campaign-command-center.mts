@@ -4,6 +4,7 @@ function json(body: unknown, status = 200): Response {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
     },
   });
 }
@@ -13,6 +14,14 @@ function config() {
   const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceKey) throw new Error("Supabase is not configured.");
   return { url, serviceKey };
+}
+
+function isAuthorized(request: Request): boolean {
+  const expected = Netlify.env.get("ROOFING_COMMAND_CENTER_TOKEN");
+  if (!expected) return true;
+  const authorization = request.headers.get("authorization") || "";
+  const token = authorization.toLowerCase().startsWith("bearer ") ? authorization.slice(7).trim() : "";
+  return token.length > 0 && token === expected;
 }
 
 async function supabaseGet<T>(path: string): Promise<T> {
@@ -25,12 +34,17 @@ async function supabaseGet<T>(path: string): Promise<T> {
     },
     signal: AbortSignal.timeout(15_000),
   });
-  if (!response.ok) throw new Error(`Supabase request failed: ${response.status}`);
+  if (!response.ok) {
+    const detail = (await response.text()).slice(0, 500);
+    console.error("roofing command center Supabase read failed", { status: response.status, detail });
+    throw new Error(`Supabase request failed: ${response.status}`);
+  }
   return (await response.json()) as T;
 }
 
 export default async (request: Request): Promise<Response> => {
   if (request.method !== "GET") return json({ ok: false, error: "Method not allowed." }, 405);
+  if (!isAuthorized(request)) return json({ ok: false, error: "Unauthorized." }, 401);
 
   try {
     const [leads, events, audits, drafts] = await Promise.all([
@@ -65,12 +79,14 @@ export default async (request: Request): Promise<Response> => {
     }));
 
     const counts = leads.reduce<Record<string, number>>((acc, lead) => {
-      acc[lead.stage] = (acc[lead.stage] ?? 0) + 1;
+      const stage = typeof lead.stage === "string" ? lead.stage : "unknown";
+      acc[stage] = (acc[stage] ?? 0) + 1;
       return acc;
     }, {});
 
     return json({
       ok: true,
+      generatedAt: new Date().toISOString(),
       leads: enriched,
       metrics: {
         totalLeads: leads.length,
