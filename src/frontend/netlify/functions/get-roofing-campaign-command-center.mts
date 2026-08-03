@@ -9,7 +9,7 @@ function json(body: unknown, status = 200): Response {
   });
 }
 
-function config() {
+function buildConfig() {
   const url = Netlify.env.get("SUPABASE_URL")?.replace(/\/$/, "");
   const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceKey) throw new Error("Supabase is not configured.");
@@ -25,7 +25,7 @@ function isAuthorized(request: Request): boolean {
 }
 
 async function supabaseGet<T>(path: string): Promise<T> {
-  const { url, serviceKey } = config();
+  const { url, serviceKey } = buildConfig();
   const response = await fetch(`${url}/rest/v1/${path}`, {
     headers: {
       apikey: serviceKey,
