@@ -135,10 +135,7 @@ export default async (request: Request): Promise<Response> => {
           city: row.city,
           website: row.website,
         },
-        audit: {
-          status: row.audit_status,
-          result: row.audit_result,
-        },
+        audit: { status: row.audit_status, result: row.audit_result },
         appointment: row.appointment,
         ownerAlert: {
           status: row.sms_status,
@@ -187,6 +184,23 @@ export default async (request: Request): Promise<Response> => {
             status: runResponse.status,
           });
         }
+      }
+    }
+
+    if (agentRunId) {
+      try {
+        const origin = new URL(request.url).origin;
+        await fetch(`${origin}/.netlify/functions/run-brf-agent-background`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ agentRunId, clientSessionId }),
+          signal: AbortSignal.timeout(5_000),
+        });
+      } catch (error) {
+        console.error("BRF agent dispatch could not be started", {
+          agentRunId,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
