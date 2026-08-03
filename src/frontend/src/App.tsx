@@ -100,6 +100,7 @@ import ReviewRequestsPage from "./pages/ReviewRequestsPage";
 import ReviewsPage from "./pages/ReviewsPage";
 import RoofingCampaignCommandCenterPage from "./pages/RoofingCampaignCommandCenterPage";
 import RoofingPage from "./pages/RoofingPage";
+import RoofingPlaybookTripwirePage from "./pages/RoofingPlaybookTripwirePage";
 import Scanner3DPage from "./pages/Scanner3DPage";
 import SeoGeoAgentPage from "./pages/SeoGeoAgentPage";
 import ServicesDemoPage from "./pages/ServicesDemoPage";
@@ -234,6 +235,7 @@ const restorationRoute = simple("/restoration", RestorationPage);
 const hvacRoute = simple("/hvac", HVACPage);
 const carpetCleaningRoute = simple("/carpet-cleaning", CarpetCleaningPage);
 const roofingRoute = simple("/roofing", RoofingPage);
+const roofingPlaybookTripwireRoute = simple("/roofing-ai-growth-playbook", RoofingPlaybookTripwirePage);
 const medSpaRoute = simple("/med-spa", MedSpaPage);
 const realEstateRoute = simple("/real-estate", RealEstatePage);
 const mortgageRoute = simple("/mortgage", MortgagePage);
@@ -372,7 +374,7 @@ const aiAuditCenterRoute = protectedPage("/ai-audit-center", AIAuditCenterPage);
 const routeTree = rootRoute.addChildren([
   indexRoute, loginRoute, onboardingRoute, demoLoginRoute, freeAuditRoute, demoRoute,
   unifiedDemoRoute, servicesDemoRoute, whyUsRoute, plumbingRoute, restorationRoute,
-  hvacRoute, carpetCleaningRoute, roofingRoute, medSpaRoute, realEstateRoute,
+  hvacRoute, carpetCleaningRoute, roofingRoute, roofingPlaybookTripwireRoute, medSpaRoute, realEstateRoute,
   mortgageRoute, chiropractorRoute, dentalRoute, pricingRoute, dashboardRoute,
   leadsRoute, reviewsRoute, auditRoute, fundabilityRoute, reportsRoute, analyticsRoute,
   settingsRoute, adminRoute, adminAgentsRoute, agentServicesRoute, billingRoute,
