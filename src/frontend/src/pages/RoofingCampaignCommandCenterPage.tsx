@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   Eye,
   FileSearch,
+  Loader2,
   MailCheck,
   MessageSquareText,
   PlayCircle,
@@ -15,7 +16,7 @@ import {
   Target,
   Users,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -31,126 +32,62 @@ import {
   DialogTitle,
 } from "../components/ui/dialog";
 
+interface CampaignEvent {
+  id: string;
+  event_label: string;
+  event_detail?: string | null;
+  occurred_at: string;
+}
+
+interface CampaignAudit {
+  status: string;
+  score?: number | null;
+}
+
+interface CampaignEmailDraft {
+  id: string;
+  subject: string;
+  body_text: string;
+  status: string;
+}
+
 interface RoofingLead {
   id: string;
-  company: string;
-  contact: string;
+  company_name: string;
+  contact_name?: string | null;
   email: string;
-  city: string;
-  website: string;
-  score: number;
+  city?: string | null;
+  state?: string | null;
+  website?: string | null;
+  audit_score?: number | null;
   stage:
     | "new"
     | "playbook_sent"
     | "demo_watched"
     | "audit_ready"
     | "email_ready"
-    | "appointment";
-  nextAction: string;
-  timeline: Array<{ label: string; time: string; detail: string }>;
+    | "appointment"
+    | "client_won"
+    | "lost";
+  next_action?: string | null;
+  timeline: CampaignEvent[];
+  audit?: CampaignAudit | null;
+  emailDraft?: CampaignEmailDraft | null;
 }
 
-const DEMO_LEADS: RoofingLead[] = [
-  {
-    id: "rf-101",
-    company: "Westside Roofing Co.",
-    contact: "Marcus Hill",
-    email: "marcus@westsideroofing.com",
-    city: "Los Angeles, CA",
-    website: "westsideroofing.com",
-    score: 64,
-    stage: "email_ready",
-    nextAction: "Review personalized email",
-    timeline: [
-      {
-        label: "Lead created",
-        time: "8:04 AM",
-        detail: "Imported from Roofing Playbook campaign.",
-      },
-      {
-        label: "Playbook requested",
-        time: "8:07 AM",
-        detail: "Free Roofing AI Growth Playbook requested.",
-      },
-      {
-        label: "Demo watched",
-        time: "8:12 AM",
-        detail: "Completed the roofing growth demo.",
-      },
-      {
-        label: "Audit completed",
-        time: "8:18 AM",
-        detail: "Nemotron audit scored 64/100.",
-      },
-      {
-        label: "Email drafted",
-        time: "8:20 AM",
-        detail: "Draft is waiting for approval.",
-      },
-    ],
-  },
-  {
-    id: "rf-102",
-    company: "Sunset Roofing & Solar",
-    contact: "Alicia Ramos",
-    email: "alicia@sunsetroofing.com",
-    city: "Long Beach, CA",
-    website: "sunsetroofing.com",
-    score: 52,
-    stage: "audit_ready",
-    nextAction: "Generate outreach draft",
-    timeline: [
-      {
-        label: "Lead created",
-        time: "9:22 AM",
-        detail: "Captured from the roofing lead page.",
-      },
-      {
-        label: "Playbook sent",
-        time: "9:23 AM",
-        detail: "Delivery status marked pending provider configuration.",
-      },
-      {
-        label: "Audit completed",
-        time: "9:31 AM",
-        detail: "Website conversion and local visibility findings ready.",
-      },
-    ],
-  },
-  {
-    id: "rf-103",
-    company: "Pacific Crest Exteriors",
-    contact: "Daniel Cho",
-    email: "daniel@pacificcrestexteriors.com",
-    city: "Pasadena, CA",
-    website: "pacificcrestexteriors.com",
-    score: 78,
-    stage: "appointment",
-    nextAction: "Prepare strategy call",
-    timeline: [
-      {
-        label: "Lead created",
-        time: "Yesterday",
-        detail: "Imported from first roofing pilot list.",
-      },
-      {
-        label: "Demo watched",
-        time: "Yesterday",
-        detail: "Viewed the roofing demo for 93 seconds.",
-      },
-      {
-        label: "Audit sent",
-        time: "Yesterday",
-        detail: "Personalized growth audit delivered.",
-      },
-      {
-        label: "Appointment booked",
-        time: "10:00 AM",
-        detail: "15-minute strategy call booked for tomorrow.",
-      },
-    ],
-  },
-];
+interface CommandCenterResponse {
+  ok: boolean;
+  error?: string;
+  leads: RoofingLead[];
+  metrics: {
+    totalLeads: number;
+    playbooksSent: number;
+    demosWatched: number;
+    auditsReady: number;
+    emailDrafts: number;
+    appointments: number;
+  };
+}
 
 const STAGES = [
   { key: "new", label: "New Lead", icon: Users },
@@ -162,13 +99,23 @@ const STAGES = [
 ] as const;
 
 function stageLabel(stage: RoofingLead["stage"]): string {
-  return STAGES.find((item) => item.key === stage)?.label ?? stage;
+  return STAGES.find((item) => item.key === stage)?.label ?? stage.replaceAll("_", " ");
 }
 
-function scoreClass(score: number): string {
+function scoreClass(score: number | null | undefined): string {
+  if (score == null) return "text-slate-500";
   if (score >= 75) return "text-emerald-400";
   if (score >= 55) return "text-amber-400";
   return "text-rose-400";
+}
+
+function formatEventTime(value: string): string {
+  return new Date(value).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export default function RoofingCampaignCommandCenterPage() {
@@ -176,17 +123,48 @@ export default function RoofingCampaignCommandCenterPage() {
   const [activeView, setActiveView] = useState<
     "pipeline" | "leads" | "audit" | "email" | "analytics"
   >("pipeline");
+  const [data, setData] = useState<CommandCenterResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
+  async function loadData() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("/api/get-roofing-campaign-command-center", {
+        headers: { accept: "application/json" },
+      });
+      const payload = (await response.json()) as CommandCenterResponse;
+      if (!response.ok || !payload.ok) {
+        throw new Error(payload.error || "Unable to load campaign data.");
+      }
+      setData(payload);
+    } catch (loadError) {
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load campaign data.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const leads = data?.leads ?? [];
   const metrics = useMemo(
     () => [
-      { label: "Roofing Leads", value: "3", icon: Users },
-      { label: "Playbooks Sent", value: "2", icon: BookOpen },
-      { label: "Audits Ready", value: "2", icon: Bot },
-      { label: "Demo Views", value: "2", icon: Eye },
-      { label: "Email Drafts", value: "2", icon: Send },
-      { label: "Appointments", value: "1", icon: CalendarCheck },
+      { label: "Roofing Leads", value: data?.metrics.totalLeads ?? 0, icon: Users },
+      { label: "Playbooks Sent", value: data?.metrics.playbooksSent ?? 0, icon: BookOpen },
+      { label: "Audits Ready", value: data?.metrics.auditsReady ?? 0, icon: Bot },
+      { label: "Demo Views", value: data?.metrics.demosWatched ?? 0, icon: Eye },
+      { label: "Email Drafts", value: data?.metrics.emailDrafts ?? 0, icon: Send },
+      { label: "Appointments", value: data?.metrics.appointments ?? 0, icon: CalendarCheck },
     ],
-    [],
+    [data],
   );
 
   return (
@@ -197,7 +175,7 @@ export default function RoofingCampaignCommandCenterPage() {
             <Badge className="bg-amber-500/10 text-amber-300 border-amber-500/20">
               Roofing Campaign #1
             </Badge>
-            <Badge variant="outline">Pilot Mode</Badge>
+            <Badge variant="outline">Live Supabase Data</Badge>
           </div>
           <h1 className="text-3xl font-bold text-white">
             Roofing Campaign Command Center
@@ -208,9 +186,13 @@ export default function RoofingCampaignCommandCenterPage() {
           </p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline">
-            <Activity className="w-4 h-4 mr-2" />
-            View Activity
+          <Button variant="outline" onClick={loadData} disabled={loading}>
+            {loading ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Activity className="w-4 h-4 mr-2" />
+            )}
+            Refresh
           </Button>
           <Button>
             <Sparkles className="w-4 h-4 mr-2" />
@@ -218,6 +200,12 @@ export default function RoofingCampaignCommandCenterPage() {
           </Button>
         </div>
       </div>
+
+      {error && (
+        <Card className="border-rose-500/30 bg-rose-500/10">
+          <CardContent className="p-4 text-rose-200">{error}</CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 xl:grid-cols-6 gap-4">
         {metrics.map(({ label, value, icon: Icon }) => (
@@ -229,7 +217,9 @@ export default function RoofingCampaignCommandCenterPage() {
                 </span>
                 <Icon className="w-4 h-4 text-blue-400" />
               </div>
-              <div className="text-3xl font-bold text-white">{value}</div>
+              <div className="text-3xl font-bold text-white">
+                {loading ? "—" : value}
+              </div>
             </CardContent>
           </Card>
         ))}
@@ -257,7 +247,16 @@ export default function RoofingCampaignCommandCenterPage() {
         })}
       </div>
 
-      {activeView === "pipeline" && (
+      {loading && (
+        <Card className="bg-slate-950/40 border-white/10">
+          <CardContent className="p-10 flex items-center justify-center text-slate-400">
+            <Loader2 className="w-5 h-5 mr-3 animate-spin" />
+            Loading live campaign data...
+          </CardContent>
+        </Card>
+      )}
+
+      {!loading && activeView === "pipeline" && (
         <Card className="bg-slate-950/40 border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Campaign Pipeline</CardTitle>
@@ -265,7 +264,7 @@ export default function RoofingCampaignCommandCenterPage() {
           <CardContent>
             <div className="grid md:grid-cols-3 xl:grid-cols-6 gap-3">
               {STAGES.map(({ key, label, icon: Icon }) => {
-                const count = DEMO_LEADS.filter((lead) => lead.stage === key).length;
+                const count = leads.filter((lead) => lead.stage === key).length;
                 return (
                   <div
                     key={key}
@@ -287,77 +286,102 @@ export default function RoofingCampaignCommandCenterPage() {
         </Card>
       )}
 
-      {activeView === "leads" && (
+      {!loading && activeView === "leads" && (
         <Card className="bg-slate-950/40 border-white/10">
           <CardHeader>
             <CardTitle className="text-white">Roofing Leads</CardTitle>
           </CardHeader>
           <CardContent className="overflow-x-auto">
-            <table className="w-full min-w-[980px]">
-              <thead>
-                <tr className="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-white/10">
-                  <th className="pb-3">Company</th>
-                  <th className="pb-3">Contact</th>
-                  <th className="pb-3">City</th>
-                  <th className="pb-3">Website</th>
-                  <th className="pb-3">Audit</th>
-                  <th className="pb-3">Stage</th>
-                  <th className="pb-3">Next Action</th>
-                  <th className="pb-3"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {DEMO_LEADS.map((lead) => (
-                  <tr key={lead.id} className="border-b border-white/5 text-sm">
-                    <td className="py-4 text-white font-semibold">{lead.company}</td>
-                    <td className="py-4 text-slate-300">
-                      <div>{lead.contact}</div>
-                      <div className="text-xs text-slate-500">{lead.email}</div>
-                    </td>
-                    <td className="py-4 text-slate-400">{lead.city}</td>
-                    <td className="py-4 text-blue-400">{lead.website}</td>
-                    <td className={`py-4 font-semibold ${scoreClass(lead.score)}`}>
-                      {lead.score}/100
-                    </td>
-                    <td className="py-4">
-                      <Badge variant="outline">{stageLabel(lead.stage)}</Badge>
-                    </td>
-                    <td className="py-4 text-slate-300">{lead.nextAction}</td>
-                    <td className="py-4 text-right">
-                      <Button size="sm" variant="outline" onClick={() => setSelectedLead(lead)}>
-                        Open Timeline
-                      </Button>
-                    </td>
+            {leads.length === 0 ? (
+              <div className="py-12 text-center text-slate-500">
+                No roofing campaign leads yet.
+              </div>
+            ) : (
+              <table className="w-full min-w-[980px]">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wide text-slate-500 border-b border-white/10">
+                    <th className="pb-3">Company</th>
+                    <th className="pb-3">Contact</th>
+                    <th className="pb-3">City</th>
+                    <th className="pb-3">Website</th>
+                    <th className="pb-3">Audit</th>
+                    <th className="pb-3">Stage</th>
+                    <th className="pb-3">Next Action</th>
+                    <th className="pb-3"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {leads.map((lead) => {
+                    const score = lead.audit_score ?? lead.audit?.score;
+                    return (
+                      <tr key={lead.id} className="border-b border-white/5 text-sm">
+                        <td className="py-4 text-white font-semibold">
+                          {lead.company_name}
+                        </td>
+                        <td className="py-4 text-slate-300">
+                          <div>{lead.contact_name || "—"}</div>
+                          <div className="text-xs text-slate-500">{lead.email}</div>
+                        </td>
+                        <td className="py-4 text-slate-400">
+                          {[lead.city, lead.state].filter(Boolean).join(", ") || "—"}
+                        </td>
+                        <td className="py-4 text-blue-400">{lead.website || "—"}</td>
+                        <td className={`py-4 font-semibold ${scoreClass(score)}`}>
+                          {score == null ? "—" : `${score}/100`}
+                        </td>
+                        <td className="py-4">
+                          <Badge variant="outline">{stageLabel(lead.stage)}</Badge>
+                        </td>
+                        <td className="py-4 text-slate-300">
+                          {lead.next_action || "Review lead"}
+                        </td>
+                        <td className="py-4 text-right">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setSelectedLead(lead)}
+                          >
+                            Open Timeline
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </CardContent>
         </Card>
       )}
 
-      {activeView === "audit" && (
+      {!loading && activeView === "audit" && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {DEMO_LEADS.filter((lead) => ["audit_ready", "email_ready", "appointment"].includes(lead.stage)).map((lead) => (
+          {leads.filter((lead) => lead.audit).map((lead) => (
             <Card key={lead.id} className="bg-slate-950/40 border-white/10">
               <CardHeader>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <CardTitle className="text-white">{lead.company}</CardTitle>
-                    <p className="text-sm text-slate-500 mt-1">{lead.website}</p>
+                    <CardTitle className="text-white">{lead.company_name}</CardTitle>
+                    <p className="text-sm text-slate-500 mt-1">
+                      {lead.website || "No website supplied"}
+                    </p>
                   </div>
-                  <div className={`text-2xl font-bold ${scoreClass(lead.score)}`}>{lead.score}</div>
+                  <div className={`text-2xl font-bold ${scoreClass(lead.audit?.score)}`}>
+                    {lead.audit?.score ?? "—"}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-3 text-sm">
                   <div className="rounded-xl border border-white/10 p-3">
-                    <div className="text-slate-500">Conversion</div>
-                    <div className="text-white font-semibold mt-1">Needs stronger CTA</div>
+                    <div className="text-slate-500">Status</div>
+                    <div className="text-white font-semibold mt-1 capitalize">
+                      {lead.audit?.status}
+                    </div>
                   </div>
                   <div className="rounded-xl border border-white/10 p-3">
                     <div className="text-slate-500">Local Visibility</div>
-                    <div className="text-white font-semibold mt-1">Opportunity identified</div>
+                    <div className="text-white font-semibold mt-1">Findings stored</div>
                   </div>
                 </div>
                 <Button className="w-full">
@@ -367,24 +391,33 @@ export default function RoofingCampaignCommandCenterPage() {
               </CardContent>
             </Card>
           ))}
+          {leads.filter((lead) => lead.audit).length === 0 && (
+            <div className="text-slate-500">No audits have been created yet.</div>
+          )}
         </div>
       )}
 
-      {activeView === "email" && (
+      {!loading && activeView === "email" && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {DEMO_LEADS.filter((lead) => ["email_ready", "appointment"].includes(lead.stage)).map((lead) => (
+          {leads.filter((lead) => lead.emailDraft).map((lead) => (
             <Card key={lead.id} className="bg-slate-950/40 border-white/10">
               <CardHeader>
-                <CardTitle className="text-white">{lead.company}</CardTitle>
+                <CardTitle className="text-white">{lead.company_name}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-sm text-slate-300 leading-6">
-                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">Subject</div>
-                  <div className="text-white font-semibold mb-4">We built this for {lead.company}</div>
-                  Hi {lead.contact.split(" ")[0]}, we reviewed {lead.website} and found a few opportunities that could help you capture and follow up with more roofing leads in {lead.city}. We also prepared a quick demo showing how the system works.
+                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">
+                    Subject
+                  </div>
+                  <div className="text-white font-semibold mb-4">
+                    {lead.emailDraft?.subject}
+                  </div>
+                  {lead.emailDraft?.body_text}
                 </div>
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">Edit Draft</Button>
+                  <Button variant="outline" className="flex-1">
+                    Edit Draft
+                  </Button>
                   <Button className="flex-1">
                     <CheckCircle2 className="w-4 h-4 mr-2" />
                     Approve
@@ -393,16 +426,41 @@ export default function RoofingCampaignCommandCenterPage() {
               </CardContent>
             </Card>
           ))}
+          {leads.filter((lead) => lead.emailDraft).length === 0 && (
+            <div className="text-slate-500">
+              No email drafts are waiting for approval.
+            </div>
+          )}
         </div>
       )}
 
-      {activeView === "analytics" && (
+      {!loading && activeView === "analytics" && (
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
           {[
-            ["Playbook conversion", "66.7%"],
-            ["Demo completion", "66.7%"],
-            ["Audit-ready rate", "66.7%"],
-            ["Appointment rate", "33.3%"],
+            [
+              "Playbook conversion",
+              data?.metrics.totalLeads
+                ? `${((data.metrics.playbooksSent / data.metrics.totalLeads) * 100).toFixed(1)}%`
+                : "0%",
+            ],
+            [
+              "Demo completion",
+              data?.metrics.totalLeads
+                ? `${((data.metrics.demosWatched / data.metrics.totalLeads) * 100).toFixed(1)}%`
+                : "0%",
+            ],
+            [
+              "Audit-ready rate",
+              data?.metrics.totalLeads
+                ? `${((data.metrics.auditsReady / data.metrics.totalLeads) * 100).toFixed(1)}%`
+                : "0%",
+            ],
+            [
+              "Appointment rate",
+              data?.metrics.totalLeads
+                ? `${((data.metrics.appointments / data.metrics.totalLeads) * 100).toFixed(1)}%`
+                : "0%",
+            ],
           ].map(([label, value]) => (
             <Card key={label} className="bg-slate-950/40 border-white/10">
               <CardContent className="p-5">
@@ -414,26 +472,44 @@ export default function RoofingCampaignCommandCenterPage() {
         </div>
       )}
 
-      <Dialog open={!!selectedLead} onOpenChange={(open) => !open && setSelectedLead(null)}>
+      <Dialog
+        open={!!selectedLead}
+        onOpenChange={(open) => !open && setSelectedLead(null)}
+      >
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{selectedLead?.company} — Lead Timeline</DialogTitle>
+            <DialogTitle>
+              {selectedLead?.company_name} — Lead Timeline
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3 mt-2">
-            {selectedLead?.timeline.map((event, index) => (
-              <div key={`${event.label}-${index}`} className="flex gap-4 rounded-2xl border border-white/10 p-4">
-                <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-400 grid place-items-center shrink-0">
-                  <Activity className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="font-semibold text-white">{event.label}</div>
-                    <div className="text-xs text-slate-500">{event.time}</div>
+            {selectedLead?.timeline.length ? (
+              selectedLead.timeline.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex gap-4 rounded-2xl border border-white/10 p-4"
+                >
+                  <div className="w-9 h-9 rounded-full bg-blue-500/10 text-blue-400 grid place-items-center shrink-0">
+                    <Activity className="w-4 h-4" />
                   </div>
-                  <div className="text-sm text-slate-400 mt-1">{event.detail}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="font-semibold text-white">
+                        {event.event_label}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {formatEventTime(event.occurred_at)}
+                      </div>
+                    </div>
+                    <div className="text-sm text-slate-400 mt-1">
+                      {event.event_detail || "Campaign activity recorded."}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <div className="text-slate-500">No timeline events yet.</div>
+            )}
           </div>
         </DialogContent>
       </Dialog>
