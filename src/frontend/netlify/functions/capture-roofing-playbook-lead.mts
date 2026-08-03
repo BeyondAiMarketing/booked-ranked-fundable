@@ -79,6 +79,92 @@ async function sendPlaybookEmail(input: {
   }
 }
 
+async function supabaseWrite(path: string, method: "POST" | "PATCH", body: unknown, prefer = "return=representation") {
+  const { url, serviceKey } = config();
+  const response = await fetch(`${url}/rest/v1/${path}`, {
+    method,
+    headers: {
+      apikey: serviceKey,
+      authorization: `Bearer ${serviceKey}`,
+      "content-type": "application/json",
+      prefer,
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(15_000),
+  });
+  const text = await response.text();
+  const payload = text ? JSON.parse(text) : null;
+  if (!response.ok) {
+    const message = payload && typeof payload === "object" && "message" in payload ? String(payload.message) : `Supabase request failed: ${response.status}`;
+    throw new Error(message);
+  }
+  return payload;
+}
+
+async function upsertCampaignLead(input: {
+  playbookLeadId: string;
+  firstName: string;
+  lastName: string | null;
+  businessName: string;
+  email: string;
+  phone: string | null;
+  website: string | null;
+  city: string | null;
+  ebookStatus: "delivered" | "pending" | "failed";
+}) {
+  const campaignRow = {
+    playbook_lead_id: input.playbookLeadId,
+    company_name: input.businessName,
+    contact_name: [input.firstName, input.lastName].filter(Boolean).join(" "),
+    email: input.email,
+    phone: input.phone,
+    website: input.website,
+    city: input.city,
+    source: "roofing_playbook",
+    campaign_key: "roofing_ai_growth_playbook",
+    stage: input.ebookStatus === "delivered" ? "playbook_sent" : "new",
+    next_action: input.ebookStatus === "delivered" ? "Watch roofing demo" : "Configure playbook delivery",
+    assigned_agent: "Nemotron Roofing Agent",
+    metadata: { ebookStatus: input.ebookStatus },
+  };
+
+  const payload = (await supabaseWrite(
+    "roofing_campaign_leads?on_conflict=campaign_key,email",
+    "POST",
+    campaignRow,
+    "resolution=merge-duplicates,return=representation",
+  )) as Array<{ id: string }>;
+
+  const campaignLeadId = payload?.[0]?.id;
+  if (!campaignLeadId) throw new Error("Campaign lead could not be created.");
+
+  await supabaseWrite(
+    "roofing_campaign_events",
+    "POST",
+    [
+      {
+        lead_id: campaignLeadId,
+        event_type: "lead_created",
+        event_label: "Lead created",
+        event_detail: "Captured from the Roofing AI Growth Playbook funnel.",
+        event_data: { playbookLeadId: input.playbookLeadId },
+      },
+      {
+        lead_id: campaignLeadId,
+        event_type: input.ebookStatus === "delivered" ? "playbook_sent" : "playbook_requested",
+        event_label: input.ebookStatus === "delivered" ? "Playbook sent" : "Playbook requested",
+        event_detail: input.ebookStatus === "delivered"
+          ? "The Roofing AI Growth Playbook was delivered by email."
+          : "The lead requested the playbook; delivery is pending provider configuration.",
+        event_data: { ebookStatus: input.ebookStatus },
+      },
+    ],
+    "return=minimal",
+  );
+
+  return campaignLeadId;
+}
+
 export default async (request: Request): Promise<Response> => {
   if (request.method !== "POST") return json({ ok: false, error: "Method not allowed." }, 405);
   if (Number(request.headers.get("content-length") || 0) > 30_000) {
@@ -93,14 +179,19 @@ export default async (request: Request): Promise<Response> => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error("Enter a valid email address.");
     if (input.consentMarketing !== true) throw new Error("Consent is required to send the playbook and related follow-up.");
 
+    const lastName = clean(input.lastName, 100);
+    const phone = clean(input.phone, 40);
+    const website = clean(input.website, 500);
+    const city = clean(input.city, 160);
+
     const row = {
       first_name: firstName,
-      last_name: clean(input.lastName, 100),
+      last_name: lastName,
       business_name: businessName,
       email,
-      phone: clean(input.phone, 40),
-      website: clean(input.website, 500),
-      city: clean(input.city, 160),
+      phone,
+      website,
+      city,
       source: "roofing-ai-growth-playbook",
       campaign: "roofing-ai-growth-playbook",
       consent_marketing: true,
@@ -111,43 +202,38 @@ export default async (request: Request): Promise<Response> => {
       },
     };
 
-    const { url, serviceKey } = config();
-    const response = await fetch(`${url}/rest/v1/roofing_playbook_leads`, {
-      method: "POST",
-      headers: {
-        apikey: serviceKey,
-        authorization: `Bearer ${serviceKey}`,
-        "content-type": "application/json",
-        prefer: "return=representation",
-      },
-      body: JSON.stringify(row),
-      signal: AbortSignal.timeout(15_000),
-    });
-    const payload = (await response.json()) as Array<{ id?: string }> | { message?: string };
-    if (!response.ok || !Array.isArray(payload) || !payload[0]?.id) {
-      const message = !Array.isArray(payload) ? payload.message : undefined;
-      throw new Error(message || "The lead could not be saved.");
-    }
+    const payload = (await supabaseWrite("roofing_playbook_leads", "POST", row)) as Array<{ id?: string }>;
+    if (!Array.isArray(payload) || !payload[0]?.id) throw new Error("The lead could not be saved.");
 
     const leadId = payload[0].id;
     const ebookStatus = await sendPlaybookEmail({ email, firstName, businessName, leadId });
+
     if (ebookStatus !== "pending") {
-      await fetch(`${url}/rest/v1/roofing_playbook_leads?id=eq.${encodeURIComponent(leadId)}`, {
-        method: "PATCH",
-        headers: {
-          apikey: serviceKey,
-          authorization: `Bearer ${serviceKey}`,
-          "content-type": "application/json",
-          prefer: "return=minimal",
-        },
-        body: JSON.stringify({ ebook_status: ebookStatus }),
-      });
+      await supabaseWrite(
+        `roofing_playbook_leads?id=eq.${encodeURIComponent(leadId)}`,
+        "PATCH",
+        { ebook_status: ebookStatus },
+        "return=minimal",
+      );
     }
 
-    const demoUrl = `/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(leadId)}`;
+    const campaignLeadId = await upsertCampaignLead({
+      playbookLeadId: leadId,
+      firstName,
+      lastName,
+      businessName,
+      email,
+      phone,
+      website,
+      city,
+      ebookStatus,
+    });
+
+    const demoUrl = `/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(leadId)}&campaignLead=${encodeURIComponent(campaignLeadId)}`;
     return json({
       ok: true,
       leadId,
+      campaignLeadId,
       ebookStatus,
       demoUrl,
       pdfUrl: Netlify.env.get("ROOFING_PLAYBOOK_PDF_URL") || null,

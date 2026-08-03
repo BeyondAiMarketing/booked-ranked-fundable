@@ -118,7 +118,7 @@ function formatEventTime(value: string): string {
   });
 }
 
-export default function RoofingCampaignCommandCenterPage() {
+export default function RoofingCampaignCommandCenterLivePage() {
   const [selectedLead, setSelectedLead] = useState<RoofingLead | null>(null);
   const [activeView, setActiveView] = useState<
     "pipeline" | "leads" | "audit" | "email" | "analytics"
