@@ -10,6 +10,8 @@ interface LeadRequest {
   utm?: Record<string, string>;
 }
 
+type EbookStatus = "delivered" | "pending" | "failed";
+
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
@@ -41,35 +43,22 @@ async function sendPlaybookEmail(input: {
   firstName: string;
   businessName: string;
   leadId: string;
-}): Promise<"delivered" | "pending" | "failed"> {
+}): Promise<EbookStatus> {
   const apiKey = Netlify.env.get("RESEND_API_KEY");
   const from = Netlify.env.get("ROOFING_PLAYBOOK_FROM_EMAIL");
   const pdfUrl = Netlify.env.get("ROOFING_PLAYBOOK_PDF_URL");
   if (!apiKey || !from || !pdfUrl) return "pending";
 
-  const demoUrl = `https://booked-ranked-fundable.netlify.app/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(input.leadId)}`;
+  const demoUrl = `https://bookedrankedfunded.org/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(input.leadId)}`;
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${apiKey}`,
-        "content-type": "application/json",
-      },
+      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
       body: JSON.stringify({
         from,
         to: [input.email],
         subject: `${input.firstName}, your Free Roofing AI Growth Playbook is ready`,
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#152033;line-height:1.6">
-            <h1 style="font-size:28px">Your Roofing AI Growth Playbook is ready</h1>
-            <p>Hi ${input.firstName},</p>
-            <p>Thanks for requesting the playbook for <strong>${input.businessName}</strong>.</p>
-            <p><a href="${pdfUrl}" style="display:inline-block;background:#f59e0b;color:#111827;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Download the Free Playbook</a></p>
-            <p>Then see the ideas working in a 90-second roofing growth demo:</p>
-            <p><a href="${demoUrl}" style="display:inline-block;background:#172554;color:white;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Watch the 90-Second Demo</a></p>
-            <p style="font-size:12px;color:#64748b">Recommendations and examples are educational and do not guarantee rankings, financing, leads, or revenue.</p>
-          </div>
-        `,
+        html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#152033;line-height:1.6"><h1 style="font-size:28px">Your Roofing AI Growth Playbook is ready</h1><p>Hi ${input.firstName},</p><p>Thanks for requesting the playbook for <strong>${input.businessName}</strong>.</p><p><a href="${pdfUrl}" style="display:inline-block;background:#f59e0b;color:#111827;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Download the Free Playbook</a></p><p>Then see the ideas working in a 90-second roofing growth demo:</p><p><a href="${demoUrl}" style="display:inline-block;background:#172554;color:white;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Watch the 90-Second Demo</a></p><p style="font-size:12px;color:#64748b">Recommendations and examples are educational and do not guarantee rankings, financing, leads, or revenue.</p></div>`,
       }),
       signal: AbortSignal.timeout(15_000),
     });
@@ -93,7 +82,12 @@ async function supabaseWrite(path: string, method: "POST" | "PATCH", body: unkno
     signal: AbortSignal.timeout(15_000),
   });
   const text = await response.text();
-  const payload = text ? JSON.parse(text) : null;
+  let payload: unknown = null;
+  try {
+    payload = text ? JSON.parse(text) : null;
+  } catch {
+    payload = null;
+  }
   if (!response.ok) {
     const message = payload && typeof payload === "object" && "message" in payload ? String(payload.message) : `Supabase request failed: ${response.status}`;
     throw new Error(message);
@@ -110,7 +104,7 @@ async function upsertCampaignLead(input: {
   phone: string | null;
   website: string | null;
   city: string | null;
-  ebookStatus: "delivered" | "pending" | "failed";
+  ebookStatus: EbookStatus;
 }) {
   const campaignRow = {
     playbook_lead_id: input.playbookLeadId,
@@ -138,28 +132,33 @@ async function upsertCampaignLead(input: {
   const campaignLeadId = payload?.[0]?.id;
   if (!campaignLeadId) throw new Error("Campaign lead could not be created.");
 
+  const eventType = input.ebookStatus === "delivered" ? "playbook_sent" : "playbook_requested";
+  const events = [
+    {
+      lead_id: campaignLeadId,
+      event_type: "lead_created",
+      event_label: "Lead created",
+      event_detail: "Captured from the Roofing AI Growth Playbook funnel.",
+      event_data: { playbookLeadId: input.playbookLeadId },
+      idempotency_key: `${campaignLeadId}:lead_created`,
+    },
+    {
+      lead_id: campaignLeadId,
+      event_type: eventType,
+      event_label: input.ebookStatus === "delivered" ? "Playbook sent" : "Playbook requested",
+      event_detail: input.ebookStatus === "delivered"
+        ? "The Roofing AI Growth Playbook was delivered by email."
+        : "The lead requested the playbook; delivery is pending provider configuration.",
+      event_data: { ebookStatus: input.ebookStatus },
+      idempotency_key: `${campaignLeadId}:${eventType}`,
+    },
+  ];
+
   await supabaseWrite(
-    "roofing_campaign_events",
+    "roofing_campaign_events?on_conflict=idempotency_key",
     "POST",
-    [
-      {
-        lead_id: campaignLeadId,
-        event_type: "lead_created",
-        event_label: "Lead created",
-        event_detail: "Captured from the Roofing AI Growth Playbook funnel.",
-        event_data: { playbookLeadId: input.playbookLeadId },
-      },
-      {
-        lead_id: campaignLeadId,
-        event_type: input.ebookStatus === "delivered" ? "playbook_sent" : "playbook_requested",
-        event_label: input.ebookStatus === "delivered" ? "Playbook sent" : "Playbook requested",
-        event_detail: input.ebookStatus === "delivered"
-          ? "The Roofing AI Growth Playbook was delivered by email."
-          : "The lead requested the playbook; delivery is pending provider configuration.",
-        event_data: { ebookStatus: input.ebookStatus },
-      },
-    ],
-    "return=minimal",
+    events,
+    "resolution=ignore-duplicates,return=minimal",
   );
 
   return campaignLeadId;
@@ -167,6 +166,9 @@ async function upsertCampaignLead(input: {
 
 export default async (request: Request): Promise<Response> => {
   if (request.method !== "POST") return json({ ok: false, error: "Method not allowed." }, 405);
+  if (!request.headers.get("content-type")?.toLowerCase().includes("application/json")) {
+    return json({ ok: false, error: "Content type must be application/json." }, 415);
+  }
   if (Number(request.headers.get("content-length") || 0) > 30_000) {
     return json({ ok: false, error: "Request is too large." }, 413);
   }
@@ -183,8 +185,11 @@ export default async (request: Request): Promise<Response> => {
     const phone = clean(input.phone, 40);
     const website = clean(input.website, 500);
     const city = clean(input.city, 160);
+    const utm = input.utm && typeof input.utm === "object"
+      ? Object.fromEntries(Object.entries(input.utm).slice(0, 20).map(([key, value]) => [key.slice(0, 80), String(value).slice(0, 300)]))
+      : {};
 
-    const row = {
+    const payload = (await supabaseWrite("roofing_playbook_leads", "POST", {
       first_name: firstName,
       last_name: lastName,
       business_name: businessName,
@@ -196,40 +201,27 @@ export default async (request: Request): Promise<Response> => {
       campaign: "roofing-ai-growth-playbook",
       consent_marketing: true,
       ebook_status: "pending",
-      metadata: {
-        utm: input.utm && typeof input.utm === "object" ? input.utm : {},
-        userAgent: clean(request.headers.get("user-agent"), 500),
-      },
-    };
+      metadata: { utm, userAgent: clean(request.headers.get("user-agent"), 500) },
+    })) as Array<{ id?: string }>;
 
-    const payload = (await supabaseWrite("roofing_playbook_leads", "POST", row)) as Array<{ id?: string }>;
     if (!Array.isArray(payload) || !payload[0]?.id) throw new Error("The lead could not be saved.");
-
     const leadId = payload[0].id;
     const ebookStatus = await sendPlaybookEmail({ email, firstName, businessName, leadId });
 
     if (ebookStatus !== "pending") {
-      await supabaseWrite(
-        `roofing_playbook_leads?id=eq.${encodeURIComponent(leadId)}`,
-        "PATCH",
-        { ebook_status: ebookStatus },
-        "return=minimal",
-      );
+      await supabaseWrite(`roofing_playbook_leads?id=eq.${encodeURIComponent(leadId)}`, "PATCH", { ebook_status: ebookStatus }, "return=minimal");
     }
 
-    const campaignLeadId = await upsertCampaignLead({
-      playbookLeadId: leadId,
-      firstName,
-      lastName,
-      businessName,
-      email,
-      phone,
-      website,
-      city,
-      ebookStatus,
-    });
+    let campaignLeadId: string | null = null;
+    let enrollmentWarning: string | null = null;
+    try {
+      campaignLeadId = await upsertCampaignLead({ playbookLeadId: leadId, firstName, lastName, businessName, email, phone, website, city, ebookStatus });
+    } catch (error) {
+      enrollmentWarning = error instanceof Error ? error.message : "Campaign enrollment is pending.";
+      console.error("roofing campaign enrollment failed", { leadId, error: enrollmentWarning });
+    }
 
-    const demoUrl = `/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(leadId)}&campaignLead=${encodeURIComponent(campaignLeadId)}`;
+    const demoUrl = `/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(leadId)}${campaignLeadId ? `&campaignLead=${encodeURIComponent(campaignLeadId)}` : ""}`;
     return json({
       ok: true,
       leadId,
@@ -237,6 +229,7 @@ export default async (request: Request): Promise<Response> => {
       ebookStatus,
       demoUrl,
       pdfUrl: Netlify.env.get("ROOFING_PLAYBOOK_PDF_URL") || null,
+      warning: enrollmentWarning,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "We could not process your request.";
