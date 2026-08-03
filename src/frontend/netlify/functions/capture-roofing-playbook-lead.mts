@@ -31,7 +31,7 @@ function required(value: unknown, label: string, max: number): string {
   return result;
 }
 
-function config() {
+function buildConfig() {
   const url = Netlify.env.get("SUPABASE_URL")?.replace(/\/$/, "");
   const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceKey) throw new Error("Lead storage is not configured.");
@@ -69,7 +69,7 @@ async function sendPlaybookEmail(input: {
 }
 
 async function supabaseWrite(path: string, method: "POST" | "PATCH", body: unknown, prefer = "return=representation") {
-  const { url, serviceKey } = config();
+  const { url, serviceKey } = buildConfig();
   const response = await fetch(`${url}/rest/v1/${path}`, {
     method,
     headers: {
