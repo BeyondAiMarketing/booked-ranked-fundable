@@ -1,0 +1,64 @@
+name: Repair router type inference
+
+on:
+  push:
+    paths:
+      - .github/workflows/fix-router-types.yml
+
+permissions:
+  contents: write
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Preserve route literal types
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/frontend/src/App.tsx')
+          text = path.read_text()
+
+          old_simple = 'const simple = (path: string, component: React.ComponentType) => createRoute({ getParentRoute: () => rootRoute, path, component });'
+          new_simple = '''const simple = <TPath extends string>(path: TPath, Component: React.ComponentType) => createRoute({
+            getParentRoute: () => rootRoute,
+            path,
+            component: () => <Component />,
+          });'''
+
+          old_protected = '''const protectedPage = (path: string, Component: React.ComponentType, adminOnly = false) => createRoute({
+            getParentRoute: () => rootRoute,
+            path,
+            component: () => <ProtectedRoute adminOnly={adminOnly}><Component /></ProtectedRoute>,
+          });'''
+          new_protected = '''const protectedPage = <TPath extends string>(path: TPath, Component: React.ComponentType, adminOnly = false) => createRoute({
+            getParentRoute: () => rootRoute,
+            path,
+            component: () => <ProtectedRoute adminOnly={adminOnly}><Component /></ProtectedRoute>,
+          });'''
+
+          if old_simple not in text:
+              raise SystemExit('simple route helper pattern not found')
+          if old_protected not in text:
+              raise SystemExit('protected route helper pattern not found')
+
+          text = text.replace(old_simple, new_simple, 1)
+          text = text.replace(old_protected, new_protected, 1)
+          path.write_text(text)
+          PY
+      - name: Remove temporary repair workflow
+        run: rm .github/workflows/fix-router-types.yml
+      - name: Commit repair
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/frontend/src/App.tsx .github/workflows/fix-router-types.yml
+          git commit -m "fix: preserve TanStack router path types"
+          git push origin main
