@@ -209,8 +209,12 @@ const rootRoute = createRootRoute({
   ),
 });
 
-const simple = (path: string, component: React.ComponentType) => createRoute({ getParentRoute: () => rootRoute, path, component });
-const protectedPage = (path: string, Component: React.ComponentType, adminOnly = false) => createRoute({
+const simple = <TPath extends string>(path: TPath, Component: React.ComponentType) => createRoute({
+  getParentRoute: () => rootRoute,
+  path,
+  component: () => <Component />,
+});
+const protectedPage = <TPath extends string>(path: TPath, Component: React.ComponentType, adminOnly = false) => createRoute({
   getParentRoute: () => rootRoute,
   path,
   component: () => <ProtectedRoute adminOnly={adminOnly}><Component /></ProtectedRoute>,
