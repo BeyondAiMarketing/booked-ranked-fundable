@@ -7,6 +7,7 @@ import {
   useNicheLeadSubmit,
 } from "@/hooks/useNicheLeadSubmit";
 import {
+  AlertCircle,
   CheckCircle,
   CreditCard,
   Globe,
@@ -517,7 +518,7 @@ export default function HVACPage() {
   const [checkedCount, setCheckedCount] = useState(0);
   const demoFormRef = useRef<HTMLDivElement>(null);
 
-  const { submit } = useNicheLeadSubmit({
+  const { submit, error: submitError } = useNicheLeadSubmit({
     nicheKey: "hvac",
     nicheName: "HVAC",
     source: "hvac_landing_page",
@@ -552,8 +553,11 @@ export default function HVACPage() {
           financingInterest: form.financingInterest,
         },
       };
-      await submit(leadData);
-      setLoading(false);
+      try {
+        await submit(leadData);
+      } finally {
+        setLoading(false);
+      }
     },
     [submit],
   );
@@ -760,7 +764,18 @@ export default function HVACPage() {
                 ))}
               </div>
             ) : (
-              <HVACIntakeForm onDemoStart={handleDemoStart} />
+              <>
+                {submitError && (
+                  <div className="flex items-start gap-3 rounded-xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 mb-5">
+                    <AlertCircle
+                      size={16}
+                      className="text-rose-400 mt-0.5 flex-shrink-0"
+                    />
+                    <p className="text-rose-300 text-sm">{submitError}</p>
+                  </div>
+                )}
+                <HVACIntakeForm onDemoStart={handleDemoStart} />
+              </>
             )}
           </div>
         </div>

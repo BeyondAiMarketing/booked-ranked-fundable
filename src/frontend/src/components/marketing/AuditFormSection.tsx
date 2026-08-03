@@ -37,26 +37,27 @@ export default function AuditFormSection({
     setError(null);
 
     try {
-      if (actor) {
-        await actor.createLead({
-          id: "",
-          tenantId: `${nicheKey}_audit`,
-          name: form.contactName || form.businessName,
-          email: form.email,
-          phone: form.phone || "",
-          niche: nicheKey,
-          status: "new_lead",
-          source: "audit_form",
-          notes: JSON.stringify({
-            businessName: form.businessName,
-            website: form.website,
-            serviceArea: form.serviceArea,
-            formType: "free_audit",
-          }),
-          agentSubscriptions: [],
-          createdAt: BigInt(Date.now()) * BigInt(1_000_000),
-        });
+      if (!actor) {
+        throw new Error("Backend unavailable");
       }
+      await actor.createLead({
+        id: "",
+        tenantId: `${nicheKey}_audit`,
+        name: form.contactName || form.businessName,
+        email: form.email,
+        phone: form.phone || "",
+        niche: nicheKey,
+        status: "new_lead",
+        source: "audit_form",
+        notes: JSON.stringify({
+          businessName: form.businessName,
+          website: form.website,
+          serviceArea: form.serviceArea,
+          formType: "free_audit",
+        }),
+        agentSubscriptions: [],
+        createdAt: BigInt(Date.now()) * BigInt(1_000_000),
+      });
       setSubmitted(true);
     } catch {
       setError(

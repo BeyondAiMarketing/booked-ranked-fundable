@@ -40,6 +40,7 @@ export interface UseNicheLeadSubmitOptions {
 
 export interface UseNicheLeadSubmitResult {
   loading: boolean;
+  error: string | null;
   submit: (form: NicheLeadFormData) => Promise<void>;
 }
 
@@ -62,10 +63,12 @@ export function useNicheLeadSubmit({
   const { actor } = useActor();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const submit = useCallback(
     async (form: NicheLeadFormData) => {
       setLoading(true);
+      setError(null);
       if (onLoadingStep) onLoadingStep(0);
 
       // Animate loading steps
@@ -74,24 +77,30 @@ export function useNicheLeadSubmit({
         if (onLoadingStep) onLoadingStep(i + 1);
       }
 
+      if (!actor) {
+        setError(
+          "Unable to connect to the backend. Please refresh and try again.",
+        );
+        setLoading(false);
+        return;
+      }
+
       let sessionId: string | null = null;
 
       // 1. Create a demo session (best-effort)
       try {
-        if (actor) {
-          sessionId = await actor.createDemoSessionWithCity(
-            form.businessName,
-            nicheName,
-            form.city,
-          );
-        }
+        sessionId = await actor.createDemoSessionWithCity(
+          form.businessName,
+          nicheName,
+          form.city,
+        );
       } catch {
         // Demo session creation is non-blocking
       }
 
       // 2. Activate trial (best-effort)
       try {
-        if (actor && sessionId) {
+        if (sessionId) {
           await actor.activateTrial(
             sessionId,
             form.firstName,
@@ -107,34 +116,36 @@ export function useNicheLeadSubmit({
         // activateTrial is non-blocking
       }
 
-      // 3. Persist the lead (best-effort)
+      // 3. Persist the lead — required; surface any failure before navigating
       try {
-        if (actor) {
-          await actor.createLead({
-            id: "",
-            tenantId: `${nicheKey}_landing`,
-            name: `${form.firstName} ${form.lastName}`,
-            email: form.email,
-            phone: form.phone,
-            niche: nicheKey,
-            status: "new_lead",
-            source,
-            notes: JSON.stringify({
-              lastName: form.lastName,
-              website: form.website,
-              state: form.state,
-              monthlyRevenue: form.monthlyRevenue,
-              biggestProblem: form.biggestProblem,
-              teamSize: form.teamSize,
-              demoType: `${nicheKey}_live_demo`,
-              ...(form.nicheFields ?? {}),
-            }),
-            agentSubscriptions: [],
-            createdAt: BigInt(Date.now()) * BigInt(1_000_000),
-          });
-        }
+        await actor.createLead({
+          id: "",
+          tenantId: `${nicheKey}_landing`,
+          name: `${form.firstName} ${form.lastName}`,
+          email: form.email,
+          phone: form.phone,
+          niche: nicheKey,
+          status: "new_lead",
+          source,
+          notes: JSON.stringify({
+            lastName: form.lastName,
+            website: form.website,
+            state: form.state,
+            monthlyRevenue: form.monthlyRevenue,
+            biggestProblem: form.biggestProblem,
+            teamSize: form.teamSize,
+            demoType: `${nicheKey}_live_demo`,
+            ...(form.nicheFields ?? {}),
+          }),
+          agentSubscriptions: [],
+          createdAt: BigInt(Date.now()) * BigInt(1_000_000),
+        });
       } catch {
-        // createLead is best-effort — we still redirect
+        setError(
+          "We couldn't save your information. Please try again or contact us directly.",
+        );
+        setLoading(false);
+        return;
       }
 
       await new Promise<void>((r) => setTimeout(r, 500));
@@ -172,5 +183,5 @@ export function useNicheLeadSubmit({
     ],
   );
 
-  return { loading, submit };
+  return { loading, error, submit };
 }

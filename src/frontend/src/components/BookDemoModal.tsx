@@ -146,26 +146,27 @@ export function BookDemoModal({
     setBookingError(null);
     const slotLabel = `${formatConfirmDate()} at ${selectedTime}`;
     try {
-      if (actor) {
-        await actor.createLead({
-          id: "",
-          tenantId: "strategy_call_booking",
-          name: form.firstName,
-          email: form.email,
-          phone: form.phone || "",
-          niche: (form.niche || "general").toLowerCase(),
-          status: "appointment_scheduled",
-          source: "book_demo_modal",
-          notes: JSON.stringify({
-            businessName: form.businessName,
-            niche: form.niche,
-            slotTime: slotLabel,
-            bookingType: "strategy_call",
-          }),
-          agentSubscriptions: [],
-          createdAt: BigInt(Date.now()) * BigInt(1_000_000),
-        });
+      if (!actor) {
+        throw new Error("Backend unavailable");
       }
+      await actor.createLead({
+        id: "",
+        tenantId: "strategy_call_booking",
+        name: form.firstName,
+        email: form.email,
+        phone: form.phone || "",
+        niche: (form.niche || "general").toLowerCase(),
+        status: "appointment_scheduled",
+        source: "book_demo_modal",
+        notes: JSON.stringify({
+          businessName: form.businessName,
+          niche: form.niche,
+          slotTime: slotLabel,
+          bookingType: "strategy_call",
+        }),
+        agentSubscriptions: [],
+        createdAt: BigInt(Date.now()) * BigInt(1_000_000),
+      });
       setStep(3);
     } catch {
       setBookingError(
