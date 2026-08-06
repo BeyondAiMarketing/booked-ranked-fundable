@@ -5,10 +5,11 @@ import {
 } from "../lib/brfIntelligencePolicy";
 
 describe("BRF intelligence policy", () => {
-  it("keeps NeMo and Nemotron ahead of fallback providers", () => {
+  it("keeps NeMo and both Nemotron tiers ahead of other providers", () => {
     expect(BRF_PROVIDER_ORDER).toEqual([
       "nemo-agent",
       "nvidia-nim",
+      "nvidia-nim-fast",
       "openrouter",
       "openai",
       "anthropic",
