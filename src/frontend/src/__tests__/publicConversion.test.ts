@@ -5,7 +5,7 @@ import {
   normalizeEmail,
   normalizePhone,
   normalizeWebsite,
-} from "../../netlify/functions/_shared/public-conversion.mts";
+} from "../lib/publicConversionNormalization";
 
 describe("public conversion normalization", () => {
   it("normalizes email addresses", () => {
