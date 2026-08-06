@@ -25,7 +25,10 @@ export default async (request: Request): Promise<Response> => {
     const rows = await callSupabaseRpc<RpcSlot[]>(
       "get_strategy_call_availability",
       {
-        p_start_date: new Date().toISOString().slice(0, 10),
+        p_start_date: formatAvailabilitySlot(
+          new Date().toISOString(),
+          BUSINESS_TIMEZONE,
+        ).dateKey,
         p_business_days: days,
         p_timezone: BUSINESS_TIMEZONE,
       },
