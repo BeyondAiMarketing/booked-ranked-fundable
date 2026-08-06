@@ -5,14 +5,15 @@
   "scripts": {
     "check": "tsc --noEmit",
     "dev": "wrangler dev",
+    "validate": "wrangler deploy --dry-run --outdir .wrangler-dry-run",
     "deploy": "wrangler deploy"
   },
   "dependencies": {
-    "@cloudflare/containers": "^0.3.0"
+    "@cloudflare/containers": "0.3.7"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20260806.0",
-    "typescript": "^5.9.3",
-    "wrangler": "^4.0.0"
+    "@cloudflare/workers-types": "5.20260722.1",
+    "typescript": "5.9.3",
+    "wrangler": "4.113.0"
   }
 }
