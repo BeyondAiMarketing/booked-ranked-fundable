@@ -1,6 +1,7 @@
 export const BRF_PROVIDER_ORDER = [
   "nemo-agent",
   "nvidia-nim",
+  "nvidia-nim-fast",
   "openrouter",
   "openai",
   "anthropic",
