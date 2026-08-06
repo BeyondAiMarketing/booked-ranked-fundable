@@ -102,6 +102,17 @@ const NAV_GROUPS: NavGroup[] = [
     items: [{ label: "Dashboard", path: "/dashboard", icon: LayoutDashboard }],
   },
   {
+    label: "ROOFING GROWTH",
+    items: [
+      { label: "Roofing Landing Page", path: "/roofing", icon: Hammer },
+      {
+        label: "Free Roofer AI Playbook",
+        path: "/roofing-ai-growth-playbook",
+        icon: BookOpen,
+      },
+    ],
+  },
+  {
     label: "GROWTH ENGINES",
     items: [
       { label: "Leads", path: "/leads", icon: Users },
@@ -244,6 +255,8 @@ const NAV_GROUPS: NavGroup[] = [
 
 const PAGE_TITLES: Record<string, string> = {
   "/dashboard": "Dashboard",
+  "/roofing": "Roofing Growth System",
+  "/roofing-ai-growth-playbook": "Free Roofer AI Playbook",
   "/leads": "Leads & CRM",
   "/reviews": "Reviews & Reputation",
   "/audit": "SEO Audit",

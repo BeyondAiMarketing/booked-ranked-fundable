@@ -125,7 +125,7 @@ function DashboardMockup() {
       <div className="flex items-center gap-2 mb-5">
         <div className="w-3 h-3 rounded-full bg-emerald-400 animate-pulse" />
         <span className="text-xs font-semibold text-foreground/70 tracking-widest uppercase">
-          BRF Command Center
+          Illustrative BRF Command Center
         </span>
       </div>
       <div className="grid grid-cols-2 gap-3">
@@ -273,7 +273,11 @@ function HowStep({
   step,
   title,
   index,
-}: { step: number; title: string; index: number }) {
+}: {
+  step: number;
+  title: string;
+  index: number;
+}) {
   return (
     <div
       data-ocid={`roofing.how.step.${index + 1}`}
@@ -298,7 +302,10 @@ function HowStep({
 function LoadingOverlay({
   items,
   checked,
-}: { items: string[]; checked: number }) {
+}: {
+  items: string[];
+  checked: number;
+}) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center"
@@ -371,22 +378,16 @@ function DemoForm({ onDemoStart }: { onDemoStart: (data: FormState) => void }) {
     biggestProblem: "",
     crewCount: "",
   });
+  const [showDetails, setShowDetails] = useState(false);
   const [error, setError] = useState("");
   const set = (field: keyof FormState, value: string) =>
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((current) => ({ ...current, [field]: value }));
 
   const isValid =
     form.firstName.trim() !== "" &&
-    form.lastName.trim() !== "" &&
     form.businessName.trim() !== "" &&
     form.email.includes("@") &&
-    form.phone.trim() !== "" &&
-    form.website.trim() !== "" &&
-    form.city.trim() !== "" &&
-    form.state !== "" &&
-    form.monthlyRevenue !== "" &&
-    form.biggestProblem !== "" &&
-    form.crewCount !== "";
+    form.website.trim() !== "";
 
   const inputCls =
     "w-full rounded-xl px-4 py-3 text-sm text-foreground placeholder-foreground/30 focus:outline-none focus:ring-1 transition-all duration-150 " +
@@ -394,15 +395,26 @@ function DemoForm({ onDemoStart }: { onDemoStart: (data: FormState) => void }) {
 
   const handleSubmit = () => {
     if (!isValid) {
-      setError("Please fill in all fields.");
+      setError(
+        "Enter your first name, roofing company, work email, and website.",
+      );
       return;
     }
     setError("");
-    onDemoStart(form);
+    onDemoStart({
+      ...form,
+      monthlyRevenue: form.monthlyRevenue || "Not provided",
+      biggestProblem: form.biggestProblem || "Not provided",
+      crewCount: form.crewCount || "Not provided",
+    });
   };
 
   return (
     <div className="space-y-5">
+      <div className="rounded-xl border border-sky-400/20 bg-sky-400/5 p-4 text-sm leading-6 text-foreground/70">
+        Start with four details. Additional qualification is optional and only
+        helps personalize the demo.
+      </div>
       {error && (
         <p
           data-ocid="roofing.form.error_state"
@@ -411,7 +423,7 @@ function DemoForm({ onDemoStart }: { onDemoStart: (data: FormState) => void }) {
           {error}
         </p>
       )}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
         <div>
           <label
             htmlFor="roofing-firstName"
@@ -423,82 +435,46 @@ function DemoForm({ onDemoStart }: { onDemoStart: (data: FormState) => void }) {
             id="roofing-firstName"
             data-ocid="roofing.form.first_name.input"
             type="text"
-            placeholder="John"
+            placeholder="Jordan"
             value={form.firstName}
-            onChange={(e) => set("firstName", e.target.value)}
+            onChange={(event) => set("firstName", event.target.value)}
             className={inputCls}
           />
         </div>
         <div>
           <label
-            htmlFor="roofing-lastName"
+            htmlFor="roofing-businessName"
             className="block text-xs text-foreground/50 mb-1 font-medium"
           >
-            Last Name *
+            Roofing Company *
           </label>
           <input
-            id="roofing-lastName"
-            data-ocid="roofing.form.last_name.input"
+            id="roofing-businessName"
+            data-ocid="roofing.form.business_name.input"
             type="text"
-            placeholder="Smith"
-            value={form.lastName}
-            onChange={(e) => set("lastName", e.target.value)}
+            placeholder="Summit Roofing"
+            value={form.businessName}
+            onChange={(event) => set("businessName", event.target.value)}
             className={inputCls}
           />
         </div>
       </div>
       <div>
         <label
-          htmlFor="roofing-businessName"
+          htmlFor="roofing-email"
           className="block text-xs text-foreground/50 mb-1 font-medium"
         >
-          Business Name *
+          Work Email *
         </label>
         <input
-          id="roofing-businessName"
-          data-ocid="roofing.form.business_name.input"
-          type="text"
-          placeholder="Smith Roofing Co."
-          value={form.businessName}
-          onChange={(e) => set("businessName", e.target.value)}
+          id="roofing-email"
+          data-ocid="roofing.form.email.input"
+          type="email"
+          placeholder="jordan@summitroofing.com"
+          value={form.email}
+          onChange={(event) => set("email", event.target.value)}
           className={inputCls}
         />
-      </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="roofing-email"
-            className="block text-xs text-foreground/50 mb-1 font-medium"
-          >
-            Email *
-          </label>
-          <input
-            id="roofing-email"
-            data-ocid="roofing.form.email.input"
-            type="email"
-            placeholder="john@smithroofing.com"
-            value={form.email}
-            onChange={(e) => set("email", e.target.value)}
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="roofing-phone"
-            className="block text-xs text-foreground/50 mb-1 font-medium"
-          >
-            Phone *
-          </label>
-          <input
-            id="roofing-phone"
-            data-ocid="roofing.form.phone.input"
-            type="tel"
-            placeholder="(555) 123-4567"
-            value={form.phone}
-            onChange={(e) => set("phone", e.target.value)}
-            className={inputCls}
-          />
-        </div>
       </div>
       <div>
         <label
@@ -511,151 +487,120 @@ function DemoForm({ onDemoStart }: { onDemoStart: (data: FormState) => void }) {
           id="roofing-website"
           data-ocid="roofing.form.website.input"
           type="text"
-          placeholder="smithroofing.com"
+          placeholder="summitroofing.com"
           value={form.website}
-          onChange={(e) => set("website", e.target.value)}
+          onChange={(event) => set("website", event.target.value)}
           className={inputCls}
         />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label
-            htmlFor="roofing-city"
-            className="block text-xs text-foreground/50 mb-1 font-medium"
-          >
-            City *
-          </label>
-          <input
-            id="roofing-city"
-            data-ocid="roofing.form.city.input"
-            type="text"
-            placeholder="Dallas"
-            value={form.city}
-            onChange={(e) => set("city", e.target.value)}
-            className={inputCls}
-          />
-        </div>
-        <div>
-          <label
-            htmlFor="roofing-state"
-            className="block text-xs text-foreground/50 mb-1 font-medium"
-          >
-            State *
-          </label>
-          <select
-            id="roofing-state"
-            data-ocid="roofing.form.state.select"
-            value={form.state}
-            onChange={(e) => set("state", e.target.value)}
-            className={inputCls}
-          >
-            <option value="">Select...</option>
-            {US_STATES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div>
-        <label
-          htmlFor="roofing-monthlyRevenue"
-          className="block text-xs text-foreground/50 mb-1 font-medium"
-        >
-          Monthly Revenue Range *
-        </label>
-        <select
-          id="roofing-monthlyRevenue"
-          data-ocid="roofing.form.revenue.select"
-          value={form.monthlyRevenue}
-          onChange={(e) => set("monthlyRevenue", e.target.value)}
-          className={inputCls}
-        >
-          <option value="">Select range...</option>
-          {[
-            "Under $10K/mo",
-            "$10K-$25K/mo",
-            "$25K-$50K/mo",
-            "$50K-$100K/mo",
-            "$100K+/mo",
-          ].map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <p className="block text-xs text-foreground/50 mb-2 font-medium">
-          Biggest Current Problem *
-        </p>
-        <div className="space-y-2">
-          {[
-            "Need More Booked Inspections",
-            "Weak Follow-up",
-            "Poor Reviews",
-            "Weak Local Ranking",
-            "Need Business Funding",
-            "Too Many Disconnected Tools",
-          ].map((opt) => (
-            <label
-              key={opt}
-              className="flex items-center gap-3 cursor-pointer group"
-            >
+
+      <button
+        type="button"
+        onClick={() => setShowDetails((open) => !open)}
+        className="w-full rounded-xl border border-white/10 bg-white/[0.035] px-4 py-3 text-sm font-semibold text-foreground/70 transition hover:border-white/20 hover:text-foreground"
+      >
+        {showDetails
+          ? "Hide optional personalization"
+          : "Add optional personalization"}
+      </button>
+
+      {showDetails && (
+        <div className="space-y-5 rounded-2xl border border-white/10 bg-white/[0.025] p-5">
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="roofing-phone"
+                className="block text-xs text-foreground/50 mb-1 font-medium"
+              >
+                Phone
+              </label>
               <input
-                type="radio"
-                name="biggestProblem"
-                value={opt}
-                checked={form.biggestProblem === opt}
-                onChange={() => set("biggestProblem", opt)}
-                className="accent-yellow-400"
-                data-ocid="roofing.form.problem.radio"
+                id="roofing-phone"
+                data-ocid="roofing.form.phone.input"
+                type="tel"
+                placeholder="(555) 123-4567"
+                value={form.phone}
+                onChange={(event) => set("phone", event.target.value)}
+                className={inputCls}
               />
-              <span className="text-sm text-foreground/70 group-hover:text-foreground transition-colors">
-                {opt}
-              </span>
-            </label>
-          ))}
+            </div>
+            <div>
+              <label
+                htmlFor="roofing-city"
+                className="block text-xs text-foreground/50 mb-1 font-medium"
+              >
+                Primary City
+              </label>
+              <input
+                id="roofing-city"
+                data-ocid="roofing.form.city.input"
+                type="text"
+                placeholder="Dallas"
+                value={form.city}
+                onChange={(event) => set("city", event.target.value)}
+                className={inputCls}
+              />
+            </div>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="roofing-state"
+                className="block text-xs text-foreground/50 mb-1 font-medium"
+              >
+                State
+              </label>
+              <select
+                id="roofing-state"
+                data-ocid="roofing.form.state.select"
+                value={form.state}
+                onChange={(event) => set("state", event.target.value)}
+                className={inputCls}
+              >
+                <option value="">Select state...</option>
+                {US_STATES.map((state) => (
+                  <option key={state} value={state}>
+                    {state}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label
+                htmlFor="roofing-problem"
+                className="block text-xs text-foreground/50 mb-1 font-medium"
+              >
+                Biggest Challenge
+              </label>
+              <select
+                id="roofing-problem"
+                value={form.biggestProblem}
+                onChange={(event) => set("biggestProblem", event.target.value)}
+                className={inputCls}
+              >
+                <option value="">Select challenge...</option>
+                <option>Missed Calls</option>
+                <option>Estimate Follow-up</option>
+                <option>Google Maps Visibility</option>
+                <option>Review Growth</option>
+                <option>Disconnected Tools</option>
+                <option>Growth Funding Readiness</option>
+              </select>
+            </div>
+          </div>
         </div>
-      </div>
-      <div>
-        <p className="block text-xs text-foreground/50 mb-2 font-medium">
-          Number of Crews *
-        </p>
-        <div className="flex flex-wrap gap-2">
-          {[
-            "Solo Operator",
-            "1-2 Crews",
-            "3-5 Crews",
-            "6-10 Crews",
-            "10+ Crews",
-          ].map((opt) => (
-            <button
-              type="button"
-              key={opt}
-              data-ocid="roofing.form.crews.toggle"
-              onClick={() => set("crewCount", opt)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium border transition-all duration-150 ${
-                form.crewCount === opt
-                  ? "bg-[oklch(0.75_0.16_75_/_20%)] border-[oklch(0.75_0.16_75_/_60%)] roofing-highlight-gold"
-                  : "bg-[oklch(1_0_0_/_4%)] border-[oklch(1_0_0_/_12%)] text-foreground/60 hover:border-[oklch(1_0_0_/_25%)]"
-              }`}
-            >
-              {opt}
-            </button>
-          ))}
-        </div>
-      </div>
+      )}
+
       <GoldButton
         onClick={handleSubmit}
-        className={`w-full text-center ${!isValid ? "opacity-50 cursor-not-allowed" : ""}`}
+        className={`w-full text-center ${!isValid ? "opacity-60" : ""}`}
         data-ocid="roofing.form.submit_button"
       >
-        Build My Live Roofing Demo
+        See It Work for My Roofing Company
       </GoldButton>
-      <p className="text-xs text-center text-foreground/30">
-        No credit card required. Roofing-specific demo only.
+      <p className="text-xs text-center text-foreground/35">
+        No credit card. The preview is illustrative and does not guarantee
+        leads, rankings, funding, or revenue.
       </p>
     </div>
   );
@@ -694,7 +639,7 @@ export default function RoofingPage() {
           sessionId = await actor.createDemoSessionWithCity(
             form.businessName,
             "Roofing",
-            form.city,
+            form.city || "Your market",
           );
       } catch {
         // Demo session creation failed silently
@@ -931,17 +876,16 @@ export default function RoofingPage() {
               </span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black font-display leading-[1.05] text-foreground">
-              Your Roofing Company Does Not Need More Tools.{" "}
+              Turn Missed Calls and Unsold Estimates Into{" "}
               <span className="roofing-highlight-gold">
-                It Needs One System To Get Booked, Ranked, And Fundable.
+                Booked Roof Inspections.
               </span>
             </h1>
             <p className="text-lg text-foreground/70 leading-relaxed max-w-xl">
-              We stop missed calls, capture roof leads 24/7, follow up
-              automatically, grow your Google Maps presence, and turn reviews
-              into booked inspections — one AI-powered operating system that
-              compounds every dollar of your marketing into booked, ranked, and
-              fundable growth.
+              BRF helps roofing companies respond faster, organize every
+              opportunity, follow up on estimates, request reviews, and
+              understand where booked inspections are coming from — in one
+              connected operating system.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <GoldButton
@@ -949,7 +893,7 @@ export default function RoofingPage() {
                 data-ocid="roofing.hero.primary_button"
                 className="text-lg px-8 py-5"
               >
-                Watch My Live Roofing Demo
+                See It Work for My Roofing Company
               </GoldButton>
               <button
                 type="button"
@@ -958,13 +902,13 @@ export default function RoofingPage() {
                 className="px-8 py-5 rounded-xl font-bold text-base border text-foreground/80 hover:text-foreground hover:border-foreground/40 transition-all duration-200"
                 style={{ borderColor: "oklch(1 0 0 / 20%)" }}
               >
-                See How BRF Works
+                Personalize My Demo
               </button>
             </div>
             <p className="text-sm text-foreground/40 italic">
-              The complete growth engine for roofing companies who refuse to
-              lose another lead to voicemail, weak follow-up, or a competitor
-              ranking above them.
+              Built for roofing owners who want a clearer path from the first
+              homeowner inquiry to the booked inspection and completed
+              follow-up.
             </p>
           </div>
           <div className="hidden lg:flex justify-center">
@@ -1000,11 +944,12 @@ export default function RoofingPage() {
           <h2 className="text-3xl sm:text-4xl font-black font-display text-foreground">
             Watch This First:{" "}
             <span className="roofing-highlight-gold">
-              Why Most Roofing Marketing Fails
+              Where Roofing Revenue Leaks After the Lead Arrives
             </span>
           </h2>
           <p className="text-foreground/60 text-lg">
-            Most roofers do not have a lead problem. They have a system problem.
+            See the path from homeowner inquiry to booked inspection, estimate
+            follow-up, review request, and measurable pipeline activity.
           </p>
           <button
             type="button"
@@ -1044,7 +989,7 @@ export default function RoofingPage() {
                 />
               </button>
               <p className="text-xl sm:text-2xl font-black font-display text-foreground px-4">
-                Your Marketing Sucks Because Your System Is Weak
+                Launch the Interactive Roofing Workflow
               </p>
             </div>
           </button>
@@ -1053,7 +998,7 @@ export default function RoofingPage() {
             data-ocid="roofing.vsl.primary_button"
             className="mt-4"
           >
-            Build My Live Roofing Demo
+            Launch the Interactive Roofing Demo
           </GoldButton>
         </div>
       </section>
@@ -1067,9 +1012,9 @@ export default function RoofingPage() {
         <div className="max-w-6xl mx-auto space-y-12">
           <div className="text-center">
             <h2 className="text-3xl sm:text-4xl font-black font-display text-foreground">
-              Your Marketing Sucks Because{" "}
+              Your Marketing May Be Working.{" "}
               <span className="roofing-highlight-gold">
-                The System Behind It Is Weak.
+                The Follow-Up System Is Where Revenue Leaks.
               </span>
             </h2>
           </div>
@@ -1105,147 +1050,66 @@ export default function RoofingPage() {
         </div>
       </section>
 
-      {/* TESTIMONIALS */}
+      {/* PROOF WITHOUT UNSUPPORTED CLAIMS */}
       <section
-        data-ocid="roofing.testimonials.section"
-        style={{ background: "#0a0f1e", padding: "80px 0" }}
+        data-ocid="roofing.proof.section"
+        className="py-20 px-4"
+        style={{ background: "#0a0f1e" }}
       >
-        <div
-          style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 24px" }}
-        >
-          <div style={{ textAlign: "center", marginBottom: "48px" }}>
-            <h2
-              style={{
-                fontSize: "2rem",
-                fontWeight: 700,
-                color: "#fff",
-                marginBottom: "12px",
-              }}
-            >
-              What Roofing Companies Are Saying
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center max-w-3xl mx-auto">
+            <p className="text-xs uppercase tracking-[0.18em] font-black text-blue-300">
+              What the system demonstrates
+            </p>
+            <h2 className="mt-4 text-3xl sm:text-4xl font-black font-display text-foreground">
+              Follow one roofing opportunity from first contact to measurable
+              follow-up.
             </h2>
-            <p style={{ fontSize: "1.1rem", color: "#9ca3af" }}>
-              Real roofing business owners. Real results.
+            <p className="mt-4 text-foreground/60 text-lg leading-relaxed">
+              Instead of relying on unverified result claims, the demo shows the
+              operating workflow and the data BRF is designed to track.
             </p>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(480px, 1fr))",
-              gap: "24px",
-            }}
-          >
+          <div className="mt-12 grid md:grid-cols-4 gap-5">
             {[
-              {
-                initials: "MW",
-                color: "#2563eb",
-                name: "Marcus Williams",
-                company: "Williams Roofing & Restoration",
-                location: "Atlanta, GA",
-                quote:
-                  "Before BRF, we were losing 3-4 calls a day to voicemail. The AI front desk picked up every single one. We booked 11 new inspections in the first two weeks alone.",
-              },
-              {
-                initials: "SR",
-                color: "#059669",
-                name: "Sandra Reyes",
-                company: "Reyes Premium Roofing",
-                location: "Dallas, TX",
-                quote:
-                  "Our Google reviews went from 14 to 47 in 60 days. BRF automatically sends review requests after every job. Customers actually respond because the message feels personal.",
-              },
-              {
-                initials: "DT",
-                color: "#d97706",
-                name: "Derek Thompson",
-                company: "Thompson Roofing Solutions",
-                location: "Charlotte, NC",
-                quote:
-                  "I was using 6 different tools before this. Now I run everything from one dashboard. My estimate follow-up used to be manual — now it's automated and my close rate went up 30%.",
-              },
-              {
-                initials: "LC",
-                color: "#7c3aed",
-                name: "Lisa Chen",
-                company: "Chen & Associates Roofing",
-                location: "Phoenix, AZ",
-                quote:
-                  "The business credit builder roadmap was something I didn't even know I needed. We used it to qualify for equipment financing and put two more trucks on the road.",
-              },
-            ].map((t, idx) => (
-              <div
-                key={t.name}
-                data-ocid={`roofing.testimonials.item.${idx + 1}`}
-                style={{
-                  background: "rgba(255,255,255,0.05)",
-                  backdropFilter: "blur(12px)",
-                  WebkitBackdropFilter: "blur(12px)",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: "16px",
-                  padding: "28px",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "16px",
-                }}
-              >
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "14px" }}
-                >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "50%",
-                      background: t.color,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: "16px",
-                      color: "#fff",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {t.initials}
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontWeight: 700,
-                        color: "#fff",
-                        fontSize: "15px",
-                      }}
-                    >
-                      {t.name}
-                    </div>
-                    <div style={{ color: "#9ca3af", fontSize: "13px" }}>
-                      {t.company} &bull; {t.location}
-                    </div>
-                  </div>
+              [
+                "01",
+                "Lead captured",
+                "A homeowner inquiry is answered and organized with source and contact context.",
+              ],
+              [
+                "02",
+                "Inspection booked",
+                "The opportunity moves into a clear appointment and CRM workflow.",
+              ],
+              [
+                "03",
+                "Estimate followed up",
+                "The system keeps the next action visible and supports consistent follow-up.",
+              ],
+              [
+                "04",
+                "Outcome measured",
+                "The team can see activity across calls, inspections, reviews, and pipeline stages.",
+              ],
+            ].map(([number, title, body]) => (
+              <div key={number} className="roofing-glass-card rounded-2xl p-6">
+                <div className="text-xs font-black tracking-[0.16em] text-yellow-300">
+                  {number}
                 </div>
-                <div
-                  style={{
-                    color: "#fbbf24",
-                    fontSize: "18px",
-                    letterSpacing: "2px",
-                  }}
-                >
-                  ★★★★★
-                </div>
-                <p
-                  style={{
-                    color: "#e5e7eb",
-                    fontSize: "15px",
-                    lineHeight: "1.7",
-                    fontStyle: "italic",
-                    margin: 0,
-                  }}
-                >
-                  &ldquo;{t.quote}&rdquo;
+                <h3 className="mt-4 text-lg font-bold text-foreground">
+                  {title}
+                </h3>
+                <p className="mt-2 text-sm leading-6 text-foreground/55">
+                  {body}
                 </p>
               </div>
             ))}
           </div>
+          <p className="mt-8 text-center text-xs text-foreground/35">
+            Illustrative product workflow. Actual outcomes vary by market,
+            offer, execution, and operating conditions.
+          </p>
         </div>
       </section>
 
@@ -1266,9 +1130,9 @@ export default function RoofingPage() {
               </span>
             </h2>
             <p className="text-foreground/60 text-base max-w-xl mx-auto">
-              No niche selection needed. This demo is already built for roofers.
-              Enter your business details and BRF will start creating your
-              roofing-specific demo.
+              Start with your company website and contact details. Optional
+              context can make the roofing workflow more relevant without
+              blocking the preview.
             </p>
           </div>
           <div className="flex justify-center">
@@ -1440,7 +1304,7 @@ export default function RoofingPage() {
             data-ocid="roofing.final_cta.primary_button"
             className="text-lg px-10 py-5"
           >
-            Watch My Live Roofing Demo
+            See It Work for My Roofing Company
           </GoldButton>
         </div>
       </section>
