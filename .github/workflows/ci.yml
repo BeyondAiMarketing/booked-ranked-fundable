@@ -91,3 +91,26 @@ jobs:
           name: playwright-report
           path: src/frontend/playwright-report/
           retention-days: 7
+
+  nemo-container-validation:
+    name: Protected NeMo container validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install container gateway dependencies
+        working-directory: services/nemo-agent
+        run: npm install --no-audit --no-fund
+
+      - name: Typecheck protected Worker ingress
+        working-directory: services/nemo-agent
+        run: npm run check
+
+      - name: Validate Worker, container manifest, and Docker image
+        working-directory: services/nemo-agent
+        run: npm run validate
