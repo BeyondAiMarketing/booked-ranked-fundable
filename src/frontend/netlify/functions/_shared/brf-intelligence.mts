@@ -380,6 +380,16 @@ function routesFor(taskType: BrfIntelligenceTask): ProviderRoute[] {
       model: nvidiaModel,
       timeoutMs: 20_000,
     }),
+    "nvidia-nim-fast": openAiCompatibleRoute({
+      id: "nvidia-nim-fast",
+      baseUrl: nvidiaBaseUrl,
+      apiKey:
+        nvidiaModel === (env("NVIDIA_NEMOTRON_MODEL") || DEFAULT_FAST_MODEL)
+          ? ""
+          : env("NVIDIA_API_KEY"),
+      model: env("NVIDIA_NEMOTRON_MODEL") || DEFAULT_FAST_MODEL,
+      timeoutMs: 16_000,
+    }),
     openrouter: openAiCompatibleRoute({
       id: "openrouter",
       baseUrl:
