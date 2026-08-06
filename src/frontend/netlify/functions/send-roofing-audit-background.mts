@@ -1,11 +1,16 @@
 interface RoofingAuditJob {
   leadId?: string;
-  campaignLeadId?: string | null;
-  firstName?: string;
-  businessName?: string;
-  email?: string;
-  website?: string;
-  city?: string | null;
+  auditDispatchToken?: string;
+}
+
+interface PlaybookLeadRow {
+  id: string;
+  first_name: string | null;
+  business_name: string | null;
+  email: string | null;
+  website: string | null;
+  city: string | null;
+  metadata: Record<string, unknown> | null;
 }
 
 interface AuditIssue {
@@ -35,6 +40,11 @@ interface AuditResponse {
   audit?: AuditReport;
 }
 
+interface SupabaseConfig {
+  url: string;
+  serviceKey: string;
+}
+
 function clean(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -46,6 +56,85 @@ function escapeHtml(value: unknown): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function safeHeader(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
+function getSupabaseConfig(): SupabaseConfig {
+  const url = Netlify.env.get("SUPABASE_URL")?.replace(/\/$/, "");
+  const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !serviceKey) {
+    throw new Error("Roofing audit lead verification is not configured.");
+  }
+  return { url, serviceKey };
+}
+
+function supabaseHeaders(serviceKey: string): Record<string, string> {
+  return {
+    apikey: serviceKey,
+    authorization: `Bearer ${serviceKey}`,
+    "content-type": "application/json",
+  };
+}
+
+async function loadVerifiedLead(
+  config: SupabaseConfig,
+  leadId: string,
+  auditDispatchToken: string,
+): Promise<PlaybookLeadRow> {
+  const response = await fetch(
+    `${config.url}/rest/v1/roofing_playbook_leads?id=eq.${encodeURIComponent(leadId)}&select=id,first_name,business_name,email,website,city,metadata&limit=1`,
+    {
+      headers: supabaseHeaders(config.serviceKey),
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`The roofing playbook lead could not be verified (${response.status}).`);
+  }
+
+  const rows = (await response.json()) as PlaybookLeadRow[];
+  const lead = rows[0];
+  const storedToken = clean(lead?.metadata?.auditDispatchToken, 120);
+  if (!lead || !storedToken || storedToken !== auditDispatchToken) {
+    throw new Error("The roofing audit dispatch token is invalid.");
+  }
+  return lead;
+}
+
+async function findCampaignLeadId(
+  config: SupabaseConfig,
+  playbookLeadId: string,
+): Promise<string> {
+  const response = await fetch(
+    `${config.url}/rest/v1/roofing_campaign_leads?playbook_lead_id=eq.${encodeURIComponent(playbookLeadId)}&select=id&limit=1`,
+    {
+      headers: supabaseHeaders(config.serviceKey),
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok) return "";
+  const rows = (await response.json()) as Array<{ id?: string }>;
+  return clean(rows[0]?.id, 120);
+}
+
+async function wasAuditAlreadyEmailed(
+  config: SupabaseConfig,
+  campaignLeadId: string,
+): Promise<boolean> {
+  if (!campaignLeadId) return false;
+  const response = await fetch(
+    `${config.url}/rest/v1/roofing_campaign_events?lead_id=eq.${encodeURIComponent(campaignLeadId)}&event_type=eq.audit_emailed&select=id&limit=1`,
+    {
+      headers: supabaseHeaders(config.serviceKey),
+      signal: AbortSignal.timeout(15_000),
+    },
+  );
+  if (!response.ok) return false;
+  const rows = (await response.json()) as Array<{ id?: string }>;
+  return Boolean(rows[0]?.id);
 }
 
 function fallbackAudit(website: string, reason: string): AuditReport {
@@ -134,23 +223,22 @@ function renderAuditEmail(input: {
   </div>`;
 }
 
-async function recordCampaignEvent(input: {
-  campaignLeadId: string;
-  eventType: "audit_emailed" | "audit_email_failed";
-  detail: string;
-}): Promise<void> {
-  const url = Netlify.env.get("SUPABASE_URL")?.replace(/\/$/, "");
-  const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (!url || !serviceKey) return;
+async function recordCampaignEvent(
+  config: SupabaseConfig,
+  input: {
+    campaignLeadId: string;
+    eventType: "audit_emailed" | "audit_email_failed";
+    detail: string;
+  },
+): Promise<void> {
+  if (!input.campaignLeadId) return;
 
   await fetch(
-    `${url}/rest/v1/roofing_campaign_events?on_conflict=idempotency_key`,
+    `${config.url}/rest/v1/roofing_campaign_events?on_conflict=idempotency_key`,
     {
       method: "POST",
       headers: {
-        apikey: serviceKey,
-        authorization: `Bearer ${serviceKey}`,
-        "content-type": "application/json",
+        ...supabaseHeaders(config.serviceKey),
         prefer: "resolution=ignore-duplicates,return=minimal",
       },
       body: JSON.stringify({
@@ -171,19 +259,40 @@ async function recordCampaignEvent(input: {
 
 export default async (request: Request): Promise<void> => {
   let campaignLeadId = "";
+  let config: SupabaseConfig | null = null;
   try {
+    if (request.method !== "POST") {
+      throw new Error("The roofing audit background function only accepts POST requests.");
+    }
+    if (Number(request.headers.get("content-length") || 0) > 5_000) {
+      throw new Error("The roofing audit job is too large.");
+    }
+
     const input = (await request.json()) as RoofingAuditJob;
     const leadId = clean(input.leadId, 120);
-    campaignLeadId = clean(input.campaignLeadId, 120);
-    const firstName = clean(input.firstName, 100);
-    const businessName = clean(input.businessName, 160);
-    const email = clean(input.email, 254).toLowerCase();
-    const website = clean(input.website, 500);
-    const city = clean(input.city, 160);
-    if (!leadId || !firstName || !businessName || !email || !website) {
-      throw new Error(
-        "The roofing audit job is missing required lead details.",
-      );
+    const auditDispatchToken = clean(input.auditDispatchToken, 120);
+    if (!leadId || !auditDispatchToken) {
+      throw new Error("The roofing audit job is missing its lead ID or dispatch token.");
+    }
+
+    config = getSupabaseConfig();
+    const lead = await loadVerifiedLead(config, leadId, auditDispatchToken);
+    const firstName = clean(lead.first_name, 100);
+    const businessName = clean(lead.business_name, 160);
+    const email = clean(lead.email, 254).toLowerCase();
+    const website = clean(lead.website, 500);
+    const city = clean(lead.city, 160);
+    if (!firstName || !businessName || !email || !website) {
+      throw new Error("The stored roofing playbook lead is incomplete.");
+    }
+
+    campaignLeadId = await findCampaignLeadId(config, leadId);
+    if (await wasAuditAlreadyEmailed(config, campaignLeadId)) {
+      console.log("roofing audit email already delivered", {
+        leadId,
+        campaignLeadId,
+      });
+      return;
     }
 
     const origin = new URL(request.url).origin;
@@ -215,8 +324,9 @@ export default async (request: Request): Promise<void> => {
 
     const apiKey = Netlify.env.get("RESEND_API_KEY");
     const from = Netlify.env.get("ROOFING_PLAYBOOK_FROM_EMAIL");
-    if (!apiKey || !from)
+    if (!apiKey || !from) {
       throw new Error("Roofing audit email delivery is not configured.");
+    }
 
     const pdfUrl = Netlify.env.get("ROOFING_PLAYBOOK_PDF_URL") || null;
     const demoUrl = `https://bookedrankedfunded.org/demo?niche=roofing&source=roofing-audit&lead=${encodeURIComponent(leadId)}`;
@@ -229,7 +339,7 @@ export default async (request: Request): Promise<void> => {
       body: JSON.stringify({
         from,
         to: [email],
-        subject: `${firstName}, your free roofing website audit is ready`,
+        subject: `${safeHeader(firstName)}, your free roofing website audit is ready`,
         html: renderAuditEmail({
           firstName,
           businessName,
@@ -241,28 +351,26 @@ export default async (request: Request): Promise<void> => {
       }),
       signal: AbortSignal.timeout(20_000),
     });
-    if (!response.ok)
+    if (!response.ok) {
       throw new Error(
         `Resend rejected the audit email with status ${response.status}.`,
       );
-
-    if (campaignLeadId) {
-      await recordCampaignEvent({
-        campaignLeadId,
-        eventType: "audit_emailed",
-        detail:
-          "The personalized roofing website audit was delivered by email.",
-      });
     }
+
+    await recordCampaignEvent(config, {
+      campaignLeadId,
+      eventType: "audit_emailed",
+      detail: "The personalized roofing website audit was delivered by email.",
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("roofing audit background delivery failed", {
       campaignLeadId,
       error: message,
     });
-    if (campaignLeadId) {
+    if (config && campaignLeadId) {
       try {
-        await recordCampaignEvent({
+        await recordCampaignEvent(config, {
           campaignLeadId,
           eventType: "audit_email_failed",
           detail: message.slice(0, 800),
