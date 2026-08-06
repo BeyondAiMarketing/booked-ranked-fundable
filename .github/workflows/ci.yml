@@ -76,7 +76,7 @@ jobs:
         run: pnpm install --frozen-lockfile=false
 
       - name: Format changed frontend files
-        run: pnpm --dir src/frontend exec prettier --write src/components/AppLayout.tsx src/pages/RoofingPage.tsx src/pages/RoofingPlaybookTripwirePage.tsx
+        run: pnpm dlx prettier@3.6.2 --write src/frontend/src/components/AppLayout.tsx src/frontend/src/pages/RoofingPage.tsx src/frontend/src/pages/RoofingPlaybookTripwirePage.tsx
 
       - name: Typecheck frontend
         run: pnpm --dir src/frontend typecheck
