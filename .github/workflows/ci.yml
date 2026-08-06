@@ -33,20 +33,31 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Correct the one-time form matcher
+      - name: Correct one-time source assertions
         run: |
           python - <<'PY'
           from pathlib import Path
+
           path = Path('.github/scripts/apply_roofing_funnel_conversion.py')
           lines = path.read_text().splitlines()
-          matches = 0
+          matcher_count = 0
           for index, line in enumerate(lines):
               if line.strip().startswith("r'function DemoForm"):
                   lines[index] = "        r'function DemoForm\\(\\{ onDemoStart \\}.*?\\n\\}\\n\\nexport default function RoofingPage',"
-                  matches += 1
-          if matches != 1:
-              raise SystemExit(f'Expected one DemoForm matcher, found {matches}')
-          path.write_text('\n'.join(lines) + '\n')
+                  matcher_count += 1
+          if matcher_count != 1:
+              raise SystemExit(f'Expected one DemoForm matcher, found {matcher_count}')
+
+          text = '\n'.join(lines) + '\n'
+          old = '    text = replace_once(text, "Watch My Live Roofing Demo", "See It Work for My Roofing Company", "hero CTA")'
+          new = '''    hero_cta = "Watch My Live Roofing Demo"
+              hero_cta_count = text.count(hero_cta)
+              if hero_cta_count != 2:
+                  raise RuntimeError(f"hero CTA: expected exactly two matches, found {hero_cta_count}")
+              text = text.replace(hero_cta, "See It Work for My Roofing Company")'''
+          if text.count(old) != 1:
+              raise SystemExit(f'Expected one hero CTA assertion, found {text.count(old)}')
+          path.write_text(text.replace(old, new, 1))
           PY
 
       - name: Apply asserted source changes
