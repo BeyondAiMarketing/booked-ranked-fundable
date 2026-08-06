@@ -1,0 +1,18 @@
+{
+  "name": "brf-nemo-container-runtime",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "dependencies": {
+    "@cloudflare/containers": "^0.3.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260806.0",
+    "typescript": "^5.9.3",
+    "wrangler": "^4.0.0"
+  }
+}
