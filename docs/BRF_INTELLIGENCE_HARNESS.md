@@ -9,7 +9,8 @@ Booked Ranked Fundable uses NVIDIA NeMo Agent Toolkit as its preferred orchestra
 ```text
 Application task
   -> private NeMo Agent Toolkit service
-  -> direct NVIDIA NIM / Nemotron
+  -> direct NVIDIA NIM / Nemotron reasoning model
+  -> direct NVIDIA NIM / Nemotron fast model
   -> OpenRouter
   -> OpenAI / Netlify AI Gateway
   -> Anthropic / Netlify AI Gateway
@@ -30,7 +31,7 @@ A route is skipped when it is not configured. A failed route records its provide
 
 - Provides the immediately available primary inference route
 - Handles audits, business strategy, background agent runs, and social-content logic
-- Uses the reasoning model for complex work and the fast model for lighter classification
+- Uses the reasoning model for complex work and the fast model as an NVIDIA-native recovery path before any external fallback
 
 ### Supabase
 
@@ -59,7 +60,7 @@ A route is skipped when it is not configured. A failed route records its provide
 - Never claim a publish, message, booking, funding result, ranking, or completed action without evidence.
 - Never treat malformed JSON or an invalid task shape as a successful provider response.
 - Never send provider credentials to the browser.
-- Never let fallback providers run before NeMo and Nemotron.
+- Never let non-NVIDIA fallback providers run before NeMo and both Nemotron tiers.
 - Never add write tools without idempotency, authorization, audit logging, and human-approval rules.
 
 ## Remaining rollout
