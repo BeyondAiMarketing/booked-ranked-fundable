@@ -34,6 +34,19 @@ function required(value: unknown, label: string, max: number): string {
   return result;
 }
 
+function escapeHtml(value: unknown): string {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function safeHeader(value: string): string {
+  return value.replace(/[\r\n]+/g, " ").trim();
+}
+
 function buildConfig() {
   const url = Netlify.env.get("SUPABASE_URL")?.replace(/\/$/, "");
   const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
@@ -53,6 +66,11 @@ async function sendPlaybookEmail(input: {
   if (!apiKey || !from || !pdfUrl) return "pending";
 
   const demoUrl = `https://bookedrankedfunded.org/demo?niche=roofing&source=roofing-playbook&lead=${encodeURIComponent(input.leadId)}`;
+  const firstName = escapeHtml(input.firstName);
+  const businessName = escapeHtml(input.businessName);
+  const playbookUrl = escapeHtml(pdfUrl);
+  const safeDemoUrl = escapeHtml(demoUrl);
+
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -63,8 +81,8 @@ async function sendPlaybookEmail(input: {
       body: JSON.stringify({
         from,
         to: [input.email],
-        subject: `${input.firstName}, your Free Roofing AI Playbook is ready — your audit is next`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#152033;line-height:1.6"><h1 style="font-size:28px">Your Free Roofer AI Playbook is ready</h1><p>Hi ${input.firstName},</p><p>Thanks for requesting the playbook and personalized website audit for <strong>${input.businessName}</strong>.</p><p><a href="${pdfUrl}" style="display:inline-block;background:#f59e0b;color:#111827;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Download the Free Playbook</a></p><p><strong>Your free roofing website audit is now being prepared.</strong> It will arrive in a separate email after the homepage review is complete.</p><p>While the audit is being prepared, see the ideas working in the roofing growth demo:</p><p><a href="${demoUrl}" style="display:inline-block;background:#172554;color:white;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Launch the Roofing Demo</a></p><p style="font-size:12px;color:#64748b">The audit is a rapid homepage review based on observable evidence. Recommendations do not guarantee rankings, financing, leads, or revenue.</p></div>`,
+        subject: `${safeHeader(input.firstName)}, your Free Roofing AI Playbook is ready — your audit is next`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:620px;margin:auto;color:#152033;line-height:1.6"><h1 style="font-size:28px">Your Free Roofer AI Playbook is ready</h1><p>Hi ${firstName},</p><p>Thanks for requesting the playbook and personalized website audit for <strong>${businessName}</strong>.</p><p><a href="${playbookUrl}" style="display:inline-block;background:#f59e0b;color:#111827;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Download the Free Playbook</a></p><p><strong>Your free roofing website audit is now being prepared.</strong> It will arrive in a separate email after the homepage review is complete.</p><p>While the audit is being prepared, see the ideas working in the roofing growth demo:</p><p><a href="${safeDemoUrl}" style="display:inline-block;background:#172554;color:white;text-decoration:none;padding:14px 22px;border-radius:10px;font-weight:700">Launch the Roofing Demo</a></p><p style="font-size:12px;color:#64748b">The audit is a rapid homepage review based on observable evidence. Recommendations do not guarantee rankings, financing, leads, or revenue.</p></div>`,
       }),
       signal: AbortSignal.timeout(15_000),
     });
@@ -116,7 +134,7 @@ async function upsertCampaignLead(input: {
   businessName: string;
   email: string;
   phone: string | null;
-  website: string | null;
+  website: string;
   city: string | null;
   ebookStatus: EbookStatus;
 }) {
@@ -220,6 +238,7 @@ export default async (request: Request): Promise<Response> => {
     const phone = clean(input.phone, 40);
     const website = required(input.website, "Website", 500);
     const city = clean(input.city, 160);
+    const auditDispatchToken = crypto.randomUUID();
     const utm =
       input.utm && typeof input.utm === "object"
         ? Object.fromEntries(
@@ -246,6 +265,7 @@ export default async (request: Request): Promise<Response> => {
       ebook_status: "pending",
       metadata: {
         utm,
+        auditDispatchToken,
         userAgent: clean(request.headers.get("user-agent"), 500),
       },
     })) as Array<{ id?: string }>;
@@ -305,11 +325,7 @@ export default async (request: Request): Promise<Response> => {
           body: JSON.stringify({
             leadId,
             campaignLeadId,
-            firstName,
-            businessName,
-            email,
-            website,
-            city,
+            auditDispatchToken,
           }),
           signal: AbortSignal.timeout(5_000),
         },
