@@ -1,0 +1,38 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "brf-nemo-agent",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-08-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "containers": [
+    {
+      "class_name": "BrfNemoContainer",
+      "image": "./Dockerfile",
+      "max_instances": 1,
+      "instance_type": "standard-1",
+      "constraints": {
+        "regions": ["WNAM", "ENAM"]
+      }
+    }
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "BRF_NEMO_CONTAINER",
+        "class_name": "BrfNemoContainer"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["BrfNemoContainer"]
+    }
+  ],
+  "vars": {
+    "BRF_NEMOTRON_REASONING_MODEL": "nvidia/nemotron-3-super-120b-a12b"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
