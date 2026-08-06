@@ -19,6 +19,7 @@ interface CaptureResponse {
   ok?: boolean;
   error?: string;
   ebookStatus?: "delivered" | "pending" | "failed";
+  auditStatus?: "queued" | "failed";
   pdfUrl?: string | null;
   demoUrl?: string;
 }
@@ -118,10 +119,10 @@ function getCampaignContext() {
 export default function RoofingPlaybookTripwirePage() {
   const campaign = useMemo(getCampaignContext, []);
   const angle = ANGLE_CONTENT[campaign.angle] || {
-    eyebrow: "Free roofer AI growth playbook",
+    eyebrow: "Free playbook + personalized roofing audit",
     title:
-      "The practical roofing growth system for getting booked, ranked, and ready to scale.",
-    lead: "See how to capture more opportunities, improve follow-up, strengthen local trust, and build one connected operating system around your roofing company.",
+      "Get the Free Roofer AI Growth Playbook and a Personalized Website Audit.",
+    lead: "Learn the practical roofing growth system, then receive a rapid audit showing how your own homepage handles messaging, trust, lead capture, and conversion opportunities.",
   };
 
   const [form, setForm] = useState<FormState>({
@@ -143,16 +144,17 @@ export default function RoofingPlaybookTripwirePage() {
     if (
       !form.firstName.trim() ||
       !form.businessName.trim() ||
-      !form.email.includes("@")
+      !form.email.includes("@") ||
+      !form.website.trim()
     ) {
       setError(
-        "Enter your first name, roofing company, and a valid email address.",
+        "Enter your first name, roofing company, a valid email address, and your website so we can prepare the audit.",
       );
       return;
     }
     if (!form.consentMarketing) {
       setError(
-        "Please confirm that we may send the playbook and related follow-up.",
+        "Please confirm that we may send the playbook, website audit, and related follow-up.",
       );
       return;
     }
@@ -220,8 +222,8 @@ export default function RoofingPlaybookTripwirePage() {
               <div className="mt-8 flex flex-wrap gap-4 text-sm text-slate-200">
                 {[
                   "Written specifically for roofers",
-                  "Practical systems, not AI hype",
-                  "Includes a personalized next step",
+                  "Includes a personalized website audit",
+                  "Both reports delivered by email",
                 ].map((item) => (
                   <span key={item} className="inline-flex items-center gap-2">
                     <CheckCircle2 size={17} className="text-emerald-300" />
@@ -233,7 +235,7 @@ export default function RoofingPlaybookTripwirePage() {
                 href="#get-playbook"
                 className="mt-9 inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-orange-400 px-7 py-4 text-base font-black text-slate-950 shadow-2xl shadow-amber-500/20 transition hover:-translate-y-0.5"
               >
-                Get the Free Playbook <ArrowRight size={19} />
+                Get the Free Playbook + Audit <ArrowRight size={19} />
               </a>
             </div>
 
@@ -326,19 +328,21 @@ export default function RoofingPlaybookTripwirePage() {
                 Included at no cost
               </p>
               <h2 className="mt-4 font-display text-3xl font-black tracking-tight">
-                Get the playbook and a clear next step for your roofing company.
+                Get the playbook and a personalized audit of your roofing
+                website.
               </h2>
               <p className="mt-4 leading-7 text-slate-400">
-                After requesting the guide, you can launch a roofing-specific
-                BRF demo that shows how the operating system handles lead
-                response, follow-up, reviews, and local growth.
+                The playbook is delivered first. Then we review your public
+                homepage and email a rapid audit covering messaging, mobile
+                basics, trust signals, lead capture, and practical conversion
+                opportunities.
               </p>
               <div className="mt-7 space-y-4">
                 {[
-                  "Immediate playbook delivery when email delivery is configured",
-                  "Campaign-aware recommendations based on the page you visited",
-                  "Optional personalized roofing demo after download",
-                  "No credit card and no guarantee-based sales claims",
+                  "Free Roofer AI Growth Playbook delivered by email",
+                  "Personalized rapid audit of the website you submit",
+                  "Prioritized strengths, issues, and quick wins",
+                  "Optional roofing demo after delivery",
                 ].map((item) => (
                   <div key={item} className="flex gap-3 text-sm text-slate-200">
                     <div className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-emerald-400/10 text-emerald-300">
@@ -357,12 +361,12 @@ export default function RoofingPlaybookTripwirePage() {
                     <CheckCircle2 size={34} />
                   </div>
                   <h2 className="mt-6 font-display text-3xl font-black">
-                    Your playbook is ready.
+                    Your playbook is ready. Your audit is underway.
                   </h2>
                   <p className="mx-auto mt-4 max-w-lg leading-7 text-slate-400">
                     {result.ebookStatus === "delivered"
-                      ? "We sent the playbook to your inbox. You can also continue into the roofing demo now."
-                      : "Your request was saved. Check your inbox for delivery, then continue into the roofing demo."}
+                      ? "We sent the playbook to your inbox and started your personalized roofing website audit. The audit will arrive in a separate email."
+                      : "Your request was saved and your website audit was queued. Watch your inbox for the playbook and a separate audit email."}
                   </p>
                   <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
                     {result.pdfUrl && (
@@ -395,7 +399,7 @@ export default function RoofingPlaybookTripwirePage() {
                         Free access
                       </p>
                       <h2 className="text-2xl font-black">
-                        Send me the Roofer AI Playbook
+                        Send me the Playbook + Website Audit
                       </h2>
                     </div>
                   </div>
@@ -434,10 +438,7 @@ export default function RoofingPlaybookTripwirePage() {
                       />
                     </label>
                     <label className="space-y-2 text-xs font-bold uppercase tracking-[0.1em] text-slate-400 sm:col-span-2">
-                      Website{" "}
-                      <span className="normal-case tracking-normal text-white/30">
-                        (optional)
-                      </span>
+                      Roofing website
                       <input
                         value={form.website}
                         onChange={(event) => set("website", event.target.value)}
@@ -456,8 +457,9 @@ export default function RoofingPlaybookTripwirePage() {
                       }
                       className="mt-1 h-4 w-4 accent-amber-300"
                     />
-                    I agree to receive the playbook and related roofing growth
-                    follow-up. I can unsubscribe at any time.
+                    I agree to receive the playbook, personalized website audit,
+                    and related roofing growth follow-up. I can unsubscribe at
+                    any time.
                   </label>
 
                   {error && (
@@ -471,13 +473,14 @@ export default function RoofingPlaybookTripwirePage() {
                     className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-orange-400 px-6 py-4 text-base font-black text-slate-950 transition hover:-translate-y-0.5 disabled:cursor-wait disabled:opacity-60"
                   >
                     {isSubmitting
-                      ? "Sending your playbook…"
-                      : "Get My Free Playbook"}
+                      ? "Starting your playbook and audit…"
+                      : "Get My Free Playbook + Audit"}
                     {!isSubmitting && <ArrowRight size={19} />}
                   </button>
                   <p className="mt-3 text-center text-[11px] leading-5 text-white/35">
-                    Educational material only. Results depend on market,
-                    execution, offer, and operating conditions.
+                    The audit is a rapid homepage review based on observable
+                    evidence. It is not a full SEO, accessibility, security, or
+                    performance certification.
                   </p>
                 </>
               )}

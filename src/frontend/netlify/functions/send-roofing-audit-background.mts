@@ -89,12 +89,18 @@ function renderAuditEmail(input: {
   pdfUrl: string | null;
   demoUrl: string;
 }): string {
-  const strengths = (input.report.strengths || []).slice(0, 6).map((item) =>
-    `<li style="margin:0 0 12px"><strong>${escapeHtml(item.title || "Observed strength")}</strong><br><span style="color:#64748b">${escapeHtml(item.evidence || "")}</span></li>`,
-  );
-  const issues = (input.report.issues || []).slice(0, 8).map((item) =>
-    `<li style="margin:0 0 16px"><strong>${escapeHtml((item.severity || "priority").toUpperCase())}: ${escapeHtml(item.title || "Opportunity")}</strong><br><span style="color:#64748b">Observed: ${escapeHtml(item.evidence || "Not specified")}</span><br><span>Recommended next step: ${escapeHtml(item.recommendation || "Review and improve this area.")}</span></li>`,
-  );
+  const strengths = (input.report.strengths || [])
+    .slice(0, 6)
+    .map(
+      (item) =>
+        `<li style="margin:0 0 12px"><strong>${escapeHtml(item.title || "Observed strength")}</strong><br><span style="color:#64748b">${escapeHtml(item.evidence || "")}</span></li>`,
+    );
+  const issues = (input.report.issues || [])
+    .slice(0, 8)
+    .map(
+      (item) =>
+        `<li style="margin:0 0 16px"><strong>${escapeHtml((item.severity || "priority").toUpperCase())}: ${escapeHtml(item.title || "Opportunity")}</strong><br><span style="color:#64748b">Observed: ${escapeHtml(item.evidence || "Not specified")}</span><br><span>Recommended next step: ${escapeHtml(item.recommendation || "Review and improve this area.")}</span></li>`,
+    );
   const quickWins = (input.report.quickWins || []).slice(0, 8);
 
   return `<div style="font-family:Arial,sans-serif;max-width:680px;margin:auto;color:#0f172a;line-height:1.65">
@@ -137,24 +143,30 @@ async function recordCampaignEvent(input: {
   const serviceKey = Netlify.env.get("SUPABASE_SERVICE_ROLE_KEY");
   if (!url || !serviceKey) return;
 
-  await fetch(`${url}/rest/v1/roofing_campaign_events?on_conflict=idempotency_key`, {
-    method: "POST",
-    headers: {
-      apikey: serviceKey,
-      authorization: `Bearer ${serviceKey}`,
-      "content-type": "application/json",
-      prefer: "resolution=ignore-duplicates,return=minimal",
+  await fetch(
+    `${url}/rest/v1/roofing_campaign_events?on_conflict=idempotency_key`,
+    {
+      method: "POST",
+      headers: {
+        apikey: serviceKey,
+        authorization: `Bearer ${serviceKey}`,
+        "content-type": "application/json",
+        prefer: "resolution=ignore-duplicates,return=minimal",
+      },
+      body: JSON.stringify({
+        lead_id: input.campaignLeadId,
+        event_type: input.eventType,
+        event_label:
+          input.eventType === "audit_emailed"
+            ? "Website audit emailed"
+            : "Website audit email failed",
+        event_detail: input.detail,
+        event_data: {},
+        idempotency_key: `${input.campaignLeadId}:${input.eventType}`,
+      }),
+      signal: AbortSignal.timeout(15_000),
     },
-    body: JSON.stringify({
-      lead_id: input.campaignLeadId,
-      event_type: input.eventType,
-      event_label: input.eventType === "audit_emailed" ? "Website audit emailed" : "Website audit email failed",
-      event_detail: input.detail,
-      event_data: {},
-      idempotency_key: `${input.campaignLeadId}:${input.eventType}`,
-    }),
-    signal: AbortSignal.timeout(15_000),
-  });
+  );
 }
 
 export default async (request: Request): Promise<void> => {
@@ -169,7 +181,9 @@ export default async (request: Request): Promise<void> => {
     const website = clean(input.website, 500);
     const city = clean(input.city, 160);
     if (!leadId || !firstName || !businessName || !email || !website) {
-      throw new Error("The roofing audit job is missing required lead details.");
+      throw new Error(
+        "The roofing audit job is missing required lead details.",
+      );
     }
 
     const origin = new URL(request.url).origin;
@@ -182,45 +196,70 @@ export default async (request: Request): Promise<void> => {
         signal: AbortSignal.timeout(45_000),
       });
       const payload = (await auditResponse.json()) as AuditResponse;
-      report = auditResponse.ok && payload.ok && payload.audit
-        ? payload.audit
-        : fallbackAudit(website, payload.error || `Audit request returned ${auditResponse.status}.`);
+      report =
+        auditResponse.ok && payload.ok && payload.audit
+          ? payload.audit
+          : fallbackAudit(
+              website,
+              payload.error ||
+                `Audit request returned ${auditResponse.status}.`,
+            );
     } catch (error) {
       report = fallbackAudit(
         website,
-        error instanceof Error ? error.message : "The automated website review could not be completed.",
+        error instanceof Error
+          ? error.message
+          : "The automated website review could not be completed.",
       );
     }
 
     const apiKey = Netlify.env.get("RESEND_API_KEY");
     const from = Netlify.env.get("ROOFING_PLAYBOOK_FROM_EMAIL");
-    if (!apiKey || !from) throw new Error("Roofing audit email delivery is not configured.");
+    if (!apiKey || !from)
+      throw new Error("Roofing audit email delivery is not configured.");
 
     const pdfUrl = Netlify.env.get("ROOFING_PLAYBOOK_PDF_URL") || null;
     const demoUrl = `https://bookedrankedfunded.org/demo?niche=roofing&source=roofing-audit&lead=${encodeURIComponent(leadId)}`;
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
-      headers: { authorization: `Bearer ${apiKey}`, "content-type": "application/json" },
+      headers: {
+        authorization: `Bearer ${apiKey}`,
+        "content-type": "application/json",
+      },
       body: JSON.stringify({
         from,
         to: [email],
         subject: `${firstName}, your free roofing website audit is ready`,
-        html: renderAuditEmail({ firstName, businessName, website, report, pdfUrl, demoUrl }),
+        html: renderAuditEmail({
+          firstName,
+          businessName,
+          website,
+          report,
+          pdfUrl,
+          demoUrl,
+        }),
       }),
       signal: AbortSignal.timeout(20_000),
     });
-    if (!response.ok) throw new Error(`Resend rejected the audit email with status ${response.status}.`);
+    if (!response.ok)
+      throw new Error(
+        `Resend rejected the audit email with status ${response.status}.`,
+      );
 
     if (campaignLeadId) {
       await recordCampaignEvent({
         campaignLeadId,
         eventType: "audit_emailed",
-        detail: "The personalized roofing website audit was delivered by email.",
+        detail:
+          "The personalized roofing website audit was delivered by email.",
       });
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("roofing audit background delivery failed", { campaignLeadId, error: message });
+    console.error("roofing audit background delivery failed", {
+      campaignLeadId,
+      error: message,
+    });
     if (campaignLeadId) {
       try {
         await recordCampaignEvent({

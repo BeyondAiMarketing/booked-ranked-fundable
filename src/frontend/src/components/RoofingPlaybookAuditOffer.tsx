@@ -1,4 +1,11 @@
-import { ArrowRight, BookOpen, CheckCircle2, Mail, Search, ShieldCheck } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  Mail,
+  Search,
+  ShieldCheck,
+} from "lucide-react";
 
 interface RoofingPlaybookAuditOfferProps {
   source: "homepage" | "roofing-landing";
@@ -49,7 +56,9 @@ export default function RoofingPlaybookAuditOffer({
               Get the Free Roofer AI Playbook and a Personalized Website Audit.
             </h2>
             <p className="mt-5 max-w-2xl text-lg leading-8 text-slate-300">
-              See what a stronger roofing growth system looks like, then get a rapid audit showing where your own website may be helping or hurting lead conversion.
+              See what a stronger roofing growth system looks like, then get a
+              rapid audit showing where your own website may be helping or
+              hurting lead conversion.
             </p>
             <a
               href={href}
@@ -59,7 +68,9 @@ export default function RoofingPlaybookAuditOffer({
               Get My Free Playbook + Audit <ArrowRight size={19} />
             </a>
             <p className="mt-3 text-xs leading-5 text-white/40">
-              No credit card. The audit is a rapid homepage review based on observable evidence and is not a guarantee of rankings, leads, financing, or revenue.
+              No credit card. The audit is a rapid homepage review based on
+              observable evidence and is not a guarantee of rankings, leads,
+              financing, or revenue.
             </p>
           </div>
 
@@ -80,14 +91,17 @@ export default function RoofingPlaybookAuditOffer({
         </div>
 
         <div className="mt-10 flex flex-wrap items-center justify-center gap-x-7 gap-y-3 rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.055] px-5 py-4 text-sm text-slate-200">
-          {["Playbook emailed", "Website audited", "Quick wins prioritized", "Audit emailed separately"].map(
-            (item) => (
-              <span key={item} className="inline-flex items-center gap-2">
-                <CheckCircle2 size={16} className="text-emerald-300" />
-                {item}
-              </span>
-            ),
-          )}
+          {[
+            "Playbook emailed",
+            "Website audited",
+            "Quick wins prioritized",
+            "Audit emailed separately",
+          ].map((item) => (
+            <span key={item} className="inline-flex items-center gap-2">
+              <CheckCircle2 size={16} className="text-emerald-300" />
+              {item}
+            </span>
+          ))}
         </div>
       </div>
     </section>

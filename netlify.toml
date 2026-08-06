@@ -9,14 +9,26 @@
   NODE_OPTIONS = "--max-old-space-size=4096"
 
 [[redirects]]
-  from = "/roofing-ai-growth-playbook"
-  to = "/roofing-ai-growth-playbook/index.html"
+  from = "/roofing"
+  to = "/index.html"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/roofing-ai-growth-playbook/"
-  to = "/roofing-ai-growth-playbook/index.html"
+  from = "/roofing/*"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roofing-ai-growth-playbook"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roofing-ai-growth-playbook/*"
+  to = "/index.html"
   status = 200
   force = true
 

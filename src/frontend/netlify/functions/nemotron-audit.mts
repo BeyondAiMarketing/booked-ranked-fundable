@@ -102,8 +102,13 @@ async function assertPublicHostname(url: URL): Promise<void> {
   }
 
   const records = await lookup(hostname, { all: true, verbatim: true });
-  if (records.length === 0 || records.some((record) => isPrivateAddress(record.address))) {
-    throw new Error("The website resolves to a private or unavailable address.");
+  if (
+    records.length === 0 ||
+    records.some((record) => isPrivateAddress(record.address))
+  ) {
+    throw new Error(
+      "The website resolves to a private or unavailable address.",
+    );
   }
 }
 
@@ -117,7 +122,12 @@ function decodeEntities(value: string): string {
 }
 
 function stripTags(value: string): string {
-  return decodeEntities(value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim());
+  return decodeEntities(
+    value
+      .replace(/<[^>]*>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim(),
+  );
 }
 
 function firstMatch(html: string, pattern: RegExp): string | null {
@@ -174,13 +184,15 @@ async function fetchPageEvidence(url: URL): Promise<PageEvidence> {
     status: response.status,
     contentType,
     title: firstMatch(html, /<title[^>]*>([\s\S]*?)<\/title>/i),
-    description: firstMatch(
-      html,
-      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i,
-    ) ?? firstMatch(
-      html,
-      /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["'][^>]*>/i,
-    ),
+    description:
+      firstMatch(
+        html,
+        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i,
+      ) ??
+      firstMatch(
+        html,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["'][^>]*>/i,
+      ),
     h1: collectMatches(html, /<h1[^>]*>([\s\S]*?)<\/h1>/gi),
     canonical: firstMatch(
       html,
@@ -205,7 +217,8 @@ function extractJsonObject(content: string): unknown {
   } catch {
     const start = trimmed.indexOf("{");
     const end = trimmed.lastIndexOf("}");
-    if (start >= 0 && end > start) return JSON.parse(trimmed.slice(start, end + 1));
+    if (start >= 0 && end > start)
+      return JSON.parse(trimmed.slice(start, end + 1));
     throw new Error("Nemotron returned an invalid audit response.");
   }
 }
@@ -264,7 +277,8 @@ ${JSON.stringify(evidence)}`;
   const payload = (await response.json()) as NvidiaResponse;
   if (!response.ok) {
     throw new Error(
-      payload.error?.message || `NVIDIA request failed with status ${response.status}.`,
+      payload.error?.message ||
+        `NVIDIA request failed with status ${response.status}.`,
     );
   }
 
@@ -273,13 +287,127 @@ ${JSON.stringify(evidence)}`;
   return extractJsonObject(content);
 }
 
+function buildFallbackAudit(
+  evidence: PageEvidence,
+  business: Omit<AuditRequest, "website">,
+  reason: string,
+): unknown {
+  const strengths: Array<{ title: string; evidence: string }> = [];
+  const issues: Array<{
+    severity: "high" | "medium" | "low";
+    title: string;
+    evidence: string;
+    recommendation: string;
+  }> = [];
+  const quickWins: string[] = [];
+
+  if (evidence.title) {
+    strengths.push({
+      title: "Homepage title detected",
+      evidence: evidence.title,
+    });
+  } else {
+    issues.push({
+      severity: "medium",
+      title: "Homepage title was not detected",
+      evidence: "The rapid scan did not find a standard HTML title element.",
+      recommendation:
+        "Add a concise title that includes the roofing company name and primary market.",
+    });
+  }
+
+  if (evidence.hasViewport) {
+    strengths.push({
+      title: "Mobile viewport is configured",
+      evidence: "A viewport meta tag was detected.",
+    });
+  } else {
+    issues.push({
+      severity: "high",
+      title: "Mobile viewport was not detected",
+      evidence: "The homepage did not expose a standard viewport meta tag.",
+      recommendation:
+        "Add a responsive viewport tag and verify the lead experience on common phone sizes.",
+    });
+  }
+
+  if (evidence.hasPhoneLink) {
+    strengths.push({
+      title: "Clickable phone link detected",
+      evidence: "The homepage contains a telephone link for mobile visitors.",
+    });
+  } else {
+    issues.push({
+      severity: "medium",
+      title: "Clickable phone link was not detected",
+      evidence: "The rapid scan did not find a tel: link.",
+      recommendation:
+        "Make the primary roofing phone number clickable in the header and near the main call to action.",
+    });
+  }
+
+  if (evidence.hasForm) {
+    strengths.push({
+      title: "Lead form detected",
+      evidence: "The homepage contains an HTML form.",
+    });
+  } else {
+    issues.push({
+      severity: "high",
+      title: "Homepage lead form was not detected",
+      evidence: "The rapid scan did not find an HTML form on the homepage.",
+      recommendation:
+        "Add a short inspection or estimate form with only the fields needed for a fast response.",
+    });
+  }
+
+  if (evidence.hasSchemaMarkup) {
+    strengths.push({
+      title: "Structured data signal detected",
+      evidence: "Schema or item metadata was detected in the homepage markup.",
+    });
+  } else {
+    quickWins.push(
+      "Add valid LocalBusiness or RoofingContractor structured data that matches visible business information.",
+    );
+  }
+
+  if (!evidence.description) {
+    quickWins.push(
+      "Write a clear meta description describing the roofing service, market, and primary action.",
+    );
+  }
+  if (evidence.h1.length === 0) {
+    quickWins.push(
+      "Use one clear homepage heading that states the roofing outcome and service area.",
+    );
+  }
+  quickWins.push(
+    "Place licensing, insurance, service area, authentic reviews, and completed-project proof near the main call to action.",
+  );
+  quickWins.push(
+    "Make the first conversion step simple: call, request an inspection, or request an estimate.",
+  );
+
+  return {
+    mode: "fallback",
+    confidence: "medium",
+    executiveSummary: `This rapid audit for ${business.businessName || "the roofing company"} is based on observable homepage evidence. The advanced narrative analysis was unavailable, so the report uses deterministic conversion and technical checks instead.`,
+    strengths,
+    issues,
+    quickWins,
+    disclaimer: `This is a rapid homepage audit based on observable page evidence, not a full SEO, accessibility, security, or performance certification. Advanced analysis fallback reason: ${reason.slice(0, 240)}`,
+  };
+}
+
 export default async (request: Request): Promise<Response> => {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed. Use POST." }, 405);
   }
 
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 20_000) return json({ error: "Request is too large." }, 413);
+  if (contentLength > 20_000)
+    return json({ error: "Request is too large." }, 413);
 
   try {
     const input = (await request.json()) as AuditRequest;
@@ -289,15 +417,32 @@ export default async (request: Request): Promise<Response> => {
 
     const url = normalizeUrl(input.website);
     const evidence = await fetchPageEvidence(url);
-    const audit = await generateAudit(evidence, {
+    const business = {
       businessName: input.businessName?.slice(0, 120),
       niche: input.niche?.slice(0, 80),
       city: input.city?.slice(0, 120),
-    });
+    };
+
+    let audit: unknown;
+    let mode = "live";
+    try {
+      audit = await generateAudit(evidence, business);
+    } catch (providerError) {
+      mode = "fallback";
+      const reason =
+        providerError instanceof Error
+          ? providerError.message
+          : "Advanced audit analysis was unavailable.";
+      console.error("Nemotron audit used deterministic fallback", {
+        website: url.toString(),
+        reason,
+      });
+      audit = buildFallbackAudit(evidence, business, reason);
+    }
 
     return json({
       ok: true,
-      mode: "live",
+      mode,
       auditedAt: new Date().toISOString(),
       evidence,
       audit,
