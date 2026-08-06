@@ -1,8 +1,10 @@
-import { isIP } from "node:net";
 import { lookup } from "node:dns/promises";
+import { isIP } from "node:net";
+import {
+  BrfIntelligenceError,
+  runBrfIntelligence,
+} from "./_shared/brf-intelligence.mts";
 
-const NVIDIA_ENDPOINT = "https://integrate.api.nvidia.com/v1/chat/completions";
-const DEFAULT_MODEL = "nvidia/nemotron-3.5-nano-30b-a3b";
 const MAX_HTML_BYTES = 500_000;
 
 interface AuditRequest {
@@ -31,21 +33,13 @@ interface PageEvidence {
   htmlBytes: number;
 }
 
-interface NvidiaResponse {
-  choices?: Array<{
-    message?: {
-      content?: string | null;
-    };
-  }>;
-  error?: {
-    message?: string;
-  };
-}
-
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8" },
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    },
   });
 }
 
@@ -55,8 +49,7 @@ function normalizeUrl(input: string): URL {
     ? trimmed
     : `https://${trimmed}`;
   const url = new URL(withProtocol);
-
-  if (url.protocol !== "https:" && url.protocol !== "http:") {
+  if (!["http:", "https:"].includes(url.protocol)) {
     throw new Error("Only HTTP and HTTPS websites can be audited.");
   }
   if (url.username || url.password) {
@@ -77,7 +70,6 @@ function isPrivateAddress(address: string): boolean {
       parts[0] === 0
     );
   }
-
   if (isIP(address) === 6) {
     const normalized = address.toLowerCase();
     return (
@@ -87,7 +79,6 @@ function isPrivateAddress(address: string): boolean {
       normalized.startsWith("fe80:")
     );
   }
-
   return true;
 }
 
@@ -100,9 +91,11 @@ async function assertPublicHostname(url: URL): Promise<void> {
   ) {
     throw new Error("Local or private network addresses cannot be audited.");
   }
-
   const records = await lookup(hostname, { all: true, verbatim: true });
-  if (records.length === 0 || records.some((record) => isPrivateAddress(record.address))) {
+  if (
+    records.length === 0 ||
+    records.some((record) => isPrivateAddress(record.address))
+  ) {
     throw new Error("The website resolves to a private or unavailable address.");
   }
 }
@@ -117,7 +110,9 @@ function decodeEntities(value: string): string {
 }
 
 function stripTags(value: string): string {
-  return decodeEntities(value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim());
+  return decodeEntities(
+    value.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim(),
+  );
 }
 
 function firstMatch(html: string, pattern: RegExp): string | null {
@@ -137,50 +132,46 @@ function collectMatches(html: string, pattern: RegExp, limit = 5): string[] {
 
 async function fetchPageEvidence(url: URL): Promise<PageEvidence> {
   await assertPublicHostname(url);
-
   const response = await fetch(url, {
     redirect: "follow",
     signal: AbortSignal.timeout(10_000),
     headers: {
       "user-agent":
-        "BookedRankedFundableAudit/1.0 (+https://booked-ranked-fundable.netlify.app)",
+        "BookedRankedFundableAudit/2.0 (+https://bookedrankedfunded.org)",
       accept: "text/html,application/xhtml+xml",
     },
   });
-
   const finalUrl = new URL(response.url);
   await assertPublicHostname(finalUrl);
-
   const contentType = response.headers.get("content-type") ?? "";
   if (!contentType.toLowerCase().includes("text/html")) {
     throw new Error("The submitted URL did not return an HTML webpage.");
   }
-
   const declaredLength = Number(response.headers.get("content-length") ?? 0);
   if (declaredLength > MAX_HTML_BYTES) {
     throw new Error("The webpage is too large for the quick audit.");
   }
-
   const html = (await response.text()).slice(0, MAX_HTML_BYTES);
   const visibleText = stripTags(
     html
       .replace(/<script[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[\s\S]*?<\/style>/gi, " "),
   );
-
   return {
     requestedUrl: url.toString(),
     finalUrl: finalUrl.toString(),
     status: response.status,
     contentType,
     title: firstMatch(html, /<title[^>]*>([\s\S]*?)<\/title>/i),
-    description: firstMatch(
-      html,
-      /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i,
-    ) ?? firstMatch(
-      html,
-      /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["'][^>]*>/i,
-    ),
+    description:
+      firstMatch(
+        html,
+        /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["'][^>]*>/i,
+      ) ??
+      firstMatch(
+        html,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']description["'][^>]*>/i,
+      ),
     h1: collectMatches(html, /<h1[^>]*>([\s\S]*?)<\/h1>/gi),
     canonical: firstMatch(
       html,
@@ -198,88 +189,37 @@ async function fetchPageEvidence(url: URL): Promise<PageEvidence> {
   };
 }
 
-function extractJsonObject(content: string): unknown {
-  const trimmed = content.trim();
-  try {
-    return JSON.parse(trimmed);
-  } catch {
-    const start = trimmed.indexOf("{");
-    const end = trimmed.lastIndexOf("}");
-    if (start >= 0 && end > start) return JSON.parse(trimmed.slice(start, end + 1));
-    throw new Error("Nemotron returned an invalid audit response.");
+function normalizeAudit(data: unknown): Record<string, unknown> {
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    throw new Error("Provider returned an invalid audit object.");
   }
-}
-
-async function generateAudit(
-  evidence: PageEvidence,
-  business: Omit<AuditRequest, "website">,
-): Promise<unknown> {
-  const apiKey = Netlify.env.get("NVIDIA_API_KEY");
-  if (!apiKey) throw new Error("NVIDIA_API_KEY is not configured.");
-
-  const model = Netlify.env.get("NVIDIA_NEMOTRON_MODEL") || DEFAULT_MODEL;
-  const prompt = `You are the lead website-audit analyst for Booked Ranked Fundable.
-Use ONLY the supplied evidence. Never invent rankings, traffic, review counts, page-speed scores, revenue, or technical findings that were not observed.
-Return strict JSON with this exact top-level shape:
-{
-  "mode": "live",
-  "confidence": "high" | "medium" | "low",
-  "executiveSummary": string,
-  "strengths": [{"title": string, "evidence": string}],
-  "issues": [{"severity": "high" | "medium" | "low", "title": string, "evidence": string, "recommendation": string}],
-  "quickWins": [string],
-  "disclaimer": string
-}
-The disclaimer must state that this is a rapid homepage audit based on observable page evidence, not a full SEO, accessibility, security, or performance certification.
-Business context:
-${JSON.stringify(business)}
-Observed evidence:
-${JSON.stringify(evidence)}`;
-
-  const response = await fetch(NVIDIA_ENDPOINT, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${apiKey}`,
-      accept: "application/json",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "Produce factual, evidence-grounded website audits. Output JSON only.",
-        },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.2,
-      top_p: 0.9,
-      max_tokens: 2200,
-      stream: false,
-    }),
-    signal: AbortSignal.timeout(25_000),
-  });
-
-  const payload = (await response.json()) as NvidiaResponse;
-  if (!response.ok) {
-    throw new Error(
-      payload.error?.message || `NVIDIA request failed with status ${response.status}.`,
-    );
+  const audit = data as Record<string, unknown>;
+  if (typeof audit.executiveSummary !== "string") {
+    throw new Error("Provider audit is missing an executive summary.");
   }
-
-  const content = payload.choices?.[0]?.message?.content;
-  if (!content) throw new Error("Nemotron returned no audit content.");
-  return extractJsonObject(content);
+  if (!Array.isArray(audit.strengths) || !Array.isArray(audit.issues)) {
+    throw new Error("Provider audit is missing strengths or issues.");
+  }
+  if (!Array.isArray(audit.quickWins) || typeof audit.disclaimer !== "string") {
+    throw new Error("Provider audit is missing quick wins or disclaimer.");
+  }
+  return {
+    ...audit,
+    mode: "live",
+    confidence: ["high", "medium", "low"].includes(String(audit.confidence))
+      ? audit.confidence
+      : "low",
+  };
 }
 
 export default async (request: Request): Promise<Response> => {
   if (request.method !== "POST") {
     return json({ error: "Method not allowed. Use POST." }, 405);
   }
-
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 20_000) return json({ error: "Request is too large." }, 413);
+  if (contentLength > 20_000) {
+    return json({ error: "Request is too large." }, 413);
+  }
 
   try {
     const input = (await request.json()) as AuditRequest;
@@ -289,26 +229,60 @@ export default async (request: Request): Promise<Response> => {
 
     const url = normalizeUrl(input.website);
     const evidence = await fetchPageEvidence(url);
-    const audit = await generateAudit(evidence, {
-      businessName: input.businessName?.slice(0, 120),
-      niche: input.niche?.slice(0, 80),
-      city: input.city?.slice(0, 120),
+    const result = await runBrfIntelligence({
+      taskType: "audit",
+      prompt: `Return strict JSON with this exact top-level shape:
+{
+  "mode": "live",
+  "confidence": "high" | "medium" | "low",
+  "executiveSummary": string,
+  "strengths": [{"title": string, "evidence": string}],
+  "issues": [{"severity": "high" | "medium" | "low", "title": string, "evidence": string, "recommendation": string}],
+  "quickWins": [string],
+  "disclaimer": string
+}
+The disclaimer must state that this is a rapid homepage audit based on observable page evidence, not a full SEO, accessibility, security, or performance certification.`,
+      context: {
+        business: {
+          businessName: input.businessName?.slice(0, 120),
+          niche: input.niche?.slice(0, 80),
+          city: input.city?.slice(0, 120),
+        },
+        evidence,
+      },
+      responseFormat: "json",
+      validateData: normalizeAudit,
+      maxTokens: 2600,
+      timeoutMs: 50_000,
     });
 
     return json({
       ok: true,
       mode: "live",
-      auditedAt: new Date().toISOString(),
+      auditedAt: result.completedAt,
       evidence,
-      audit,
+      audit: result.data,
+      intelligence: {
+        provider: result.provider,
+        model: result.model,
+        attempts: result.attempts,
+        correlationId: result.correlationId,
+      },
     });
   } catch (error) {
+    if (error instanceof BrfIntelligenceError) {
+      return json(
+        {
+          ok: false,
+          error: error.message,
+          code: error.code,
+          attempts: error.attempts,
+        },
+        error.code === "NO_PROVIDER_CONFIGURED" ? 503 : 502,
+      );
+    }
     const message = error instanceof Error ? error.message : "Audit failed.";
-    const status =
-      message.includes("NVIDIA_API_KEY") || message.includes("NVIDIA request")
-        ? 502
-        : 422;
-    return json({ ok: false, error: message }, status);
+    return json({ ok: false, error: message }, 422);
   }
 };
 
