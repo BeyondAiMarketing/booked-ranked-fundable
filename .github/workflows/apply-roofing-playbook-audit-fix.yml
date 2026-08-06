@@ -1,0 +1,75 @@
+name: Apply Roofing Playbook Audit Fix
+
+on:
+  push:
+    branches:
+      - agent/roofing-playbook-audit-delivery
+    paths:
+      - .github/scripts/apply_roofing_playbook_audit_fix.py
+      - .github/workflows/apply-roofing-playbook-audit-fix.yml
+      - src/frontend/src/components/RoofingPlaybookAuditOffer.tsx
+      - src/frontend/netlify/functions/send-roofing-audit-background.mts
+
+permissions:
+  contents: write
+
+jobs:
+  apply-test-and-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/roofing-playbook-audit-delivery
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Apply asserted source changes
+        run: python .github/scripts/apply_roofing_playbook_audit_fix.py
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Format changed TypeScript files
+        run: >-
+          pnpm dlx prettier@3.6.2 --write
+          src/frontend/src/components/RoofingPlaybookAuditOffer.tsx
+          src/frontend/src/pages/HomePage.tsx
+          src/frontend/src/pages/RoofingPage.tsx
+          src/frontend/src/pages/RoofingPlaybookTripwirePage.tsx
+          src/frontend/netlify/functions/capture-roofing-playbook-lead.mts
+          src/frontend/netlify/functions/nemotron-audit.mts
+          src/frontend/netlify/functions/send-roofing-audit-background.mts
+
+      - name: Typecheck frontend
+        run: pnpm --dir src/frontend typecheck
+
+      - name: Run unit tests
+        run: pnpm --dir src/frontend test
+
+      - name: Build frontend
+        run: pnpm --dir src/frontend build
+
+      - name: Restore generated build artifacts
+        run: git checkout origin/main -- src/frontend/dist || true
+
+      - name: Commit validated fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "fix roofing playbook routes and email audits"
+          git push origin HEAD:agent/roofing-playbook-audit-delivery
