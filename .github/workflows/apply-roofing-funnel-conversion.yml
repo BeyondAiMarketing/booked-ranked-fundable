@@ -1,0 +1,80 @@
+name: Apply Roofing Funnel Conversion
+
+on:
+  push:
+    branches:
+      - agent/roofing-funnel-conversion
+    paths:
+      - .github/scripts/apply_roofing_funnel_conversion.py
+      - .github/workflows/apply-roofing-funnel-conversion.yml
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v4
+        with:
+          ref: agent/roofing-funnel-conversion
+          fetch-depth: 0
+
+      - name: Use Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: src/frontend/package-lock.json
+
+      - name: Correct the one-time form matcher
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/apply_roofing_funnel_conversion.py')
+          lines = path.read_text().splitlines()
+          matches = 0
+          for index, line in enumerate(lines):
+              if line.strip().startswith("r'function DemoForm"):
+                  lines[index] = "        r'function DemoForm\\(\\{ onDemoStart \\}.*?\\n\\}\\n\\nexport default function RoofingPage',"
+                  matches += 1
+          if matches != 1:
+              raise SystemExit(f'Expected one DemoForm matcher, found {matches}')
+          path.write_text('\n'.join(lines) + '\n')
+          PY
+
+      - name: Apply asserted source changes
+        run: python .github/scripts/apply_roofing_funnel_conversion.py
+
+      - name: Install frontend dependencies
+        working-directory: src/frontend
+        run: npm ci
+
+      - name: Format changed frontend files
+        working-directory: src/frontend
+        run: npx prettier --write src/components/AppLayout.tsx src/pages/RoofingPage.tsx src/pages/RoofingPlaybookTripwirePage.tsx
+
+      - name: Typecheck
+        working-directory: src/frontend
+        run: npm run typecheck
+
+      - name: Unit tests
+        working-directory: src/frontend
+        run: npm run test:unit
+
+      - name: Production build
+        working-directory: src/frontend
+        run: npm run build
+
+      - name: Commit validated conversion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "tighten roofing conversion funnel"
+          git push origin HEAD:agent/roofing-funnel-conversion
