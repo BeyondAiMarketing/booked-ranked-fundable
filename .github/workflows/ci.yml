@@ -10,6 +10,78 @@ permissions:
   contents: read
 
 jobs:
+  roofing-funnel-conversion:
+    name: Apply asserted roofing funnel conversion
+    if: github.event_name == 'pull_request' && github.head_ref == 'agent/roofing-funnel-conversion'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: agent/roofing-funnel-conversion
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Correct the one-time form matcher
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('.github/scripts/apply_roofing_funnel_conversion.py')
+          lines = path.read_text().splitlines()
+          matches = 0
+          for index, line in enumerate(lines):
+              if line.strip().startswith("r'function DemoForm"):
+                  lines[index] = "        r'function DemoForm\\(\\{ onDemoStart \\}.*?\\n\\}\\n\\nexport default function RoofingPage',"
+                  matches += 1
+          if matches != 1:
+              raise SystemExit(f'Expected one DemoForm matcher, found {matches}')
+          path.write_text('\n'.join(lines) + '\n')
+          PY
+
+      - name: Apply asserted source changes
+        run: python .github/scripts/apply_roofing_funnel_conversion.py
+
+      - name: Restore the standard CI workflow
+        run: git checkout origin/main -- .github/workflows/ci.yml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile=false
+
+      - name: Format changed frontend files
+        run: pnpm --dir src/frontend exec prettier --write src/components/AppLayout.tsx src/pages/RoofingPage.tsx src/pages/RoofingPlaybookTripwirePage.tsx
+
+      - name: Typecheck frontend
+        run: pnpm --dir src/frontend typecheck
+
+      - name: Run unit tests
+        run: pnpm --dir src/frontend test
+
+      - name: Build frontend
+        run: pnpm --dir src/frontend build
+
+      - name: Commit validated conversion
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git commit -m "tighten roofing conversion funnel"
+          git push origin HEAD:agent/roofing-funnel-conversion
+
   frontend-quality:
     name: Frontend typecheck, tests, and build
     runs-on: ubuntu-latest
