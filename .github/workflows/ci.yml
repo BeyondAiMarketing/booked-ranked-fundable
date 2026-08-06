@@ -57,7 +57,13 @@ jobs:
               text = text.replace(hero_cta, "See It Work for My Roofing Company")'''
           if text.count(old) != 1:
               raise SystemExit(f'Expected one hero CTA assertion, found {text.count(old)}')
-          path.write_text(text.replace(old, new, 1))
+          text = text.replace(old, new, 1)
+
+          old_marker = "        r'      /\\* TESTIMONIALS \\*/.*?      /\\* DEMO FORM \\*/',"
+          new_marker = "        r'      \\{/\\* TESTIMONIALS \\*/\\}.*?      \\{/\\* DEMO FORM \\*/\\}',"
+          if text.count(old_marker) != 1:
+              raise SystemExit(f'Expected one testimonial matcher, found {text.count(old_marker)}')
+          path.write_text(text.replace(old_marker, new_marker, 1))
           PY
 
       - name: Apply asserted source changes
