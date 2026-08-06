@@ -1,3 +1,4 @@
+import RoofingPlaybookAuditOffer from "@/components/RoofingPlaybookAuditOffer";
 import { useActor } from "@/hooks/useActor";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -916,6 +917,8 @@ export default function RoofingPage() {
           </div>
         </div>
       </section>
+
+      <RoofingPlaybookAuditOffer source="roofing-landing" />
 
       {/* VSL VIDEO */}
       <section

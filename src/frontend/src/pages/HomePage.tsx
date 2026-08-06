@@ -1,6 +1,7 @@
 import { BookDemoTrigger } from "@/components/BookDemoModal";
 import PublicFooter from "@/components/PublicFooter";
 import PublicNav from "@/components/PublicNav";
+import RoofingPlaybookAuditOffer from "@/components/RoofingPlaybookAuditOffer";
 import BeforeAfterDivider from "@/components/homepage/BeforeAfterDivider";
 import CallTextBackSection from "@/components/homepage/CallTextBackSection";
 import CrmBackOfficeSection from "@/components/homepage/CrmBackOfficeSection";
@@ -321,6 +322,9 @@ export default function HomePage() {
 
       {/* ── Social proof ticker ── */}
       <HomepageSocialProofTicker activeNiche={activeNiche} />
+
+      {/* ── Free Roofer Playbook + Audit ── */}
+      <RoofingPlaybookAuditOffer source="homepage" />
 
       {/* ── Stage 1 — Live Dashboard Preview ── */}
       <Stage1DashboardSection

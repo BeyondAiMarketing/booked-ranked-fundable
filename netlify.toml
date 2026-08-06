@@ -8,15 +8,28 @@
   PNPM_VERSION = "10.4.1"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
+# Public roofing funnel routes must always resolve through the React SPA.
 [[redirects]]
-  from = "/roofing-ai-growth-playbook"
-  to = "/roofing-ai-growth-playbook/index.html"
+  from = "/roofing"
+  to = "/index.html"
   status = 200
   force = true
 
 [[redirects]]
-  from = "/roofing-ai-growth-playbook/"
-  to = "/roofing-ai-growth-playbook/index.html"
+  from = "/roofing/*"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roofing-ai-growth-playbook"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/roofing-ai-growth-playbook/*"
+  to = "/index.html"
   status = 200
   force = true
 
