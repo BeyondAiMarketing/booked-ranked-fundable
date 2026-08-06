@@ -1,11 +1,13 @@
 import { Container, getContainer } from "@cloudflare/containers";
 import { env as workerEnv } from "cloudflare:workers";
 
-interface Env {
-  BRF_NEMO_CONTAINER: DurableObjectNamespace<BrfNemoContainer>;
-  NVIDIA_API_KEY: string;
-  NEMO_AGENT_SERVICE_TOKEN: string;
-  BRF_NEMOTRON_REASONING_MODEL?: string;
+declare global {
+  interface Env {
+    BRF_NEMO_CONTAINER: DurableObjectNamespace<BrfNemoContainer>;
+    NVIDIA_API_KEY: string;
+    NEMO_AGENT_SERVICE_TOKEN: string;
+    BRF_NEMOTRON_REASONING_MODEL?: string;
+  }
 }
 
 const MAX_REQUEST_BYTES = 150_000;
