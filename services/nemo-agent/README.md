@@ -7,12 +7,13 @@ This directory contains the containerized NVIDIA NeMo Agent Toolkit runtime for 
 The server-side BRF router uses this order:
 
 1. Private NeMo Agent Toolkit service (`nemo-agent`)
-2. Direct NVIDIA NIM / Nemotron (`nvidia-nim`)
-3. OpenRouter
-4. OpenAI or Netlify AI Gateway
-5. Anthropic or Netlify AI Gateway
+2. Direct NVIDIA NIM / Nemotron reasoning model (`nvidia-nim`)
+3. Direct NVIDIA NIM / Nemotron fast model (`nvidia-nim-fast`)
+4. OpenRouter
+5. OpenAI or Netlify AI Gateway
+6. Anthropic or Netlify AI Gateway
 
-The NeMo service is the preferred orchestration harness. Direct Nemotron is the immediate primary route whenever the private service is not deployed or reachable. Fallback providers are never called before those two NVIDIA paths.
+The NeMo service is the preferred orchestration harness. Direct Nemotron is the immediate primary route whenever the private service is not deployed or reachable. The fast Nemotron model is attempted before any non-NVIDIA fallback when the deeper reasoning model is unavailable or returns an invalid task shape.
 
 ## Python service environment
 
@@ -27,9 +28,9 @@ The service should be private or protected by an ingress/reverse proxy. That ing
 - `NEMO_AGENT_BASE_URL` - private HTTPS URL of this service
 - `NEMO_AGENT_SERVICE_TOKEN` - private bearer token enforced by the service ingress
 - `NEMO_AGENT_CHAT_PATH` - optional; defaults to `/v1/chat/completions`
-- `NVIDIA_API_KEY` - direct Nemotron fallback and current production route
+- `NVIDIA_API_KEY` - direct Nemotron inference and current production route
 - `BRF_NEMOTRON_REASONING_MODEL` - optional reasoning-model override
-- `NVIDIA_NEMOTRON_MODEL` - optional fast-model override
+- `NVIDIA_NEMOTRON_MODEL` - optional fast-model override; defaults to `nvidia/nemotron-3-nano-30b-a3b`
 - `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` - optional later fallbacks
 - `BRF_INTELLIGENCE_SERVICE_TOKEN` - optional server-to-server access to protected BRF endpoints
 - `BRF_ALLOWED_ORIGINS` - optional comma-separated non-site origins
