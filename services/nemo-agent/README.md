@@ -1,20 +1,38 @@
 # BRF NeMo Agent Toolkit Service
 
-This directory contains the Python runtime for NVIDIA NeMo Agent Toolkit. It is intentionally separate from the Netlify frontend and Node functions.
+This directory contains the containerized NVIDIA NeMo Agent Toolkit runtime for Booked Ranked Fundable. It is deliberately separate from the Netlify frontend and functions because Netlify does not host a continuously running Python service.
 
-## Environment variables
+## Role in the intelligence harness
 
-Set these on the Python service:
+The server-side BRF router uses this order:
 
-- `NVIDIA_API_KEY` — NVIDIA hosted inference key
-- `BRF_AGENT_SERVICE_TOKEN` — private bearer token required by the service ingress or reverse proxy
-- `PORT` — hosting platform port, normally injected automatically
+1. Private NeMo Agent Toolkit service (`nemo-agent`)
+2. Direct NVIDIA NIM / Nemotron (`nvidia-nim`)
+3. OpenRouter
+4. OpenAI or Netlify AI Gateway
+5. Anthropic or Netlify AI Gateway
 
-Set these in the BRF Netlify project, Functions scope only:
+The NeMo service is the preferred orchestration harness. Direct Nemotron is the immediate primary route whenever the private service is not deployed or reachable. Fallback providers are never called before those two NVIDIA paths.
 
-- `NEMO_AGENT_BASE_URL` — deployed HTTPS URL of this service
-- `NEMO_AGENT_SERVICE_TOKEN` — same private bearer token
-- `NEMO_AGENT_CHAT_PATH` — optional; defaults to `/v1/chat/completions`
+## Python service environment
+
+- `NVIDIA_API_KEY` - NVIDIA hosted NIM inference key
+- `BRF_NEMOTRON_REASONING_MODEL` - optional; defaults to `nvidia/nemotron-3-super-120b-a12b`
+- `PORT` - service port, normally injected by the hosting platform
+
+The service should be private or protected by an ingress/reverse proxy. That ingress must enforce the same bearer token configured in Netlify as `NEMO_AGENT_SERVICE_TOKEN`.
+
+## Netlify Functions environment
+
+- `NEMO_AGENT_BASE_URL` - private HTTPS URL of this service
+- `NEMO_AGENT_SERVICE_TOKEN` - private bearer token enforced by the service ingress
+- `NEMO_AGENT_CHAT_PATH` - optional; defaults to `/v1/chat/completions`
+- `NVIDIA_API_KEY` - direct Nemotron fallback and current production route
+- `BRF_NEMOTRON_REASONING_MODEL` - optional reasoning-model override
+- `NVIDIA_NEMOTRON_MODEL` - optional fast-model override
+- `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` - optional later fallbacks
+- `BRF_INTELLIGENCE_SERVICE_TOKEN` - optional server-to-server access to protected BRF endpoints
+- `BRF_ALLOWED_ORIGINS` - optional comma-separated non-site origins
 
 ## Local run
 
@@ -23,29 +41,21 @@ cd services/nemo-agent
 uv venv --python 3.13
 source .venv/bin/activate
 uv pip install .
-export NVIDIA_API_KEY=nvapi-...
+export NVIDIA_API_KEY=nvapi-example
 nat serve --config_file=configs/brf_agent.yml
 ```
-
-The NeMo Agent Toolkit server exposes Swagger documentation while running. Verify the chat endpoint shown by the deployed Toolkit version and set `NEMO_AGENT_CHAT_PATH` when it differs from the default.
 
 ## Container run
 
 ```bash
 docker build -t brf-nemo-agent .
-docker run --rm -p 8000:8000 -e NVIDIA_API_KEY -e PORT=8000 brf-nemo-agent
+docker run --rm -p 8000:8000 \
+  -e NVIDIA_API_KEY \
+  -e BRF_NEMOTRON_REASONING_MODEL \
+  -e PORT=8000 \
+  brf-nemo-agent
 ```
 
-## BRF call path
+## Current safety boundary
 
-The browser never calls this Python service directly. BRF calls:
-
-```text
-POST /api/agent-orchestrate
-```
-
-The Netlify function then calls the private NeMo Agent Toolkit service. This keeps the service URL, bearer token, and NVIDIA credentials off the client.
-
-## First production workflow
-
-The initial workflow is deliberately read-only. It can reason over supplied audit, appointment, SMS, and demo-session context, but it has no action tools yet. Tool registration for Supabase writes, owner alerts, and Vapi actions should be added one at a time with explicit permissions and audit logging.
+The initial NeMo workflow is read-only and has no action tools. It can reason over supplied audit, appointment, content, lead, and demo-session context. Supabase writes, publishing actions, owner alerts, Vapi calls, and CRM changes must be registered one at a time with explicit permissions, idempotency, human approval rules, and audit logging.
