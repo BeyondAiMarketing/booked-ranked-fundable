@@ -104,7 +104,9 @@ export default function DemoStep0Intake({ onNext }: Props) {
       });
       const result = (await response.json()) as Record<string, unknown>;
       if (!response.ok || result.ok === false) {
-        throw new Error(String(result.error || "The website could not be audited."));
+        throw new Error(
+          String(result.error || "The website could not be audited."),
+        );
       }
       const stored: StoredAudit = {
         mode: "live",
@@ -170,6 +172,7 @@ export default function DemoStep0Intake({ onNext }: Props) {
     onNext();
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional run-on-mount auto-submit when form is pre-filled
   useEffect(() => {
     if (
       skipNichePicker &&
@@ -207,66 +210,183 @@ export default function DemoStep0Intake({ onNext }: Props) {
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="demo-firstName" className="block text-xs text-gray-400 mb-1 font-medium">First Name</label>
-              <input id="demo-firstName" data-ocid="demo.first_name.input" type="text" placeholder="John" value={form.firstName} onChange={(e) => set("firstName", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors" />
+              <label
+                htmlFor="demo-firstName"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                First Name
+              </label>
+              <input
+                id="demo-firstName"
+                data-ocid="demo.first_name.input"
+                type="text"
+                placeholder="John"
+                value={form.firstName}
+                onChange={(e) => set("firstName", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
             </div>
             <div>
-              <label htmlFor="demo-businessName" className="block text-xs text-gray-400 mb-1 font-medium">Business Name</label>
-              <input id="demo-businessName" data-ocid="demo.business_name.input" type="text" placeholder="Smith Plumbing" value={form.businessName} onChange={(e) => set("businessName", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors" />
+              <label
+                htmlFor="demo-businessName"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                Business Name
+              </label>
+              <input
+                id="demo-businessName"
+                data-ocid="demo.business_name.input"
+                type="text"
+                placeholder="Smith Plumbing"
+                value={form.businessName}
+                onChange={(e) => set("businessName", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="demo-city" className="block text-xs text-gray-400 mb-1 font-medium">City</label>
-              <input id="demo-city" data-ocid="demo.city.input" type="text" placeholder="Los Angeles" value={form.city} onChange={(e) => set("city", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors" />
+              <label
+                htmlFor="demo-city"
+                className="block text-xs text-gray-400 mb-1 font-medium"
+              >
+                City
+              </label>
+              <input
+                id="demo-city"
+                data-ocid="demo.city.input"
+                type="text"
+                placeholder="Los Angeles"
+                value={form.city}
+                onChange={(e) => set("city", e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+              />
             </div>
             {skipNichePicker ? (
               <div>
-                <p className="block text-xs text-gray-400 mb-1 font-medium">Business Type</p>
-                <div data-ocid="demo.niche.locked_badge" className="w-full bg-gray-900 border border-emerald-700/50 rounded-xl px-4 py-3 text-emerald-300 text-sm flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" /> Roofing Company
+                <p className="block text-xs text-gray-400 mb-1 font-medium">
+                  Business Type
+                </p>
+                <div
+                  data-ocid="demo.niche.locked_badge"
+                  className="w-full bg-gray-900 border border-emerald-700/50 rounded-xl px-4 py-3 text-emerald-300 text-sm flex items-center gap-2"
+                >
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />{" "}
+                  Roofing Company
                 </div>
               </div>
             ) : (
               <div>
-                <label htmlFor="demo-niche" className="block text-xs text-gray-400 mb-1 font-medium">Business Type</label>
-                <select id="demo-niche" data-ocid="demo.niche.select" value={form.niche} onChange={(e) => set("niche", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors">
-                  <option value="" className="bg-gray-900">Select type...</option>
-                  {NICHES.map((niche) => <option key={niche} value={niche} className="bg-gray-900">{niche}</option>)}
+                <label
+                  htmlFor="demo-niche"
+                  className="block text-xs text-gray-400 mb-1 font-medium"
+                >
+                  Business Type
+                </label>
+                <select
+                  id="demo-niche"
+                  data-ocid="demo.niche.select"
+                  value={form.niche}
+                  onChange={(e) => set("niche", e.target.value)}
+                  className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                >
+                  <option value="" className="bg-gray-900">
+                    Select type...
+                  </option>
+                  {NICHES.map((niche) => (
+                    <option key={niche} value={niche} className="bg-gray-900">
+                      {niche}
+                    </option>
+                  ))}
                 </select>
               </div>
             )}
           </div>
 
           <div>
-            <label htmlFor="demo-phone" className="block text-xs text-gray-400 mb-1 font-medium">Phone Number</label>
-            <input id="demo-phone" data-ocid="demo.phone.input" type="tel" placeholder="(555) 123-4567" value={form.phone} onChange={(e) => set("phone", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors" />
+            <label
+              htmlFor="demo-phone"
+              className="block text-xs text-gray-400 mb-1 font-medium"
+            >
+              Phone Number
+            </label>
+            <input
+              id="demo-phone"
+              data-ocid="demo.phone.input"
+              type="tel"
+              placeholder="(555) 123-4567"
+              value={form.phone}
+              onChange={(e) => set("phone", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+            />
           </div>
 
           <div>
-            <label htmlFor="demo-email" className="block text-xs text-gray-400 mb-1 font-medium">Email Address</label>
-            <input id="demo-email" data-ocid="demo.email.input" type="email" placeholder="john@smithplumbing.com" value={form.email} onChange={(e) => set("email", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors" />
+            <label
+              htmlFor="demo-email"
+              className="block text-xs text-gray-400 mb-1 font-medium"
+            >
+              Email Address
+            </label>
+            <input
+              id="demo-email"
+              data-ocid="demo.email.input"
+              type="email"
+              placeholder="john@smithplumbing.com"
+              value={form.email}
+              onChange={(e) => set("email", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors"
+            />
           </div>
 
           <div>
-            <label htmlFor="demo-website" className="block text-xs text-gray-400 mb-1 font-medium">Business Website</label>
-            <input id="demo-website" data-ocid="demo.website.input" type="text" disabled={noWebsite} placeholder="smithplumbing.com" value={form.website} onChange={(e) => set("website", e.target.value)} className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-40" />
+            <label
+              htmlFor="demo-website"
+              className="block text-xs text-gray-400 mb-1 font-medium"
+            >
+              Business Website
+            </label>
+            <input
+              id="demo-website"
+              data-ocid="demo.website.input"
+              type="text"
+              disabled={noWebsite}
+              placeholder="smithplumbing.com"
+              value={form.website}
+              onChange={(e) => set("website", e.target.value)}
+              className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white placeholder-gray-500 text-sm focus:outline-none focus:border-purple-500 transition-colors disabled:opacity-40"
+            />
             <label className="mt-2 flex items-center gap-2 text-xs text-gray-400">
-              <input type="checkbox" checked={noWebsite} onChange={(event) => setNoWebsite(event.target.checked)} className="accent-purple-500" data-ocid="demo.no_website.checkbox" />
+              <input
+                type="checkbox"
+                checked={noWebsite}
+                onChange={(event) => setNoWebsite(event.target.checked)}
+                className="accent-purple-500"
+                data-ocid="demo.no_website.checkbox"
+              />
               I don’t have a website yet
             </label>
           </div>
 
           <div className="rounded-xl border border-blue-800/40 bg-blue-950/30 px-4 py-3 text-xs leading-5 text-blue-200">
-            A working website gets a live, evidence-based homepage audit. If it cannot be reached, we’ll say so instead of inventing a score.
+            A working website gets a live, evidence-based homepage audit. If it
+            cannot be reached, we’ll say so instead of inventing a score.
           </div>
 
-          <button data-ocid="demo.start_demo.submit_button" type="button" onClick={handleSubmit} disabled={!canSubmit || isLoading} className="w-full py-4 px-8 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25 mt-2">
+          <button
+            data-ocid="demo.start_demo.submit_button"
+            type="button"
+            onClick={handleSubmit}
+            disabled={!canSubmit || isLoading}
+            className="w-full py-4 px-8 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-purple-600 to-indigo-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 hover:from-purple-500 hover:to-indigo-500 hover:shadow-lg hover:shadow-purple-500/25 mt-2"
+          >
             {isLoading ? statusText : "Start My 90-Second Demo →"}
           </button>
 
-          <p className="text-center text-xs text-gray-500">No credit card. No commitment.</p>
+          <p className="text-center text-xs text-gray-500">
+            No credit card. No commitment.
+          </p>
         </div>
       </div>
     </div>

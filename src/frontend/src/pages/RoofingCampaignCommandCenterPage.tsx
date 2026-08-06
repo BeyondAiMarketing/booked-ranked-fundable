@@ -99,7 +99,10 @@ const STAGES = [
 ] as const;
 
 function stageLabel(stage: RoofingLead["stage"]): string {
-  return STAGES.find((item) => item.key === stage)?.label ?? stage.replaceAll("_", " ");
+  return (
+    STAGES.find((item) => item.key === stage)?.label ??
+    stage.replaceAll("_", " ")
+  );
 }
 
 function scoreClass(score: number | null | undefined): string {
@@ -150,6 +153,7 @@ export default function RoofingCampaignCommandCenterPage() {
     }
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentional run-on-mount data load
   useEffect(() => {
     loadData();
   }, []);
@@ -157,12 +161,36 @@ export default function RoofingCampaignCommandCenterPage() {
   const leads = data?.leads ?? [];
   const metrics = useMemo(
     () => [
-      { label: "Roofing Leads", value: data?.metrics.totalLeads ?? 0, icon: Users },
-      { label: "Playbooks Sent", value: data?.metrics.playbooksSent ?? 0, icon: BookOpen },
-      { label: "Audits Ready", value: data?.metrics.auditsReady ?? 0, icon: Bot },
-      { label: "Demo Views", value: data?.metrics.demosWatched ?? 0, icon: Eye },
-      { label: "Email Drafts", value: data?.metrics.emailDrafts ?? 0, icon: Send },
-      { label: "Appointments", value: data?.metrics.appointments ?? 0, icon: CalendarCheck },
+      {
+        label: "Roofing Leads",
+        value: data?.metrics.totalLeads ?? 0,
+        icon: Users,
+      },
+      {
+        label: "Playbooks Sent",
+        value: data?.metrics.playbooksSent ?? 0,
+        icon: BookOpen,
+      },
+      {
+        label: "Audits Ready",
+        value: data?.metrics.auditsReady ?? 0,
+        icon: Bot,
+      },
+      {
+        label: "Demo Views",
+        value: data?.metrics.demosWatched ?? 0,
+        icon: Eye,
+      },
+      {
+        label: "Email Drafts",
+        value: data?.metrics.emailDrafts ?? 0,
+        icon: Send,
+      },
+      {
+        label: "Appointments",
+        value: data?.metrics.appointments ?? 0,
+        icon: CalendarCheck,
+      },
     ],
     [data],
   );
@@ -272,9 +300,13 @@ export default function RoofingCampaignCommandCenterPage() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <Icon className="w-5 h-5 text-blue-400" />
-                      <span className="text-2xl font-bold text-white">{count}</span>
+                      <span className="text-2xl font-bold text-white">
+                        {count}
+                      </span>
                     </div>
-                    <div className="text-sm font-semibold text-slate-200">{label}</div>
+                    <div className="text-sm font-semibold text-slate-200">
+                      {label}
+                    </div>
                     <div className="text-xs text-slate-500 mt-1">
                       Leads currently in this stage
                     </div>
@@ -307,30 +339,42 @@ export default function RoofingCampaignCommandCenterPage() {
                     <th className="pb-3">Audit</th>
                     <th className="pb-3">Stage</th>
                     <th className="pb-3">Next Action</th>
-                    <th className="pb-3"></th>
+                    <th className="pb-3" />
                   </tr>
                 </thead>
                 <tbody>
                   {leads.map((lead) => {
                     const score = lead.audit_score ?? lead.audit?.score;
                     return (
-                      <tr key={lead.id} className="border-b border-white/5 text-sm">
+                      <tr
+                        key={lead.id}
+                        className="border-b border-white/5 text-sm"
+                      >
                         <td className="py-4 text-white font-semibold">
                           {lead.company_name}
                         </td>
                         <td className="py-4 text-slate-300">
                           <div>{lead.contact_name || "—"}</div>
-                          <div className="text-xs text-slate-500">{lead.email}</div>
+                          <div className="text-xs text-slate-500">
+                            {lead.email}
+                          </div>
                         </td>
                         <td className="py-4 text-slate-400">
-                          {[lead.city, lead.state].filter(Boolean).join(", ") || "—"}
+                          {[lead.city, lead.state].filter(Boolean).join(", ") ||
+                            "—"}
                         </td>
-                        <td className="py-4 text-blue-400">{lead.website || "—"}</td>
-                        <td className={`py-4 font-semibold ${scoreClass(score)}`}>
+                        <td className="py-4 text-blue-400">
+                          {lead.website || "—"}
+                        </td>
+                        <td
+                          className={`py-4 font-semibold ${scoreClass(score)}`}
+                        >
                           {score == null ? "—" : `${score}/100`}
                         </td>
                         <td className="py-4">
-                          <Badge variant="outline">{stageLabel(lead.stage)}</Badge>
+                          <Badge variant="outline">
+                            {stageLabel(lead.stage)}
+                          </Badge>
                         </td>
                         <td className="py-4 text-slate-300">
                           {lead.next_action || "Review lead"}
@@ -356,76 +400,90 @@ export default function RoofingCampaignCommandCenterPage() {
 
       {!loading && activeView === "audit" && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {leads.filter((lead) => lead.audit).map((lead) => (
-            <Card key={lead.id} className="bg-slate-950/40 border-white/10">
-              <CardHeader>
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <CardTitle className="text-white">{lead.company_name}</CardTitle>
-                    <p className="text-sm text-slate-500 mt-1">
-                      {lead.website || "No website supplied"}
-                    </p>
-                  </div>
-                  <div className={`text-2xl font-bold ${scoreClass(lead.audit?.score)}`}>
-                    {lead.audit?.score ?? "—"}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="rounded-xl border border-white/10 p-3">
-                    <div className="text-slate-500">Status</div>
-                    <div className="text-white font-semibold mt-1 capitalize">
-                      {lead.audit?.status}
+          {leads
+            .filter((lead) => lead.audit)
+            .map((lead) => (
+              <Card key={lead.id} className="bg-slate-950/40 border-white/10">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-white">
+                        {lead.company_name}
+                      </CardTitle>
+                      <p className="text-sm text-slate-500 mt-1">
+                        {lead.website || "No website supplied"}
+                      </p>
+                    </div>
+                    <div
+                      className={`text-2xl font-bold ${scoreClass(lead.audit?.score)}`}
+                    >
+                      {lead.audit?.score ?? "—"}
                     </div>
                   </div>
-                  <div className="rounded-xl border border-white/10 p-3">
-                    <div className="text-slate-500">Local Visibility</div>
-                    <div className="text-white font-semibold mt-1">Findings stored</div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="rounded-xl border border-white/10 p-3">
+                      <div className="text-slate-500">Status</div>
+                      <div className="text-white font-semibold mt-1 capitalize">
+                        {lead.audit?.status}
+                      </div>
+                    </div>
+                    <div className="rounded-xl border border-white/10 p-3">
+                      <div className="text-slate-500">Local Visibility</div>
+                      <div className="text-white font-semibold mt-1">
+                        Findings stored
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <Button className="w-full">
-                  <Bot className="w-4 h-4 mr-2" />
-                  Open AI Audit
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+                  <Button className="w-full">
+                    <Bot className="w-4 h-4 mr-2" />
+                    Open AI Audit
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
           {leads.filter((lead) => lead.audit).length === 0 && (
-            <div className="text-slate-500">No audits have been created yet.</div>
+            <div className="text-slate-500">
+              No audits have been created yet.
+            </div>
           )}
         </div>
       )}
 
       {!loading && activeView === "email" && (
         <div className="grid lg:grid-cols-2 gap-4">
-          {leads.filter((lead) => lead.emailDraft).map((lead) => (
-            <Card key={lead.id} className="bg-slate-950/40 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-white">{lead.company_name}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-sm text-slate-300 leading-6">
-                  <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">
-                    Subject
+          {leads
+            .filter((lead) => lead.emailDraft)
+            .map((lead) => (
+              <Card key={lead.id} className="bg-slate-950/40 border-white/10">
+                <CardHeader>
+                  <CardTitle className="text-white">
+                    {lead.company_name}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="rounded-2xl bg-white/[0.03] border border-white/10 p-4 text-sm text-slate-300 leading-6">
+                    <div className="text-xs uppercase tracking-wide text-slate-500 mb-2">
+                      Subject
+                    </div>
+                    <div className="text-white font-semibold mb-4">
+                      {lead.emailDraft?.subject}
+                    </div>
+                    {lead.emailDraft?.body_text}
                   </div>
-                  <div className="text-white font-semibold mb-4">
-                    {lead.emailDraft?.subject}
+                  <div className="flex gap-3">
+                    <Button variant="outline" className="flex-1">
+                      Edit Draft
+                    </Button>
+                    <Button className="flex-1">
+                      <CheckCircle2 className="w-4 h-4 mr-2" />
+                      Approve
+                    </Button>
                   </div>
-                  {lead.emailDraft?.body_text}
-                </div>
-                <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
-                    Edit Draft
-                  </Button>
-                  <Button className="flex-1">
-                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Approve
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                </CardContent>
+              </Card>
+            ))}
           {leads.filter((lead) => lead.emailDraft).length === 0 && (
             <div className="text-slate-500">
               No email drafts are waiting for approval.
@@ -465,7 +523,9 @@ export default function RoofingCampaignCommandCenterPage() {
             <Card key={label} className="bg-slate-950/40 border-white/10">
               <CardContent className="p-5">
                 <div className="text-sm text-slate-500">{label}</div>
-                <div className="text-3xl font-bold text-white mt-2">{value}</div>
+                <div className="text-3xl font-bold text-white mt-2">
+                  {value}
+                </div>
               </CardContent>
             </Card>
           ))}
