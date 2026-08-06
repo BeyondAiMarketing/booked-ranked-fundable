@@ -1,13 +1,10 @@
 import { Container, getContainer } from "@cloudflare/containers";
-import { env as workerEnv } from "cloudflare:workers";
 
-declare global {
-  interface Env {
-    BRF_NEMO_CONTAINER: DurableObjectNamespace<BrfNemoContainer>;
-    NVIDIA_API_KEY: string;
-    NEMO_AGENT_SERVICE_TOKEN: string;
-    BRF_NEMOTRON_REASONING_MODEL?: string;
-  }
+interface Env {
+  BRF_NEMO_CONTAINER: DurableObjectNamespace<BrfNemoContainer>;
+  NVIDIA_API_KEY: string;
+  NEMO_AGENT_SERVICE_TOKEN: string;
+  BRF_NEMOTRON_REASONING_MODEL?: string;
 }
 
 const MAX_REQUEST_BYTES = 150_000;
@@ -18,12 +15,6 @@ export class BrfNemoContainer extends Container {
   requiredPorts = [8000];
   sleepAfter = "30m";
   enableInternet = true;
-  envVars = {
-    NVIDIA_API_KEY: workerEnv.NVIDIA_API_KEY,
-    BRF_NEMOTRON_REASONING_MODEL:
-      workerEnv.BRF_NEMOTRON_REASONING_MODEL || DEFAULT_MODEL,
-    PORT: "8000",
-  };
 
   override onStart(): void {
     console.info("brf_nemo_container_started");
@@ -93,6 +84,23 @@ export default {
     const container = getContainer(env.BRF_NEMO_CONTAINER, "primary");
 
     try {
+      await container.startAndWaitForPorts({
+        ports: [8000],
+        startOptions: {
+          enableInternet: true,
+          envVars: {
+            NVIDIA_API_KEY: env.NVIDIA_API_KEY,
+            BRF_NEMOTRON_REASONING_MODEL:
+              env.BRF_NEMOTRON_REASONING_MODEL || DEFAULT_MODEL,
+            PORT: "8000",
+          },
+        },
+        cancellationOptions: {
+          instanceGetTimeoutMS: 8_000,
+          portReadyTimeoutMS: 45_000,
+          waitInterval: 300,
+        },
+      });
       return await container.fetch(forwarded);
     } catch (error) {
       console.error(
