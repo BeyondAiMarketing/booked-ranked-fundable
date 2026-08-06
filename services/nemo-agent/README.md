@@ -1,6 +1,8 @@
 # BRF NeMo Agent Toolkit Service
 
-This directory contains the containerized NVIDIA NeMo Agent Toolkit runtime for Booked Ranked Fundable. It is deliberately separate from the Netlify frontend and functions because Netlify does not host a continuously running Python service.
+This directory contains the protected NVIDIA NeMo Agent Toolkit runtime for Booked Ranked Fundable.
+
+Netlify remains the BRF application host and intelligence gateway. Netlify Functions do not run arbitrary, continuously available Docker images, so the existing Python service is deployed as a Cloudflare Container behind a token-authenticated Worker. The browser never contacts the Worker or container directly.
 
 ## Role in the intelligence harness
 
@@ -13,29 +15,32 @@ The server-side BRF router uses this order:
 5. OpenAI or Netlify AI Gateway
 6. Anthropic or Netlify AI Gateway
 
-The NeMo service is the preferred orchestration harness. Direct Nemotron is the immediate primary route whenever the private service is not deployed or reachable. The fast Nemotron model is attempted before any non-NVIDIA fallback when the deeper reasoning model is unavailable or returns an invalid task shape.
+The NeMo service is the preferred orchestration harness. Direct Nemotron remains available when the container is sleeping, unavailable, or not configured.
 
-## Python service environment
+## Protected runtime architecture
 
-- `NVIDIA_API_KEY` - NVIDIA hosted NIM inference key
-- `BRF_NEMOTRON_REASONING_MODEL` - optional; defaults to `nvidia/nemotron-3-super-120b-a12b`
-- `PORT` - service port, normally injected by the hosting platform
+```text
+BRF browser
+    -> BRF Netlify Function
+        Authorization: Bearer <NEMO_AGENT_SERVICE_TOKEN>
+        -> Cloudflare Worker ingress
+            -> one Cloudflare Container instance
+                -> NVIDIA NIM / Nemotron
+```
 
-The service should be private or protected by an ingress/reverse proxy. That ingress must enforce the same bearer token configured in Netlify as `NEMO_AGENT_SERVICE_TOKEN`.
+The Worker:
 
-## Netlify Functions environment
+- accepts only authenticated requests;
+- exposes only `POST /v1/chat/completions` and authenticated `GET /healthz`;
+- enforces a request-size limit;
+- strips the gateway bearer token before forwarding the request;
+- injects `NVIDIA_API_KEY` into the container at startup;
+- keeps one named container instance and lets it sleep after inactivity;
+- records Worker and container errors through Cloudflare observability.
 
-- `NEMO_AGENT_BASE_URL` - private HTTPS URL of this service
-- `NEMO_AGENT_SERVICE_TOKEN` - private bearer token enforced by the service ingress
-- `NEMO_AGENT_CHAT_PATH` - optional; defaults to `/v1/chat/completions`
-- `NVIDIA_API_KEY` - direct Nemotron inference and current production route
-- `BRF_NEMOTRON_REASONING_MODEL` - optional reasoning-model override
-- `NVIDIA_NEMOTRON_MODEL` - optional fast-model override; defaults to `nvidia/nemotron-3-nano-30b-a3b`
-- `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` - optional later fallbacks
-- `BRF_INTELLIGENCE_SERVICE_TOKEN` - optional server-to-server access to protected BRF endpoints
-- `BRF_ALLOWED_ORIGINS` - optional comma-separated non-site origins
+The initial NeMo workflow remains read-only and has no action tools.
 
-## Local run
+## Local Python run
 
 ```bash
 cd services/nemo-agent
@@ -46,7 +51,7 @@ export NVIDIA_API_KEY=nvapi-example
 nat serve --config_file=configs/brf_agent.yml
 ```
 
-## Container run
+## Local Docker run
 
 ```bash
 docker build -t brf-nemo-agent .
@@ -57,6 +62,81 @@ docker run --rm -p 8000:8000 \
   brf-nemo-agent
 ```
 
-## Current safety boundary
+## Cloudflare Container deployment
 
-The initial NeMo workflow is read-only and has no action tools. It can reason over supplied audit, appointment, content, lead, and demo-session context. Supabase writes, publishing actions, owner alerts, Vapi calls, and CRM changes must be registered one at a time with explicit permissions, idempotency, human approval rules, and audit logging.
+Cloudflare Containers requires a Workers Paid account and a running Docker-compatible CLI for image builds.
+
+```bash
+cd services/nemo-agent
+npm install
+npx wrangler whoami
+```
+
+Add the two Worker secrets. Use the same service token later in Netlify.
+
+```bash
+npx wrangler secret put NVIDIA_API_KEY
+npx wrangler secret put NEMO_AGENT_SERVICE_TOKEN
+```
+
+Validate the Worker and deployment manifest:
+
+```bash
+npm run check
+npm run validate
+```
+
+Deploy the Worker and container image:
+
+```bash
+npm run deploy
+```
+
+Wrangler returns a Worker HTTPS URL. Confirm the protected gateway:
+
+```bash
+curl -i \
+  -H "Authorization: Bearer $NEMO_AGENT_SERVICE_TOKEN" \
+  https://<worker-url>/healthz
+```
+
+Run an end-to-end chat test:
+
+```bash
+curl -sS \
+  -H "Authorization: Bearer $NEMO_AGENT_SERVICE_TOKEN" \
+  -H "Content-Type: application/json" \
+  https://<worker-url>/v1/chat/completions \
+  -d '{
+    "model": "brf-agent",
+    "messages": [{"role": "user", "content": "Return only: connected"}],
+    "stream": false
+  }'
+```
+
+## Connect the protected runtime to Netlify
+
+Set these in the BRF Netlify project with **Functions** scope and **production** context:
+
+- `NEMO_AGENT_BASE_URL=https://<worker-url>`
+- `NEMO_AGENT_SERVICE_TOKEN=<the same Worker secret>`
+- `NEMO_AGENT_CHAT_PATH=/v1/chat/completions`
+
+The existing Netlify intelligence router automatically promotes the NeMo service to the first route after those variables are configured and a production deployment is published.
+
+Other relevant Netlify variables:
+
+- `NVIDIA_API_KEY` - direct Nemotron fallback
+- `BRF_NEMOTRON_REASONING_MODEL` - optional reasoning-model override
+- `NVIDIA_NEMOTRON_MODEL` - optional fast-model override
+- `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` - optional later fallbacks
+- `BRF_INTELLIGENCE_SERVICE_TOKEN` - optional server-to-server access to protected BRF endpoints
+- `BRF_ALLOWED_ORIGINS` - optional comma-separated non-site origins
+
+## Operational notes
+
+- The first request after the container has slept may have cold-start latency.
+- `max_instances` is intentionally set to one for the first production rollout.
+- The container is constrained to North American regions and uses a `standard-1` instance.
+- Increase instance count only after measuring concurrency and memory usage.
+- Supabase writes, publishing actions, owner alerts, Vapi calls, and CRM changes must be registered one at a time with explicit permissions, idempotency, human approval rules, and audit logging.
