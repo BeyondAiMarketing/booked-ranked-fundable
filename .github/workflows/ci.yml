@@ -85,7 +85,70 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
-      - name: Verify live roofing book route after main deploy
+      - name: Diagnose custom domain DNS and HTTP target
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -u
+          node <<'NODE'
+          const dns = require('node:dns').promises;
+          const names = ['bookedrankedfunded.org', 'www.bookedrankedfunded.org'];
+          const lookups = [
+            ['A', (name) => dns.resolve4(name)],
+            ['AAAA', (name) => dns.resolve6(name)],
+            ['CNAME', (name) => dns.resolveCname(name)],
+            ['NS', (name) => dns.resolveNs(name)],
+          ];
+          (async () => {
+            for (const name of names) {
+              console.log(`--- DNS ${name} ---`);
+              for (const [type, lookup] of lookups) {
+                try {
+                  console.log(type, await lookup(name));
+                } catch (error) {
+                  console.log(type, error.code || error.message);
+                }
+              }
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+          echo '--- custom domain response headers ---'
+          curl -sSIL --max-time 20 https://bookedrankedfunded.org/ | sed -n '1,80p' || true
+          echo '--- netlify main response headers ---'
+          curl -sSIL --max-time 20 https://main--booked-ranked-fundable.netlify.app/ | sed -n '1,80p' || true
+
+      - name: Diagnose Netlify main origin in Chromium
+        id: netlify_main
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: https://main--booked-ranked-fundable.netlify.app
+        run: pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"
+
+      - name: Diagnose custom production domain in Chromium
+        id: custom_domain
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: https://bookedrankedfunded.org
+        run: pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"
+
+      - name: Fail QA if either production target is wrong
+        if: always() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          echo "Netlify main origin: ${{ steps.netlify_main.outcome }}"
+          echo "Custom production domain: ${{ steps.custom_domain.outcome }}"
+          if [ "${{ steps.netlify_main.outcome }}" != "success" ] || [ "${{ steps.custom_domain.outcome }}" != "success" ]; then
+            exit 1
+          fi
+
+      - name: Verify live roofing funnel after main deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         env:
@@ -94,14 +157,14 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in {1..24}; do
-            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "roofing book route renders"; then
-              echo "Live roofing book route verified in Chromium."
+            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"; then
+              echo "Live homepage, roofing page, and roofing book funnel verified in Chromium."
               exit 0
             fi
-            echo "Live route not ready yet (attempt ${attempt}/24); retrying in 10 seconds..."
+            echo "Live roofing funnel not ready/correct yet (attempt ${attempt}/24); retrying in 10 seconds..."
             sleep 10
           done
-          echo "Live roofing book route never rendered the expected funnel."
+          echo "Live roofing funnel never rendered the expected production content."
           exit 1
 
       - uses: actions/upload-artifact@v4
