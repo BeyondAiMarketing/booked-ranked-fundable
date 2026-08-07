@@ -85,8 +85,15 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
-      - name: Verify live roofing funnel in Chromium
-        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
+      - name: Diagnose live roofing funnel in Chromium
+        if: github.event_name == 'pull_request'
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: https://bookedrankedfunded.org
+        run: pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"
+
+      - name: Verify live roofing funnel after main deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         shell: bash
         env:
           CI: true
@@ -94,7 +101,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in {1..24}; do
-            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live roofing funnel surfaces render"; then
+            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"; then
               echo "Live homepage, roofing page, and roofing book funnel verified in Chromium."
               exit 0
             fi
