@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import RoofingPlaybookTripwirePage from "./pages/RoofingPlaybookTripwirePage";
 
 BigInt.prototype.toJSON = function () {
   return this.toString();
@@ -15,11 +16,16 @@ declare global {
 }
 
 const queryClient = new QueryClient();
+const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
+const RootApp =
+  normalizedPath === "/roofing-ai-growth-playbook"
+    ? RoofingPlaybookTripwirePage
+    : App;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <InternetIdentityProvider>
-      <App />
+      <RootApp />
     </InternetIdentityProvider>
   </QueryClientProvider>,
 );
