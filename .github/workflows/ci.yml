@@ -85,6 +85,25 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
+      - name: Verify live roofing book route after main deploy
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: https://bookedrankedfunded.org
+        run: |
+          set -euo pipefail
+          for attempt in {1..24}; do
+            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "roofing book route renders"; then
+              echo "Live roofing book route verified in Chromium."
+              exit 0
+            fi
+            echo "Live route not ready yet (attempt ${attempt}/24); retrying in 10 seconds..."
+            sleep 10
+          done
+          echo "Live roofing book route never rendered the expected funnel."
+          exit 1
+
       - uses: actions/upload-artifact@v4
         if: failure()
         with:
