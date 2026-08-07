@@ -85,12 +85,33 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
-      - name: Diagnose live roofing funnel in Chromium
+      - name: Diagnose Netlify main origin in Chromium
+        id: netlify_main
         if: github.event_name == 'pull_request'
+        continue-on-error: true
+        env:
+          CI: true
+          PLAYWRIGHT_BASE_URL: https://main--booked-ranked-fundable.netlify.app
+        run: pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"
+
+      - name: Diagnose custom production domain in Chromium
+        id: custom_domain
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
         env:
           CI: true
           PLAYWRIGHT_BASE_URL: https://bookedrankedfunded.org
         run: pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live production"
+
+      - name: Fail QA if either production target is wrong
+        if: always() && github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          echo "Netlify main origin: ${{ steps.netlify_main.outcome }}"
+          echo "Custom production domain: ${{ steps.custom_domain.outcome }}"
+          if [ "${{ steps.netlify_main.outcome }}" != "success" ] || [ "${{ steps.custom_domain.outcome }}" != "success" ]; then
+            exit 1
+          fi
 
       - name: Verify live roofing funnel after main deploy
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
