@@ -49,3 +49,41 @@ test("roofing book route renders the book funnel instead of Not Found", async ({
   ).toBeVisible();
   await expect(page.getByText(/^Not Found$/)).toHaveCount(0);
 });
+
+test("live roofing funnel surfaces render the expected offer and book", async ({
+  page,
+}) => {
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Free roofing growth package").first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: /see the system\. then see what your own roofing website needs next/i,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: /get my free playbook \+ audit/i }).first(),
+  ).toBeVisible();
+
+  await page.goto("/roofing", { waitUntil: "domcontentloaded" });
+  await expect(page.getByText("Free roofing growth package").first()).toBeVisible();
+  await expect(
+    page.getByRole("heading", {
+      name: /see the system\. then see what your own roofing website needs next/i,
+    }),
+  ).toBeVisible();
+
+  await page.goto("/roofing-ai-growth-playbook", {
+    waitUntil: "domcontentloaded",
+  });
+  await expect(
+    page.getByRole("heading", {
+      name: /roofing playbook for contractors ready to win in the ai era/i,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText("Roofing Contractors").first()).toBeVisible();
+  await expect(page.getByText("Dave Reeves").first()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: /get my free roofing book \+ audit/i }),
+  ).toBeVisible();
+  await expect(page.getByText(/^Not Found$/)).toHaveCount(0);
+});
