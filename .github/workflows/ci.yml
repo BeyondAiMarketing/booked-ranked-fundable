@@ -85,6 +85,41 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
+      - name: Diagnose custom domain DNS and HTTP target
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: |
+          set -u
+          node <<'NODE'
+          const dns = require('node:dns').promises;
+          const names = ['bookedrankedfunded.org', 'www.bookedrankedfunded.org'];
+          const lookups = [
+            ['A', (name) => dns.resolve4(name)],
+            ['AAAA', (name) => dns.resolve6(name)],
+            ['CNAME', (name) => dns.resolveCname(name)],
+            ['NS', (name) => dns.resolveNs(name)],
+          ];
+          (async () => {
+            for (const name of names) {
+              console.log(`--- DNS ${name} ---`);
+              for (const [type, lookup] of lookups) {
+                try {
+                  console.log(type, await lookup(name));
+                } catch (error) {
+                  console.log(type, error.code || error.message);
+                }
+              }
+            }
+          })().catch((error) => {
+            console.error(error);
+            process.exitCode = 1;
+          });
+          NODE
+          echo '--- custom domain response headers ---'
+          curl -sSIL --max-time 20 https://bookedrankedfunded.org/ | sed -n '1,80p' || true
+          echo '--- netlify main response headers ---'
+          curl -sSIL --max-time 20 https://main--booked-ranked-fundable.netlify.app/ | sed -n '1,80p' || true
+
       - name: Diagnose Netlify main origin in Chromium
         id: netlify_main
         if: github.event_name == 'pull_request'
