@@ -10,6 +10,7 @@ const publicRoutes = [
   "/demo",
   "/demo-login",
   "/roofing",
+  "/roofing-ai-growth-playbook",
   "/plumbing",
   "/hvac",
   "/med-spa",
@@ -35,4 +36,16 @@ for (const route of publicRoutes) {
 test("homepage carries the product title", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveTitle(/Booked Ranked Fundable/i);
+});
+
+test("roofing book route renders the book funnel instead of Not Found", async ({
+  page,
+}) => {
+  await page.goto("/roofing-ai-growth-playbook");
+  await expect(
+    page.getByRole("heading", {
+      name: /roofing playbook for contractors ready to win in the ai era/i,
+    }),
+  ).toBeVisible();
+  await expect(page.getByText(/^Not Found$/)).toHaveCount(0);
 });
