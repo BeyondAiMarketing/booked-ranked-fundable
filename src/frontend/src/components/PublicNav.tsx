@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   BarChart3,
+  BookOpen,
   Building2,
   ChevronDown,
   Crown,
@@ -78,7 +79,6 @@ function ExploreDropdown() {
             className="absolute top-full right-0 mt-2 w-72 bg-slate-900 border border-white/10 rounded-xl shadow-2xl overflow-hidden z-[1000]"
             data-ocid="nav.explore.dropdown_menu"
           >
-            {/* Pages section */}
             <div className="px-3 pt-3 pb-1">
               <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
                 Pages
@@ -89,6 +89,11 @@ function ExploreDropdown() {
                 { label: "Home", href: "/", Icon: Globe },
                 { label: "Pricing", href: "/pricing", Icon: DollarSign },
                 { label: "Free Audit", href: "/free-audit", Icon: BarChart3 },
+                {
+                  label: "Free Roofer Playbook + Audit",
+                  href: "/roofing-ai-growth-playbook",
+                  Icon: BookOpen,
+                },
                 {
                   label: "Agency Partners",
                   href: "/agency-partners",
@@ -114,7 +119,6 @@ function ExploreDropdown() {
               ))}
             </div>
 
-            {/* Industries section */}
             <div className="border-t border-white/8 px-3 pt-3 pb-1">
               <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">
                 Industries We Serve
@@ -391,7 +395,6 @@ export default function PublicNav() {
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-          {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 flex-shrink-0">
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-700 flex items-center justify-center text-white font-bold text-xs tracking-tight shadow-lg">
               BRF
@@ -401,7 +404,6 @@ export default function PublicNav() {
             </span>
           </Link>
 
-          {/* Desktop Nav */}
           <div className="hidden lg:flex items-center gap-1">
             <Link
               to="/"
@@ -411,6 +413,13 @@ export default function PublicNav() {
               Home
             </Link>
             <IndustriesDropdown />
+            <Link
+              to="/roofing-ai-growth-playbook"
+              data-ocid="nav.roofing_playbook.link"
+              className="text-sm font-semibold text-amber-300 hover:text-amber-200 px-3 py-2 rounded-lg hover:bg-amber-400/10 transition-colors"
+            >
+              Free Roofer Playbook
+            </Link>
             <Link
               to="/pricing"
               data-ocid="nav.pricing.link"
@@ -434,7 +443,6 @@ export default function PublicNav() {
             </Link>
           </div>
 
-          {/* Desktop Right */}
           <div className="hidden lg:flex items-center gap-2">
             <ExploreDropdown />
             <LoginDropdown />
@@ -447,7 +455,6 @@ export default function PublicNav() {
                 Get Free Audit
               </Button>
             </Link>
-            {/* ── Prominent Demo Button ── */}
             <Link to="/demo">
               <Button
                 data-ocid="nav.live_demo.button"
@@ -456,13 +463,11 @@ export default function PublicNav() {
               >
                 <Zap size={13} className="mr-1.5" />
                 See The Live Demo Now
-                {/* Pulse ring */}
                 <span className="absolute -inset-px rounded-md ring-1 ring-purple-500/50 animate-ping opacity-30" />
               </Button>
             </Link>
           </div>
 
-          {/* Mobile toggle */}
           <button
             type="button"
             data-ocid="nav.mobile_menu.toggle"
@@ -475,7 +480,6 @@ export default function PublicNav() {
         </div>
       </nav>
 
-      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
@@ -510,7 +514,6 @@ export default function PublicNav() {
               </div>
 
               <div className="p-4 space-y-1">
-                {/* ── Mobile Primary Demo CTA — top of menu ── */}
                 <Link to="/demo" onClick={closeMobile}>
                   <button
                     type="button"
@@ -523,6 +526,16 @@ export default function PublicNav() {
                 </Link>
 
                 <Link
+                  to="/roofing-ai-growth-playbook"
+                  onClick={closeMobile}
+                  data-ocid="nav.mobile_roofing_playbook.button"
+                  className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300/30 bg-amber-300/10 px-4 py-3 text-sm font-bold text-amber-200 transition-colors hover:bg-amber-300/15"
+                >
+                  <BookOpen size={15} />
+                  Free Roofer Playbook + Audit
+                </Link>
+
+                <Link
                   to="/"
                   onClick={closeMobile}
                   className="flex items-center px-3 py-2.5 rounded-lg hover:bg-white/10 transition-colors"
@@ -530,7 +543,6 @@ export default function PublicNav() {
                   <span className="text-sm font-medium text-white">Home</span>
                 </Link>
 
-                {/* Industries expandable */}
                 <div>
                   <button
                     type="button"
@@ -619,7 +631,6 @@ export default function PublicNav() {
                   </span>
                 </Link>
 
-                {/* Mobile Explore expandable */}
                 <div>
                   <button
                     type="button"
@@ -636,6 +647,10 @@ export default function PublicNav() {
                     {[
                       { label: "Pricing", href: "/pricing" },
                       { label: "Free Audit", href: "/free-audit" },
+                      {
+                        label: "Free Roofer Playbook + Audit",
+                        href: "/roofing-ai-growth-playbook",
+                      },
                       { label: "Agency Partners", href: "/agency-partners" },
                       { label: "Live Demo", href: "/demo" },
                     ].map(({ label, href }) => (
@@ -662,7 +677,6 @@ export default function PublicNav() {
                     </Button>
                   </Link>
 
-                  {/* Mobile Login expandable */}
                   <div>
                     <button
                       type="button"
