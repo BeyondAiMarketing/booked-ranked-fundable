@@ -85,8 +85,8 @@ jobs:
           CI: true
           PLAYWRIGHT_BASE_URL: http://127.0.0.1:4173
 
-      - name: Verify live roofing book route after main deploy
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      - name: Verify live roofing funnel in Chromium
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
         shell: bash
         env:
           CI: true
@@ -94,14 +94,14 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in {1..24}; do
-            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "roofing book route renders"; then
-              echo "Live roofing book route verified in Chromium."
+            if pnpm --dir src/frontend exec playwright test e2e/public-routes.spec.ts --grep "live roofing funnel surfaces render"; then
+              echo "Live homepage, roofing page, and roofing book funnel verified in Chromium."
               exit 0
             fi
-            echo "Live route not ready yet (attempt ${attempt}/24); retrying in 10 seconds..."
+            echo "Live roofing funnel not ready/correct yet (attempt ${attempt}/24); retrying in 10 seconds..."
             sleep 10
           done
-          echo "Live roofing book route never rendered the expected funnel."
+          echo "Live roofing funnel never rendered the expected production content."
           exit 1
 
       - uses: actions/upload-artifact@v4
